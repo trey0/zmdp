@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.5 2005-01-21 16:26:17 trey Exp $
+# $Id: Makefile,v 1.6 2005-01-21 18:07:02 trey Exp $
 #
 # PROJECT:      FIRE Architecture Project
 # DESCRIPTION:  
@@ -24,10 +24,12 @@ INSTALLHEADERS_HEADERS := \
 	commonDefs.h \
 	commonTime.h \
 	ublasMatrixTypes.h \
+	sla.h \
 	commonTypes.h \
 	SmartRef.h \
 	Interleave.h \
-	MatrixUtils.h \
+	ublasMatrixUtils.h \
+	slaMatrixUtils.h \
 	PomdpM.h \
 	PomdpSim.h \
 	Solver.h \
@@ -39,7 +41,7 @@ BUILDLIB_TARGET := libpomdpUtils.a
 BUILDLIB_SRCS := \
 	commonTypes.cc \
 	Interleave.cc \
-	MatrixUtils.cc \
+	ublasMatrixUtils.cc \
 	PomdpM.cc \
 	PomdpSim.cc \
 	ValueFunction.cc \
@@ -57,6 +59,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.5  2005/01/21 16:26:17  trey
+# added ublasMatrixTypes.h
+#
 # Revision 1.4  2005/01/17 19:36:48  trey
 # added include of options.mak
 #

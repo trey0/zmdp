@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.1 $  $Author: trey $  $Date: 2005-01-21 16:26:04 $
+ * $Revision: 1.2 $  $Author: trey $  $Date: 2005-01-21 18:07:02 $
  *  
  * @file    ublasMatrixTypes.h
  * @brief   No brief
@@ -51,11 +51,6 @@ typedef cmatrix bmatrix;
 
 #endif
 
-// select storage types of the data structures we use
-typedef cvector belief_vector;
-typedef dvector alpha_vector;
-typedef dvector obs_prob_vector;
-
 // undefine NDEBUG if it was previously undefined
 #if VEC_OPTIM && !VEC_NDEBUG_WAS_DEFINED
 #   undef NDEBUG
@@ -66,5 +61,8 @@ typedef dvector obs_prob_vector;
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2005/01/21 16:26:04  trey
+ * initial check-in
+ *
  *
  ***************************************************************************/

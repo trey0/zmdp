@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.1 $  $Author: trey $  $Date: 2004-11-13 23:29:44 $
+ * $Revision: 1.2 $  $Author: trey $  $Date: 2005-01-21 18:07:02 $
  *  
  * PROJECT: FIRE Architecture Project
  *
@@ -23,8 +23,15 @@ public:
   virtual bool planFixedTime(const belief_vector& currentBelief,
 			     double maxTimeSeconds,
 			     double minPrecision) = 0;
-  // choose the best action given the current belief.
+
+#if 0
+  virtual void executeInit(const belief_vector& currentBelief);
+  virtual int  executeChooseAction(void);
+  virtual void executeObserve(int obs);
+#endif
+
   virtual int chooseAction(const belief_vector& currentBelief) = 0;
+
   virtual void setBoundsFile(std::ostream* boundsFile) = 0;
   virtual ValueInterval getValueAt(const belief_vector& currentBelief) const = 0;
 };
@@ -34,6 +41,9 @@ public:
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2004/11/13 23:29:44  trey
+ * moved many files from hsvi to common
+ *
  * Revision 1.1.1.1  2004/11/09 16:18:56  trey
  * imported hsvi into new repository
  *

@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.1 $  $Author: trey $  $Date: 2004-11-13 23:29:44 $
+ * $Revision: 1.1 $  $Author: trey $  $Date: 2005-01-21 18:07:02 $
  *  
  * @file    MatrixUtils.cc
  * @brief   No brief
@@ -156,6 +156,7 @@ namespace MatrixUtils {
     return 0;
   }
 
+#if 0
   // Scale the rows of M, like MATLAB diag(v) * M.
   bmatrix scale_columns(const bvector& v, const dmatrix& M) {
     bmatrix R(M.size1(), M.size2());
@@ -181,7 +182,6 @@ namespace MatrixUtils {
     return R;
   }
 
-#if 0
   // Element-wise maximum of two matrices (equivalent to Matlab max)
   bmatrix emax(const bmatrix& M, const bmatrix& N) {
     assert(M.size(0) == N.size(0));
@@ -300,6 +300,9 @@ namespace MatrixUtils {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2004/11/13 23:29:44  trey
+ * moved many files from hsvi to common
+ *
  * Revision 1.1.1.1  2004/11/09 16:18:56  trey
  * imported hsvi into new repository
  *
