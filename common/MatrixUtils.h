@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.3 $  $Author: trey $  $Date: 2005-01-26 04:09:25 $
+ * $Revision: 1.4 $  $Author: trey $  $Date: 2005-01-27 05:30:56 $
  *  
  * @file    MatrixUtils.h
  * @brief   No brief
@@ -20,6 +20,7 @@
 #include <vector>
 #include <algorithm>
 #include <functional>
+#include <sstream>
 
 #include "commonDefs.h"
 #include "commonTypes.h"
@@ -59,6 +60,10 @@ namespace MatrixUtils {
   template <class _ForwardIterator>
   void calc_avg_stdev_collection(_ForwardIterator start, _ForwardIterator end,
 				 double& avg, double& stdev);
+
+  // Returns a nice printable representation for big vectors (sorted in order
+  //   of decreasing absolute value, with the index of each value labeled).
+  std::string sparseRep(const cvector& v);
 
   /**********************************************************************
    * FUNCTIONS
@@ -179,6 +184,60 @@ namespace MatrixUtils {
     }
   }
 
+  struct IndPair {
+    int ind;
+    double val;
+    IndPair(int _ind, double _val) : ind(_ind), val(_val) {}
+  };
+  
+  struct AbsValGreater {
+    bool operator()(const IndPair& lhs, const IndPair& rhs) {
+      return fabs(lhs.val) > fabs(rhs.val);
+    }
+  };
+
+  struct ValGreater {
+    bool operator()(const IndPair& lhs, const IndPair& rhs) {
+      return lhs.val > rhs.val;
+    }
+  };
+
+  inline std::string sparseRep(const cvector& v) {
+    std::vector<IndPair> sorted;
+    FOR_CV (v) {
+      sorted.push_back(IndPair(CV_INDEX(v), CV_VAL(v)));
+    }
+    sort(sorted.begin(), sorted.end(), AbsValGreater());
+    std::ostringstream out;
+    int num_to_print = std::min((unsigned)8, sorted.size());
+    if ( 0 == num_to_print) {
+      out << "(no non-zero entries)";
+    } else {
+      FOR (i, num_to_print) {
+	out << sorted[i].ind << ":" << sorted[i].val << " ";
+      }
+    }
+    return out.str();
+  }
+
+  inline std::string sparseRep(const dvector& v) {
+    std::vector<IndPair> sorted;
+    FOR (i, v.size()) {
+      sorted.push_back(IndPair(i,v(i)));
+    }
+    sort(sorted.begin(), sorted.end(), AbsValGreater());
+    std::ostringstream out;
+    int num_to_print = std::min((unsigned)8, sorted.size());
+    if ( 0 == num_to_print) {
+      out << "(no non-zero entries)";
+    } else {
+      FOR (i, num_to_print) {
+	out << sorted[i].ind << ":" << sorted[i].val << " ";
+      }
+    }
+    return out.str();
+  }
+
 }; // namespace MatrixUtils
 
 #endif // INCMatrixUtils_h
@@ -186,6 +245,9 @@ namespace MatrixUtils {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2005/01/26 04:09:25  trey
+ * moved some common code from sla and ublasMatrixUtils back into MatrixUtils.h
+ *
  * Revision 1.2  2005/01/21 18:07:02  trey
  * preparing for transition to sla matrix types
  *
