@@ -1,7 +1,9 @@
 
 #include <assert.h>
+#include <sys/time.h>
 
 #include <iostream>
+#include <fstream>
 
 #include "PomdpM.h"
 #include "MatrixUtils.h"
@@ -16,7 +18,10 @@ using namespace MatrixUtils;
 
 void usage(void) {
   cerr <<
-    "usage: testPomdp <algorithm> <probname> [minOrder maxOrder]\n"
+    "usage: testPomdp OPTIONS <algorithm> <probname> [minOrder maxOrder]\n"
+    "  -h or --help   Print this help\n"
+    "  -f or --fast   Use fast (but very picky) alternate parser\n"
+    "\n"
     "  available algorithms:\n"
 #if USE_CPLEX
     "    hsvi\n"
@@ -28,10 +33,50 @@ void usage(void) {
 void testBatchIncremental(string algorithm,
 			  string prob_name,
 			  int min_order,
-			  int max_order) {
+			  int max_order,
+			  bool use_fast_parser)
+{
   PomdpM problem;
   //prob_name = "examples/" + prob_name + ".pomdp";
-  problem.readFromFile(prob_name);
+  problem.readFromFile( prob_name, use_fast_parser );
+
+#if 1
+  // test benchmark code
+
+  timeval startTime, endTime;
+  belief_vector result(problem.numStates);
+  bmatrix& T = problem.T[4];
+  belief_vector& b0 = problem.initialBelief;
+  dvector tmp(problem.numStates);
+
+  gettimeofday(&startTime,0);
+  for (int i=0; i < 10; i++) {
+    //noalias(result) = prod( T, b0 );
+    axpy_prod( T, b0, tmp, true );
+    noalias(result) = tmp;
+  }
+  gettimeofday(&endTime,0);
+
+  cout << "multiplies: elapsed time = "
+       << ((endTime.tv_sec - startTime.tv_sec)
+	   + 1e-6*(endTime.tv_usec - startTime.tv_usec))
+       << endl;
+
+  const char* fname = "result_tp.dat";
+  ofstream out(fname);
+  if (!out) {
+    cerr << "ERROR: couldn't open " << fname << " for writing: "
+	 << strerror(errno) << endl;
+    exit(EXIT_FAILURE);
+  }
+  out << problem.numStates << endl;
+  FOR_EACH (x, result) {
+    out << (*x) << endl;
+  }
+  out.close();
+
+  exit(0);
+#endif
 
   Solver* solver;
   if (0) {
@@ -52,7 +97,7 @@ void testBatchIncremental(string algorithm,
   //string prefix = "/tmp/";
   string prefix = "";
   Interleave x;
-  x.batchTestIncremental(/* numIterations = */ 100,
+  x.batchTestIncremental(/* numIterations = */ 10,
 			 &problem, *solver,
 			 /* numSteps = */ 251,
 			 /* minPrecision = */ 1e-10,
@@ -73,11 +118,15 @@ int main(int argc, char **argv) {
   char *prob_name = NULL;
   int min_order = -1;
   int max_order = -1;
+  bool use_fast_parser = false;
+
   for (int argi=1; argi < argc; argi++) {
     string args = argv[argi];
     if (args[0] == '-') {
       if (args == "-h" || args == "--help") {
 	usage();
+      } else if (args == "-f" || args == "--fast") {
+	use_fast_parser = true;
       } else {
 	cerr << "ERROR: unknown option " << args << endl << endl;
 	usage();
@@ -101,13 +150,14 @@ int main(int argc, char **argv) {
     usage();
   }
   if (min_order == -1) {
-    max_order = 0; // default
+    min_order = 0; // default
   }
   if (max_order == -1) {
     max_order = 6; // default
   }
 
-  testBatchIncremental(algorithm, prob_name, min_order, max_order);
+  testBatchIncremental(algorithm, prob_name, min_order, max_order,
+		       use_fast_parser);
 
   // signal we are done
   FILE *fp = fopen("/tmp/testPomdp_done", "w");
