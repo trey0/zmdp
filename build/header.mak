@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: header.mak,v 1.2 2004-11-09 18:33:06 trey Exp $
+# $Id: header.mak,v 1.3 2004-11-09 21:31:59 trey Exp $
 #
 # PROJECT:      FIRE Architecture Project
 # DESCRIPTION:  Included at the header of a Makefile.  Mostly defines
@@ -55,7 +55,7 @@ LDFLAGS :=
 
 # set up default names of binaries and flags for compilers
 SRC_DIR := $(CHECKOUT_DIR)/src
-BUILD_DIR := $(SRC_DIR)/microraptor/Build
+BUILD_DIR := $(SRC_DIR)/build
 include $(BUILD_DIR)/Platforms/generic.mak
 
 # Determine what operating system we are trying to build for
@@ -185,6 +185,9 @@ $(OBJ_DIR)/%.d: %.cpp
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.2  2004/11/09 18:33:06  trey
+# adjusted to new project name
+#
 # Revision 1.1.1.1  2004/11/09 16:18:57  trey
 # imported hsvi into new repository
 #

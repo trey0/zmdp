@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.1.1.1 2004-11-09 16:18:56 trey Exp $
+# $Id: Makefile,v 1.2 2004-11-09 21:31:59 trey Exp $
 #
 # PROJECT:      FIRE Architecture Project
 # DESCRIPTION:  
@@ -7,8 +7,8 @@
 ######################################################################
 # DO NOT MODIFY THIS HEADER SECTION
 
-CHECKOUT_DIR := $(shell pwd | perl -e '$$/ = undef; $$all = <>; $$pos = $$[; $$out = ""; $$all =~ s:\\:/:g; chop($$all); while (($$pos = index($$all,"/src")) >= $$[) { $$all = substr($$all,$$pos+1); if (length($$all) > 3 && substr($$all,$$[+3,1) ne "/") { next } $$out = $$all; $$out =~ s/[^\/]+/../g; if (-f $$out . "/src/Build/header.mak") { break; } else { $$out = "" } } print $$out;')
-include $(CHECKOUT_DIR)/src/Build/header.mak
+CHECKOUT_DIR := $(shell perl -e '$$_ = `pwd`; chop; $$_ = scalar reverse("$$_/"); if (s:.*/crs/::) { print scalar reverse($$_); } else { print "<error>"; die "*** could not calculate CHECKOUT_DIR ***\n"; }')
+include $(CHECKOUT_DIR)/src/build/header.mak
 
 ######################################################################
 # PLACE MODIFICATIONS BELOW THIS LINE
@@ -16,39 +16,22 @@ include $(CHECKOUT_DIR)/src/Build/header.mak
 # ADD ANY SUBDIRS THAT NEED TO BE VISITED DURING A BUILD TO THE SUBDIRS LIST
 SUBDIRS := 
 
-CPPFLAGS += \
-  -I/usr/local/include/python2.2 \
-  -I/usr/local/lib/python2.2/config
+INSTALLHEADERS_HEADERS := pomdp.h
+include $(BUILD_DIR)/installheaders.mak
 
-$(TARGET_LIB_DIR)/_%.so: $(OBJ_DIR)/%_wrap.o
-	$(LD) $(COMFLAGS) $(LDFLAGS) -shared $< $(LIB_DIRS) -lpomdp_spec -o $@
-
-PY_MODULE_HEADERS := pomdp.h
-
-$(GEN_DIR)/%_wrap.cc: %.i $(PY_MODULE_HEADERS)
-	@[ -d $(GEN_DIR) ] || mkdir -p $(GEN_DIR)
-	swig -c++ -python -shadow -dnone -o $@ $<
-	@[ -d $(TARGET_PYTHON_DIR) ] || mkdir -p $(TARGET_PYTHON_DIR)
-	mv $(GEN_DIR)/$*.py $(TARGET_PYTHON_DIR)/
-
-# using these vars directly is a bit of an abuse of the makefile system
-
-XDRGEN_TARGETS += $(GEN_DIR)/pomdp_wrap.cc
-BUILDBIN_TARGETS += $(TARGET_LIB_DIR)/_pomdp.so
-
-BUILDLIB_TARGET := pomdp_spec
-BUILDLIB_SRCS := pomdp_spec.tab pomdp_spec.yy \
-  imm-reward parse_err parse_hash \
-  sparse-matrix mdp pomdp
+BUILDLIB_TARGET := libpomdp_spec.a
+BUILDLIB_SRCS := pomdp_spec.tab.cc pomdp_spec.yy.cc \
+  imm-reward.c parse_err.c parse_hash.c \
+  sparse-matrix.c mdp.c pomdp.cc
 include $(BUILD_DIR)/buildlib.mak
 
 # use 'gmake TEST=1 install' to build the following stuff
 ifneq (,$(TEST))
 
 BUILDBIN_TARGET := testSpec
-BUILDBIN_SRCS := testSpec
+BUILDBIN_SRCS := testSpec.cc
 BUILDBIN_INDEP_LIBS := 
-BUILDBIN_DEP_LIBS := pomdp_spec
+BUILDBIN_DEP_LIBS := -lpomdp_spec
 include $(BUILD_DIR)/buildbin.mak
 
 endif
@@ -60,6 +43,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.1.1.1  2004/11/09 16:18:56  trey
+# imported hsvi into new repository
+#
 # Revision 1.2  2003/04/02 17:13:54  trey
 # minor changes to enable compilation under gcc 3.0.1
 #

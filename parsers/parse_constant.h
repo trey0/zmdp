@@ -39,5 +39,17 @@ typedef struct cNode
 	      } theValue;
       } Constant_Block;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+extern int yywrap(void);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+
 #endif
 

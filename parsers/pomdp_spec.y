@@ -496,6 +496,7 @@ term_prob_spec  : ETOK COLONTOK term_spec_tail
                 {
 	           YACCtrace("term_prob_spec -> ETOK COLONTOK term_spec_tail\n");
                 }
+;
 term_spec_tail  : term_spec_tail state
                 {
 	 	   YACCtrace("term_spec_tail -> INTTOK term_spec_tail");
@@ -1593,8 +1594,10 @@ int readMDPFile( FILE *file ) {
    return( 1 );
 }  /* readPomdpFile */
 /************************************************************************/
+#if 0
 int yywrap()
 {
    return 1;
 }
+#endif
 /************************************************************************/
