@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.7 2005-01-26 04:17:15 trey Exp $
+# $Id: Makefile,v 1.8 2005-03-09 18:52:05 trey Exp $
 #
 # PROJECT:      FIRE Architecture Project
 # DESCRIPTION:  
@@ -59,6 +59,12 @@ BUILDBIN_INDEP_LIBS :=
 BUILDBIN_DEP_LIBS :=
 include $(BUILD_DIR)/buildbin.mak
 
+BUILDBIN_TARGET := test_aadd
+BUILDBIN_SRCS := test_aadd.cc aadd.cc
+BUILDBIN_INDEP_LIBS :=
+BUILDBIN_DEP_LIBS :=
+include $(BUILD_DIR)/buildbin.mak
+
 BUILDBIN_TARGET := testPomdpM
 BUILDBIN_SRCS := testPomdpM.cc
 BUILDBIN_INDEP_LIBS :=
@@ -74,6 +80,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.7  2005/01/26 04:17:15  trey
+# added test_sla and testPomdpM, removed ublasMatrixUtils.cc from lib
+#
 # Revision 1.6  2005/01/21 18:07:02  trey
 # preparing for transition to sla matrix types
 #
