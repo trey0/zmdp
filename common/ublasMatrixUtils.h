@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.3 $  $Author: trey $  $Date: 2005-01-27 05:36:52 $
+ * $Revision: 1.4 $  $Author: trey $  $Date: 2005-01-28 03:23:07 $
  *  
  * @file    ublasMatrixUtils.h
  * @brief   No brief
@@ -33,28 +33,23 @@
 
 // convenience macros for iterating through compressed matrices and vectors
 
-#define FOR_CM_ROWS(r, M) \
+#define FOR_CM_MAJOR(r, M) \
   for (unsigned r=0; r < M.size1(); r++)
 
-#define FOR_CM_COLS(r, M) \
+#define FOR_CM_MINOR(r, M) \
   unsigned __cm_begin = M.index1_data()[r]; \
   unsigned __cm_end   = M.index1_data()[r+1]; \
   for (unsigned __cm_j=__cm_begin; __cm_j < __cm_end; __cm_j++)
 
-#define CM_VAL(M) \
-  M.value_data()[__cm_j]
-
-#define CM_COL(M) \
-  M.index2_data()[__cm_j]
+#define CM_VAL(M)   (M.value_data()[__cm_j])
+#define CM_ROW(r,M) (r)
+#define CM_COL(r,M) (M.index2_data()[__cm_j])
 
 #define FOR_CV(v) \
-  for (unsigned __cv_i=0; __cv_i < v.non_zeros(); __cv_i++)
+  for (typeof(v.begin()) __vi=v.begin(); __vi != v.end(); __vi++)
 
-#define CV_VAL(v) \
-  v.value_data()[__cv_i]
-
-#define CV_INDEX(v) \
-  v.index_data()[__cv_i]
+#define CV_VAL(v)   (*__vi)
+#define CV_INDEX(v) (__vi.index())
 
 namespace MatrixUtils {
 
@@ -66,16 +61,13 @@ namespace MatrixUtils {
 
   // Set all entries to zero.
   void set_to_zero(dmatrix& M);
+  void set_to_zero(kmatrix& M);
   void set_to_zero(cmatrix& M);
   void set_to_zero(dvector& v);
   void set_to_zero(cvector& v);
 
   // Initialize a vector from an array.
   bvector make_vector(double* arr, int num_elts);
-
-  // Index of maximum element of a vector
-  int argmax_elt(const dvector& v);
-  int argmax_elt(const cvector& v);
 
   // Output matrix R such that R(i,j) = f( M(i,j) )
   template <class _FnType>
@@ -122,6 +114,11 @@ namespace MatrixUtils {
     M = zero_matrix<double>(M.size1(), M.size2());
   }
 
+  inline void set_to_zero(kmatrix& M)
+  {
+    M = zero_matrix<double>(M.size1(), M.size2());
+  }
+
   inline void set_to_zero(cmatrix& M) {
     bmatrix Mp(M.size1(), M.size2());
     M = Mp;
@@ -153,46 +150,6 @@ namespace MatrixUtils {
       VEC_ASSIGN_CHECK_ZERO( v(i), arr[i] );
     }
     return v;
-  }
-
-  // Index of maximum element of a vector
-  inline int argmax_elt(const dvector& v) {
-    assert(v.size() > 0);
-    double maxval = v(0);
-    int max_ind = 0;
-    for (unsigned int i=1; i < v.size(); i++) {
-      if (v(i) > maxval) {
-	max_ind = i;
-	maxval = v(i);
-      }
-    }
-    return max_ind;
-  }
-
-  inline int argmax_elt(const cvector& v) {
-    assert(v.size() > 0);
-    double maxval = v(0);
-    int max_ind = 0;
-    // find the largest non-zero entry
-    FOR_CV(v) {
-      double val = CV_VAL(v);
-      if (val > maxval) {
-	max_ind = CV_INDEX(v);
-	maxval = val;
-      }
-    }
-    if (maxval >= 0 || v.non_zeros() == v.size()) {
-      // a non-zero entry is maximal
-      return max_ind;
-    } else {
-      // 0 is maximal; find a zero entry
-      for (unsigned int i=1; i < v.size(); i++) {
-	if (v(i) == 0) {
-	  return i;
-	}
-      }
-    }
-    return max_ind;
   }
 
   // Output matrix R such that R(i,j) = f( M(i,j) )
@@ -261,9 +218,33 @@ namespace MatrixUtils {
   // result = x .* y [for all i, result(i) = x(i) * y(i)]
   inline void emult(cvector& result, const cvector& x, const cvector& y) {
     result.resize( x.size(), x.filled() );
+    set_to_zero( result );
     FOR_CV(x) {
       result(CV_INDEX(x)) = CV_VAL(x) * y(CV_INDEX(x));
     }
+  }
+
+  // result = x .* y [for all i, result(i) = x(i) * y(i)]
+  inline void emult(dvector& result, const dvector& x, const cvector& y) {
+    int yind;
+    result.resize( x.size() );
+    set_to_zero( result );
+    FOR_CV (y) {
+      yind = CV_INDEX(y);
+      result(yind) = x(yind) * CV_VAL(y);
+    }
+  }
+
+  inline void emult_column(cvector& result, cmatrix& A, unsigned int c,
+			   cvector& x)
+  {
+    emult( result, matrix_column<cmatrix>(A,c), x );
+  }
+
+  inline void emult_column(dvector& result, dvector& x,
+			   cmatrix& A, unsigned int c)
+  {
+    emult( result, x, matrix_column<cmatrix>(A,c) );
   }
 
   inline cvector range_vector(int n) {
@@ -281,6 +262,9 @@ namespace MatrixUtils {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2005/01/27 05:36:52  trey
+ * added emult()
+ *
  * Revision 1.2  2005/01/26 04:15:20  trey
  * major overhaul
  *
