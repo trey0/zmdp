@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.1 $  $Author: trey $  $Date: 2005-01-21 18:07:02 $
+ * $Revision: 1.2 $  $Author: trey $  $Date: 2005-01-26 04:15:20 $
  *  
  * @file    ublasMatrixUtils.h
  * @brief   No brief
@@ -56,26 +56,13 @@
 #define CV_INDEX(v) \
   v.index_data()[__cv_i]
 
+namespace MatrixUtils {
+
 /**********************************************************************
  * FUNCTION PROTOTYPES
  **********************************************************************/
 
-namespace MatrixUtils {
-#if USE_UBLAS
-  using namespace boost::numeric::ublas;
-#else
-  using namespace sla;
-#endif
-
-  // seed random number generator (may also do other things in the future)
-  void init_matrix_utils(void);
-
-  // Generate a sample from a uniform distribution over [0,1].
-  double unit_rand(void);
-
-  // Generate a matrix where each sample is drawn according to unit_rand().
-  bmatrix rand_matrix(int num_rows, int num_cols);
-  bvector rand_vector(int num_entries);
+  using namespace MATRIX_NAMESPACE;
 
   // Set all entries to zero.
   void set_to_zero(dmatrix& M);
@@ -90,11 +77,130 @@ namespace MatrixUtils {
   int argmax_elt(const dvector& v);
   int argmax_elt(const cvector& v);
 
+  // Output matrix R such that R(i,j) = f( M(i,j) )
+  template <class _FnType>
+  cmatrix mapfun(_FnType f, const cmatrix& M);
 
-  // b represents a discrete probability distribution Pr(outcome = i) = b(i).
-  // Chooses an outcome according to the distribution.
-  int chooseFromDistribution(const dvector& b);
-  int chooseFromDistribution(const cvector& b);
+  // Output matrix R such that R(i,j) = f( M(i,j) )
+  template <class _FnType>
+  dmatrix mapfun(_FnType f, const dmatrix& M);
+
+  // Output vector x such that x(i) = f( v(i), w(i) )
+  template <class _FnType>
+  dvector mapfun2(_FnType f, const dvector& v, const dvector& w);
+
+  template <class _FnType>
+  cvector mapfun2(_FnType f, const cvector& v, const cvector& w);
+
+  // Output length-n vector v such that v(i) = f(i)
+  template <class _FnType>
+  cvector mapfunrange(_FnType f, int n);
+
+  // Return the greater of two values
+  template <class _Tp>
+  struct max_fun {
+    inline const _Tp& operator()(const _Tp& a, const _Tp& b) {
+      return (a > b) ? a : b;
+    }
+  };
+
+  // Element-wise product of two vectors (equivalent to matlab .*)
+  dvector eprod(const dvector& v, const dvector& w);
+  cvector eprod(const cvector& v, const cvector& w);
+
+  // Return a length-n vector v such that v(i) = i
+  cvector range_vector(int n);
+#if 0
+  void write_matrix(const bmatrix& history, const std::string& outfile);
+#endif
+
+  // Returns a nice printable representation for big vectors (sorted in order
+  //   of decreasing absolute value, with the index of each value labeled).
+  std::string sparseRep(const bvector& v);
+
+  // Like sparseRep, but doesn't take absolute value.
+  std::string maxRep(const bvector& v);
+
+  /**********************************************************************
+   * FUNCTIONS
+   **********************************************************************/
+
+  inline void set_to_zero(dmatrix& M) {
+    M = zero_matrix<double>(M.size1(), M.size2());
+  }
+
+  inline void set_to_zero(cmatrix& M) {
+    bmatrix Mp(M.size1(), M.size2());
+    M = Mp;
+  }
+
+  inline void set_to_zero(dvector& v) {
+    FOR_EACH (elt, v.data()) {
+      *elt = 0;
+    }
+  }
+
+  inline void set_to_zero(cvector& v) {
+    bvector vp(v.size());
+    v = vp;
+  }
+
+  class CompareSecond {
+  public:
+    bool operator()(const std::pair<size_t, double>& lhs,
+		    const std::pair<size_t, double>& rhs) {
+      return lhs.second < rhs.second;
+    }
+  };
+
+  // Initialize a vector from an array.
+  inline cvector make_vector(double* arr, int num_elts) {
+    cvector v(num_elts);
+    FOR (i, num_elts) {
+      VEC_ASSIGN_CHECK_ZERO( v(i), arr[i] );
+    }
+    return v;
+  }
+
+  // Index of maximum element of a vector
+  inline int argmax_elt(const dvector& v) {
+    assert(v.size() > 0);
+    double maxval = v(0);
+    int max_ind = 0;
+    for (unsigned int i=1; i < v.size(); i++) {
+      if (v(i) > maxval) {
+	max_ind = i;
+	maxval = v(i);
+      }
+    }
+    return max_ind;
+  }
+
+  inline int argmax_elt(const cvector& v) {
+    assert(v.size() > 0);
+    double maxval = v(0);
+    int max_ind = 0;
+    // find the largest non-zero entry
+    FOR_CV(v) {
+      double val = CV_VAL(v);
+      if (val > maxval) {
+	max_ind = CV_INDEX(v);
+	maxval = val;
+      }
+    }
+    if (maxval >= 0 || v.non_zeros() == v.size()) {
+      // a non-zero entry is maximal
+      return max_ind;
+    } else {
+      // 0 is maximal; find a zero entry
+      for (unsigned int i=1; i < v.size(); i++) {
+	if (v(i) == 0) {
+	  return i;
+	}
+      }
+    }
+    return max_ind;
+  }
 
   // Output matrix R such that R(i,j) = f( M(i,j) )
   template <class _FnType>
@@ -152,27 +258,6 @@ namespace MatrixUtils {
     return result;
   }
 
-  // Return the greater of two values
-  template <class _Tp>
-  struct max_fun {
-    inline const _Tp& operator()(const _Tp& a, const _Tp& b) {
-      return (a > b) ? a : b;
-    }
-  };
-
-  // Scale the rows of M, like MATLAB diag(v) * M.
-  bmatrix scale_columns(const bvector& v, const dmatrix& M);
-  bmatrix scale_columns(const bvector& v, const cmatrix& M);
-
-  // Element-wise maximum of two vectors (equivalent to Matlab max)
-  inline dvector emax(const dvector& v, const dvector& w) {
-    return mapfun2(max_fun<double>(), v, w);
-  }
-  inline cvector emax(const cvector& v, const cvector& w) {
-    return mapfun2(max_fun<double>(), v, w);
-  }
-
-  // Element-wise product of two vectors (equivalent to matlab .*)
   inline dvector eprod(const dvector& v, const dvector& w) {
     return mapfun2(std::multiplies<double>(), v, w);
   }
@@ -180,49 +265,58 @@ namespace MatrixUtils {
     return mapfun2(std::multiplies<double>(), v, w);
   }
 
-  // Return a length-n vector v such that v(i) = i
-  inline bvector range_vector(int n) {
-    bvector v(n);
+  inline cvector range_vector(int n) {
+    cvector v(n);
     FOR (i, n) {
       v(i) = i;
     }
     return v;
   }
 
-#if 0
-  void write_matrix(const bmatrix& history, const std::string& outfile);
-#endif
-
-  // Returns a nice printable representation for big vectors (sorted in order
-  //   of decreasing absolute value, with the index of each value labeled).
-  std::string sparseRep(const bvector& v);
-
-  // Like sparseRep, but doesn't take absolute value.
-  std::string maxRep(const bvector& v);
-
-  // Returns a string representation of b, suitable for hashing
-  const char* hashable(const dvector& b);
-  const char* hashable(const cvector& b);
-
-  // Calculates the average and standard deviation for a collection.
-  template <class _ForwardIterator>
-  void calc_avg_stdev_collection(_ForwardIterator start, _ForwardIterator end,
-				 double& avg, double& stdev)
-  {
-    double sum = 0, sqsum = 0;
-    int n = 0;
-    for (_ForwardIterator i = start; i != end; i++) {
-      double x_i = *i;
-      sum += x_i;
-      sqsum += (x_i * x_i);
-      n++;
+  struct IndPair {
+    int ind;
+    double val;
+    IndPair(int _ind, double _val) : ind(_ind), val(_val) {}
+  };
+  
+  struct AbsValGreater {
+    bool operator()(const IndPair& lhs, const IndPair& rhs) {
+      return fabs(lhs.val) > fabs(rhs.val);
     }
-    avg = sum / n;
-    if (n > 1) {
-      stdev = sqrt( (sqsum - (sum * sum) / n) / (n-1) );
-    } else {
-      stdev = -1; // not enough samples
+  };
+
+  struct ValGreater {
+    bool operator()(const IndPair& lhs, const IndPair& rhs) {
+      return lhs.val > rhs.val;
     }
+  };
+
+  inline std::string sparseRep(const cvector& v) {
+    std::vector<IndPair> sorted;
+    FOR (i, v.size()) {
+      sorted.push_back(IndPair(i, v(i)));
+    }
+    sort(sorted.begin(), sorted.end(), AbsValGreater());
+    std::ostringstream out;
+    int num_to_print = std::min((unsigned)8, v.size());
+    FOR (i, num_to_print) {
+      out << sorted[i].ind << ":" << sorted[i].val << " ";
+    }
+    return out.str();
+  }
+
+  inline std::string maxRep(const cvector& v) {
+    std::vector<IndPair> sorted;
+    FOR (i, v.size()) {
+      sorted.push_back(IndPair(i, v(i)));
+    }
+    sort(sorted.begin(), sorted.end(), ValGreater());
+    std::ostringstream out;
+    int num_to_print = std::min((unsigned)8, v.size());
+    FOR (i, num_to_print) {
+      out << sorted[i].ind << ":" << sorted[i].val << " ";
+    }
+    return out.str();
   }
 }
 
@@ -231,6 +325,9 @@ namespace MatrixUtils {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2005/01/21 18:07:02  trey
+ * preparing for transition to sla matrix types
+ *
  * Revision 1.1  2004/11/13 23:29:44  trey
  * moved many files from hsvi to common
  *
