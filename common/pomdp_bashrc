@@ -12,8 +12,8 @@
 # working on this project.
 
 if [ "$POMDP_SOFTWARE_DIR" == "" ]; then
-    echo You must setenv ATACAMA_SOFTWARE_DIR before sourcing atacama_env
-    exit 1
+    echo You must setenv POMDP_SOFTWARE_DIR before sourcing pomdp_bashrc
+    return
 fi
 
 export CVS_RSH=ssh
@@ -32,7 +32,7 @@ fi
 export PATH=$POMDP_SOFTWARE_DIR/bin/linux2:$POMDP_SOFTWARE_DIR/bin/common:$POMDP_SOFTWARE_DIR/external/bin/linux2:$fpath
 
 # for loading shared libs
-#export LD_LIBRARY_PATH=$ATACAMA_SOFTWARE_DIR/lib/linux2:$ATACAMA_SOFTWARE_DIR/external/lib/linux2
+#export LD_LIBRARY_PATH=$POMDP_SOFTWARE_DIR/lib/linux2:$POMDP_SOFTWARE_DIR/external/lib/linux2
 
 # handy for checking which project environment you are in
 export PROJECT=pomdp
@@ -52,40 +52,5 @@ function cvsstat () {
 
 ######################################################################
 # $Log: not supported by cvs2svn $
-# Revision 1.2  2004/08/25 21:54:56  trey
-# updated cvsup to work with more recent versions of cvs
-#
-# Revision 1.1  2004/08/24 00:35:42  trey
-# made bash version
-#
-# Revision 1.10  2004/07/01 21:22:33  trey
-# added CLASSPATH to atacama_env
-#
-# Revision 1.9  2004/03/29 19:45:45  trey
-# added cvsstat alias
-#
-# Revision 1.8  2004/03/19 15:17:01  trey
-# switched to use ATACAMA_SOFTWARE_DIR in case you do not have a directory named software
-#
-# Revision 1.7  2004/03/17 15:36:33  trey
-# made CVSROOT more sane on monk
-#
-# Revision 1.6  2004/02/19 17:59:55  trey
-# added cvsup alias
-#
-# Revision 1.5  2004/02/19 14:37:34  trey
-# added mods to LD_LIBRARY_PATH and PYTHONPATH
-#
-# Revision 1.4  2003/11/19 18:36:18  trey
-# fixed perl/shell problem on more recent redhat, switched directory names to use linux2 instead of Linux-2.4
-#
-# Revision 1.3  2003/03/28 16:39:20  trey
-# added external dir to path in atacama_env
-#
-# Revision 1.2  2003/02/05 16:46:30  trey
-# added RELEASE env var
-#
-# Revision 1.1  2003/02/05 03:52:35  trey
-# initial check-in
-#
-#
+# Revision 1.1  2004/11/09 21:28:24  trey
+# check-in to pomdp repository
