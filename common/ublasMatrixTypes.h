@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.4 $  $Author: trey $  $Date: 2005-01-27 05:36:11 $
+ * $Revision: 1.5 $  $Author: trey $  $Date: 2005-01-28 03:22:38 $
  *  
  * @file    ublasMatrixTypes.h
  * @brief   No brief
@@ -9,15 +9,6 @@
 #define INCublasMatrixTypes_h
 
 #include <fstream>
-
-// if VEC_OPTIM is set (check the makefile), set NDEBUG just for the vector/matrix headers
-#if VEC_OPTIM
-#  ifdef NDEBUG
-#     define VEC_NDEBUG_WAS_DEFINED 1
-#  else
-#     define NDEBUG 1
-#  endif
-#endif
 
 #include <boost/numeric/ublas/vector.hpp>
 #include <boost/numeric/ublas/matrix.hpp>
@@ -60,11 +51,6 @@ typedef cvector belief_vector;
 typedef dvector alpha_vector;
 typedef dvector obs_prob_vector;
 
-// undefine NDEBUG if it was previously undefined
-#if VEC_OPTIM && !VEC_NDEBUG_WAS_DEFINED
-#   undef NDEBUG
-#endif
-
 /**********************************************************************
  * PROVIDE COMPATIBILITY WITH SLA LIBRARY
  **********************************************************************/
@@ -106,6 +92,14 @@ namespace boost { namespace numeric { namespace ublas {
     result = matrix_column<cmatrix>(A,c);
   }
 
+  // result = A(:,c)
+  inline void dvector_from_cmatrix_column(dvector& result,
+					  cmatrix& A,
+					  unsigned int c)
+  {
+    result = matrix_column<cmatrix>(A,c);
+  }
+
   // A(r,c) = v
   inline void kmatrix_set_entry(kmatrix& A, unsigned int r, unsigned int c,
 				double v)
@@ -125,6 +119,7 @@ namespace boost { namespace numeric { namespace ublas {
 		   const cmatrix& A,
 		   const cvector& x)
   {
+    result.resize( A.size1() );
     axpy_prod( A, x, result, true );
   }
 
@@ -132,13 +127,22 @@ namespace boost { namespace numeric { namespace ublas {
 		   const cmatrix& A,
 		   const cvector& x)
   {
+    result.resize( A.size1() );
     axpy_prod( A, x, result, true );
   }
 
   // result = x * A
   inline void mult(dvector& result, const dvector& x, const cmatrix& A)
   {
+    result.resize( A.size2() );
     axpy_prod( x, A, result, true );
+  }
+
+  // return A(:,c)' * x
+  inline double inner_prod_column(cmatrix& A, unsigned int c,
+				  const cvector& x)
+  {
+    return inner_prod( matrix_column<cmatrix>(A,c), x );
   }
 
   inline void write(const cmatrix& A, std::ostream& out)
@@ -187,6 +191,9 @@ namespace boost { namespace numeric { namespace ublas {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2005/01/27 05:36:11  trey
+ * added more sla compatibility functions
+ *
  * Revision 1.3  2005/01/26 04:14:40  trey
  * added sla compatibility functions
  *
