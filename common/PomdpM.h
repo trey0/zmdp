@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.3 $  $Author: trey $  $Date: 2005-01-21 15:21:19 $
+ * $Revision: 1.4 $  $Author: trey $  $Date: 2005-01-26 04:10:48 $
  *  
  * @file    PomdpM.h
  * @brief   No brief
@@ -19,6 +19,8 @@
 #include "commonTypes.h"
 #include "SmartRef.h"
 
+using namespace MATRIX_NAMESPACE;
+
 // this is a wrapper class around Pomdp that uses Lapack matrices
 class PomdpM {
 public:
@@ -26,12 +28,14 @@ public:
   double discount;
   // initialBelief(s)
 
-  belief_vector initialBelief;
+  cvector initialBelief;
   // R(s,a)
-  bmatrix R;
+  cmatrix R;
   // T[a](s,s'), O[a](s,o)
-  std::vector<bmatrix> T, O;
-  std::vector<bmatrix> Ttr, Otr;
+  std::vector<cmatrix> T, O;
+#if USE_UBLAS
+  std::vector<cmatrix> Ttr, Otr;
+#endif
 
   std::vector<bool> isTerminalState;
 
@@ -42,8 +46,7 @@ protected:
   void readFromFileCassandra(const std::string& fileName);
   void readFromFileFast(const std::string& fileName);
 
-  void preProcess(void);
-  void postProcess(void);
+  void debugDensity(void);
 };
 
 //typedef SmartRef<PomdpM> PomdpP;
@@ -54,6 +57,9 @@ typedef PomdpM* PomdpP;
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2005/01/21 15:21:19  trey
+ * added readFromFileFast
+ *
  * Revision 1.2  2004/11/24 20:50:16  trey
  * switched PomdpP to be a pointer, not a SmartRef
  *

@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.2 $  $Author: trey $  $Date: 2005-01-21 15:21:19 $
+ * $Revision: 1.3 $  $Author: trey $  $Date: 2005-01-26 04:10:41 $
  *  
  * PROJECT: FIRE Architecture Project
  *
@@ -32,7 +32,7 @@ using namespace MatrixUtils;
  * STATIC HELPER FUNCTIONS
  ***************************************************************************/
 
-static void readBeliefVector(char *data, belief_vector& b, int numValues)
+static void readVector(char *data, dvector& b, int numValues)
 {
   int i;
   char *inp = data;
@@ -47,7 +47,7 @@ static void readBeliefVector(char *data, belief_vector& b, int numValues)
     }
     inp = 0;
 
-    b[i] = atof(tok);
+    b(i) = atof(tok);
   }
 }
 
@@ -76,7 +76,15 @@ void PomdpM::readFromFile(const std::string& fileName,
 }
 
 void PomdpM::readFromFileCassandra(const string& fileName) {
+  dvector initialBeliefx;
+  std::vector<bool> isTerminalStatex;
+  kmatrix Rx;
+  std::vector<kmatrix> Tx, Ox;
+
+  timeval startTime, endTime;
+
   cout << "reading problem from " << fileName << endl;
+  gettimeofday(&startTime,0);
   Pomdp p;
   p.readFromFile(fileName);
   
@@ -85,24 +93,59 @@ void PomdpM::readFromFileCassandra(const string& fileName) {
   numObservations = p.getNumObservations();
   discount = p.getDiscount();
 
-  preProcess();
+  // pre-process
+  initialBeliefx.resize(numStates);
+  set_to_zero(initialBeliefx);
+  isTerminalStatex.resize(numStates, /* initialValue = */ false);
+  Rx.resize(numStates, numActions);
+  Tx.resize(numActions);
+  Ox.resize(numActions);
+  FOR (a, numActions) {
+    Tx[a].resize(numStates, numStates);
+    Ox[a].resize(numStates, numObservations);
+  }
 
   // copy
   FOR (s, numStates) {
-    VEC_ASSIGN_CHECK_ZERO( initialBelief(s), p.getInitialBelief(s) );
-    isTerminalState[s] = p.isTerminalState(s);
+    initialBeliefx(s) = p.getInitialBelief(s);
+    isTerminalStatex[s] = p.isTerminalState(s);
     FOR (a, numActions) {
-      VEC_ASSIGN_CHECK_ZERO( R(s,a), p.R(s,a) );
+      kmatrix_set_entry( Rx, s, a, p.R(s,a) );
       FOR (sp, numStates) {
-	VEC_ASSIGN_CHECK_ZERO( T[a](s,sp), p.T(s,a,sp) );
+	kmatrix_set_entry( Tx[a], s, sp, p.T(s,a,sp) );
       }
       FOR (o, numObservations) {
-	VEC_ASSIGN_CHECK_ZERO( O[a](s,o), p.O(s,a,o) );
+	kmatrix_set_entry( Ox[a], s, o, p.O(s,a,o) );
       }
     }
   }
 
-  preProcess();
+  // post-process
+  cvector_from_dvector( initialBelief, initialBeliefx );
+  isTerminalState = isTerminalStatex;
+  cmatrix_from_kmatrix( R, Rx );
+  T.resize(numActions);
+  O.resize(numActions);
+#if USE_UBLAS
+  Ttr.resize(numActions);
+  Otr.resize(numActions);
+#endif
+  FOR (a, numActions) {
+    cmatrix_from_kmatrix( T[a], Tx[a] );
+    cmatrix_from_kmatrix( O[a], Ox[a] );
+#if USE_UBLAS
+    cmatrix_from_kmatrix( Ttr[a], trans(Tx[a]) );
+    cmatrix_from_kmatrix( Otr[a], trans(Ox[a]) );
+#endif
+  }
+
+  gettimeofday(&endTime,0);
+
+  double numSeconds = (endTime.tv_sec - startTime.tv_sec)
+    + 1e-6 * (endTime.tv_usec - startTime.tv_usec);
+  cout << "[file reading took " << numSeconds << " seconds]" << endl;
+
+  debugDensity();
 }
 
 // this is functionally similar to readFromFile() but much faster.
@@ -127,6 +170,11 @@ void PomdpM::readFromFileFast(const std::string& fileName)
 	 << strerror(errno) << endl;
     exit(EXIT_FAILURE);
   }
+
+  dvector initialBeliefx;
+  std::vector<bool> isTerminalStatex;
+  kmatrix Rx;
+  std::vector<kmatrix> Tx, Ox;
 
 #define PM_PREFIX_MATCHES(X) \
   (0 == strncmp(buf,(X),strlen(X)))
@@ -197,7 +245,18 @@ void PomdpM::readFromFileFast(const std::string& fileName)
       }
 
       if (3 == numSizesSet) {
-	preProcess();
+	// pre-process
+	initialBeliefx.resize(numStates);
+	set_to_zero(initialBeliefx);
+	isTerminalStatex.resize(numStates, false);
+	Rx.resize(numStates, numActions);
+	Tx.resize(numActions);
+	Ox.resize(numActions);
+	FOR (a, numActions) {
+	  Tx[a].resize(numStates, numStates);
+	  Ox[a].resize(numStates, numObservations);
+	}
+
 	inPreamble = false;
       }
 
@@ -205,7 +264,7 @@ void PomdpM::readFromFileFast(const std::string& fileName)
 
       if (PM_PREFIX_MATCHES("start:")) {
 	data = buf + strlen("start: ");
-	readBeliefVector(data,initialBelief,numStates);
+	readVector(data,initialBeliefx,numStates);
       } else if (PM_PREFIX_MATCHES("E:")) {
 	int s;
 	if (1 != sscanf(buf, "E: %d", &s)) {
@@ -214,7 +273,7 @@ void PomdpM::readFromFileFast(const std::string& fileName)
 	       << endl;
 	  exit(EXIT_FAILURE);
 	}
-	isTerminalState[s] = true;
+	isTerminalStatex[s] = true;
       } else if (PM_PREFIX_MATCHES("R:")) {
 	int s, a;
 	double reward;
@@ -224,7 +283,7 @@ void PomdpM::readFromFileFast(const std::string& fileName)
 	       << endl;
 	  exit(EXIT_FAILURE);
 	}
-	VEC_ASSIGN_CHECK_ZERO( R(s,a), reward );
+	kmatrix_set_entry( Rx, s, a, reward );
       } else if (PM_PREFIX_MATCHES("T:")) {
 	int s, a, sp;
 	double prob;
@@ -234,7 +293,7 @@ void PomdpM::readFromFileFast(const std::string& fileName)
 	       << endl;
 	  exit(EXIT_FAILURE);
 	}
-	VEC_ASSIGN_CHECK_ZERO( T[a](s,sp), prob );
+	kmatrix_set_entry( Tx[a], s, sp, prob );
       } else if (PM_PREFIX_MATCHES("O:")) {
 	int s, a, o;
 	double prob;
@@ -244,7 +303,7 @@ void PomdpM::readFromFileFast(const std::string& fileName)
 	       << endl;
 	  exit(EXIT_FAILURE);
 	}
-	VEC_ASSIGN_CHECK_ZERO( O[a](s,o), prob );
+	kmatrix_set_entry( Ox[a], s, o, prob );
       } else {
 	cerr << "ERROR: line " << lineNumber
 	     << ": got unexpected statement type while parsing body"
@@ -258,15 +317,35 @@ void PomdpM::readFromFileFast(const std::string& fileName)
 
   in.close();
 
-  postProcess();
+  // post-process
+  cvector_from_dvector( initialBelief, initialBeliefx );
+  isTerminalState = isTerminalStatex;
+  cmatrix_from_kmatrix( R, Rx );
+  T.resize(numActions);
+  O.resize(numActions);
+#if USE_UBLAS
+  Ttr.resize(numActions);
+  Otr.resize(numActions);
+#endif
+  FOR (a, numActions) {
+    cmatrix_from_kmatrix( T[a], Tx[a] );
+    cmatrix_from_kmatrix( O[a], Ox[a] );
+#if USE_UBLAS
+    cmatrix_from_kmatrix( Ttr[a], trans(Tx[a]) );
+    cmatrix_from_kmatrix( Otr[a], trans(Ox[a]) );
+#endif
+  }
 
   gettimeofday(&endTime,0);
 
   double numSeconds = (endTime.tv_sec - startTime.tv_sec)
     + 1e-6 * (endTime.tv_usec - startTime.tv_usec);
   cout << "[file reading took " << numSeconds << " seconds]" << endl;
+
+  debugDensity();
 }
 
+#if 0
 void PomdpM::preProcess(void) {
   // resize
   initialBelief.resize(numStates);
@@ -293,30 +372,24 @@ void PomdpM::preProcess(void) {
     set_to_zero(Otr[a]);
   }
 }
+#endif
 
-void PomdpM::postProcess(void) {
-  // set up transpose
-  FOR (a, numActions) {
-    Ttr[a] = trans(T[a]);
-    Otr[a] = trans(O[a]);
-  }
-
-  // debug output: what's the density of T and O?
+void PomdpM::debugDensity(void) {
   int T_size = 0;
-  int T_non_zeros = 0;
+  int T_filled = 0;
   int O_size = 0;
-  int O_non_zeros = 0;
+  int O_filled = 0;
   FOR (a, numActions) {
     T_size += T[a].size1() * T[a].size2();
     O_size += O[a].size1() * O[a].size2();
 #if !NO_COMPRESSED_MATRICES
-    T_non_zeros += T[a].non_zeros();
-    O_non_zeros += O[a].non_zeros();
+    T_filled += T[a].filled();
+    O_filled += O[a].filled();
 #endif
   }
 #if !NO_COMPRESSED_MATRICES
-  cout << "T density = " << (((double) T_non_zeros) / T_size)
-       << ", O density = " << (((double) O_non_zeros) / O_size)
+  cout << "T density = " << (((double) T_filled) / T_size)
+       << ", O density = " << (((double) O_filled) / O_size)
        << endl;
 #endif
 }
@@ -324,6 +397,9 @@ void PomdpM::postProcess(void) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2005/01/21 15:21:19  trey
+ * added readFromFileFast
+ *
  * Revision 1.1  2004/11/13 23:29:44  trey
  * moved many files from hsvi to common
  *
