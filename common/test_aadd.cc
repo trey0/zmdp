@@ -13,39 +13,52 @@ using namespace sla;
 using namespace aadd;
 
 void doit(void) {
-  dvector x(4);
-  x(0) = 1;
-  x(1) = 2;
-  x(2) = 3;
-  x(3) = 4;
+  dvector xd(4), yd(4);
+  avector xa, ya, za;
 
-  avector y;
-  copy( y, x );
+  xd(0) = 1;
+  xd(1) = 2;
+  xd(2) = 3;
+  xd(3) = 4;
 
-  cout << "y1: ";
-  y.write(cout);
+  copy( xa, xd );
+
+  cout << "xa1: ";
+  xa.write(cout);
   cout << endl;
 
   //const double c = 1.0 / M_PI;
   const double c = 0.5;
-  x(0) = pow(c,1);
-  x(1) = pow(c,2);
-  x(2) = pow(c,3);
-  x(3) = pow(c,4);
-  copy( y, x );
+  xd(0) = pow(c,1);
+  xd(1) = pow(c,2);
+  xd(2) = pow(c,3);
+  xd(3) = pow(c,4);
+  copy( xa, xd );
 
-  cout << "y2: ";
-  y.write(cout);
+  cout << "xa2: ";
+  xa.write(cout);
   cout << endl;
 
-  x(0) = 1;
-  x(1) = 0;
-  x(2) = 1;
-  x(3) = 0;
-  copy( y, x );
+  xd(0) = 3;
+  xd(1) = 1;
+  xd(2) = 3;
+  xd(3) = 1;
+  copy( xa, xd );
 
-  cout << "y3: ";
-  y.write(cout);
+  cout << "xa3: ";
+  xa.write(cout);
+  cout << endl;
+
+  yd(0) = 2;
+  yd(1) = 4;
+  yd(2) = 2;
+  yd(3) = 4;
+  copy( ya, yd );
+
+  add( za, xa, ya );
+
+  cout << "za: ";
+  za.write(cout);
   cout << endl;
 }
 

@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.1 $  $Author: trey $  $Date: 2005-02-25 19:31:55 $
+ * $Revision: 1.2 $  $Author: trey $  $Date: 2005-02-25 19:43:31 $
  *  
  * @file    aadd.h
  * @brief   No brief
@@ -353,6 +353,8 @@ namespace aadd {
     {
       const avector *xp, *yp;
       
+      ot.op = o.op;
+
       // reorder operands in increasing order of F
       // (NOTE: assumes a commutative operation!)
       if (o.x.F <= o.y.F) {
@@ -532,6 +534,12 @@ namespace aadd {
     aadd_cache_g.copy( result, x );    
   }
 
+  inline void add(avector& result, const avector& x,
+		  const avector& y)
+  {
+    aadd_cache_g.apply( result, x, y, OP_ADD );
+  }
+
   inline void avector::write2(std::ostream& out) const {
     out << "c=" << c << " b=" << b << " F=" << F;
   }
@@ -566,5 +574,8 @@ namespace aadd {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2005/02/25 19:31:55  trey
+ * initial check-in
+ *
  *
  ***************************************************************************/
