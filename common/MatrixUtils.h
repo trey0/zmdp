@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.4 $  $Author: trey $  $Date: 2005-01-27 05:30:56 $
+ * $Revision: 1.5 $  $Author: trey $  $Date: 2005-01-28 03:17:47 $
  *  
  * @file    MatrixUtils.h
  * @brief   No brief
@@ -46,6 +46,10 @@ namespace MatrixUtils {
   // Generate a matrix where each sample is drawn according to unit_rand().
   void rand_matrix(dmatrix& result, int num_rows, int num_cols);
   void rand_vector(dvector& v, int num_entries);
+
+  // Index of maximum element of a vector
+  int argmax_elt(const dvector& v);
+  int argmax_elt(const cvector& v);
 
   // b represents a discrete probability distribution Pr(outcome = i) = b(i).
   // Chooses an outcome according to the distribution.
@@ -96,6 +100,50 @@ namespace MatrixUtils {
     v.resize(num_entries);
     FOR (i, num_entries) {
       v(i) = unit_rand();
+    }
+  }
+
+  // Index of maximum element of a vector
+  inline int argmax_elt(const dvector& v) {
+    assert(v.size() > 0);
+    double maxval = v(0);
+    int max_ind = 0;
+    for (unsigned int i=1; i < v.size(); i++) {
+      if (v(i) > maxval) {
+	max_ind = i;
+	maxval = v(i);
+      }
+    }
+    return max_ind;
+  }
+
+  inline int argmax_elt(const cvector& v) {
+    assert(v.size() > 0);
+    double maxval = v(0);
+    int max_ind = 0;
+    // find the largest non-zero entry
+    FOR_CV(v) {
+      double val = CV_VAL(v);
+      if (val > maxval) {
+	max_ind = CV_INDEX(v);
+	maxval = val;
+      }
+    }
+    if (maxval >= 0 || v.filled() == v.size()) {
+      // a non-zero entry is maximal
+      return max_ind;
+    } else {
+      // all non-zero entries are negative; return
+      // the index of a zero entry.
+      int ind, last_ind = -1;
+      FOR_CV(v) {
+	ind = CV_INDEX(v);
+	if (ind - last_ind > 1) {
+	  return ind-1;
+	}
+	last_ind = ind;
+      }
+      return ind+1;
     }
   }
 
@@ -245,6 +293,9 @@ namespace MatrixUtils {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2005/01/27 05:30:56  trey
+ * moved sparseRep() to MatrixUtils.h and added a version for dvectors
+ *
  * Revision 1.3  2005/01/26 04:09:25  trey
  * moved some common code from sla and ublasMatrixUtils back into MatrixUtils.h
  *
