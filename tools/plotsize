@@ -34,12 +34,12 @@ if (!defined $prob_name) {
 
 my $options = "";
 if ($postscript_output) {
-    $options = "> results/${prob_name}_size.ps";
+    $options = "> ${prob_name}/size_plot.ps";
 } else {
     $options = "-persist";
 }
 
-my $bounds_file = "results/${prob_name}_bounds.plot";
+my $bounds_file = "${prob_name}/bounds.plot";
 my $use_bounds_file = '';
 if (-e $bounds_file) {
     $use_bounds_file = 1;
