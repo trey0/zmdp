@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: options.mak,v 1.11 2005-03-25 16:10:04 trey Exp $
+# $Id: options.mak,v 1.12 2005-03-25 21:42:30 trey Exp $
 
 # algorithm configuration options
 
@@ -17,6 +17,7 @@ CFLAGS += -DDO_UB_CACHED_Q=1
 CFLAGS += -DUSE_COMPRESSED_ALPHA=1
 CFLAGS += -DUSE_MASKED_ALPHA=1
 CFLAGS += -DUSE_UB_HASH=0
+CFLAGS += -DUSE_SAFE_HSVI=1
 
 # turns on optimization in boost matrix library (see commonTypes.h)
 CFLAGS += -DVEC_OPTIM=1
@@ -34,6 +35,9 @@ CFLAGS += -DCFLAGS="\"$(XCFLAGS)\""
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.11  2005/03/25 16:10:04  trey
+# added NO_FIB_UPPER_BOUND and USE_UNIFORM_RANDOM_OBS
+#
 # Revision 1.10  2005/03/11 19:25:35  trey
 # added USE_UB_HASH
 #
