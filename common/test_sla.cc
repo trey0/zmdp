@@ -56,7 +56,7 @@ void test_cvector(void) {
   xd(3) = 4;
 
   cvector xc;
-  cvector_from_dvector( xc, xd );
+  copy( xc, xd );
 
   cout << "--xc: size=4 data=1 2 3 4" << endl;
   cout << "  xc: size=" << xc.size()
@@ -184,14 +184,14 @@ void test_conversions(void)
   xd(1) = 0;
   xd(2) = 6;
 
-  cvector_from_dvector( xc, xd );
+  copy( xc, xd );
 
   cout << "--xc: size=3 filled=2 data=2 0 6" << endl;
   cout << "  xc: size=" << xc.size()
        << " filled=" << xc.filled()
        << " data=" << xc(0) << " " << xc(1) << " " << xc(2) << endl;
 
-  dvector_from_cvector( xd2, xc );
+  copy( xd2, xc );
   
   cout << "--xd2: size=3 data=2 0 6" << endl;
   cout << "  xd2: size=" << xd2.size()
@@ -203,7 +203,7 @@ void test_conversions(void)
   Ak.read(iss);
   Ak.canonicalize();
   
-  cmatrix_from_kmatrix( Ac, Ak );
+  copy( Ac, Ak );
 
   cout << "--Ac: size=2 2 filled=2 data=0 5 7 0" << endl;
   cout << "  Ac: size=" << Ac.size1() << " " << Ac.size2()
@@ -211,14 +211,14 @@ void test_conversions(void)
        << " data=" << Ac(0,0) << " " << Ac(0,1)
        << " " << Ac(1,0) << " " << Ac(1,1) << endl;
 
-  cvector_from_cmatrix_column( xc, Ac, 0 );
+  copy_from_column( xc, Ac, 0 );
 
   cout << "--xc: size=2 filled=1 data=0 7" << endl;
   cout << "  xc: size=" << xc.size()
        << " filled=" << xc.filled()
        << " data=" << xc(0) << " " << xc(1) << endl;
 
-  cvector_from_cmatrix_column( xc, Ac, 1 );
+  copy_from_column( xc, Ac, 1 );
 
   cout << "--xc: size=2 filled=1 data=5 0" << endl;
   cout << "  xc: size=" << xc.size()
@@ -360,7 +360,7 @@ void test_binary(void)
        << " " << zc(4) << " " << zc(5)
        << " " << zc(6) << endl;
 
-  cvector_from_dvector( xc, xd );
+  copy( xc, xd );
 
   s = inner_prod( xd, xc );
   
@@ -380,7 +380,7 @@ void test_performance(void)
   gettimeofday(&start_time,0);
   read_from_file(T, "T4.dat");
   read_from_file(b0_in, "b0.dat");
-  cvector_from_dvector( b0, b0_in );
+  copy( b0, b0_in );
   gettimeofday(&end_time,0);
 
   cout << "reading files: elapsed time = "
@@ -402,7 +402,7 @@ void test_performance(void)
        << endl;
 
   dvector result_out;
-  dvector_from_cvector( result_out, result );
+  copy( result_out, result );
   write_to_file(result_out,"result.dat");
 }
 

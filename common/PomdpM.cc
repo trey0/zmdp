@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.4 $  $Author: trey $  $Date: 2005-01-27 05:31:55 $
+ * $Revision: 1.5 $  $Author: trey $  $Date: 2005-02-08 23:54:25 $
  *  
  * PROJECT: FIRE Architecture Project
  *
@@ -121,9 +121,9 @@ void PomdpM::readFromFileCassandra(const string& fileName) {
   }
 
   // post-process
-  cvector_from_dvector( initialBelief, initialBeliefx );
+  copy( initialBelief, initialBeliefx );
   isTerminalState = isTerminalStatex;
-  cmatrix_from_kmatrix( R, Rx );
+  copy( R, Rx );
   Ttr.resize(numActions);
   O.resize(numActions);
 #if USE_UBLAS
@@ -132,15 +132,15 @@ void PomdpM::readFromFileCassandra(const string& fileName) {
 #endif
   FOR (a, numActions) {
 #if USE_UBLAS
-    cmatrix_from_kmatrix( T[a], Tx[a] );
+    copy( T[a], Tx[a] );
 #endif
     kmatrix_transpose_in_place( Tx[a] );
-    cmatrix_from_kmatrix( Ttr[a], Tx[a] );
+    copy( Ttr[a], Tx[a] );
 
-    cmatrix_from_kmatrix( O[a], Ox[a] );
+    copy( O[a], Ox[a] );
 #if USE_UBLAS
     kmatrix_transpose_in_place( Ox[a] );
-    cmatrix_from_kmatrix( Otr[a], Ox[a] );
+    copy( Otr[a], Ox[a] );
 #endif
   }
 
@@ -323,9 +323,9 @@ void PomdpM::readFromFileFast(const std::string& fileName)
   in.close();
 
   // post-process
-  cvector_from_dvector( initialBelief, initialBeliefx );
+  copy( initialBelief, initialBeliefx );
   isTerminalState = isTerminalStatex;
-  cmatrix_from_kmatrix( R, Rx );
+  copy( R, Rx );
   Ttr.resize(numActions);
   O.resize(numActions);
 #if USE_UBLAS
@@ -334,15 +334,15 @@ void PomdpM::readFromFileFast(const std::string& fileName)
 #endif
   FOR (a, numActions) {
 #if USE_UBLAS
-    cmatrix_from_kmatrix( T[a], Tx[a] );
+    copy( T[a], Tx[a] );
 #endif
     kmatrix_transpose_in_place( Tx[a] );
-    cmatrix_from_kmatrix( Ttr[a], Tx[a] );
+    copy( Ttr[a], Tx[a] );
 
-    cmatrix_from_kmatrix( O[a], Ox[a] );
+    copy( O[a], Ox[a] );
 #if USE_UBLAS
     kmatrix_transpose_in_place( Ox[a] );
-    cmatrix_from_kmatrix( Otr[a], Ox[a] );
+    copy( Otr[a], Ox[a] );
 #endif
   }
 
@@ -407,6 +407,9 @@ void PomdpM::debugDensity(void) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2005/01/27 05:31:55  trey
+ * switched to use Ttr instead of T under sla
+ *
  * Revision 1.3  2005/01/26 04:10:41  trey
  * modified problem reading to work with sla
  *

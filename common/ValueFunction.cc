@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.3 $  $Author: trey $  $Date: 2005-01-27 05:33:40 $
+ * $Revision: 1.4 $  $Author: trey $  $Date: 2005-02-08 23:54:35 $
  *  
  * @file    ValueFunction.cc
  * @brief   No brief
@@ -40,7 +40,7 @@ bool ValueFunction::consistentWith(const ValueFunction& rhs, int numSamples,
   belief_vector b(numStates);
   FOR (i, numSamples) {
     rand_vector(bd,numStates);
-    cvector_from_dvector(b,bd);
+    copy(b,bd);
     b *= (1.0/norm_1(b)); // normalize so components add to 1
     selfint = getValueAt(b);
     rhsint = rhs.getValueAt(b);
@@ -62,6 +62,9 @@ bool ValueFunction::consistentWith(const ValueFunction& rhs, int numSamples,
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2005/01/27 05:33:40  trey
+ * modified for sla compatibility
+ *
  * Revision 1.2  2005/01/26 04:12:06  trey
  * fixed for new rand_vector() API
  *
