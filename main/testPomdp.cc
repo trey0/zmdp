@@ -29,9 +29,9 @@ void testBatchIncremental(string algorithm,
 			  string prob_name,
 			  int min_order,
 			  int max_order) {
-  PomdpP p = new PomdpM;
+  PomdpM problem;
   //prob_name = "examples/" + prob_name + ".pomdp";
-  p->readFromFile(prob_name);
+  problem.readFromFile(prob_name);
 
   Solver* solver;
   if (0) {
@@ -53,7 +53,7 @@ void testBatchIncremental(string algorithm,
   string prefix = "";
   Interleave x;
   x.batchTestIncremental(/* numIterations = */ 100,
-			 p, *solver,
+			 &problem, *solver,
 			 /* numSteps = */ 251,
 			 /* minPrecision = */ 1e-10,
 			 /* minOrder = */ min_order,
