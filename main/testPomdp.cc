@@ -19,8 +19,9 @@ using namespace MatrixUtils;
 void usage(void) {
   cerr <<
     "usage: testPomdp OPTIONS <algorithm> <probname> [minOrder maxOrder]\n"
-    "  -h or --help   Print this help\n"
-    "  -f or --fast   Use fast (but very picky) alternate parser\n"
+    "  -h or --help       Print this help\n"
+    "  -f or --fast       Use fast (but very picky) alternate parser\n"
+    "  -i or --iterations Set number of simulation iterations (default: 1000)\n"
     "\n"
     "  available algorithms:\n"
     "    hsvi\n"
@@ -35,6 +36,7 @@ void testBatchIncremental(string algorithm,
 			  string prob_name,
 			  int min_order,
 			  int max_order,
+			  int num_iterations,
 			  bool use_fast_parser)
 {
   PomdpM problem;
@@ -102,7 +104,7 @@ void testBatchIncremental(string algorithm,
   //string prefix = "/tmp/";
   string prefix = "";
   Interleave x;
-  x.batchTestIncremental(/* numIterations = */ 10,
+  x.batchTestIncremental(/* numIterations = */ num_iterations,
 			 &problem, *solver,
 			 /* numSteps = */ 251,
 			 /* minPrecision = */ 1e-10,
@@ -124,6 +126,7 @@ int main(int argc, char **argv) {
   int min_order = -1;
   int max_order = -1;
   bool use_fast_parser = false;
+  int num_iterations = 1000;
 
   for (int argi=1; argi < argc; argi++) {
     string args = argv[argi];
@@ -132,6 +135,11 @@ int main(int argc, char **argv) {
 	usage();
       } else if (args == "-f" || args == "--fast") {
 	use_fast_parser = true;
+      } else if (args == "-i" || args == "--iterations") {
+	if (++argi == argc) {
+	  cerr << "ERROR: -i flag without argument" << endl;
+	}
+	num_iterations = atoi(argv[argi]);
       } else {
 	cerr << "ERROR: unknown option " << args << endl << endl;
 	usage();
@@ -162,7 +170,7 @@ int main(int argc, char **argv) {
   }
 
   testBatchIncremental(algorithm, prob_name, min_order, max_order,
-		       use_fast_parser);
+		       num_iterations, use_fast_parser);
 
   // signal we are done
   FILE *fp = fopen("/tmp/testPomdp_done", "w");
