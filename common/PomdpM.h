@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.2 $  $Author: trey $  $Date: 2004-11-24 20:50:16 $
+ * $Revision: 1.3 $  $Author: trey $  $Date: 2005-01-21 15:21:19 $
  *  
  * @file    PomdpM.h
  * @brief   No brief
@@ -35,7 +35,15 @@ public:
 
   std::vector<bool> isTerminalState;
 
-  void readFromFile(const std::string& fileName);
+  void readFromFile(const std::string& fileName,
+		    bool useFastParser = false);
+
+protected:
+  void readFromFileCassandra(const std::string& fileName);
+  void readFromFileFast(const std::string& fileName);
+
+  void preProcess(void);
+  void postProcess(void);
 };
 
 //typedef SmartRef<PomdpM> PomdpP;
@@ -46,6 +54,9 @@ typedef PomdpM* PomdpP;
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2004/11/24 20:50:16  trey
+ * switched PomdpP to be a pointer, not a SmartRef
+ *
  * Revision 1.1  2004/11/13 23:29:44  trey
  * moved many files from hsvi to common
  *
