@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.2 $  $Author: trey $  $Date: 2005-01-27 05:33:20 $
+ * $Revision: 1.3 $  $Author: trey $  $Date: 2005-01-28 03:19:38 $
  *  
  * @file    PomdpSim.cc
  * @brief   No brief
@@ -53,7 +53,7 @@ void PomdpSim::restart(void) {
 void PomdpSim::performAction(int a) {
   double r;
   int sp, o;
-  cvector O_axo, Ta_times_b, tau;
+  cvector Ta_times_b, tau;
   double imm_reward;
 
   if (terminated) {
@@ -139,14 +139,11 @@ void PomdpSim::performAction(int a) {
   //   observation.  technically, belief tracking could be considered part
   //   of the solution algorithm, but it seems ok to do it here for convenience.
 
-  // O_axo = pomdp->O[a](:,o)
-  cvector_from_cmatrix_column( O_axo, pomdp->O[a], o );
-
   // Ta_times_b = pomdp->Ttr[a] * currentBelief
   mult( Ta_times_b, pomdp->Ttr[a], currentBelief );
 
-  // tau = O_axo .* Ta_times_b
-  emult( tau, O_axo, Ta_times_b );
+  // tau = O(:,o) .* Ta_times_b
+  emult_column( tau, pomdp->O[a], o, Ta_times_b );
 
   tau *= (1.0 / norm_1(tau));
   currentBelief = tau;
@@ -167,6 +164,9 @@ void PomdpSim::performAction(int a) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2005/01/27 05:33:20  trey
+ * modified for sla compatibility
+ *
  * Revision 1.1  2004/11/13 23:29:44  trey
  * moved many files from hsvi to common
  *
