@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.6 2005-01-21 18:07:02 trey Exp $
+# $Id: Makefile,v 1.7 2005-01-26 04:17:15 trey Exp $
 #
 # PROJECT:      FIRE Architecture Project
 # DESCRIPTION:  
@@ -40,9 +40,8 @@ include $(BUILD_DIR)/installheaders.mak
 BUILDLIB_TARGET := libpomdpUtils.a
 BUILDLIB_SRCS := \
 	commonTypes.cc \
-	Interleave.cc \
-	ublasMatrixUtils.cc \
 	PomdpM.cc \
+	Interleave.cc \
 	PomdpSim.cc \
 	ValueFunction.cc \
 	MDPValueFunction.cc
@@ -52,6 +51,22 @@ BUILDLIB_TARGET := libcommonTime.a
 BUILDLIB_SRCS := commonTime.cc
 include $(BUILD_DIR)/buildlib.mak
 
+ifneq (,$(TEST))
+
+BUILDBIN_TARGET := test_sla
+BUILDBIN_SRCS := test_sla.cc
+BUILDBIN_INDEP_LIBS :=
+BUILDBIN_DEP_LIBS :=
+include $(BUILD_DIR)/buildbin.mak
+
+BUILDBIN_TARGET := testPomdpM
+BUILDBIN_SRCS := testPomdpM.cc
+BUILDBIN_INDEP_LIBS :=
+BUILDBIN_DEP_LIBS := -lpomdpUtils -lpomdp_spec
+include $(BUILD_DIR)/buildbin.mak
+
+endif
+
 ######################################################################
 # DO NOT MODIFY BELOW THIS POINT
 
@@ -59,6 +74,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.6  2005/01/21 18:07:02  trey
+# preparing for transition to sla matrix types
+#
 # Revision 1.5  2005/01/21 16:26:17  trey
 # added ublasMatrixTypes.h
 #
