@@ -1,6 +1,6 @@
 # COPYRIGHT 2004, Carnegie Mellon University
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.5 2005-01-17 19:36:40 trey Exp $
+# $Id: Makefile,v 1.6 2005-01-28 03:16:08 trey Exp $
 #
 # PROJECT:      Life in the Atacama
 # DESCRIPTION:  
@@ -17,7 +17,7 @@ include $(CHECKOUT_DIR)/src/build/header.mak
 include $(SRC_DIR)/common/options.mak
 
 # ADD ANY SUBDIRS THAT NEED TO BE VISITED DURING A BUILD TO THE SUBDIRS LIST
-SUBDIRS = common spec main empomdp hsvi
+SUBDIRS = common spec main hsvi # empomdp
 
 include $(BUILD_DIR)/toplevel.mak
 
@@ -28,6 +28,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.5  2005/01/17 19:36:40  trey
+# added include of options.mak
+#
 # Revision 1.4  2004/12/16 03:59:24  trey
 # added hsvi back into the build sequence
 #
