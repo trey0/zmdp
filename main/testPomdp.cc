@@ -40,8 +40,12 @@ void testBatchIncremental(string algorithm,
   //prob_name = "examples/" + prob_name + ".pomdp";
   problem.readFromFile( prob_name, use_fast_parser );
 
-#if 1
+#if 0
   // test benchmark code
+
+  cout << "numStates = " << problem.numStates << endl;
+  cout << "T.size = " << problem.T[4].size1()
+       << " " << problem.T[4].size2() << endl;
 
   timeval startTime, endTime;
   belief_vector result(problem.numStates);
@@ -53,7 +57,7 @@ void testBatchIncremental(string algorithm,
   for (int i=0; i < 10; i++) {
     //noalias(result) = prod( T, b0 );
     axpy_prod( T, b0, tmp, true );
-    noalias(result) = tmp;
+    result = tmp;
   }
   gettimeofday(&endTime,0);
 
@@ -70,8 +74,8 @@ void testBatchIncremental(string algorithm,
     exit(EXIT_FAILURE);
   }
   out << problem.numStates << endl;
-  FOR_EACH (x, result) {
-    out << (*x) << endl;
+  FOR (i, problem.numStates) {
+    out << result[i] << endl;
   }
   out.close();
 
