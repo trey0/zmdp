@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.2 $  $Author: trey $  $Date: 2005-02-25 19:43:31 $
+ * $Revision: 1.3 $  $Author: trey $  $Date: 2005-03-09 18:51:28 $
  *  
  * @file    aadd.h
  * @brief   No brief
@@ -529,15 +529,30 @@ namespace aadd {
   extern aadd_cache_type aadd_cache_g;
 
   // result = x
-  inline void copy(avector& result, sla::dvector& x)
+  inline void copy(avector& result, const sla::dvector& x)
   {
     aadd_cache_g.copy( result, x );    
   }
 
-  inline void add(avector& result, const avector& x,
+  inline void copy(sla::dvector& result, const avector& x)
+  {
+    aadd_cache_g.copy( result, x );
+  }
+
+  // result = x + y
+  inline void add(avector& result,
+		  const avector& x,
 		  const avector& y)
   {
     aadd_cache_g.apply( result, x, y, OP_ADD );
+  }
+
+  // result = x .* y
+  inline void emult(avector& result,
+		    const avector& x,
+		    const avector& y)
+  {
+    aadd_cache_g.apply( result, x, y, OP_MULTIPLY );
   }
 
   inline void avector::write2(std::ostream& out) const {
@@ -574,6 +589,9 @@ namespace aadd {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2005/02/25 19:43:31  trey
+ * add() works
+ *
  * Revision 1.1  2005/02/25 19:31:55  trey
  * initial check-in
  *
