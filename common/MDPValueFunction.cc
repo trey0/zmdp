@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.2 $  $Author: trey $  $Date: 2005-01-27 05:30:10 $
+ * $Revision: 1.3 $  $Author: trey $  $Date: 2005-01-28 03:17:07 $
  *  
  * @file    MDPValueIteration.cc
  * @brief   No brief
@@ -69,9 +69,9 @@ double MDPValueFunction::valueIterationOneStep(void) {
     }
   }
 
+  tmp.resize( alpha.size() );
   tmp = alpha;
-  tmp *= -1;
-  tmp += nextAlpha;
+  tmp -= nextAlpha;
   maxResidual = norm_inf(tmp);
 
 #if 0
@@ -126,6 +126,9 @@ void testMDP(void) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2005/01/27 05:30:10  trey
+ * modified for sla compatibility
+ *
  * Revision 1.1  2004/11/24 20:48:04  trey
  * moved to common from hsvi
  *
