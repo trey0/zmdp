@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.3 $  $Author: trey $  $Date: 2005-01-26 04:10:41 $
+ * $Revision: 1.4 $  $Author: trey $  $Date: 2005-01-27 05:31:55 $
  *  
  * PROJECT: FIRE Architecture Project
  *
@@ -124,18 +124,23 @@ void PomdpM::readFromFileCassandra(const string& fileName) {
   cvector_from_dvector( initialBelief, initialBeliefx );
   isTerminalState = isTerminalStatex;
   cmatrix_from_kmatrix( R, Rx );
-  T.resize(numActions);
+  Ttr.resize(numActions);
   O.resize(numActions);
 #if USE_UBLAS
-  Ttr.resize(numActions);
+  T.resize(numActions);
   Otr.resize(numActions);
 #endif
   FOR (a, numActions) {
+#if USE_UBLAS
     cmatrix_from_kmatrix( T[a], Tx[a] );
+#endif
+    kmatrix_transpose_in_place( Tx[a] );
+    cmatrix_from_kmatrix( Ttr[a], Tx[a] );
+
     cmatrix_from_kmatrix( O[a], Ox[a] );
 #if USE_UBLAS
-    cmatrix_from_kmatrix( Ttr[a], trans(Tx[a]) );
-    cmatrix_from_kmatrix( Otr[a], trans(Ox[a]) );
+    kmatrix_transpose_in_place( Ox[a] );
+    cmatrix_from_kmatrix( Otr[a], Ox[a] );
 #endif
   }
 
@@ -321,18 +326,23 @@ void PomdpM::readFromFileFast(const std::string& fileName)
   cvector_from_dvector( initialBelief, initialBeliefx );
   isTerminalState = isTerminalStatex;
   cmatrix_from_kmatrix( R, Rx );
-  T.resize(numActions);
+  Ttr.resize(numActions);
   O.resize(numActions);
 #if USE_UBLAS
-  Ttr.resize(numActions);
+  T.resize(numActions);
   Otr.resize(numActions);
 #endif
   FOR (a, numActions) {
+#if USE_UBLAS
     cmatrix_from_kmatrix( T[a], Tx[a] );
+#endif
+    kmatrix_transpose_in_place( Tx[a] );
+    cmatrix_from_kmatrix( Ttr[a], Tx[a] );
+
     cmatrix_from_kmatrix( O[a], Ox[a] );
 #if USE_UBLAS
-    cmatrix_from_kmatrix( Ttr[a], trans(Tx[a]) );
-    cmatrix_from_kmatrix( Otr[a], trans(Ox[a]) );
+    kmatrix_transpose_in_place( Ox[a] );
+    cmatrix_from_kmatrix( Otr[a], Ox[a] );
 #endif
   }
 
@@ -375,20 +385,20 @@ void PomdpM::preProcess(void) {
 #endif
 
 void PomdpM::debugDensity(void) {
-  int T_size = 0;
-  int T_filled = 0;
+  int Ttr_size = 0;
+  int Ttr_filled = 0;
   int O_size = 0;
   int O_filled = 0;
   FOR (a, numActions) {
-    T_size += T[a].size1() * T[a].size2();
+    Ttr_size += Ttr[a].size1() * Ttr[a].size2();
     O_size += O[a].size1() * O[a].size2();
 #if !NO_COMPRESSED_MATRICES
-    T_filled += T[a].filled();
+    Ttr_filled += Ttr[a].filled();
     O_filled += O[a].filled();
 #endif
   }
 #if !NO_COMPRESSED_MATRICES
-  cout << "T density = " << (((double) T_filled) / T_size)
+  cout << "T density = " << (((double) Ttr_filled) / Ttr_size)
        << ", O density = " << (((double) O_filled) / O_size)
        << endl;
 #endif
@@ -397,6 +407,9 @@ void PomdpM::debugDensity(void) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2005/01/26 04:10:41  trey
+ * modified problem reading to work with sla
+ *
  * Revision 1.2  2005/01/21 15:21:19  trey
  * added readFromFileFast
  *

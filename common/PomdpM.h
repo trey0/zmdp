@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.4 $  $Author: trey $  $Date: 2005-01-26 04:10:48 $
+ * $Revision: 1.5 $  $Author: trey $  $Date: 2005-01-27 05:32:02 $
  *  
  * @file    PomdpM.h
  * @brief   No brief
@@ -32,9 +32,10 @@ public:
   // R(s,a)
   cmatrix R;
   // T[a](s,s'), O[a](s,o)
-  std::vector<cmatrix> T, O;
+  // Ttr[a](s',s), Otr[a](o,s)
+  std::vector<cmatrix> Ttr, O;
 #if USE_UBLAS
-  std::vector<cmatrix> Ttr, Otr;
+  std::vector<cmatrix> T, Otr;
 #endif
 
   std::vector<bool> isTerminalState;
@@ -57,6 +58,9 @@ typedef PomdpM* PomdpP;
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2005/01/26 04:10:48  trey
+ * modified problem reading to work with sla
+ *
  * Revision 1.3  2005/01/21 15:21:19  trey
  * added readFromFileFast
  *
