@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: options.mak,v 1.12 2005-03-25 21:42:30 trey Exp $
+# $Id: options.mak,v 1.13 2005-03-28 18:13:38 trey Exp $
 
 # algorithm configuration options
 
@@ -15,7 +15,7 @@ CFLAGS += -DDO_UB_CACHED_Q=1
 #CFLAGS += -DNO_FIB_UPPER_BOUND=1
 #CFLAGS += -DUSE_UNIFORM_RANDOM_OBS=1
 CFLAGS += -DUSE_COMPRESSED_ALPHA=1
-CFLAGS += -DUSE_MASKED_ALPHA=1
+#CFLAGS += -DUSE_MASKED_ALPHA=1
 CFLAGS += -DUSE_UB_HASH=0
 CFLAGS += -DUSE_SAFE_HSVI=1
 
@@ -35,6 +35,9 @@ CFLAGS += -DCFLAGS="\"$(XCFLAGS)\""
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.12  2005/03/25 21:42:30  trey
+# added USE_SAFE_HSVI
+#
 # Revision 1.11  2005/03/25 16:10:04  trey
 # added NO_FIB_UPPER_BOUND and USE_UNIFORM_RANDOM_OBS
 #
