@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.4 $  $Author: trey $  $Date: 2005-01-28 03:20:45 $
+ * $Revision: 1.5 $  $Author: trey $  $Date: 2005-02-04 21:02:23 $
  *  
  * @file    sla.h
  * @brief   No brief
@@ -229,6 +229,9 @@ namespace sla {
   // return A(:,c)' * y
   double inner_prod_column(const cmatrix& A, unsigned int c,
 			   const cvector& y);
+
+  // result = x + y
+  void add(cvector& result, const cvector& x, const cvector& y);
 
   template <class T>
   void read_from_file(T& x, const std::string& file_name);
@@ -837,6 +840,74 @@ namespace sla {
 					x.data.begin(), x.data.end() );
   }
 
+  inline void add(cvector& result,
+		  const cvector& x,
+		  const cvector& y) 
+  {                                                  
+    typeof(x.data.begin()) xi, xend;
+    typeof(y.data.begin()) yi, yend;
+    unsigned int xind, yind;
+    bool xdone = false, ydone = false;
+
+    assert( x.size() == y.size() );                    
+    result.resize( x.size() );
+
+#define CHECK_X() \
+	if (xi == xend) { \
+	  xdone = true; \
+	  goto main_loop_done; \
+	} else { \
+	  xind = xi->index; \
+	}
+
+#define CHECK_Y() \
+	if (yi == yend) { \
+	  ydone = true; \
+	  goto main_loop_done; \
+	} else { \
+	  yind = yi->index; \
+	}
+
+    xi = x.data.begin();
+    yi = y.data.begin();
+    xend = x.data.end();                 
+    yend = y.data.end();
+
+    CHECK_X();
+    CHECK_Y();
+
+    while (1) {
+      if (xind < yind) {
+	result.push_back( xind, xi->value );
+	xi++;
+	CHECK_X();
+      } else if (xind == yind) {
+	result.push_back( xind, xi->value + yi->value );
+	xi++;
+	yi++;
+	CHECK_X();
+	CHECK_Y();
+      } else {
+	result.push_back( yind, yi->value );
+	yi++;
+	CHECK_Y();
+      }
+    }
+
+  main_loop_done:
+    if (!xdone) {
+      for (; xi != xend; xi++) {
+	result.push_back( xi->index, xi->value );
+      }
+    } else if (!ydone) {
+      for (; yi != yend; yi++) {
+	result.push_back( yi->index, yi->value );
+      }
+    }
+
+    result.canonicalize();
+  }
+
   template <class T>
   void read_from_file(T& x, const std::string& file_name)
   {
@@ -879,6 +950,9 @@ typedef sla::dvector obs_prob_vector;
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2005/01/28 03:20:45  trey
+ * fixed bugs and added several functions
+ *
  * Revision 1.3  2005/01/27 05:34:10  trey
  * added several functions and fixed bugs
  *
