@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.4 2005-01-17 19:36:48 trey Exp $
+# $Id: Makefile,v 1.5 2005-01-21 16:26:17 trey Exp $
 #
 # PROJECT:      FIRE Architecture Project
 # DESCRIPTION:  
@@ -23,6 +23,7 @@ CFLAGS += -I$(CHECKOUT_DIR)/external/boost
 INSTALLHEADERS_HEADERS := \
 	commonDefs.h \
 	commonTime.h \
+	ublasMatrixTypes.h \
 	commonTypes.h \
 	SmartRef.h \
 	Interleave.h \
@@ -56,6 +57,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.4  2005/01/17 19:36:48  trey
+# added include of options.mak
+#
 # Revision 1.3  2004/11/24 20:48:29  trey
 # added MDPValueFunction and ValueFunction
 #
