@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl -w
+#!/usr/bin/perl -w
 
 sub usage {
     die  "usage: compareplots OPTIONS <prob1> <prob2>\n"
