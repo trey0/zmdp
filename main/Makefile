@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.1 2004-11-13 23:48:54 trey Exp $
+# $Id: Makefile,v 1.2 2004-11-14 00:31:47 trey Exp $
 #
 # PROJECT:      FIRE Architecture Project
 # DESCRIPTION:  
@@ -62,7 +62,7 @@ endif
 BUILDBIN_TARGET := testPomdp
 BUILDBIN_SRCS := testPomdp.cc
 BUILDBIN_INDEP_LIBS := -lcommonTime $(LP_LIBS)
-BUILDBIN_DEP_LIBS := -lhsvi -lpomdpUtils -lpomdp_spec
+BUILDBIN_DEP_LIBS := -lhsvi -lempomdp -lpomdpUtils -lpomdp_spec
 include $(BUILD_DIR)/buildbin.mak
 
 ######################################################################
@@ -72,6 +72,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.1  2004/11/13 23:48:54  trey
+# rearranged testPomdp into the main directory
+#
 # Revision 1.3  2004/11/13 23:29:44  trey
 # moved many files from hsvi to common
 #

@@ -6,28 +6,42 @@
 #include "PomdpM.h"
 #include "MatrixUtils.h"
 #include "FocusedPomdp.h"
+#include "EMPomdp.h"
 #include "Interleave.h"
 
 using namespace std;
 using namespace MatrixUtils;
 
 void usage(void) {
-  cout << "usage: testPomdp <probname> [minOrder maxOrder]" << endl;
+  cout << "usage: testPomdp <algorithm> <probname> [minOrder maxOrder]"
+       << "  valid algorithms are 'hsvi' and 'empomdp'"
+       << endl;
   exit(-1);
 }
 
-void testBatchIncremental(string prob_name, int min_order, int max_order) {
+void testBatchIncremental(string algorithm,
+			  string prob_name,
+			  int min_order,
+			  int max_order) {
   PomdpP p = new PomdpM;
   //prob_name = "examples/" + prob_name + ".pomdp";
   p->readFromFile(prob_name);
 
-  FocusedPomdp solver;
+  Solver* solver;
+  if (algorithm == "hsvi") {
+    solver = new FocusedPomdp();
+  } else if (algorithm == "empomdp") {
+    solver = new EMPomdp();
+  } else {
+    cerr << "ERROR: unknown algorithm " << algorithm << endl << endl;
+    usage();
+  }
 
   //string prefix = "/tmp/";
   string prefix = "";
   Interleave x;
   x.batchTestIncremental(/* numIterations = */ 100,
-			 p, solver,
+			 p, *solver,
 			 /* numSteps = */ 251,
 			 /* minPrecision = */ 1e-10,
 			 /* minOrder = */ min_order,
@@ -43,6 +57,7 @@ void testBatchIncremental(string prob_name, int min_order, int max_order) {
 int main(int argc, char **argv) {
   init_matrix_utils();
 
+  char *algorithm = "";
   char *prob_name = NULL;
   int min_order = -1;
   int max_order = -1;
@@ -55,6 +70,8 @@ int main(int argc, char **argv) {
 	cerr << "ERROR: unknown option " << args << endl << endl;
 	usage();
       }
+    } else if (algorithm == NULL) {
+      algorithm = argv[argi];
     } else if (prob_name == NULL) {
       prob_name = argv[argi];
     } else if (min_order == -1) {
@@ -78,7 +95,7 @@ int main(int argc, char **argv) {
     max_order = 6; // default
   }
 
-  testBatchIncremental(prob_name, min_order, max_order);
+  testBatchIncremental(algorithm, prob_name, min_order, max_order);
 
   // signal we are done
   FILE *fp = fopen("/tmp/testPomdp_done", "w");
