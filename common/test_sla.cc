@@ -7,6 +7,7 @@
 #include <sstream>
 
 #include "sla.h"
+#include "sla_mask.h"
 
 using namespace std;
 using namespace sla;
@@ -366,6 +367,67 @@ void test_binary(void)
   
   cout << "--s: 170" << endl;
   cout << "  s: " << s << endl;
+
+  istringstream iss6("7 " "4 " "1 2 " "2 3 " "4 5 " "5 7 ");
+  xc.read(iss6);
+
+  istringstream iss7("7 " "3 " "1 1 " "4 4 " "5 6 ");
+  yc.read(iss7);
+
+  bool xdy = dominates( xc, yc, 0 );
+  cout << "--xdy: 1" << endl;
+  cout << "  xdy: " << xdy << endl;
+
+  bool ydx = dominates( yc, xc, 0 );
+  cout << "--ydx: 0" << endl;
+  cout << "  ydx: " << ydx << endl;
+}
+
+void test_mask(void)
+{
+  dvector zd;
+  cvector xc, yc, zc;
+  cvector zm;
+
+  istringstream iss1("7 " "4 " "1 2 " "2 3 " "4 5 " "5 7 ");
+  xc.read(iss1);
+
+  istringstream iss2("7 " "3 " "1 1 " "4 4 " "5 6 ");
+  yc.read(iss2);
+
+  bool xsy = mask_subset( xc, yc );
+  cout << "--xsy: 0" << endl;
+  cout << "  xsy: " << xsy << endl;
+  
+  bool ysx = mask_subset( yc, xc );
+  cout << "--ysx: 1" << endl;
+  cout << "  ysx: " << ysx << endl;
+  
+  bool xmdy = mask_dominates( xc, yc, 0, xc, yc );
+  cout << "--xmdy: 1" << endl;
+  cout << "  xmdy: " << xmdy << endl;
+
+  bool ymdx = mask_dominates( yc, xc, 0, yc, xc );
+  cout << "--ymdx: 0" << endl;
+  cout << "  ymdx: " << ymdx << endl;
+
+  istringstream iss3("7 " "1 1 1 1 1 1 1");
+  zd.read(iss3);
+  copy( zc, zd );
+
+  mask_copy( zm, zd, xc );
+  cout << "--zm: 0 1 1 0 1 1 0" << endl;
+  cout << "  zm: " << zm(0) << " " << zm(1)
+       << " " << zm(2) << " " << zm(3)
+       << " " << zm(4) << " " << zm(5)
+       << " " << zm(6) << endl;
+
+  mask_copy( zm, zc, xc );
+  cout << "--zm: 0 1 1 0 1 1 0" << endl;
+  cout << "  zm: " << zm(0) << " " << zm(1)
+       << " " << zm(2) << " " << zm(3)
+       << " " << zm(4) << " " << zm(5)
+       << " " << zm(6) << endl;
 }
 
 void test_performance(void)
@@ -437,6 +499,7 @@ int main(int argc, char** argv) {
   test_conversions();
   test_unary();
   test_binary();
+  test_mask();
 
   test_performance();
 
