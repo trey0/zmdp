@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl -w
+#!/usr/bin/perl -w
 
 sub usage {
     die  "usage: makeplot OPTIONS <prob_name>\n"
@@ -37,15 +37,15 @@ if (!defined $prob_name) {
 }
 
 
-my $plot_file = "results/${prob_name}_inc.plot";
+my $plot_file = "${prob_name}/inc.plot";
 my $options = "";
 if ($postscript_output) {
-    $options = "> results/${prob_name}_inc.ps";
+    $options = "> ${prob_name}/inc.ps";
 } else {
     $options = "-persist";
 }
 
-my $bounds_file = "results/${prob_name}_bounds.plot";
+my $bounds_file = "${prob_name}/bounds.plot";
 my $use_bounds_file = '';
 if (-e $bounds_file) {
     $use_bounds_file = 1;
