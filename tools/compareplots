@@ -103,6 +103,8 @@ EOF
 print GP <<"EOF";
 
 ######################################################################
+set logscale x
+set logscale y
 set xlabel "wallclock time (seconds)"
 set ylabel "number of top-level iterations"
 set title "$prob1 vs. $prob2"
