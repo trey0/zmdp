@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.3 $  $Author: trey $  $Date: 2005-02-08 23:53:04 $
+ * $Revision: 1.4 $  $Author: trey $  $Date: 2005-03-28 18:11:21 $
  *  
  * @file    MDPValueFunction.h
  * @brief   No brief
@@ -11,7 +11,7 @@
 #include "PomdpM.h"
 #include "ValueFunction.h"
 
-#define MDP_MAX_ITERS (1000)
+#define MDP_MAX_ITERS (1000000)
 
 class MDPValueFunction : public ValueFunction {
 public:
@@ -36,6 +36,9 @@ void testMDP(void);
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2005/02/08 23:53:04  trey
+ * updated to work for alpha_vector = cvector
+ *
  * Revision 1.2  2005/01/27 05:30:10  trey
  * modified for sla compatibility
  *
