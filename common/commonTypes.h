@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.3 $  $Author: trey $  $Date: 2005-01-21 18:07:02 $
+ * $Revision: 1.4 $  $Author: trey $  $Date: 2005-01-26 04:14:15 $
  *  
  * @file    commonTypes.h
  * @brief   No brief
@@ -10,14 +10,11 @@
 
 #if USE_UBLAS
 # include "ublasMatrixTypes.h"
+# define MATRIX_NAMESPACE boost::numeric::ublas
 #else
 # include "sla.h"
+# define MATRIX_NAMESPACE sla
 #endif
-
-// select storage types of the data structures we use
-typedef cvector belief_vector;
-typedef dvector alpha_vector;
-typedef dvector obs_prob_vector;
 
 struct ValueInterval {
   double l, u;
@@ -38,6 +35,9 @@ std::ostream& operator<<(std::ostream& out, const ValueInterval& v);
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2005/01/21 18:07:02  trey
+ * preparing for transition to sla matrix types
+ *
  * Revision 1.2  2005/01/21 15:22:02  trey
  * added include of ublas/operation.hpp, allowing use of axpy_prod()
  *
