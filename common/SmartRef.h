@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.1 $  $Author: trey $  $Date: 2004-11-09 21:28:24 $
+ * $Revision: 1.2 $  $Author: trey $  $Date: 2004-12-16 03:58:50 $
  *  
  * PROJECT: FIRE Architecture Project
  *
@@ -93,6 +93,7 @@ class SmartRef : public GenericSmartRef
   const X& operator*() const { return *get(); }
 
   bool operator!() const { return 0 == value->rep; }
+  bool defined() const { return 0 != value->rep; }
   
   unsigned counter() const { return value->count; }
   unsigned accessed() const { return value->accessed; }
@@ -103,6 +104,9 @@ class SmartRef : public GenericSmartRef
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2004/11/09 21:28:24  trey
+ * check-in to pomdp repository
+ *
  * Revision 1.5  2002/10/09 00:19:17  trey
  * added ! operator as syntactic sugar
  *
