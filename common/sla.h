@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.6 $  $Author: trey $  $Date: 2005-02-08 23:53:36 $
+ * $Revision: 1.7 $  $Author: trey $  $Date: 2005-02-09 20:44:35 $
  *  
  * @file    sla.h
  * @brief   No brief
@@ -232,6 +232,12 @@ namespace sla {
   // result = A(:,c) .* x
   void emult_column(dvector& result, const cmatrix& A,
 		    unsigned int c,  const dvector& x);
+
+  // result = max(x,y)
+  void emax(dvector& result, const dvector& x, const dvector& y);
+
+  // result = max(result,x)
+  void max_assign(dvector& result, const dvector& x);
 
   // return x' * y
   double inner_prod(const dvector& x, const cvector& y);
@@ -839,6 +845,36 @@ namespace sla {
 		       A.data.begin() + A.col_starts[c+1] );
   }
 
+  // result = max(x,y)
+  inline void emax(dvector& result, const dvector& x, const dvector& y)
+  {
+    assert( x.size() == y.size() );
+    result.resize( x.size() );
+
+    typeof(y.data.begin()) yi = y.data.begin();
+    typeof(result.data.begin()) ri = result.data.begin();
+    FOR_EACH (xi, x.data) {
+      (*ri) = std::max( *xi, *yi );
+      yi++;
+      ri++;
+    }
+  }
+
+  // result = max(result,x)
+  inline void max_assign(dvector& result, const dvector& x)
+  {
+    assert( result.size() == x.size() );
+
+    typeof(x.data.begin()) xi = x.data.begin();
+    double xval;
+
+    FOR_EACH (ri, result.data) {
+      xval = *xi;
+      if (xval > (*ri)) (*ri) = xval;
+      xi++;
+    }
+  }
+
   // return x' * y
   inline double inner_prod(const dvector& x, const cvector& y)
   {
@@ -1073,6 +1109,9 @@ typedef sla::dvector obs_prob_vector;
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.6  2005/02/08 23:53:36  trey
+ * made it easier to switch between dvector and cvector while using the same functions
+ *
  * Revision 1.5  2005/02/04 21:02:23  trey
  * added add() function
  *
