@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.5 $  $Author: trey $  $Date: 2005-02-08 23:54:25 $
+ * $Revision: 1.6 $  $Author: trey $  $Date: 2005-03-10 22:53:32 $
  *  
  * PROJECT: FIRE Architecture Project
  *
@@ -126,12 +126,14 @@ void PomdpM::readFromFileCassandra(const string& fileName) {
   copy( R, Rx );
   Ttr.resize(numActions);
   O.resize(numActions);
-#if USE_UBLAS
+#if 1
   T.resize(numActions);
+#endif
+#if USE_UBLAS
   Otr.resize(numActions);
 #endif
   FOR (a, numActions) {
-#if USE_UBLAS
+#if 1
     copy( T[a], Tx[a] );
 #endif
     kmatrix_transpose_in_place( Tx[a] );
@@ -328,12 +330,14 @@ void PomdpM::readFromFileFast(const std::string& fileName)
   copy( R, Rx );
   Ttr.resize(numActions);
   O.resize(numActions);
-#if USE_UBLAS
+#if 1
   T.resize(numActions);
+#endif
+#if USE_UBLAS
   Otr.resize(numActions);
 #endif
   FOR (a, numActions) {
-#if USE_UBLAS
+#if 1
     copy( T[a], Tx[a] );
 #endif
     kmatrix_transpose_in_place( Tx[a] );
@@ -407,6 +411,9 @@ void PomdpM::debugDensity(void) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.5  2005/02/08 23:54:25  trey
+ * updated to use less type-specific function names
+ *
  * Revision 1.4  2005/01/27 05:31:55  trey
  * switched to use Ttr instead of T under sla
  *
