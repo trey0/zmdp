@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.8 $  $Author: trey $  $Date: 2005-03-10 21:12:58 $
+ * $Revision: 1.9 $  $Author: trey $  $Date: 2005-03-28 18:12:28 $
  *  
  * @file    sla.h
  * @brief   No brief
@@ -193,6 +193,12 @@ namespace sla {
   // result = A(:,c)
   void copy_from_column(dvector& result, const cmatrix& A, unsigned int c);
 
+  // result = ones(rsize)
+  void set_to_one(dvector& result, unsigned int rsize);
+
+  // result = ones(rsize)
+  void set_to_one(cvector& result, unsigned int rsize);
+
   // A(r,c) = v
   void kmatrix_set_entry(kmatrix& A, unsigned int r, unsigned int c,
 			 double v);
@@ -218,6 +224,9 @@ namespace sla {
 
   // result = x * A
   void mult(cvector& result, const cvector& x, const cmatrix& A);
+
+  // result = x .* y [for all i, result(i) = x(i) * y(i)]
+  void emult(dvector& result, const dvector& x, const dvector& y);
 
   // result = x .* y [for all i, result(i) = x(i) * y(i)]
   void emult(cvector& result, const cvector& x, const cvector& y);
@@ -665,6 +674,25 @@ namespace sla {
     }
   }
 
+  // result = ones(rsize)
+  inline void set_to_one(dvector& result, unsigned int rsize)
+  {
+    result.resize(rsize);
+    FOR (s, rsize) {
+      result(s) = 1.0;
+    }
+  }
+
+  // result = ones(rsize)
+  inline void set_to_one(cvector& result, unsigned int rsize)
+  {
+    result.resize(rsize);
+    FOR (s, rsize) {
+      result.push_back( s, 1.0 );
+    }
+    result.canonicalize();
+  }
+
   // A(r,c) = v
   inline void kmatrix_set_entry(kmatrix& A, unsigned int r, unsigned int c,
 				double v)
@@ -778,6 +806,16 @@ namespace sla {
     dvector tmp;
     mult(tmp,x,A);
     copy(result,tmp);
+  }
+
+  // result = x .* y [for all i, result(i) = x(i) * y(i)]
+  inline void emult(dvector& result, const dvector& x, const dvector& y)
+  {
+    assert( x.size() == y.size() );
+    result.resize( x.size() );
+    FOR (i, result.size()) {
+      result(i) = x(i) * y(i);
+    }
   }
 
   // result = x .* y [for all i, result(i) = x(i) * y(i)]
@@ -1203,6 +1241,9 @@ typedef sla::dvector obs_prob_vector;
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.8  2005/03/10 21:12:58  trey
+ * added norm_inf(cvector) and dominates(x,y)
+ *
  * Revision 1.7  2005/02/09 20:44:35  trey
  * added emax() and max_assign() functions
  *
