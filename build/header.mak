@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: header.mak,v 1.1.1.1 2004-11-09 16:18:57 trey Exp $
+# $Id: header.mak,v 1.2 2004-11-09 18:33:06 trey Exp $
 #
 # PROJECT:      FIRE Architecture Project
 # DESCRIPTION:  Included at the header of a Makefile.  Mostly defines
@@ -93,7 +93,7 @@ include $(BUILD_DIR)/Platforms/$(OS).mak
 ######################################################################
 # PICK UP USER-SPECIFIC CONFIGURATION
 
-PROJECT := microraptor
+PROJECT := pomdp
 
 BUILDRC_FILE := $(HOME)/.$(PROJECT).buildrc
 ifeq (,$(shell ls $(BUILDRC_FILE) 2> /dev/null))
@@ -185,6 +185,9 @@ $(OBJ_DIR)/%.d: %.cpp
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.1.1.1  2004/11/09 16:18:57  trey
+# imported hsvi into new repository
+#
 # Revision 1.4  2004/05/21 19:16:59  trey
 # branched example-buildrc.mak into two files, one for atacama and one for microraptor; added COMPILER_DIRECTORY_WITH_SLASH configuration variable
 #
