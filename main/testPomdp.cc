@@ -7,10 +7,10 @@
 
 #include "PomdpM.h"
 #include "MatrixUtils.h"
-#if USE_CPLEX
-#  include "FocusedPomdp.h"
+#include "FocusedPomdp.h"
+#if USE_EMPOMDP
+#  include "EMPomdp.h"
 #endif
-#include "EMPomdp.h"
 #include "Interleave.h"
 
 using namespace std;
@@ -23,10 +23,11 @@ void usage(void) {
     "  -f or --fast   Use fast (but very picky) alternate parser\n"
     "\n"
     "  available algorithms:\n"
-#if USE_CPLEX
     "    hsvi\n"
+#if USE_EMPOMDP
+    "    empomdp\n"
 #endif
-    "    empomdp\n";
+;
   exit(-1);
 }
 
@@ -85,14 +86,14 @@ void testBatchIncremental(string algorithm,
   Solver* solver;
   if (0) {
   }
-#if USE_CPLEX
   else if (algorithm == "hsvi") {
     solver = new FocusedPomdp();
   }
-#endif
+#if USE_EMPOMDP
   else if (algorithm == "empomdp") {
     solver = new EMPomdp();
   }
+#endif
   else {
     cerr << "ERROR: unknown algorithm " << algorithm << endl << endl;
     usage();
