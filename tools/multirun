@@ -1,0 +1,324 @@
+#!/usr/bin/perl -w
+
+use strict;
+use vars qw( %OPTIONS $MULTIRUN_CONFIG $LOG_OPEN $START_TIME $INDENT
+	     $EXITING @DIR_STACK $MULTIRUN_STEALTH_MODE );
+
+use Cwd;
+
+&main();
+
+sub usage {
+    die(
+	 "usage: multirun OPTIONS\n"
+	." -h or --help       Show this help file\n"
+	." -c or --config     Specify name of config file\n"
+	." -q or --quiet      Suppress printing of log messages to stdout.\n"
+	." -d or --debug      Tell multirun to also print debug information.\n"
+	." -s or --stealth    Tell multirun to set the MULTIRUN_STEALTH_MODE\n"
+        ."                    variable, which may cause startup to run silently.\n"
+	);
+}
+
+sub main {
+    my @optionNames = qw(quiet debug stealth);
+    my $optionPattern = join("|", @optionNames);
+    my $oPattern = join("|", map { substr($_,0,1) } @optionNames);
+
+    %OPTIONS = ();
+    while (my $arg = shift @ARGV) {
+	if ($arg eq '-h' or $arg eq '--help') {
+	    &usage;
+	} elsif ($arg eq '-c' or $arg eq '--config') {
+	    $arg = shift @ARGV;
+	    if (!defined $arg) {
+		print STDERR "multirun: -c option without argument\n";
+		&usage();
+	    }
+	    $OPTIONS{config} = $arg;
+	} elsif ($arg =~ /^-($oPattern)$/) {
+	    my $optChar = $1;
+	    my @opts = grep { /^$optChar/ } @optionNames;
+	    $OPTIONS{$opts[0]} = 1;
+	} elsif ($arg =~ /^--($optionPattern)$/) {
+	    $OPTIONS{$1} = 1;
+	} elsif ($arg =~ /^--no-($optionPattern)$/) {
+	    $OPTIONS{$1} = 0;
+	} else {
+	    print STDERR "multirun: ERROR: unknown option `$arg'\n";
+	    &usage();
+	}
+    }
+
+    $OPTIONS{verbose} = ! $OPTIONS{quiet};
+
+    # debug option parsing
+    if ($OPTIONS{debug}) {
+	print "OPTIONS =\n{\n";
+	while (my ($key,$val) = each %OPTIONS) {
+	    if ("ARRAY" eq ref $val) {
+		print "  $key => (",join(",",map { "\"$_\"" } @{$val}),"),\n";
+	    } else {
+		print "  $key => \"$val\",\n";
+	    }
+	}
+	print "}\n";
+    }
+
+    if (!defined $OPTIONS{config}) {
+	print STDERR "multirun: ERROR: no config file specified\n";
+	&usage();
+    }
+
+    $MULTIRUN_STEALTH_MODE = $OPTIONS{stealth};
+    require $OPTIONS{config};
+
+    my @trials = &gen_trial_list();
+    if ($OPTIONS{debug}) {
+	for my $i (0..$#trials) {
+	    print "trials[$i] =\n{\n";
+	    while (my ($key, $val) = each %{$trials[$i]}) {
+		print "\t$key => $val\n";
+	    }
+	    print "}\n";
+	}
+    }
+
+    # set up multirun log file
+    $START_TIME = time();
+    $LOG_OPEN = 0;
+    $INDENT = 0;
+    $EXITING = 0;
+    my $logFile = &find_numbered_file($MULTIRUN_CONFIG->{logFile});
+    &message("opening log file $logFile");
+    open(LOG, ">$logFile")
+	or &doh("multirun: couldn't open log file $logFile: $!\n");
+    my $oldSelect = select(LOG);
+    $| = 1; # turn on autoflush
+    select($oldSelect); # restore printing to stdout
+
+    $LOG_OPEN = 1;
+    print LOG "# start_time ", scalar(localtime($START_TIME)), " [$START_TIME]\n";
+
+    for my $i (0..$#trials) {
+	my $status = &run_trial($trials[$i]);
+	if ($MULTIRUN_CONFIG->{stopAfter}{$status}) {
+	    &message("stopping batch because trial exited ".
+		     "with status <$status>");
+	    &doh();
+	}
+    }
+
+    &clean_exit(0);
+}
+
+sub run_trial {
+    my $trialConfig = shift;
+
+    my $expDir = $trialConfig->{experimentDir};
+    if (! -d $expDir) {
+	#&doh("experiment dir set to `$expDir', but that is not a directory!");
+	&execute_cmd("mkdir $expDir");
+    }
+    my $trialDir = &find_numbered_file("$expDir/" . $trialConfig->{trialDir});
+
+    # so that the full path to the trial dir is available to check_trial_status
+    $trialConfig->{trialDirFull} = $trialDir;
+
+    my $expDirAbbrev = &basename($expDir);
+    my $trialDirAbbrev = &basename($trialDir);
+
+    &message("starting trial: experiment $expDirAbbrev, trial $trialDirAbbrev");
+    $INDENT = 2;
+
+    my $cwd = cwd();
+    my $interpMap = { "%e" => "$cwd/$expDir",
+		      "%t" => "$cwd/$trialDir" };
+    &execute_cmd("mkdir $trialDir");
+    &pushd($trialConfig->{experimentDir});
+    
+    # clean out old copy of status file, just in case
+    my $statusFile = &interp_string($trialConfig->{statusFile});
+    if ($statusFile ne "") {
+	&execute_cmd("-rm $statusFile");
+    }
+
+    # run start command
+    my $trialStartTime = time();
+    &execute_interp($trialConfig->{startCmd}, $interpMap);
+
+    # monitor for completion until timeout
+    my ($status, $elapsedTime);
+    while (1) {
+	sleep $trialConfig->{monitorSecs};
+	$elapsedTime = time() - $trialStartTime;
+	if ($elapsedTime > $trialConfig->{timeoutSecs}) {
+	    $status = "timeout";
+	    last;
+	} else {
+	    $status = &check_trial_status($trialConfig);
+	    if ($status ne "running") { last; }
+	}
+    }
+
+    &message("status <$status> after $elapsedTime seconds");
+
+    # execute appropriate commands based on how we completed
+    &execute_interp($trialConfig->{completionCmd}, $interpMap);
+    if ($status eq "success") {
+	&execute_interp($trialConfig->{successCmd}, $interpMap);
+    } elsif ($status eq "error") {
+	&execute_interp($trialConfig->{errorCmd}, $interpMap);
+    } elsif ($status eq "timeout") {
+	&execute_interp($trialConfig->{timeoutCmd}, $interpMap);
+    }
+
+    $INDENT = 0;
+
+    &popd();
+
+    return $status;
+}
+
+sub default_check_trial_status {
+    my $trial = shift;
+
+    my $statusFile = $trial->{statusFile};
+    
+    if (! -e $statusFile) {
+	return "running";
+    }
+    my $status = `head -1 $statusFile`;
+    if ($status =~ /^success\b/) {
+	return "success";
+    } else {
+	return "error";
+    }
+}
+
+sub dirname {
+    my $path = shift;
+
+    my $dirname;
+    if ($path =~ m:^(.*)/:) {
+	$dirname = $1;
+    } else {
+	$dirname = ".";
+    }
+    return $dirname;
+}
+
+sub basename {
+    my $path = shift;
+
+    $path =~ s:^.*/::; # strip dirname component
+    return $path;
+}
+
+sub pushd {
+    my $new_dir = shift;
+
+    push @DIR_STACK, cwd;
+    if (!chdir $new_dir) {
+	&message("ERROR: couldn't cd to directory $new_dir: $!");
+    }
+}
+
+sub popd {
+    my $old_dir = pop @DIR_STACK;
+    if (!defined $old_dir) {
+	&message("ERROR: trying to pop empty directory stack");
+    }
+    if (!chdir $old_dir) {
+	&message("ERROR: couldn't cd to directory $old_dir: $!");
+    }
+}
+
+# find a numbered file with a fresh number according to the given
+# format.  e.g., if <fileFormat> is "trial%04d" and the directories
+# trial0000 and trial0001 already exist, the string "trial0002" will be
+# returned.  a format such as "trial%04d/foo" will break the function
+# because it assumes that the variable is in the base name, the part
+# after the last slash in the path.
+sub find_numbered_file {
+    my $fileFormat = shift;
+
+    my $dirname = &dirname($fileFormat);
+    my $basename = &basename($fileFormat);
+
+    opendir(CHECKDIR, $dirname) or &doh("couldn't opendir $dirname: $!");
+    my %existingFiles = map { $_ => 1 } readdir(CHECKDIR);
+    closedir(CHECKDIR);
+
+    my $num = 0;
+    my $base;
+    while (1) {
+	$base = sprintf($basename, $num);
+	last if (!defined $existingFiles{$base});
+	if (++$num > 9999) {
+	    die "multirun: ERROR: couldn't find unused file number\n".
+                "          (file format is `$fileFormat')\n";
+	}
+    }
+    my $file = sprintf($fileFormat, $num);
+    return $file;
+}
+
+sub interp_string {
+    my $s = shift;
+    my $interpMap = shift;
+
+    while (my ($key, $val) = each %{$interpMap}) {
+	$s =~ s/$key/$val/g;
+    }
+    return $s;
+}
+
+sub execute_interp {
+    my $cmd = shift;
+    my $interpMap = shift;
+
+    &execute_cmd(&interp_string($cmd, $interpMap));
+}
+
+sub execute_cmd {
+    my $cmd = shift;
+
+    if (!defined $cmd or $cmd eq "") { return; }
+    my $suppressErrors = ($cmd =~ s/^-//);
+    &message("executing: $cmd");
+    system("$cmd > /dev/null");
+    if ($? && !$suppressErrors) {
+	&message("ERROR: command finished with non-zero exit value $?");
+	&doh();
+    }
+}
+
+sub message {
+    my $text = shift;
+    my $diffTime = time() - $START_TIME;
+    my $diffTimeText = sprintf("%06d", int($diffTime));
+    my $fullText = "$diffTimeText " . (" " x $INDENT) . "$text\n";
+    if ($OPTIONS{verbose}) { print $fullText; }
+    if ($LOG_OPEN) { print LOG $fullText; }
+}
+
+sub doh {
+    my $err = shift;
+
+    if (defined $err) { &message("$err"); }
+    &message("multirun exiting");
+    &clean_exit(1);
+}
+
+sub clean_exit {
+    my $exit_status = shift;
+
+    # the EXITING variable prevents an endless loop if the exit action fails
+    if (!$EXITING) {
+	$EXITING = 1;
+	&execute_cmd($MULTIRUN_CONFIG->{exitAction});
+    }
+    close(LOG);
+    exit($exit_status);
+}

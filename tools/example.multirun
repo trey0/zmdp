@@ -1,0 +1,136 @@
+#!/usr/local/bin/perl5 -w
+
+# config variables:
+# - logFile       place to put multirun's log (contains commands that multirun
+#                 executed, and various status messages, everything timestamped)
+# - stopAfter     contains a hash which specifies whether to stop the entire
+#                 batch when a trial ends with a particular completion status.
+#                 for instance, if the hash contains "error => 1", the entire
+#                 batch will be stopped whenever any trial has an error.
+# - exitAction    this is a special action that gets run when the batch ends.
+#                 normally you would set it to notify you in some way, for
+#                 instance sending you a zephyr or an e-mail.  set to the
+#                 empty string to have no effect.
+
+$MULTIRUN_CONFIG =
+{
+    logFile => "multirun%04d.log",
+    stopAfter => { error => 0, timeout => 0},
+    exitAction => "-echo 'multirun done' | zwrite $ENV{USER}"
+};
+
+# a trial hash contains the following:
+# - startCmd      command to start the trial
+# - experimentDir high-level directory where results are placed (see trialDir)
+# - trialDir      name format for trial directories.
+#                 for example, experimentDir = "exp2", trialDir = "trial%04d"
+#                 leads to directory names like "exp2/trial0000"
+# - completionCmd command to run on completion (success, error, or timeout)
+# - successCmd    command to run only on success
+# - errorCmd      command to run only on error
+# - timeoutCmd    command to run only on timeout
+# - timeoutSecs   the amount of time to allow the trial to run
+# - monitorSecs   the amount of time to wait in between status checks
+# - statusFile    the file multirun should monitor to check for success or
+#                 error (if you are using the default implementation of
+#                 check_trial_status)
+
+# notes about the trial hash:
+# - if a command is not specified or is an empty string, nothing is done
+# - completionCmd is run before the status-specific commands
+#   (successCmd, errorCmd, timeoutCmd)
+# - precede a command with a - to ignore an error in its return value
+#   (similar to gmake syntax)
+# - certain patterns in the strings are replaced at run-time
+#   - %e is replaced with the experiment directory
+#   - %t is replaced with the trial directory
+
+# status monitoring works as follows:
+# - the status is checked using check_trial_status every <monitorSecs> seconds
+#   (see below for the definition of check_trial_status, which you can
+#   override as you see fit)
+# - the next action depends on the return value of check_trial_status:
+#   - 'running': do nothing and wait
+#   - 'success': run <completionCmd>, then <successCmd>, then proceed to
+#                the next trial
+#   - 'error':   run <completionCmd>, then <errorCmd>, then proceed to
+#                the next trial (or end the batch job, if <stopAfter>
+#                is set to do that)
+# - if <timeoutSecs> seconds elapse before 'success' or 'error' is declared,
+#   'timeout' is declared.  run <completionCmd>, then <timeoutCmd>, then
+#   proceed to the next trial (or end the batch job, if <stopAfter> is
+#   set to do that)
+
+# this is a user-defined function that returns a list of trial hashes.
+# you can set it up however you like.  this version is just an example.
+sub gen_trial_list {
+    # default values
+    @d = (
+	  startCmd => "(set to different values in the loop below)",
+	  experimentDir => "(set to different values in the loop below)",
+	  trialDir => "trial%04d",
+	  successCmd => "touch %t/success",
+	  errorCmd => "touch %t/error",
+	  timeoutCmd => "touch %t/timeout",
+	  completionCmd => "-killall -q ./runmytrial",
+	  timeoutSecs => 5,
+	  monitorSecs => 0.5,
+	  statusFile => "/tmp/mytrialresults",
+	  );
+    
+    # we assume that the dirs "test/exp1" .. "test/exp3" exist already
+    # because experimentDir is set to "test/$exp" below
+    @experiments = ("exp1", "exp2", "exp3");
+    %params = ( "exp1" => [1,0],
+		"exp2" => [2,1],
+		"exp3" => [9999,0] );
+
+    @trials = ();
+    for (0..4) {
+	for $exp (@experiments) {
+	    ($sleepSecs, $signalError) = @{$params{$exp}};
+	    $trial = { 
+		@d,
+		experimentDir => "test/$exp",
+		startCmd => "./runmytrial $sleepSecs $signalError &"
+		};
+	    push @trials, $trial;
+	}
+    }
+    
+    return @trials;
+}
+
+# the check_trial_status function is run every <monitorSecs> seconds.
+# you may implement a check_trial_status function yourself, or you may
+# use the default version (as shown in the example configuration here).
+#
+# check_trial_status must return one of three string values: 'running',
+# 'success', or 'error':
+#
+# - running: indicates that the trial is proceeding normally
+# - success: indicates that the trial is complete and successful
+# - error:   indicates that the trial ended with an error
+#
+# (note that a 'running' trial times out if it lasts longer than
+#  <timeoutSecs> seconds.  check_trial_status is not responsible for
+#  declaring that a trial has timed out)
+#
+# the $trial argument passed to check_trial_status is a reference to the
+# hash for the current trial.  it gives you access to all of the
+# parameters for that trial.  for instance, the <startCmd> is available
+# as $trial->{startCmd}.  the fully qualified name of the trial
+# directory (after the numeric value has been filled in) is set by
+# multirun, available as $trial->{trialDirFull}.
+#
+# the default implementation, default_check_trial_status, looks at the
+# file $trial->{statusFile}.  if the file does not exist, it returns
+# 'running'.  if the file exists and starts with the word 'success', it
+# returns 'success'.  otherwise it returns 'error'.
+sub check_trial_status {
+    my $trial = shift;
+    return &default_check_trial_status($trial);
+}
+
+# signal to perl that the file ran successfully
+1;

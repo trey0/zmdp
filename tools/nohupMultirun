@@ -1,0 +1,2 @@
+#!/bin/sh
+nohup multirun -c pomdp.multirun $* >& /dev/null &
