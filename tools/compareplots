@@ -60,16 +60,16 @@ sub do_plot {
 
     my $options = "";
     if ($postscript_output) {
-	$options = "> results/${prob1}_${prob2}_compare.ps";
+	$options = "> ${prob1}_${prob2}_compare.ps";
     } else {
 	$options = "-persist";
     }
     
-    my $bounds1_file = "results/${prob1}_bounds.plot";
-    my $bounds2_file = "results/${prob2}_bounds.plot";
+    my $bounds1_file = "${prob1}/bounds.plot";
+    my $bounds2_file = "${prob2}/bounds.plot";
 
-    my $inc1_file = "results/${prob1}_inc.plot";
-    my $inc2_file = "results/${prob2}_inc.plot";
+    my $inc1_file = "${prob1}/inc.plot";
+    my $inc2_file = "${prob2}/inc.plot";
 
     open(GP, "|gnuplot $options") or die "couldn't run gnuplot: $!\n";
     select GP;
