@@ -12,6 +12,7 @@
 #  include "EMPomdp.h"
 #endif
 #include "Interleave.h"
+#include "stdinInterface.h"
 
 using namespace std;
 using namespace MatrixUtils;
@@ -22,6 +23,7 @@ void usage(void) {
     "  -h or --help       Print this help\n"
     "  -f or --fast       Use fast (but very picky) alternate parser\n"
     "  -i or --iterations Set number of simulation iterations (default: 1000)\n"
+    "  -n or --no-console Do not poll for user console commands\n"
     "\n"
     "  available algorithms:\n"
     "    hsvi\n"
@@ -143,6 +145,8 @@ int main(int argc, char **argv) {
 	  cerr << "ERROR: -i flag without argument" << endl;
 	}
 	num_iterations = atoi(argv[argi]);
+      } else if (args == "-n" || args == "--no-console") {
+	setPollingEnabled(0);
       } else {
 	cerr << "ERROR: unknown option " << args << endl << endl;
 	usage();
