@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.2 $  $Author: trey $  $Date: 2005-01-27 05:30:10 $
+ * $Revision: 1.3 $  $Author: trey $  $Date: 2005-02-08 23:53:04 $
  *  
  * @file    MDPValueFunction.h
  * @brief   No brief
@@ -15,14 +15,14 @@
 
 class MDPValueFunction : public ValueFunction {
 public:
-  alpha_vector alpha;
+  dvector alpha;
   PomdpP pomdp;
 
   ValueInterval getValueAt(const belief_vector& b) const {
     return ValueInterval(0, inner_prod( alpha, b ));
   }
 
-  void nextAlphaAction(alpha_vector& result, int a);
+  void nextAlphaAction(dvector& result, int a);
   double valueIterationOneStep(void);
   void valueIteration(PomdpP _pomdp, double eps);
 };
@@ -36,6 +36,9 @@ void testMDP(void);
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2005/01/27 05:30:10  trey
+ * modified for sla compatibility
+ *
  * Revision 1.1  2004/11/24 20:48:04  trey
  * moved to common from hsvi
  *

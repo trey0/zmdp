@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.3 $  $Author: trey $  $Date: 2005-01-28 03:17:07 $
+ * $Revision: 1.4 $  $Author: trey $  $Date: 2005-02-08 23:53:04 $
  *  
  * @file    MDPValueIteration.cc
  * @brief   No brief
@@ -24,7 +24,7 @@
 using namespace std;
 using namespace MatrixUtils;
 
-void MDPValueFunction::nextAlphaAction(alpha_vector& result, int a) {
+void MDPValueFunction::nextAlphaAction(dvector& result, int a) {
 #if 0
   alpha_vector x(numStates), y(numStates);
   x = matrix_column<bmatrix>( pomdp->R, a );
@@ -41,13 +41,11 @@ void MDPValueFunction::nextAlphaAction(alpha_vector& result, int a) {
   return sum;
 #endif
 
-  cvector cR_xa;
   dvector R_xa;
 
   mult( result, alpha, pomdp->Ttr[a] );
   result *= pomdp->discount;
-  cvector_from_cmatrix_column( cR_xa, pomdp->R, a );
-  dvector_from_cvector( R_xa, cR_xa );
+  copy_from_column( R_xa, pomdp->R, a );
   result += R_xa;
 
 #if 0
@@ -57,8 +55,8 @@ void MDPValueFunction::nextAlphaAction(alpha_vector& result, int a) {
 }
 
 double MDPValueFunction::valueIterationOneStep(void) {
-  alpha_vector nextAlpha(numStates), naa(numStates);
-  alpha_vector tmp;
+  dvector nextAlpha(numStates), naa(numStates);
+  dvector tmp;
   double maxResidual;
 
   nextAlphaAction(nextAlpha,0);
@@ -126,6 +124,9 @@ void testMDP(void) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2005/01/28 03:17:07  trey
+ * fixed bug by zeroing tmp, switched to use -= operator
+ *
  * Revision 1.2  2005/01/27 05:30:10  trey
  * modified for sla compatibility
  *
