@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.8 2005-03-09 18:52:05 trey Exp $
+# $Id: Makefile,v 1.9 2005-03-10 21:12:04 trey Exp $
 #
 # PROJECT:      FIRE Architecture Project
 # DESCRIPTION:  
@@ -25,6 +25,7 @@ INSTALLHEADERS_HEADERS := \
 	commonTime.h \
 	ublasMatrixTypes.h \
 	sla.h \
+	sla_mask.h \
 	commonTypes.h \
 	SmartRef.h \
 	Interleave.h \
@@ -59,11 +60,11 @@ BUILDBIN_INDEP_LIBS :=
 BUILDBIN_DEP_LIBS :=
 include $(BUILD_DIR)/buildbin.mak
 
-BUILDBIN_TARGET := test_aadd
-BUILDBIN_SRCS := test_aadd.cc aadd.cc
-BUILDBIN_INDEP_LIBS :=
-BUILDBIN_DEP_LIBS :=
-include $(BUILD_DIR)/buildbin.mak
+#BUILDBIN_TARGET := test_aadd
+#BUILDBIN_SRCS := test_aadd.cc aadd.cc
+#BUILDBIN_INDEP_LIBS :=
+#BUILDBIN_DEP_LIBS :=
+#include $(BUILD_DIR)/buildbin.mak
 
 BUILDBIN_TARGET := testPomdpM
 BUILDBIN_SRCS := testPomdpM.cc
@@ -80,6 +81,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.8  2005/03/09 18:52:05  trey
+# added build of test_aadd
+#
 # Revision 1.7  2005/01/26 04:17:15  trey
 # added test_sla and testPomdpM, removed ublasMatrixUtils.cc from lib
 #
