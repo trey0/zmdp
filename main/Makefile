@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.5 2005-01-17 19:37:14 trey Exp $
+# $Id: Makefile,v 1.6 2005-02-06 16:42:44 trey Exp $
 #
 # PROJECT:      FIRE Architecture Project
 # DESCRIPTION:  
@@ -51,13 +51,12 @@ ifneq (,$(USE_CPLEX))
 	-Wl,-rpath -Wl,$(EXTERNAL_DIR)/stdc++ \
 	             -L$(EXTERNAL_DIR)/stdc++
   LP_LIBS := -lcplex81 -lpthread
-  EXTRA_DEP_LIBS := -lhsvi
 endif
 
 BUILDBIN_TARGET := $(BINARY_NAME)
 BUILDBIN_SRCS := testPomdp.cc
 BUILDBIN_INDEP_LIBS := -lcommonTime $(LP_LIBS)
-BUILDBIN_DEP_LIBS := $(EXTRA_DEP_LIBS) -lempomdp -lpomdpUtils -lpomdp_spec
+BUILDBIN_DEP_LIBS := -lhsvi -lpomdpUtils -lpomdp_spec
 include $(BUILD_DIR)/buildbin.mak
 
 ######################################################################
@@ -67,6 +66,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.5  2005/01/17 19:37:14  trey
+# added include of options.mak
+#
 # Revision 1.4  2004/12/16 04:00:40  trey
 # removed USER_CFLAGS, can now turn on cplex use with USE_CPLEX=1
 #
