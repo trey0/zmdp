@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.5 $  $Author: trey $  $Date: 2005-02-04 21:02:23 $
+ * $Revision: 1.6 $  $Author: trey $  $Date: 2005-02-08 23:53:36 $
  *  
  * @file    sla.h
  * @brief   No brief
@@ -75,6 +75,8 @@ namespace sla {
     explicit cvector(unsigned int _size) { resize(_size); }
 
     double operator()(unsigned int index) const;
+    void operator+=(const cvector& x);
+    void operator-=(const cvector& x);
     void operator*=(double s);
 
     unsigned int size(void) const { return size_; }
@@ -173,17 +175,23 @@ namespace sla {
    **********************************************************************/
 
   // result = x
-  void dvector_from_cvector(dvector& result, const cvector& x);
+  inline void copy(cvector& result, const cvector& x) { result = x; }
+  inline void copy(dvector& result, const dvector& x) { result = x; }
 
   // result = x
-  void cvector_from_dvector(cvector& result, const dvector& x);
+  void copy(dvector& result, const cvector& x);
+
+  // result = x
+  void copy(cvector& result, const dvector& x);
 
   // result = A (side-effect: canonicalizes A)
-  void cmatrix_from_kmatrix(cmatrix& result, kmatrix& A);
+  void copy(cmatrix& result, kmatrix& A);
 
   // result = A(.,c)
-  void cvector_from_cmatrix_column(cvector& result, const cmatrix& A,
-				   unsigned int c);
+  void copy_from_column(cvector& result, const cmatrix& A, unsigned int c);
+
+  // result = A(:,c)
+  void copy_from_column(dvector& result, const cmatrix& A, unsigned int c);
 
   // A(r,c) = v
   void kmatrix_set_entry(kmatrix& A, unsigned int r, unsigned int c,
@@ -199,12 +207,17 @@ namespace sla {
   // result = A * x
   void mult(dvector& result, const cmatrix& A, const cvector& x);
 
-
   // result = A * x
   void mult(cvector& result, const cmatrix& A, const cvector& x);
 
   // result = x * A
   void mult(dvector& result, const dvector& x, const cmatrix& A);
+
+  // result = x * A
+  void mult(dvector& result, const cvector& x, const cmatrix& A);
+
+  // result = x * A
+  void mult(cvector& result, const cvector& x, const cmatrix& A);
 
   // result = x .* y [for all i, result(i) = x(i) * y(i)]
   void emult(cvector& result, const cvector& x, const cvector& y);
@@ -216,9 +229,9 @@ namespace sla {
   // result = x .* y
   void emult(dvector& result, const dvector& x, const cvector& y);
 
-  // result = x .* A(:,c)
-  void emult_column(dvector& result, const dvector& x,
-		    const cmatrix& A, unsigned int c);
+  // result = A(:,c) .* x
+  void emult_column(dvector& result, const cmatrix& A,
+		    unsigned int c,  const dvector& x);
 
   // return x' * y
   double inner_prod(const dvector& x, const cvector& y);
@@ -232,6 +245,9 @@ namespace sla {
 
   // result = x + y
   void add(cvector& result, const cvector& x, const cvector& y);
+
+  // result = x - y
+  void subtract(cvector& result, const cvector& x, const cvector& y);
 
   template <class T>
   void read_from_file(T& x, const std::string& file_name);
@@ -330,6 +346,20 @@ namespace sla {
     for (vi = data.begin(); vi != vend; vi++) {
       vi->value *= s;      
     }
+  }
+
+  inline void cvector::operator+=(const cvector& x)
+  {
+    cvector tmp;
+    add(tmp,*this,x);
+    *this = tmp;
+  }
+
+  inline void cvector::operator-=(const cvector& x)
+  {
+    cvector tmp;
+    subtract(tmp,*this,x);
+    *this = tmp;
   }
 
   inline void cvector::resize(unsigned int _size, unsigned int _non_zeros)
@@ -518,7 +548,7 @@ namespace sla {
   {
     kmatrix km;
     km.read(in);
-    cmatrix_from_kmatrix(*this,km);
+    copy(*this,km);
   }
 
   inline void cmatrix::write(std::ostream& out) const
@@ -539,7 +569,7 @@ namespace sla {
    * NON-MEMBER FUNCTIONS
    **********************************************************************/
 
-  inline void dvector_from_cvector(dvector& result, const cvector& x)
+  inline void copy(dvector& result, const cvector& x)
   {
     result.resize( x.size() );
     FOR_EACH (xi, x.data) {
@@ -547,7 +577,7 @@ namespace sla {
     }
   }
 
-  inline void cvector_from_dvector(cvector& result, const dvector& x)
+  inline void copy(cvector& result, const dvector& x)
   {
     int num_filled;
     int i;
@@ -577,7 +607,7 @@ namespace sla {
     }
   }
   
-  inline void cmatrix_from_kmatrix(cmatrix& result, kmatrix& A)
+  inline void copy(cmatrix& result, kmatrix& A)
   {
     A.canonicalize();
     result.resize( A.size1(), A.size2() );
@@ -590,7 +620,8 @@ namespace sla {
   }
 
   // result = A(:,c)
-  inline void cvector_from_cmatrix_column(cvector& result, const cmatrix& A, unsigned int c)
+  inline void copy_from_column(cvector& result, const cmatrix& A,
+			       unsigned int c)
   {
     assert( 0 <= c && c < A.size2() );
 
@@ -608,7 +639,8 @@ namespace sla {
   }
 
   // result = A(:,c)
-  inline void dvector_from_cmatrix_column(dvector& result, const cmatrix& A, unsigned int c)
+  inline void copy_from_column(dvector& result, const cmatrix& A,
+			       unsigned int c)
   {
     assert( 0 <= c && c < A.size2() );
     typeof(A.data.begin()) Ai, col_end;
@@ -687,7 +719,7 @@ namespace sla {
     dvector tmp;
     
     mult( tmp, A, x );
-    cvector_from_dvector( result, tmp );
+    copy( result, tmp );
   }
   
   // result = x * A
@@ -705,6 +737,25 @@ namespace sla {
 	result(c) += x(Ai->index) * Ai->value;
       }
     }
+  }
+
+  // result = x * A
+  inline void mult(dvector& result, const cvector& x, const cmatrix& A)
+  {
+    assert( x.size() == A.size1() );
+    result.resize( A.size2() );
+
+    FOR (c, A.size2()) {
+      result(c) = inner_prod_column( A, c, x );
+    }
+  }
+
+  // result = x * A
+  inline void mult(cvector& result, const cvector& x, const cmatrix& A)
+  {
+    dvector tmp;
+    mult(tmp,x,A);
+    copy(result,tmp);
   }
 
   // result = x .* y [for all i, result(i) = x(i) * y(i)]
@@ -776,9 +827,9 @@ namespace sla {
     emult_dc_internal( result, x, y.data.begin(), y.data.end() );
   }
 
-  // result = x .* A(:,c)
-  inline void emult_column(dvector& result, const dvector& x,
-			   const cmatrix& A, unsigned int c)
+  // result = A(:,c) .* x
+  inline void emult_column(dvector& result, const cmatrix& A,
+			   unsigned int c, const dvector& x)
   {
     assert( A.size1() == x.size() );
     assert( 0 <= c && c < A.size2() );
@@ -908,6 +959,74 @@ namespace sla {
     result.canonicalize();
   }
 
+  inline void subtract(cvector& result,
+		       const cvector& x,
+		       const cvector& y) 
+  {                                                  
+    typeof(x.data.begin()) xi, xend;
+    typeof(y.data.begin()) yi, yend;
+    unsigned int xind, yind;
+    bool xdone = false, ydone = false;
+
+    assert( x.size() == y.size() );                    
+    result.resize( x.size() );
+
+#define CHECK_X() \
+	if (xi == xend) { \
+	  xdone = true; \
+	  goto main_loop_done; \
+	} else { \
+	  xind = xi->index; \
+	}
+
+#define CHECK_Y() \
+	if (yi == yend) { \
+	  ydone = true; \
+	  goto main_loop_done; \
+	} else { \
+	  yind = yi->index; \
+	}
+
+    xi = x.data.begin();
+    yi = y.data.begin();
+    xend = x.data.end();                 
+    yend = y.data.end();
+
+    CHECK_X();
+    CHECK_Y();
+
+    while (1) {
+      if (xind < yind) {
+	result.push_back( xind, xi->value );
+	xi++;
+	CHECK_X();
+      } else if (xind == yind) {
+	result.push_back( xind, xi->value - yi->value );
+	xi++;
+	yi++;
+	CHECK_X();
+	CHECK_Y();
+      } else {
+	result.push_back( yind, -yi->value );
+	yi++;
+	CHECK_Y();
+      }
+    }
+
+  main_loop_done:
+    if (!xdone) {
+      for (; xi != xend; xi++) {
+	result.push_back( xi->index, xi->value );
+      }
+    } else if (!ydone) {
+      for (; yi != yend; yi++) {
+	result.push_back( yi->index, -yi->value );
+      }
+    }
+
+    result.canonicalize();
+  }
+
   template <class T>
   void read_from_file(T& x, const std::string& file_name)
   {
@@ -942,7 +1061,11 @@ namespace sla {
 
 // select storage types of the data structures we use
 typedef sla::cvector belief_vector;
+#if USE_COMPRESSED_ALPHA
+typedef sla::cvector alpha_vector;
+#else
 typedef sla::dvector alpha_vector;
+#endif
 typedef sla::dvector obs_prob_vector;
 
 #endif // INCsla_h
@@ -950,6 +1073,9 @@ typedef sla::dvector obs_prob_vector;
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.5  2005/02/04 21:02:23  trey
+ * added add() function
+ *
  * Revision 1.4  2005/01/28 03:20:45  trey
  * fixed bugs and added several functions
  *
