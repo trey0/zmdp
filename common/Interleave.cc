@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.2 $  $Author: trey $  $Date: 2005-01-26 04:08:42 $
+ * $Revision: 1.3 $  $Author: trey $  $Date: 2005-03-28 18:10:50 $
  *  
  * @file    Interleave.cc
  * @brief   No brief
@@ -99,6 +99,7 @@ void Interleave::batchTestIncremental(int numIterations,
   double timeSoFar = 1e-20;
   double logLastSimTime = -99;
   bool achieved_precision = false;
+  bool achieved_terminal_state;
   while (!achieved_precision && timeSoFar < pow(10,maxOrder)) {
     timeval plan_start = getTime();
     achieved_precision =
@@ -121,6 +122,7 @@ void Interleave::batchTestIncremental(int numIterations,
 	cout << "#-#-#-#-#-#-# batchTest " << (i+1) << " / " << numIterations;
 	cout.flush();
 	sim->restart();
+	achieved_terminal_state = false;
 	FOR (j, numSteps) {
 	  int action = solver.chooseAction(sim->currentBelief);
 	  sim->performAction(action);
@@ -130,11 +132,15 @@ void Interleave::batchTestIncremental(int numIterations,
 #endif
 	  if (sim->terminated) {
 	    num_successes++;
+	    achieved_terminal_state = true;
 	    break;
 	  }
 	}
 	cout << " (reward " << sim->rewardSoFar << ")" << endl;
 	rewardRecord.push_back(sim->rewardSoFar);
+	if (!achieved_terminal_state) {
+	  cout << "(time ran out in simulation)" << endl;
+	}
       }
       
       // collect statistics and write a line to the output file
@@ -251,6 +257,9 @@ void Interleave::batchTest(int numIterations,
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2005/01/26 04:08:42  trey
+ * switched to use sparseRep in debug print
+ *
  * Revision 1.1  2004/11/13 23:29:44  trey
  * moved many files from hsvi to common
  *
