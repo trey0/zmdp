@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.2 $  $Author: trey $  $Date: 2005-01-26 04:15:20 $
+ * $Revision: 1.3 $  $Author: trey $  $Date: 2005-01-27 05:36:52 $
  *  
  * @file    ublasMatrixUtils.h
  * @brief   No brief
@@ -113,13 +113,6 @@ namespace MatrixUtils {
 #if 0
   void write_matrix(const bmatrix& history, const std::string& outfile);
 #endif
-
-  // Returns a nice printable representation for big vectors (sorted in order
-  //   of decreasing absolute value, with the index of each value labeled).
-  std::string sparseRep(const bvector& v);
-
-  // Like sparseRep, but doesn't take absolute value.
-  std::string maxRep(const bvector& v);
 
   /**********************************************************************
    * FUNCTIONS
@@ -265,6 +258,14 @@ namespace MatrixUtils {
     return mapfun2(std::multiplies<double>(), v, w);
   }
 
+  // result = x .* y [for all i, result(i) = x(i) * y(i)]
+  inline void emult(cvector& result, const cvector& x, const cvector& y) {
+    result.resize( x.size(), x.filled() );
+    FOR_CV(x) {
+      result(CV_INDEX(x)) = CV_VAL(x) * y(CV_INDEX(x));
+    }
+  }
+
   inline cvector range_vector(int n) {
     cvector v(n);
     FOR (i, n) {
@@ -273,58 +274,16 @@ namespace MatrixUtils {
     return v;
   }
 
-  struct IndPair {
-    int ind;
-    double val;
-    IndPair(int _ind, double _val) : ind(_ind), val(_val) {}
-  };
-  
-  struct AbsValGreater {
-    bool operator()(const IndPair& lhs, const IndPair& rhs) {
-      return fabs(lhs.val) > fabs(rhs.val);
-    }
-  };
-
-  struct ValGreater {
-    bool operator()(const IndPair& lhs, const IndPair& rhs) {
-      return lhs.val > rhs.val;
-    }
-  };
-
-  inline std::string sparseRep(const cvector& v) {
-    std::vector<IndPair> sorted;
-    FOR (i, v.size()) {
-      sorted.push_back(IndPair(i, v(i)));
-    }
-    sort(sorted.begin(), sorted.end(), AbsValGreater());
-    std::ostringstream out;
-    int num_to_print = std::min((unsigned)8, v.size());
-    FOR (i, num_to_print) {
-      out << sorted[i].ind << ":" << sorted[i].val << " ";
-    }
-    return out.str();
-  }
-
-  inline std::string maxRep(const cvector& v) {
-    std::vector<IndPair> sorted;
-    FOR (i, v.size()) {
-      sorted.push_back(IndPair(i, v(i)));
-    }
-    sort(sorted.begin(), sorted.end(), ValGreater());
-    std::ostringstream out;
-    int num_to_print = std::min((unsigned)8, v.size());
-    FOR (i, num_to_print) {
-      out << sorted[i].ind << ":" << sorted[i].val << " ";
-    }
-    return out.str();
-  }
-}
+} // namespace MatrixUtils
 
 #endif // INCublasMatrixUtils_h
 
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2005/01/26 04:15:20  trey
+ * major overhaul
+ *
  * Revision 1.1  2005/01/21 18:07:02  trey
  * preparing for transition to sla matrix types
  *
