@@ -40,6 +40,9 @@ void testBatchIncremental(string algorithm,
 			  bool use_fast_parser)
 {
   PomdpM problem;
+
+  cout << "CFLAGS = " << CFLAGS << endl;
+
   //prob_name = "examples/" + prob_name + ".pomdp";
   problem.readFromFile( prob_name, use_fast_parser );
 
