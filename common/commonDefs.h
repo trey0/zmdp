@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.2 $  $Author: trey $  $Date: 2005-01-26 04:12:23 $
+ * $Revision: 1.3 $  $Author: trey $  $Date: 2005-01-27 05:29:19 $
  *  
  * @file    commonDefs.h
  * @brief   No brief
@@ -9,8 +9,10 @@
 #define INCcommonDefs_h
 
 #define FOR_EACH(elt,collection) \
-  for (typeof((collection).begin()) elt=(collection).begin(); \
-       elt != (collection).end(); elt++)
+  for (typeof((collection).begin()) elt=(collection).begin(), \
+         __end=(collection).end(); \
+       elt != __end; \
+       elt++)
 #define FOR(i,n) \
   for (unsigned int i=0, __n = (n); i<__n; i++)
 
