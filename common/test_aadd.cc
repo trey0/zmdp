@@ -57,7 +57,12 @@ void doit(void) {
 
   add( za, xa, ya );
 
-  cout << "za: ";
+  cout << "za1: ";
+  za.write(cout);
+  cout << endl;
+
+  emult( za, xa, ya );
+  cout << "za2: ";
   za.write(cout);
   cout << endl;
 }
