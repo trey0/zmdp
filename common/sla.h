@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.7 $  $Author: trey $  $Date: 2005-02-09 20:44:35 $
+ * $Revision: 1.8 $  $Author: trey $  $Date: 2005-03-10 21:12:58 $
  *  
  * @file    sla.h
  * @brief   No brief
@@ -201,7 +201,7 @@ namespace sla {
   void kmatrix_transpose_in_place(kmatrix& A);
 
   double norm_1(const cvector& x);
-
+  double norm_inf(const cvector& x);
   double norm_inf(const dvector& x);
 
   // result = A * x
@@ -254,6 +254,12 @@ namespace sla {
 
   // result = x - y
   void subtract(cvector& result, const cvector& x, const cvector& y);
+
+  // return true if for all i: x(i) >= y(i) - eps
+  bool dominates(const dvector& x, const dvector& y, double eps);
+
+  // return true if for all i: x(i) >= y(i) - eps
+  bool dominates(const cvector& x, const cvector& y, double eps);
 
   template <class T>
   void read_from_file(T& x, const std::string& file_name);
@@ -684,6 +690,16 @@ namespace sla {
     return sum;
   }
 
+  inline double norm_inf(const cvector& x)
+  {
+    double val, max = 0.0;
+    FOR_EACH (xi, x.data) {
+      val = fabs(xi->value);
+      if (val > max) max = val;
+    }
+    return max;
+  }
+
   inline double norm_inf(const dvector& x)
   {
     double val, max = 0.0;
@@ -1063,6 +1079,84 @@ namespace sla {
     result.canonicalize();
   }
 
+  // return true if for all i: x(i) >= y(i) - eps
+  inline bool dominates(const dvector& x, const dvector& y, double eps)
+  {
+    FOR (i, x.size()) {
+      if (x(i) < y(i) - eps) return false;
+    }
+    return true;
+  }
+
+  // return true if for all i: x(i) >= y(i) - eps
+  inline bool dominates(const cvector& x, const cvector& y, double eps)
+  {
+    typeof(x.data.begin()) xi, xend;
+    typeof(y.data.begin()) yi, yend;
+    unsigned int xind, yind;
+    bool xdone = false, ydone = false;
+
+    assert( x.size() == y.size() );                    
+
+#define CHECK_X() \
+	if (xi == xend) { \
+	  xdone = true; \
+	  goto main_loop_done; \
+	} else { \
+	  xind = xi->index; \
+	}
+
+#define CHECK_Y() \
+	if (yi == yend) { \
+	  ydone = true; \
+	  goto main_loop_done; \
+	} else { \
+	  yind = yi->index; \
+	}
+
+    xi = x.data.begin();
+    yi = y.data.begin();
+    xend = x.data.end();                 
+    yend = y.data.end();
+
+    CHECK_X();
+    CHECK_Y();
+
+    while (1) {
+      if (xind < yind) {
+	// x(xind) == xi->value, y(xind) == 0
+	if (xi->value < -eps) return false;
+	xi++;
+	CHECK_X();
+      } else if (xind == yind) {
+	// x(xind) == xi->value, y(xind) == yi->value
+	if (xi->value < yi->value - eps) return false;
+	xi++;
+	yi++;
+	CHECK_X();
+	CHECK_Y();
+      } else {
+	// x(yind) == 0, y(yind) == yi->value
+	if (0 < yi->value - eps) return false;
+	yi++;
+	CHECK_Y();
+      }
+    }
+
+  main_loop_done:
+    if (!xdone) {
+      for (; xi != xend; xi++) {
+	if (xi->value < -eps) return false;
+      }
+    } else if (!ydone) {
+      for (; yi != yend; yi++) {
+	if (0 < yi->value - eps) return false;
+      }
+    }
+
+    return true;
+  }
+
   template <class T>
   void read_from_file(T& x, const std::string& file_name)
   {
@@ -1109,6 +1203,9 @@ typedef sla::dvector obs_prob_vector;
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.7  2005/02/09 20:44:35  trey
+ * added emax() and max_assign() functions
+ *
  * Revision 1.6  2005/02/08 23:53:36  trey
  * made it easier to switch between dvector and cvector while using the same functions
  *
