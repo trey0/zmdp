@@ -344,6 +344,22 @@ void test_binary(void)
        << " " << zc(4) << " " << zc(5)
        << " " << zc(6) << endl;
 
+  add( zc, xc, yc );
+
+  cout << "--zc: 0 2 14 13 5 24 19" << endl;
+  cout << "  zc: " << zc(0) << " " << zc(1)
+       << " " << zc(2) << " " << zc(3)
+       << " " << zc(4) << " " << zc(5)
+       << " " << zc(6) << endl;
+
+  add( zc, yc, xc );
+
+  cout << "--zc: 0 2 14 13 5 24 19" << endl;
+  cout << "  zc: " << zc(0) << " " << zc(1)
+       << " " << zc(2) << " " << zc(3)
+       << " " << zc(4) << " " << zc(5)
+       << " " << zc(6) << endl;
+
   cvector_from_dvector( xc, xd );
 
   s = inner_prod( xd, xc );
