@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.2 $  $Author: trey $  $Date: 2005-01-26 04:16:39 $
+ * $Revision: 1.3 $  $Author: trey $  $Date: 2005-01-28 03:22:03 $
  *  
  * @file    slaMatrixUtils.h
  * @brief   No brief
@@ -33,17 +33,17 @@
 
 // convenience macros for iterating through compressed matrices and vectors
 
-#define FOR_CM_ROWS(r, M) \
-  for (unsigned r=0; r < M.size1; r++)
+#define FOR_CM_MAJOR(c, M) \
+  for (unsigned c=0; c < M.size2(); c++)
 
-#define FOR_CM_COLS(r, M) \
-  typeof(M.data.begin()) __cm_begin = M.data.begin() + M.row_starts[r]; \
-  typeof(M.data.begin()) __cm_end   = M.data.begin() + M.row_starts[r+1]; \
-  for (typeof(M.data.begin() __cm_j=__cm_begin; __cm_j != __cm_end; __cm_j++)
+#define FOR_CM_MINOR(c, M) \
+  typeof(M.data.begin()) __cm_begin = M.data.begin() + M.col_starts[c]; \
+  typeof(M.data.begin()) __cm_end   = M.data.begin() + M.col_starts[c+1]; \
+  for (typeof(M.data.begin()) __cm_j=__cm_begin; __cm_j != __cm_end; __cm_j++)
 
 #define CM_VAL(M) (__cm_j->value)
-
-#define CM_COL(M) (__cm_j->index)
+#define CM_ROW(c,M) (__cm_j->index)
+#define CM_COL(c,M) (c)
 
 #define FOR_CV(v) \
   for (typeof(v.data.begin()) __cv_i=v.data.begin(); \
@@ -66,6 +66,7 @@ namespace MatrixUtils {
 
   // Set all entries to zero.
   void set_to_zero(dmatrix& M);
+  void set_to_zero(kmatrix& M);
   void set_to_zero(cmatrix& M);
   void set_to_zero(dvector& v);
   void set_to_zero(cvector& v);
@@ -189,6 +190,11 @@ namespace MatrixUtils {
     M.resize( M.size1(), M.size2() );
   }
 
+  inline void set_to_zero(kmatrix& M)
+  {
+    M.resize( M.size1(), M.size2() );
+  }
+
   inline void set_to_zero(cmatrix& M)
   {
     M.resize( M.size1(), M.size2() );
@@ -211,5 +217,8 @@ namespace MatrixUtils {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2005/01/26 04:16:39  trey
+ * major overhaul
+ *
  *
  ***************************************************************************/
