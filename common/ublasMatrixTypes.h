@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.3 $  $Author: trey $  $Date: 2005-01-26 04:14:40 $
+ * $Revision: 1.4 $  $Author: trey $  $Date: 2005-01-27 05:36:11 $
  *  
  * @file    ublasMatrixTypes.h
  * @brief   No brief
@@ -82,11 +82,28 @@ namespace boost { namespace numeric { namespace ublas {
     }
   }
 
+  // result = x
+  inline void dvector_from_cvector(dvector& result, const cvector& x)
+  {
+    result.resize( x.size() );
+    FOR (i, x.size()) {
+      result(i) = x(i);
+    }
+  }
+
   // result = A
   inline void cmatrix_from_kmatrix(cmatrix& result, const kmatrix& A)
   {
     result.resize( A.size1(), A.size2() );
     result = A;
+  }
+
+  // result = A(:,c)
+  inline void cvector_from_cmatrix_column(cvector& result,
+					  cmatrix& A,
+					  unsigned int c)
+  {
+    result = matrix_column<cmatrix>(A,c);
   }
 
   // A(r,c) = v
@@ -96,6 +113,12 @@ namespace boost { namespace numeric { namespace ublas {
     if (fabs(v) > SPARSE_EPS) {
       A(r,c) = v;
     }
+  }
+
+  // A = A'
+  inline void kmatrix_transpose_in_place(kmatrix& A)
+  {
+    A = trans(A);
   }
 
   inline void mult(dvector& result,
@@ -110,6 +133,12 @@ namespace boost { namespace numeric { namespace ublas {
 		   const cvector& x)
   {
     axpy_prod( A, x, result, true );
+  }
+
+  // result = x * A
+  inline void mult(dvector& result, const dvector& x, const cmatrix& A)
+  {
+    axpy_prod( x, A, result, true );
   }
 
   inline void write(const cmatrix& A, std::ostream& out)
@@ -158,6 +187,9 @@ namespace boost { namespace numeric { namespace ublas {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2005/01/26 04:14:40  trey
+ * added sla compatibility functions
+ *
  * Revision 1.2  2005/01/21 18:07:02  trey
  * preparing for transition to sla matrix types
  *
