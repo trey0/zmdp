@@ -5,7 +5,9 @@
 
 #include "PomdpM.h"
 #include "MatrixUtils.h"
-#include "FocusedPomdp.h"
+#if USE_CPLEX
+#  include "FocusedPomdp.h"
+#endif
 #include "EMPomdp.h"
 #include "Interleave.h"
 
@@ -13,9 +15,13 @@ using namespace std;
 using namespace MatrixUtils;
 
 void usage(void) {
-  cout << "usage: testPomdp <algorithm> <probname> [minOrder maxOrder]"
-       << "  valid algorithms are 'hsvi' and 'empomdp'"
-       << endl;
+  cerr <<
+    "usage: testPomdp <algorithm> <probname> [minOrder maxOrder]\n"
+    "  available algorithms:\n"
+#if USE_CPLEX
+    "    hsvi\n"
+#endif
+    "    empomdp\n";
   exit(-1);
 }
 
@@ -28,11 +34,17 @@ void testBatchIncremental(string algorithm,
   p->readFromFile(prob_name);
 
   Solver* solver;
-  if (algorithm == "hsvi") {
+  if (0) {
+  }
+#if USE_CPLEX
+  else if (algorithm == "hsvi") {
     solver = new FocusedPomdp();
-  } else if (algorithm == "empomdp") {
+  }
+#endif
+  else if (algorithm == "empomdp") {
     solver = new EMPomdp();
-  } else {
+  }
+  else {
     cerr << "ERROR: unknown algorithm " << algorithm << endl << endl;
     usage();
   }
@@ -57,7 +69,7 @@ void testBatchIncremental(string algorithm,
 int main(int argc, char **argv) {
   init_matrix_utils();
 
-  char *algorithm = "";
+  char *algorithm = NULL;
   char *prob_name = NULL;
   int min_order = -1;
   int max_order = -1;

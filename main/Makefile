@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.2 2004-11-14 00:31:47 trey Exp $
+# $Id: Makefile,v 1.3 2004-11-15 23:43:03 trey Exp $
 #
 # PROJECT:      FIRE Architecture Project
 # DESCRIPTION:  
@@ -43,8 +43,11 @@ else
   USER_CFLAGS := -O3
 endif
 
-ifeq (1,1)
+BINARY_NAME := testPomdp
+
+ifeq (1,0)
   # use cplex
+  BINARY_NAME := testPomdpWithCplex
   CPLEX_DIR := $(EXTERNAL_DIR)/ilog/cplex81
   CFLAGS += -DUSE_CPLEX=1 -I$(CPLEX_DIR)/include
   LDFLAGS += \
@@ -53,16 +56,13 @@ ifeq (1,1)
 	-Wl,-rpath -Wl,$(EXTERNAL_DIR)/stdc++ \
 	             -L$(EXTERNAL_DIR)/stdc++
   LP_LIBS := -lcplex81 -lpthread
-else
-  # use lp_solve
-  # NOTE! The lp_solve interface is out of date since we switched to sparse matrices!
-  LP_LIBS := -llpkit
+  EXTRA_DEP_LIBS := -lhsvi
 endif
 
-BUILDBIN_TARGET := testPomdp
+BUILDBIN_TARGET := $(BINARY_NAME)
 BUILDBIN_SRCS := testPomdp.cc
 BUILDBIN_INDEP_LIBS := -lcommonTime $(LP_LIBS)
-BUILDBIN_DEP_LIBS := -lhsvi -lempomdp -lpomdpUtils -lpomdp_spec
+BUILDBIN_DEP_LIBS := $(EXTRA_DEP_LIBS) -lempomdp -lpomdpUtils -lpomdp_spec
 include $(BUILD_DIR)/buildbin.mak
 
 ######################################################################
@@ -72,6 +72,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.2  2004/11/14 00:31:47  trey
+# now select algorithm to run from command line
+#
 # Revision 1.1  2004/11/13 23:48:54  trey
 # rearranged testPomdp into the main directory
 #
