@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.2 $  $Author: trey $  $Date: 2005-01-26 04:10:12 $
+ * $Revision: 1.3 $  $Author: trey $  $Date: 2005-01-27 05:34:10 $
  *  
  * @file    sla.h
  * @brief   No brief
@@ -35,8 +35,13 @@ namespace sla {
   struct dvector {
     std::vector<double> data;
     
+    dvector(void) {}
+    dvector(unsigned int _size) { resize(_size); }
+
     double& operator()(unsigned int i) { return data[i]; }
     double operator()(unsigned int i) const { return data[i]; }
+    void operator*=(double s);
+    void operator+=(const dvector& x);
 
     unsigned int size(void) const { return data.size(); }
     void resize(unsigned int _size, double value = 0.0);
@@ -65,12 +70,18 @@ namespace sla {
     unsigned int size_;
     std::vector< cvector_entry > data;
     
+    cvector(void) : size_(0) {}
+    cvector(unsigned int _size) { resize(_size); }
+
     double operator()(unsigned int index) const;
+    void operator*=(double s);
 
     unsigned int size(void) const { return size_; }
+    unsigned int filled(void) const { return data.size(); }
+
     void resize(unsigned int _size, unsigned int _non_zeros = 0);
     void push_back(unsigned int index, double value);
-    void canonicalize(void);
+    void canonicalize(void) {}
 
     void read(std::istream& in);
   };
@@ -113,8 +124,11 @@ namespace sla {
     unsigned int size1_, size2_;
     std::vector< kmatrix_entry > data;
 
+    double operator()(unsigned int r, unsigned int c) const;
+
     unsigned int size1(void) const { return size1_; }
     unsigned int size2(void) const { return size2_; }
+    unsigned int filled(void) const { return data.size(); }
     void resize(unsigned int _size1, unsigned int _size2, double value = 0.0);
     void push_back(unsigned int r, unsigned int c, double value);
     void canonicalize(void);
@@ -160,9 +174,20 @@ namespace sla {
   // result = A (side-effect: canonicalizes A)
   void cmatrix_from_kmatrix(cmatrix& result, kmatrix& A);
 
+  // result = A(.,c)
+  inline void cvector_from_cmatrix_column(cvector& result, const cmatrix& A,
+					  int c);
+
   // A(r,c) = v
   void kmatrix_set_entry(kmatrix& A, unsigned int r, unsigned int c,
 			 double v);
+
+  // A = A'
+  void kmatrix_transpose_in_place(kmatrix& A);
+
+  double norm_1(const cvector& x);
+
+  double norm_inf(const dvector& x);
 
   // result = A * x
   void mult(dvector& result, const cmatrix& A, const cvector& x);
@@ -170,6 +195,15 @@ namespace sla {
 
   // result = A * x
   void mult(cvector& result, const cmatrix& A, const cvector& x);
+
+  // result = x * A
+  void mult(dvector& result, const dvector& x, const cmatrix& A);
+
+  // result = x .* y [for all i, result(i) = x(i) * y(i)]
+  void emult(cvector& result, const cvector& x, const cvector& y);
+
+  // return x' * y
+  double inner_prod(const dvector& x, const cvector& y);
 
   template <class T>
   void read_from_file(T& x, const std::string& file_name);
@@ -181,10 +215,33 @@ namespace sla {
    * DVECTOR FUNCTIONS
    **********************************************************************/
 
+  inline void dvector::operator*=(double s)
+  {
+    FOR_EACH (di, data) {
+      (*di) *= s;
+    }
+  }
+
+  inline void dvector::operator+=(const dvector& x)
+  {
+    typeof(x.data.begin()) xi;
+
+    assert( size() == x.size() );
+
+    xi = x.data.begin();
+    FOR_EACH (di, data) {
+      (*di) += (*xi);
+      xi++;
+    }
+  }
+
   inline void dvector::resize(unsigned int _size, double value)
   {
     assert(0 == value);
-    data.resize( _size, 0 );
+    data.resize( _size );
+    FOR_EACH (di, data) {
+      (*di) = 0.0;
+    }
   }
 
   inline void dvector::read(std::istream& in)
@@ -235,6 +292,14 @@ namespace sla {
     return 0.0;
   }
 
+  inline void cvector::operator*=(double s)
+  {
+    typeof(data.begin()) vi, vend = data.end();
+    for (vi = data.begin(); vi != vend; vi++) {
+      vi->value *= s;      
+    }
+  }
+
   inline void cvector::resize(unsigned int _size, unsigned int _non_zeros)
   {
     assert( 0 == _non_zeros );
@@ -279,12 +344,29 @@ namespace sla {
     assert( 0 == value );
     size1_ = _size1;
     size2_ = _size2;
-    data.resize( size1_ * size2_, 0 );
+    data.resize( size1_ * size2_ );
+    FOR_EACH (di, data) {
+      (*di) = 0.0;
+    }
   }
 
   /**********************************************************************
    * KMATRIX FUNCTIONS
    **********************************************************************/
+
+  inline double kmatrix::operator()(unsigned int r, unsigned int c) const
+  {
+    assert( 0 <= r < size1() );
+    assert( 0 <= c < size2() );
+    // NOTE: also assumes the kmatrix has been canonicalized
+
+    FOR_EACH (di, data) {
+      if (di->r == r && di->c == c) {
+	return di->value;
+      }
+    }
+    return 0.0;
+  }
 
   inline void kmatrix::resize(unsigned int _size1, unsigned int _size2,
 			      double value)
@@ -355,9 +437,9 @@ namespace sla {
   inline double cmatrix::operator()(unsigned int r, unsigned int c) const
   {
     typeof(data.begin()) di;
-    typeof(data.begin()) row_end = data.begin() + col_starts[c+1];
+    typeof(data.begin()) col_end = data.begin() + col_starts[c+1];
 
-    for (di = data.begin() + col_starts[c]; di != row_end; di++) {
+    for (di = data.begin() + col_starts[c]; di != col_end; di++) {
       if (di->index >= r) {
 	if (di->index == r) {
 	  return di->value;
@@ -376,7 +458,10 @@ namespace sla {
     assert( 0 == _non_zeros );
     size1_ = _size1;
     size2_ = _size2;
-    col_starts.resize( size2()+1, 0 );
+    col_starts.resize( size2()+1 );
+    FOR_EACH (ci, col_starts) {
+      (*ci) = 0;
+    }
     data.clear();
   }
 
@@ -444,7 +529,7 @@ namespace sla {
     //std::cout << "convert: num_filled=" << num_filled << std::endl;
     
     // resize result vector
-    result.resize( x.data.size() );
+    result.resize( x.size() );
     result.data.resize(num_filled);
     
     // copy non-zeros to result
@@ -472,6 +557,22 @@ namespace sla {
     result.canonicalize();
   }
 
+  // result = A(.,c)
+  inline void cvector_from_cmatrix_column(cvector& result, const cmatrix& A, int c)
+  {
+    typeof(A.data.begin()) Ai, col_start, col_end;
+    typeof(result.data.begin()) ri;
+
+    col_start = A.data.begin() + A.col_starts[c];
+    col_end   = A.data.begin() + A.col_starts[c+1];
+
+    result.resize( A.size2() );
+    result.data.resize( col_end - col_start );
+    for (Ai = col_start, ri=result.data.begin(); Ai != col_end; Ai++, ri++) {
+      (*ri) = (*Ai);
+    }
+  }
+
   // A(r,c) = v
   inline void kmatrix_set_entry(kmatrix& A, unsigned int r, unsigned int c,
 				double v)
@@ -479,12 +580,40 @@ namespace sla {
     A.push_back( r, c, v );
   }
 
+  // A = A'
+  inline void kmatrix_transpose_in_place(kmatrix& A)
+  {
+    FOR_EACH ( Ai, A.data ) {
+      std::swap( Ai->r, Ai->c );
+    }
+    A.canonicalize();
+  }
+
+  inline double norm_1(const cvector& x)
+  {
+    double sum = 0.0;
+    FOR_EACH (xi, x.data) {
+      sum += fabs(xi->value);
+    }
+    return sum;
+  }
+
+  inline double norm_inf(const dvector& x)
+  {
+    double val, max = 0.0;
+    FOR_EACH (xi, x.data) {
+      val = fabs(*xi);
+      if (val > max) max = val;
+    }
+    return max;
+  }
+
   // result = A * x
   inline void mult(dvector& result,
 		   const cmatrix& A,
 		   const cvector& x)
   {
-    typeof(A.data.begin()) Ai, row_end;
+    typeof(A.data.begin()) Ai, col_end;
     int xind;
     double xval;
     
@@ -493,9 +622,9 @@ namespace sla {
     FOR_EACH (xi, x.data) {
       xind = xi->index;
       xval = xi->value;
-      row_end = A.data.begin() + A.col_starts[xind+1];
+      col_end = A.data.begin() + A.col_starts[xind+1];
       for (Ai = A.data.begin() + A.col_starts[xind];
-	   Ai != row_end;
+	   Ai != col_end;
 	   Ai++) {
 	result.data[Ai->index] += xval * Ai->value;
       }
@@ -513,6 +642,62 @@ namespace sla {
     cvector_from_dvector( result, tmp );
   }
   
+  // result = x * A
+  inline void mult(dvector& result, const dvector& x, const cmatrix& A)
+  {
+    typeof(A.data.begin()) Ai, col_end;
+
+    assert( x.size() == A.size2() );
+    result.resize( x.size() );
+
+    FOR (c, result.size()) {
+      col_end = A.data.begin() + A.col_starts[c+1];
+      for (Ai = A.data.begin() + A.col_starts[c];
+	   Ai != col_end; Ai++) {
+	result(c) += x(Ai->index) * Ai->value;
+      }
+    }
+  }
+
+  // result = x .* y [for all i, result(i) = x(i) * y(i)]
+  inline void emult(cvector& result, const cvector& x, const cvector& y) {
+    typeof(x.data.begin()) xi, xend;
+    typeof(y.data.begin()) yi, yend;
+
+    assert( x.size() == y.size() );
+    result.resize( x.size() );
+
+    yi = y.data.begin();
+    xend = x.data.end();
+    yend = y.data.end();
+
+    for (xi = x.data.begin(); xi != xend; xi++) {
+      while (1) {
+	if (yi == yend) goto break_outer_loop;
+	if (yi->index >= xi->index) {
+	  if (yi->index == xi->index) {
+	    result.push_back( xi->index, xi->value * yi->value);
+	  }
+	  break;
+	}
+	yi++;
+      }
+    }
+  break_outer_loop:
+    result.canonicalize();
+  }
+
+  // return x' * y
+  inline double inner_prod(const dvector& x, const cvector& y)
+  {
+    assert( x.size() == y.size() );
+    double sum = 0.0;
+    FOR_EACH (yi, y.data) {
+      sum += x(yi->index) * yi->value;
+    }
+    return sum;
+  }
+
   template <class T>
   void read_from_file(T& x, const std::string& file_name)
   {
@@ -539,22 +724,25 @@ namespace sla {
     out.close();
   }
 			  
-  /**********************************************************************
-   * TYPE ALIASES
-   **********************************************************************/
-
-  // select storage types of the data structures we use
-  typedef cvector belief_vector;
-  typedef dvector alpha_vector;
-  typedef dvector obs_prob_vector;
-
 } // namespace sla
+
+/**********************************************************************
+ * TYPE ALIASES
+ **********************************************************************/
+
+// select storage types of the data structures we use
+typedef sla::cvector belief_vector;
+typedef sla::dvector alpha_vector;
+typedef sla::dvector obs_prob_vector;
 
 #endif // INCsla_h
 
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2005/01/26 04:10:12  trey
+ * implemented several functions
+ *
  * Revision 1.1  2005/01/21 18:07:02  trey
  * preparing for transition to sla matrix types
  *
