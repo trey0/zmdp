@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.4 $  $Author: trey $  $Date: 2005-02-08 23:53:04 $
+ * $Revision: 1.5 $  $Author: trey $  $Date: 2005-03-28 18:11:40 $
  *  
  * @file    MDPValueIteration.cc
  * @brief   No brief
@@ -101,7 +101,7 @@ void MDPValueFunction::valueIteration(PomdpP _pomdp, double eps) {
     residual = valueIterationOneStep();
     cout << ".";
     cout.flush();
-    if (residual / (1 - pomdp->discount) < eps) {
+    if (residual < eps) {
       cout << endl;
       return;
     }
@@ -124,6 +124,9 @@ void testMDP(void) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2005/02/08 23:53:04  trey
+ * updated to work for alpha_vector = cvector
+ *
  * Revision 1.3  2005/01/28 03:17:07  trey
  * fixed bug by zeroing tmp, switched to use -= operator
  *
