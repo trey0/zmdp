@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.1 $  $Author: trey $  $Date: 2004-11-13 23:29:44 $
+ * $Revision: 1.2 $  $Author: trey $  $Date: 2005-01-27 05:33:20 $
  *  
  * @file    PomdpSim.cc
  * @brief   No brief
@@ -51,6 +51,11 @@ void PomdpSim::restart(void) {
 #define BELIEF_SIM 0
 
 void PomdpSim::performAction(int a) {
+  double r;
+  int sp, o;
+  cvector O_axo, Ta_times_b, tau;
+  double imm_reward;
+
   if (terminated) {
     cerr << "ERROR: trying to perform action when simulation is terminated"
 	 << " (elapsedTime=" << elapsedTime << ", lastState=" << lastState << ")"
@@ -60,14 +65,16 @@ void PomdpSim::performAction(int a) {
 
   // increment reward
 #if BELIEF_SIM
-  double imm_reward = inner_prod( matrix_column<bmatrix>(pomdp->R,a),
+  imm_reward = inner_prod( matrix_column<bmatrix>(pomdp->R,a),
 				  currentBelief );
 #else
-  double imm_reward = pomdp->R(state, a);
+  imm_reward = pomdp->R(state, a);
 #endif
+
   rewardSoFar += pow(pomdp->discount, elapsedTime) * imm_reward;
+
 #if 0
-  double rval = pomdp->R(state, a);
+  rval = pomdp->R(state, a);
   if (rval > 0) {
     cout << "got non-zero reward rval=" << rval << ","
 	 << " (elapsedTime=" << elapsedTime << ", state=" << state << ")"
@@ -80,12 +87,31 @@ void PomdpSim::performAction(int a) {
   // in belief-sim mode, regenerate state each time from current belief distribution
   state = chooseFromDistribution(currentBelief);
 #endif
-  // calls to belief_vector and obs_prob_vector remove type ambiguity in call to
-  //   chooseFromDistribution()
-  int sp = chooseFromDistribution
-    ( belief_vector(matrix_row<bmatrix>(pomdp->T[a], state)) );
-  int o = chooseFromDistribution
-    ( obs_prob_vector(matrix_row<bmatrix>(pomdp->O[a], sp)) );
+#define CHOOSE_EPS (1e-10)
+
+  // draw next state sp based on current state and T
+  r = unit_rand();
+  sp = 0;
+  FOR (i, pomdp->numStates) {
+    r -= pomdp->Ttr[a](i,state);
+    if (r < 0) {
+      sp = i;
+      break;
+    }
+  }
+  assert( r < CHOOSE_EPS );
+
+  // draw observation o based on sp ond O
+  r = unit_rand();
+  o = 0;
+  FOR (i, pomdp->numObservations) {
+    r -= pomdp->O[a](sp,i);
+    if (r < 0) {
+      o = i;
+      break;
+    }
+  }
+  assert( r < CHOOSE_EPS );
 
 #if 0
   cout << "sim: s=" << state << ", a=" << a << ", sp=" << sp << ", o=" << o << endl;
@@ -112,9 +138,24 @@ void PomdpSim::performAction(int a) {
   // update the belief according to Bayes rule, using only knowledge of the
   //   observation.  technically, belief tracking could be considered part
   //   of the solution algorithm, but it seems ok to do it here for convenience.
+
+  // O_axo = pomdp->O[a](:,o)
+  cvector_from_cmatrix_column( O_axo, pomdp->O[a], o );
+
+  // Ta_times_b = pomdp->Ttr[a] * currentBelief
+  mult( Ta_times_b, pomdp->Ttr[a], currentBelief );
+
+  // tau = O_axo .* Ta_times_b
+  emult( tau, O_axo, Ta_times_b );
+
+  tau *= (1.0 / norm_1(tau));
+  currentBelief = tau;
+
+#if 0
   currentBelief = eprod( belief_vector(matrix_column<bmatrix>(pomdp->O[a], o)),
 			 belief_vector(prod( currentBelief, pomdp->T[a] )) );
   currentBelief /= norm_1(currentBelief);
+#endif
 
   if (simOutFile) {
     (*simOutFile) << "belief: " << sparseRep(currentBelief) << endl;
@@ -126,6 +167,9 @@ void PomdpSim::performAction(int a) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2004/11/13 23:29:44  trey
+ * moved many files from hsvi to common
+ *
  * Revision 1.1.1.1  2004/11/09 16:18:56  trey
  * imported hsvi into new repository
  *

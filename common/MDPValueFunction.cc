@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.1 $  $Author: trey $  $Date: 2004-11-24 20:48:04 $
+ * $Revision: 1.2 $  $Author: trey $  $Date: 2005-01-27 05:30:10 $
  *  
  * @file    MDPValueIteration.cc
  * @brief   No brief
@@ -24,7 +24,7 @@
 using namespace std;
 using namespace MatrixUtils;
 
-alpha_vector MDPValueFunction::nextAlphaAction(int a) {
+void MDPValueFunction::nextAlphaAction(alpha_vector& result, int a) {
 #if 0
   alpha_vector x(numStates), y(numStates);
   x = matrix_column<bmatrix>( pomdp->R, a );
@@ -40,22 +40,45 @@ alpha_vector MDPValueFunction::nextAlphaAction(int a) {
        << "sum = " << maxRep(sum) << endl;
   return sum;
 #endif
+
+  cvector cR_xa;
+  dvector R_xa;
+
+  mult( result, alpha, pomdp->Ttr[a] );
+  result *= pomdp->discount;
+  cvector_from_cmatrix_column( cR_xa, pomdp->R, a );
+  dvector_from_cvector( R_xa, cR_xa );
+  result += R_xa;
+
+#if 0
   return matrix_column<bmatrix>( pomdp->R, a )
     + pomdp->discount * prod( pomdp->T[a], alpha );
+#endif
 }
 
 double MDPValueFunction::valueIterationOneStep(void) {
   alpha_vector nextAlpha(numStates), naa(numStates);
-  nextAlpha = nextAlphaAction(0);
+  alpha_vector tmp;
+  double maxResidual;
+
+  nextAlphaAction(nextAlpha,0);
   FOR (a, pomdp->numActions) {
-    naa = nextAlphaAction(a);
+    nextAlphaAction(naa,a);
     FOR (s, numStates) {
       if (naa(s) > nextAlpha(s)) nextAlpha(s) = naa(s);
     }
   }
 
+  tmp = alpha;
+  tmp *= -1;
+  tmp += nextAlpha;
+  maxResidual = norm_inf(tmp);
+
+#if 0
   // norm_inf(v) = max_i |v_i|
-  double maxResidual = norm_inf(nextAlpha - alpha);
+  maxResidual = norm_inf(nextAlpha - alpha);
+#endif
+
 #if 0
   cout << "maxResidual = " << maxResidual << endl
        << "alpha = " << maxRep(alpha) << endl;
@@ -97,12 +120,15 @@ void testMDP(void) {
   //p->readFromFile("examples/simple.pomdp");
   p->readFromFile("examples/hallway.pomdp");
   m.valueIteration(p, 1e-3);
-  cout << "final alpha = " << m.alpha << endl;
+  cout << "final alpha = " << sparseRep(m.alpha) << endl;
 }
 
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2004/11/24 20:48:04  trey
+ * moved to common from hsvi
+ *
  * Revision 1.1.1.1  2004/11/09 16:18:56  trey
  * imported hsvi into new repository
  *

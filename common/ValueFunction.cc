@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.2 $  $Author: trey $  $Date: 2005-01-26 04:12:06 $
+ * $Revision: 1.3 $  $Author: trey $  $Date: 2005-01-27 05:33:40 $
  *  
  * @file    ValueFunction.cc
  * @brief   No brief
@@ -24,7 +24,7 @@
 
 using namespace std;
 using namespace MatrixUtils;
-using namespace boost::numeric::ublas;
+using namespace MATRIX_NAMESPACE;
 
 /**********************************************************************
  * MEMBER FUNCTIONS
@@ -41,16 +41,16 @@ bool ValueFunction::consistentWith(const ValueFunction& rhs, int numSamples,
   FOR (i, numSamples) {
     rand_vector(bd,numStates);
     cvector_from_dvector(b,bd);
-    b /= norm_1(b); // normalize so components add to 1
+    b *= (1.0/norm_1(b)); // normalize so components add to 1
     selfint = getValueAt(b);
     rhsint = rhs.getValueAt(b);
     if (debug) {
-      cout << "b' = " << b;
+      cout << "b' = " << sparseRep(b) << endl;;
       cout << "lhs = " << selfint << endl;
       cout << "rhs = " << rhsint << endl << endl;
     }
     if (!selfint.overlapsWith(rhsint)) {
-      cout << "inconsistent at b' = " << b;
+      cout << "inconsistent at b' = " << sparseRep(b) << endl;
       cout << "lhs = " << selfint << endl;
       cout << "rhs = " << rhsint << endl << endl;
       return false;
@@ -62,6 +62,9 @@ bool ValueFunction::consistentWith(const ValueFunction& rhs, int numSamples,
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2005/01/26 04:12:06  trey
+ * fixed for new rand_vector() API
+ *
  * Revision 1.1  2004/11/24 20:48:05  trey
  * moved to common from hsvi
  *
