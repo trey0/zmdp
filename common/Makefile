@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.9 2005-03-10 21:12:04 trey Exp $
+# $Id: Makefile,v 1.10 2005-03-25 16:09:12 trey Exp $
 #
 # PROJECT:      FIRE Architecture Project
 # DESCRIPTION:  
@@ -31,11 +31,13 @@ INSTALLHEADERS_HEADERS := \
 	Interleave.h \
 	ublasMatrixUtils.h \
 	slaMatrixUtils.h \
+	MatrixUtils.h \
 	PomdpM.h \
 	PomdpSim.h \
 	Solver.h \
 	ValueFunction.h \
-	MDPValueFunction.h
+	MDPValueFunction.h \
+	QMDP.h
 include $(BUILD_DIR)/installheaders.mak
 
 BUILDLIB_TARGET := libpomdpUtils.a
@@ -81,6 +83,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.9  2005/03/10 21:12:04  trey
+# commented out test_aadd
+#
 # Revision 1.8  2005/03/09 18:52:05  trey
 # added build of test_aadd
 #
