@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.2 2004-11-09 21:31:59 trey Exp $
+# $Id: Makefile,v 1.3 2005-01-17 19:37:14 trey Exp $
 #
 # PROJECT:      FIRE Architecture Project
 # DESCRIPTION:  
@@ -12,6 +12,8 @@ include $(CHECKOUT_DIR)/src/build/header.mak
 
 ######################################################################
 # PLACE MODIFICATIONS BELOW THIS LINE
+
+include $(SRC_DIR)/common/options.mak
 
 # ADD ANY SUBDIRS THAT NEED TO BE VISITED DURING A BUILD TO THE SUBDIRS LIST
 SUBDIRS := 
@@ -43,6 +45,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.2  2004/11/09 21:31:59  trey
+# got pomdp source tree into a building state again
+#
 # Revision 1.1.1.1  2004/11/09 16:18:56  trey
 # imported hsvi into new repository
 #

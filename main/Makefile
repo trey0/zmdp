@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.4 2004-12-16 04:00:40 trey Exp $
+# $Id: Makefile,v 1.5 2005-01-17 19:37:14 trey Exp $
 #
 # PROJECT:      FIRE Architecture Project
 # DESCRIPTION:  
@@ -12,6 +12,8 @@ include $(CHECKOUT_DIR)/src/build/header.mak
 
 ######################################################################
 # PLACE MODIFICATIONS BELOW THIS LINE
+
+include $(SRC_DIR)/common/options.mak
 
 # ADD ANY SUBDIRS THAT NEED TO BE VISITED DURING A BUILD TO THE SUBDIRS LIST
 SUBDIRS :=
@@ -65,6 +67,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.4  2004/12/16 04:00:40  trey
+# removed USER_CFLAGS, can now turn on cplex use with USE_CPLEX=1
+#
 # Revision 1.3  2004/11/15 23:43:03  trey
 # there are now distinct binaries testPomdp and testPomdpWithCplex
 #
