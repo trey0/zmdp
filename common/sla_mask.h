@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.1 $  $Author: trey $  $Date: 2005-03-10 21:13:23 $
+ * $Revision: 1.2 $  $Author: trey $  $Date: 2005-03-28 18:13:06 $
  *  
  * @file    sla_mask.h
  * @brief   Implements operations for masked compressed vectors.
@@ -21,7 +21,10 @@ namespace sla {
    **********************************************************************/
 
   // m = ones(1,msize)
-  void set_to_all_ones(mvector& m, int msize);
+  void mask_set_all(mvector& m, int msize);
+
+  // for all i: result(i) = m(i) ? 1 : 0
+  void mask_set_to_one(cvector& result, const mvector& m);
 
   // return true if non-zeros of x constitute a subset of m
   bool mask_subset(const cvector& x, const mvector& m);
@@ -46,13 +49,25 @@ namespace sla {
    **********************************************************************/
 
   // m = ones(msize)
-  inline void set_to_all_ones(mvector& m, int msize)
+  inline void mask_set_all(mvector& m, int msize)
   {
     m.resize( msize );
     FOR (i, msize) {
       m.push_back( i, 1 );
     }
     m.canonicalize();
+  }
+
+  // for all i: result(i) = m(i) ? 1 : 0
+  inline void mask_set_to_one(cvector& result, const mvector& m)
+  {
+    typeof(result.data.begin()) ri, rend;
+
+    result = m;
+    rend = result.data.end();
+    for (ri = result.data.begin(); ri != rend; ri++) {
+      ri->value = 1;
+    }
   }
 
   // return true if non-zeros of x constitute a subset of m
@@ -140,5 +155,8 @@ namespace sla {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2005/03/10 21:13:23  trey
+ * initial check-in
+ *
  *
  ***************************************************************************/
