@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.2 2004-11-13 23:29:44 trey Exp $
+# $Id: Makefile,v 1.3 2004-11-24 20:48:29 trey Exp $
 #
 # PROJECT:      FIRE Architecture Project
 # DESCRIPTION:  
@@ -27,7 +27,9 @@ INSTALLHEADERS_HEADERS := \
 	MatrixUtils.h \
 	PomdpM.h \
 	PomdpSim.h \
-	Solver.h
+	Solver.h \
+	ValueFunction.h \
+	MDPValueFunction.h
 include $(BUILD_DIR)/installheaders.mak
 
 BUILDLIB_TARGET := libpomdpUtils.a
@@ -36,7 +38,9 @@ BUILDLIB_SRCS := \
 	Interleave.cc \
 	MatrixUtils.cc \
 	PomdpM.cc \
-	PomdpSim.cc
+	PomdpSim.cc \
+	ValueFunction.cc \
+	MDPValueFunction.cc
 include $(BUILD_DIR)/buildlib.mak
 
 BUILDLIB_TARGET := libcommonTime.a
@@ -50,6 +54,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.2  2004/11/13 23:29:44  trey
+# moved many files from hsvi to common
+#
 # Revision 1.1  2004/11/09 21:28:24  trey
 # check-in to pomdp repository
 #
