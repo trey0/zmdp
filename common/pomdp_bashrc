@@ -29,7 +29,7 @@ else
 fi
 
 # now we add what we want.
-export PATH=$POMDP_SOFTWARE_DIR/bin/linux2:$POMDP_SOFTWARE_DIR/bin/common:$POMDP_SOFTWARE_DIR/external/bin/linux2:$fpath
+export PATH=$POMDP_SOFTWARE_DIR/bin/linux2:$POMDP_SOFTWARE_DIR/bin/common:$POMDP_SOFTWARE_DIR/external/bin/linux2:$POMDP_SOFTWARE_DIR/src/tools:$fpath
 
 # for loading shared libs
 #export LD_LIBRARY_PATH=$POMDP_SOFTWARE_DIR/lib/linux2:$POMDP_SOFTWARE_DIR/external/lib/linux2
@@ -52,5 +52,8 @@ function cvsstat () {
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.2  2004/11/10 20:46:38  trey
+# fixed project-specific names
+#
 # Revision 1.1  2004/11/09 21:28:24  trey
 # check-in to pomdp repository
