@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.1 $  $Author: trey $  $Date: 2004-11-13 23:29:44 $
+ * $Revision: 1.2 $  $Author: trey $  $Date: 2005-01-26 04:12:23 $
  *  
  * @file    commonDefs.h
  * @brief   No brief
@@ -13,6 +13,8 @@
        elt != (collection).end(); elt++)
 #define FOR(i,n) \
   for (unsigned int i=0, __n = (n); i<__n; i++)
+
+#define SPARSE_EPS (1e-10)
 
 // argmax(start, end, f) returns the element x between start and end
 //   that has the highest f(x) value.
