@@ -6,11 +6,11 @@
 #include <fstream>
 
 #include "PomdpM.h"
-#include "MatrixUtils.h"
 #include "FocusedPomdp.h"
 #if USE_EMPOMDP
 #  include "EMPomdp.h"
 #endif
+#include "QMDP.h"
 #include "Interleave.h"
 #include "stdinInterface.h"
 
@@ -21,7 +21,8 @@ void usage(void) {
   cerr <<
     "usage: testPomdp OPTIONS <algorithm> <probname> [minOrder maxOrder]\n"
     "  -h or --help       Print this help\n"
-    "  -f or --fast       Use fast (but very picky) alternate parser\n"
+    "  --version          Print version information\n"
+    "  -f or --fast       Use fast (but very picky) alternate problem parser\n"
     "  -i or --iterations Set number of simulation iterations (default: 1000)\n"
     "  -n or --no-console Do not poll for user console commands\n"
     "\n"
@@ -30,6 +31,7 @@ void usage(void) {
 #if USE_EMPOMDP
     "    empomdp\n"
 #endif
+    "    qmdp\n"
 ;
   exit(-1);
 }
@@ -101,6 +103,9 @@ void testBatchIncremental(string algorithm,
     solver = new EMPomdp();
   }
 #endif
+  else if (algorithm == "qmdp") {
+    solver = new QMDP();
+  }
   else {
     cerr << "ERROR: unknown algorithm " << algorithm << endl << endl;
     usage();
@@ -128,16 +133,20 @@ int main(int argc, char **argv) {
 
   char *algorithm = NULL;
   char *prob_name = NULL;
-  int min_order = -1;
-  int max_order = -1;
+  int min_order = -999;
+  int max_order = -999;
   bool use_fast_parser = false;
   int num_iterations = 1000;
+  bool past_options = false;
 
   for (int argi=1; argi < argc; argi++) {
     string args = argv[argi];
-    if (args[0] == '-') {
+    if (args[0] == '-' && !past_options) {
       if (args == "-h" || args == "--help") {
 	usage();
+      } else if (args == "--version") {
+	cout << "CFLAGS = " << CFLAGS << endl;
+	exit(EXIT_SUCCESS);
       } else if (args == "-f" || args == "--fast") {
 	use_fast_parser = true;
       } else if (args == "-i" || args == "--iterations") {
@@ -147,6 +156,9 @@ int main(int argc, char **argv) {
 	num_iterations = atoi(argv[argi]);
       } else if (args == "-n" || args == "--no-console") {
 	setPollingEnabled(0);
+      } else if (args == "--") {
+	past_options = true;
+	cout << "got --" << endl;
       } else {
 	cerr << "ERROR: unknown option " << args << endl << endl;
 	usage();
@@ -155,9 +167,9 @@ int main(int argc, char **argv) {
       algorithm = argv[argi];
     } else if (prob_name == NULL) {
       prob_name = argv[argi];
-    } else if (min_order == -1) {
+    } else if (-999 == min_order) {
       min_order = atoi(argv[argi]);
-    } else if (max_order == -1) {
+    } else if (-999 == max_order) {
       max_order = atoi(argv[argi]);
     } else {
       cerr << "ERROR: too many arguments" << endl << endl;
@@ -169,10 +181,10 @@ int main(int argc, char **argv) {
     cerr << "ERROR: not enough arguments" << endl << endl;
     usage();
   }
-  if (min_order == -1) {
+  if (-999 == min_order) {
     min_order = 0; // default
   }
-  if (max_order == -1) {
+  if (-999 == max_order) {
     max_order = 6; // default
   }
 
