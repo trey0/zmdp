@@ -1,0 +1,46 @@
+# Trey Dec 20 2002
+#
+# This is a dumb little POMDP.  You always want to be on the right and
+# taking the "stay" action.  But stay occasionally switches your state,
+# in which case you want to look to see what state you're in so that
+# you can switch if necessary.
+
+discount: 0.95
+values: reward
+states: left right
+actions: stay switch look
+observations: see-left see-right
+
+start: 
+0.5 0.5
+
+T:stay
+0.8 0.2
+0.2 0.8
+
+O:switch
+uniform
+
+T:switch
+0.2 0.8
+0.8 0.2
+
+R:stay   : left  : * : * 1
+
+T:look
+0.8 0.2
+0.2 0.8
+
+O:stay
+uniform
+
+O:look
+0.9 0.1
+0.1 0.9
+
+R:switch : left  : * : * 1
+
+R:stay   : right : * : * 10
+R:switch : right : * : * 10
+
+R:look   : *     : * : * 0

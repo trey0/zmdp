@@ -1,0 +1,139 @@
+#!/usr/local/bin/perl -w
+
+sub usage {
+    die  "usage: compareplots OPTIONS <prob1> <prob2>\n"
+	."   -h    Print this help\n"
+	."   -t    Plot bounds vs. time\n"
+        ."   -i    Plot bounds vs. number of top-level iterations\n"
+	."   -s    Plot speed (iterations v. time)\n"
+        ."   -p    Generate postscript output\n";
+}
+
+my $prob1;
+my $prob2;
+my $postscript_output = 0;
+my @plot_types = ();
+for (@ARGV) {
+    if (/^-/) {
+	if ($_ eq "-h" or $_ eq "--help") {
+	    &usage;
+	} elsif ($_ eq "-p") {
+	    $postscript_output = 1;
+	} elsif ($_ eq "-t") {
+	    push @plot_types, 't';
+	} elsif ($_ eq "-i") {
+	    push @plot_types, 'i';
+	} elsif ($_ eq "-s") {
+	    push @plot_types, 's';
+	} else {
+	    print STDERR "ERROR: unknown option $_\n\n";
+	    &usage;
+	}
+    } else {
+	if (!defined $prob1) {
+	    $prob1 = $_;
+	} elsif (!defined $prob2) {
+	    $prob2 = $_;
+	} else {
+	    print STDERR "ERROR: too many arguments\n\n";
+	    &usage;
+	}
+    }
+}
+if (!defined $prob1 or !defined $prob2) {
+    print STDERR "ERROR: not enough arguments\n\n";
+    &usage;
+}
+if ($#plot_types == -1) {
+    @plot_types = 't';
+}
+
+for (@plot_types) {
+    &do_plot($prob1, $prob2, $_, $postscript_output);
+}
+
+sub do_plot {
+    my $prob1 = shift;
+    my $prob2 = shift;
+    my $plot_type = shift;
+    my $postscript_output = shift;
+
+    my $options = "";
+    if ($postscript_output) {
+	$options = "> results/${prob1}_${prob2}_compare.ps";
+    } else {
+	$options = "-persist";
+    }
+    
+    my $bounds1_file = "results/${prob1}_bounds.plot";
+    my $bounds2_file = "results/${prob2}_bounds.plot";
+
+    my $inc1_file = "results/${prob1}_inc.plot";
+    my $inc2_file = "results/${prob2}_inc.plot";
+
+    open(GP, "|gnuplot $options") or die "couldn't run gnuplot: $!\n";
+    select GP;
+    $| = 1;
+    select STDOUT;
+    
+    if ($postscript_output) {
+	print GP "set terminal postscript\n";
+    }
+
+if ($plot_type eq 'i') {
+
+print GP <<"EOF";
+
+######################################################################
+set logscale x
+set xlabel "number of top-level iterations"
+set ylabel "solution quality"
+set title "$prob1 vs. $prob2"
+plot "$bounds1_file" using 0:3    title "upper bound $prob1" with lines,     \\\
+     "$bounds1_file" using 0:2    title "lower bound $prob1" with lines,     \\\
+     "$bounds2_file" using 0:3    title "upper bound $prob2" with lines,     \\\
+     "$bounds2_file" using 0:2    title "lower bound $prob2" with lines
+     
+######################################################################
+
+EOF
+
+} elsif ($plot_type eq 's') {
+
+print GP <<"EOF";
+
+######################################################################
+set xlabel "wallclock time (seconds)"
+set ylabel "number of top-level iterations"
+set title "$prob1 vs. $prob2"
+plot "$bounds1_file" using 1:0    title "$prob1" with lines,     \\\
+     "$bounds2_file" using 1:0    title "$prob2" with lines
+     
+######################################################################
+
+EOF
+
+} else { # plot_type eq 't'
+
+print GP <<"EOF";
+
+######################################################################
+set logscale x
+set xlabel "wallclock time (seconds)"
+set ylabel "solution quality"
+set title "$prob1 vs. $prob2"
+plot "$bounds1_file" using 1:3    title "upper bound $prob1" with lines,     \\\
+     "$bounds1_file" using 1:2    title "lower bound $prob1" with lines,     \\\
+     "$bounds2_file" using 1:3    title "upper bound $prob2" with lines,     \\\
+     "$bounds2_file" using 1:2    title "lower bound $prob2" with lines,     \\\
+     "$inc1_file"    using 1:2    title "simulation $prob1"  with lines,     \\\
+     "$inc2_file"    using 1:2    title "simulation $prob2"  with lines
+     
+######################################################################
+
+EOF
+
+}
+
+} # end sub
+

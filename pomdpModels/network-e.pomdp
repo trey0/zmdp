@@ -1,0 +1,255 @@
+# Network monitoring problem.
+# MLL Jan. 1996.
+# added an arbitrary start state -Trey
+
+discount: 0.5
+values: reward
+states: s000 s020 s040 s060 s080 s100 crash
+actions: unrestrict steady restrict reboot
+observations: up down
+
+start: 0.142857142857143 0.142857142857143 0.142857142857143 0.142857142857143 0.142857142857143 0.142857142857143 0.142857142857143
+
+T: unrestrict : s000 : s000
+ 0.500000
+T: unrestrict : s000 : s020
+ 0.300000
+T: unrestrict : s000 : s040
+ 0.100000
+T: unrestrict : s000 : s060
+ 0.100000
+T: unrestrict : s020 : s000
+ 0.200000
+T: unrestrict : s020 : s020
+ 0.300000
+T: unrestrict : s020 : s040
+ 0.300000
+T: unrestrict : s020 : s060
+ 0.100000
+T: unrestrict : s020 : s080
+ 0.100000
+T: unrestrict : s040 : s000
+ 0.100000
+T: unrestrict : s040 : s020
+ 0.100000
+T: unrestrict : s040 : s040
+ 0.300000
+T: unrestrict : s040 : s060
+ 0.300000
+T: unrestrict : s040 : s080
+ 0.100000
+T: unrestrict : s040 : s100
+ 0.100000
+T: unrestrict : s060 : s020
+ 0.100000
+T: unrestrict : s060 : s040
+ 0.100000
+T: unrestrict : s060 : s060
+ 0.300000
+T: unrestrict : s060 : s080
+ 0.300000
+T: unrestrict : s060 : s100
+ 0.100000
+T: unrestrict : s060 : crash
+ 0.100000
+T: unrestrict : s080 : s040
+ 0.100000
+T: unrestrict : s080 : s060
+ 0.100000
+T: unrestrict : s080 : s080
+ 0.300000
+T: unrestrict : s080 : s100
+ 0.300000
+T: unrestrict : s080 : crash
+ 0.200000
+T: unrestrict : s100 : s060
+ 0.100000
+T: unrestrict : s100 : s080
+ 0.100000
+T: unrestrict : s100 : s100
+ 0.300000
+T: unrestrict : s100 : crash
+ 0.500000
+T: unrestrict : crash : crash
+ 1.000000
+T: steady : s000 : s000
+ 0.700000
+T: steady : s000 : s020
+ 0.200000
+T: steady : s000 : s040
+ 0.100000
+T: steady : s020 : s000
+ 0.300000
+T: steady : s020 : s020
+ 0.400000
+T: steady : s020 : s040
+ 0.200000
+T: steady : s020 : s060
+ 0.100000
+T: steady : s040 : s000
+ 0.100000
+T: steady : s040 : s020
+ 0.200000
+T: steady : s040 : s040
+ 0.400000
+T: steady : s040 : s060
+ 0.200000
+T: steady : s040 : s080
+ 0.100000
+T: steady : s060 : s020
+ 0.100000
+T: steady : s060 : s040
+ 0.200000
+T: steady : s060 : s060
+ 0.400000
+T: steady : s060 : s080
+ 0.200000
+T: steady : s060 : s100
+ 0.100000
+T: steady : s080 : s040
+ 0.100000
+T: steady : s080 : s060
+ 0.200000
+T: steady : s080 : s080
+ 0.400000
+T: steady : s080 : s100
+ 0.200000
+T: steady : s080 : crash
+ 0.100000
+T: steady : s100 : s060
+ 0.100000
+T: steady : s100 : s080
+ 0.200000
+T: steady : s100 : s100
+ 0.400000
+T: steady : s100 : crash
+ 0.300000
+T: steady : crash : crash
+ 1.000000
+T: restrict : s000 : s000
+ 0.800000
+T: restrict : s000 : s020
+ 0.100000
+T: restrict : s000 : s040
+ 0.100000
+T: restrict : s020 : s000
+ 0.500000
+T: restrict : s020 : s020
+ 0.300000
+T: restrict : s020 : s040
+ 0.100000
+T: restrict : s020 : s060
+ 0.100000
+T: restrict : s040 : s000
+ 0.200000
+T: restrict : s040 : s020
+ 0.300000
+T: restrict : s040 : s040
+ 0.300000
+T: restrict : s040 : s060
+ 0.100000
+T: restrict : s040 : s080
+ 0.100000
+T: restrict : s060 : s000
+ 0.100000
+T: restrict : s060 : s020
+ 0.100000
+T: restrict : s060 : s040
+ 0.300000
+T: restrict : s060 : s060
+ 0.300000
+T: restrict : s060 : s080
+ 0.100000
+T: restrict : s060 : s100
+ 0.100000
+T: restrict : s080 : s000
+ 0.100000
+T: restrict : s080 : s040
+ 0.100000
+T: restrict : s080 : s060
+ 0.300000
+T: restrict : s080 : s080
+ 0.300000
+T: restrict : s080 : s100
+ 0.100000
+T: restrict : s080 : crash
+ 0.100000
+T: restrict : s100 : s020
+ 0.100000
+T: restrict : s100 : s060
+ 0.100000
+T: restrict : s100 : s080
+ 0.300000
+T: restrict : s100 : s100
+ 0.300000
+T: restrict : s100 : crash
+ 0.200000
+T: restrict : crash : crash
+ 1.000000
+T: reboot : * : s000
+1.0
+O: * : s000 : up
+1.000000
+O: * : s020 : up
+1.000000
+O: * : s040 : up
+1.000000
+O: * : s060 : down
+0.100000
+O: * : s060 : up
+0.900000
+O: * : s080 : down
+0.300000
+O: * : s080 : up
+0.700000
+O: * : s100 : down
+0.500000
+O: * : s100 : up
+0.500000
+O: * : crash : down
+1.000000
+R: unrestrict : s000 : * : *
+-20.000000
+R: steady : s000 : * : *
+-20.000000
+R: restrict : s000 : * : *
+-20.000000
+R: unrestrict : s020 : * : *
+0.000000
+R: steady : s020 : * : *
+0.000000
+R: restrict : s020 : * : *
+0.000000
+R: unrestrict : s040 : * : *
+20.000000
+R: steady : s040 : * : *
+20.000000
+R: restrict : s040 : * : *
+20.000000
+R: unrestrict : s060 : * : *
+40.000004
+R: steady : s060 : * : *
+40.000004
+R: restrict : s060 : * : *
+40.000004
+R: unrestrict : s080 : * : *
+60.000000
+R: steady : s080 : * : *
+60.000000
+R: restrict : s080 : * : *
+60.000000
+R: unrestrict : s100 : * : *
+80.000000
+R: steady : s100 : * : *
+80.000000
+R: restrict : s100 : * : *
+80.000000
+R: unrestrict : crash : * : *
+-20.000000
+R: steady : crash : * : *
+-20.000000
+R: restrict : crash : * : *
+-20.000000
+R: reboot : * : * : *
+-40.000000
+

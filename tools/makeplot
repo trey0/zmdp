@@ -1,0 +1,115 @@
+#!/usr/local/bin/perl -w
+
+sub usage {
+    die  "usage: makeplot OPTIONS <prob_name>\n"
+	."   -h    Print this help\n"
+        ."   -i    Plot bounds vs. number of top-level iterations\n"
+        ."   -p    Generate postscript output\n";
+}
+
+my $postscript_output = 0;
+my $plot_vs_iterations = 0;
+my $prob_name;
+for (@ARGV) {
+    if (/^-/) {
+	if ($_ eq "-h" or $_ eq "--help") {
+	    &usage;
+	} elsif ($_ eq "-p") {
+	    $postscript_output = 1;
+	} elsif ($_ eq "-i") {
+	    $plot_vs_iterations = 1;
+	} else {
+	    print STDERR "ERROR: unknown option $_\n\n";
+	    &usage;
+	}
+    } else {
+	if (!defined $prob_name) {
+	    $prob_name = $_;
+	} else {
+	    print STDERR "ERROR: too many arguments\n\n";
+	    &usage;
+	}
+    }
+}
+if (!defined $prob_name) {
+    print STDERR "ERROR: not enough arguments\n\n";
+    &usage;
+}
+
+
+my $plot_file = "results/${prob_name}_inc.plot";
+my $options = "";
+if ($postscript_output) {
+    $options = "> results/${prob_name}_inc.ps";
+} else {
+    $options = "-persist";
+}
+
+my $bounds_file = "results/${prob_name}_bounds.plot";
+my $use_bounds_file = '';
+if (-e $bounds_file) {
+    $use_bounds_file = 1;
+}
+
+open(GP, "|gnuplot $options") or die "couldn't run gnuplot: $!\n";
+select GP;
+$| = 1;
+select STDOUT;
+
+if ($postscript_output) {
+    print GP "set terminal postscript\n";
+}
+
+if ($use_bounds_file) {
+
+    if ($plot_vs_iterations) {
+	print GP <<"EOF";
+
+######################################################################
+set logscale x
+set xlabel "number of top-level iterations"
+set ylabel "solution quality"
+set title "$plot_file"
+plot "$bounds_file" using 0:3    title "upper bound" with lines,     \\\
+     "$bounds_file" using 0:2    title "lower bound" with lines
+     
+######################################################################
+
+EOF
+
+    } else {
+
+	print GP <<"EOF";
+
+######################################################################
+set logscale x
+set xlabel "wallclock time (seconds)"
+set ylabel "solution quality"
+set title "$plot_file"
+plot "$plot_file"   using 1:2:3  notitle             with errorbars, \\\
+     "$bounds_file" using 1:3    title "upper bound" with lines,     \\\
+     "$plot_file"   using 1:2    title "simulation"  with lines,     \\\
+     "$bounds_file" using 1:2    title "lower bound" with lines
+     
+######################################################################
+
+EOF
+
+    }
+} else {
+    print GP <<"EOF";
+
+######################################################################
+set logscale x
+set xlabel "wallclock time (seconds)"
+set ylabel "solution quality"
+set title "$plot_file"
+plot "$plot_file" using 1:2:3  notitle             with errorbars, \\\
+     "$plot_file" using 1:5    title "upper bound" with lines,     \\\
+     "$plot_file" using 1:2    title "simulation"  with lines,     \\\
+     "$plot_file" using 1:4    title "lower bound" with lines
+     
+######################################################################
+
+EOF
+}

@@ -1,0 +1,71 @@
+#!/usr/local/bin/perl -w
+
+sub usage {
+    die  "usage: makeplot OPTIONS <prob_name>\n"
+	."   -h    Print this help\n"
+        ."   -p    Generate postscript output\n";
+}
+
+my $postscript_output = 0;
+my $prob_name;
+for (@ARGV) {
+    if (/^-/) {
+	if ($_ eq "-h" or $_ eq "--help") {
+	    &usage;
+	} elsif ($_ eq "-p") {
+	    $postscript_output = 1;
+	} else {
+	    print STDERR "ERROR: unknown option $_\n\n";
+	    &usage;
+	}
+    } else {
+	if (!defined $prob_name) {
+	    $prob_name = $_;
+	} else {
+	    print STDERR "ERROR: too many arguments\n\n";
+	    &usage;
+	}
+    }
+}
+if (!defined $prob_name) {
+    print STDERR "ERROR: not enough arguments\n\n";
+    &usage;
+}
+
+my $options = "";
+if ($postscript_output) {
+    $options = "> results/${prob_name}_size.ps";
+} else {
+    $options = "-persist";
+}
+
+my $bounds_file = "results/${prob_name}_bounds.plot";
+my $use_bounds_file = '';
+if (-e $bounds_file) {
+    $use_bounds_file = 1;
+}
+
+open(GP, "|gnuplot $options") or die "couldn't run gnuplot: $!\n";
+select GP;
+$| = 1;
+select STDOUT;
+
+if ($postscript_output) {
+    print GP "set terminal postscript\n";
+}
+
+print GP <<"EOF";
+
+######################################################################
+#set logscale x
+set xlabel "wallclock time (seconds)"
+#set ylabel ""
+set title "$bounds_file"
+plot "$bounds_file" using 1:6    title "number of updates"            with lines, \\\
+     "$bounds_file" using 1:4    title "number of alpha vectors"      with lines, \\\
+     "$bounds_file" using 1:5    title "number of upper bound points" with lines
+     
+     
+######################################################################
+
+EOF

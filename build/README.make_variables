@@ -1,0 +1,104 @@
+Date: Tue, 6 Jun 2000 14:31:07 -0400 (EDT)
+From: Trey Smith <trey@ri.cmu.edu>
+To: Mark W Maimone <mwm@telerobotics.jpl.nasa.gov>
+Subject: Re: makefile variables
+
+actually, make does part of the right thing.
+
+----------------------------------------
+# define variables 1
+BIN := bin/foo
+OBJ := foo.o
+
+# invoke 1
+$(BIN): $(OBJ)
+	gcc $< -o $@
+
+# define variables 2
+BIN := bin/goo
+OBJ := goo.o
+
+# invoke 2
+$(BIN): $(OBJ)
+	gcc $< -o $@
+----------------------------------------
+is equivalent to
+----------------------------------------
+bin/foo: foo.o
+	 gcc foo.o -o bin/foo
+bin/goo: goo.o
+	 gcc goo.o -o bin/goo
+----------------------------------------
+
+this demonstrates that the dependency definition dereferences variables
+at parse time (before reading the entire file), and that the automatic
+variables like $@ and $< similarly come from the dereferenced variable.
+
+the trouble comes in when you want to use some other variable (in this
+example, CFLAGS) in the action definition:
+
+----------------------------------------
+# define variables 1
+BIN := bin/foo
+OBJS := foo.o
+CFLAGS := -Ifoo
+
+# invoke 1
+$(BIN): $(OBJS)
+	gcc $(CFLAGS) $< -o $@
+
+# define variables 2
+BIN := bin/goo
+OBJS := goo.o
+CFLAGS := -Igoo
+
+# invoke 2
+$(BIN): $(OBJS)
+	gcc $(CFLAGS) $< -o $@
+----------------------------------------
+is equivalent to
+----------------------------------------
+bin/foo: foo.o
+	 gcc -Igoo foo.o -o bin/foo
+bin/goo: goo.o
+	 gcc -Igoo goo.o -o bin/goo
+----------------------------------------
+
+noice the way the second definition of CFLAGS is used for both actions.
+the solution: gmake allows arbitrary characters in variable names, so we
+can define new variables tied to this instance, using the automatic
+variable $@ as part of the variable name.  for example:
+
+----------------------------------------
+# define variables 1
+BIN := bin/foo
+OBJS := foo.o
+CFLAGS := -Ifoo
+
+# invoke 1
+$(BIN)_CFLAGS := $(CFLAGS)
+$(BIN): $(OBJS)
+     gcc $($@_CFLAGS) $< -o $@
+
+# define variables 2
+BIN := bin/goo
+OBJS := goo.o
+CFLAGS := -Igoo
+
+# invoke 2
+$(BIN)_CFLAGS := $(CFLAGS)
+$(BIN): $(OBJS)
+     gcc $($@_CFLAGS) $< -o $@
+----------------------------------------
+is equivalent to
+----------------------------------------
+bin/foo: foo.o
+	 gcc -Ifoo foo.o -o bin/foo
+bin/goo: goo.o
+	 gcc -Igoo goo.o -o bin/goo
+----------------------------------------
+
+hope that helps...
+
+-Trey
+

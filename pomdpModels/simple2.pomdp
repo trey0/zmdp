@@ -1,0 +1,42 @@
+# Trey 3 July 2003
+#
+# Tuning simple.pomdp to make it clear that sometimes "look" really is the right action
+
+discount: 0.95
+values: reward
+states: left right
+actions: stay switch look
+observations: see-left see-right
+
+start: 
+0.5 0.5
+
+T:stay
+0.9 0.1
+0.1 0.9
+
+T:switch
+0.1 0.9
+0.9 0.1
+
+T:look
+0.9 0.1
+0.1 0.9
+
+O:stay
+uniform
+
+O:switch
+uniform
+
+O:look
+0.9 0.1
+0.1 0.9
+
+R:stay   : left  : * : * 0
+R:switch : left  : * : * 0
+
+R:stay   : right : * : * 10
+R:switch : right : * : * 10
+
+R:look   : *     : * : * 0

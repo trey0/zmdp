@@ -1,0 +1,48 @@
+#!gmake 	# Tell emacs about this file: -*- Makefile -*-  
+# $Id: Makefile_toplevel,v 1.1.1.1 2004-11-09 16:18:57 trey Exp $
+#
+# PROJECT:      Life in the Atacama
+# DESCRIPTION:  
+
+######################################################################
+# DO NOT MODIFY THIS HEADER SECTION
+
+CHECKOUT_DIR := $(shell perl -e '$$_ = `pwd`; chop; $$_ = scalar reverse("$$_/"); if (s:.*/crs/::) { print scalar reverse($$_); } else { print "<error>"; die "*** could not calculate CHECKOUT_DIR ***\n"; }')
+include $(CHECKOUT_DIR)/src/microraptor/Build/header.mak
+
+######################################################################
+# PLACE MODIFICATIONS BELOW THIS LINE
+
+# ADD ANY SUBDIRS THAT NEED TO BE VISITED DURING A BUILD TO THE SUBDIRS LIST
+SUBDIRS := 
+
+include $(BUILD_DIR)/toplevel.mak
+
+# see Makefile_template for other commands that can be added in this space
+
+######################################################################
+# DO NOT MODIFY BELOW THIS POINT
+
+include $(BUILD_DIR)/footer.mak
+
+######################################################################
+# $Log: not supported by cvs2svn $
+# Revision 1.3  2004/05/13 20:25:50  trey
+# synced up with atacama makefile system again
+#
+# Revision 1.3  2003/11/18 21:34:49  trey
+# fixed checkout dir inference for newer perl versions
+#
+# Revision 1.2  2003/10/07 16:01:17  trey
+# changed directory names to reflect move
+#
+# Revision 1.1  2003/10/05 16:51:41  trey
+# initial atacama check-in
+#
+# Revision 1.1  2003/10/05 16:18:05  trey
+# improved CHECKOUT_DIR calculation
+#
+# Revision 1.8  2003/10/05 02:56:47  trey
+# switched to variant of FIRE makefile system
+#
+#

@@ -1,0 +1,60 @@
+discount : 1.0
+values: reward
+states: none-bad one-bad two-bad
+actions: Manufacture Examine Inspect Replace
+observations: good defective
+
+T: Manufacture
+0.81   0.18   0.01
+0.00   0.90   0.10
+0.00   0.00   1.00
+
+T: Examine
+0.81   0.18   0.01
+0.00   0.90   0.10 
+0.00   0.00   1.00
+
+T: Inspect
+1.00   0.00   0.00
+1.00   0.00   0.00
+1.00   0.00   0.00
+
+T: Replace
+1.00   0.00   0.00
+1.00   0.00   0.00
+1.00   0.00   0.00
+
+O: Manufacture
+1.00   0.00
+1.00   0.00
+1.00   0.00
+ 
+O: Examine
+1.00   0.00
+0.50   0.50
+0.25   0.75
+ 
+O: Inspect
+1.00   0.00
+1.00   0.00
+1.00   0.00
+ 
+O: Replace
+1.00   0.00
+1.00   0.00
+1.00   0.00
+ 
+R: Manufacture : * : none-bad : * 1.00
+R: Manufacture : * : one-bad : * 0.50
+R: Manufacture : * : two-bad : * 0.25
+
+R: Examine : * : none-bad : * 0.75
+R: Examine : * : one-bad : * 0.25
+R: Examine : * : two-bad : * 0.0
+
+R: Inspect : none-bad : * : * -0.5
+R: Inspect : one-bad : * : * -1.5
+R: Inspect : two-bad : * : * -2.5
+
+R: Replace : * : * : * -2.0
+

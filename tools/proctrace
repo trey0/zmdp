@@ -1,0 +1,49 @@
+#!/usr/local/bin/perl -w
+
+# processes sim traces from testPomdp output
+
+$prob_name = shift @ARGV;
+$trace_file = "results/${prob_name}_sim.plot";
+$prob_file = "examples/${prob_name}.pomdp";
+
+open(PROB, "<$prob_file") or die "couldn't open $prob_file for reading: $!\n";
+
+while (<PROB>) {
+    if (s/^states:\s+//) {
+	@states = split(/\s+/);
+    } elsif (s/^actions:\s+//) {
+	@actions = split(/\s+/);
+    } elsif (s/^observations:\s+//) {
+	@observations = split(/\s+/);
+    }
+
+    if (defined @states and defined @actions and defined @observations) {
+	last;
+    }
+}
+
+close(PROB);
+
+open(TRACE, "<$trace_file") or die "couldn't open $trace_file for reading: $!\n";
+
+while (<TRACE>) {
+    if (/^sim:/) {
+	s/^sim:\s+//;
+	($s,$a,$sp,$o) = split(/\s+/);
+	print "sim: $states[$s] $actions[$a] $states[$sp] $observations[$o]\n";
+    } elsif (/^belief:/) {
+	s/^belief:\s+//;
+	@bvec = split(/\s+/,$_);
+	splice @bvec, 5; # take only the first 5
+	print "belief: ";
+	for (@bvec) {
+	    ($s,$prob) = split(/:/);
+	    print "$states[$s]:$prob ";
+	}
+	print "\n";
+    } else {
+	print;
+    }
+}
+
+close(TRACE);
