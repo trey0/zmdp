@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.3 2004-11-15 23:43:03 trey Exp $
+# $Id: Makefile,v 1.4 2004-12-16 04:00:40 trey Exp $
 #
 # PROJECT:      FIRE Architecture Project
 # DESCRIPTION:  
@@ -36,16 +36,9 @@ ifeq (1,0)
   LDFLAGS += -pg
 endif
 
-# debugging or performance
-ifeq (1,0)
-  USER_CFLAGS := -g
-else
-  USER_CFLAGS := -O3
-endif
-
 BINARY_NAME := testPomdp
 
-ifeq (1,0)
+ifneq (,$(USE_CPLEX))
   # use cplex
   BINARY_NAME := testPomdpWithCplex
   CPLEX_DIR := $(EXTERNAL_DIR)/ilog/cplex81
@@ -72,6 +65,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.3  2004/11/15 23:43:03  trey
+# there are now distinct binaries testPomdp and testPomdpWithCplex
+#
 # Revision 1.2  2004/11/14 00:31:47  trey
 # now select algorithm to run from command line
 #
