@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.1 $  $Author: trey $  $Date: 2004-11-13 23:29:44 $
+ * $Revision: 1.2 $  $Author: trey $  $Date: 2005-01-26 04:11:31 $
  *  
  * @file    PomdpSim.h
  * @brief   No brief
@@ -16,7 +16,7 @@ public:
   double rewardSoFar;
   int elapsedTime;
   int state;
-  bvector currentBelief;
+  cvector currentBelief;
   int lastState;
   bool terminated;
   std::ostream *simOutFile;
@@ -35,6 +35,9 @@ public:
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2004/11/13 23:29:44  trey
+ * moved many files from hsvi to common
+ *
  * Revision 1.1.1.1  2004/11/09 16:18:56  trey
  * imported hsvi into new repository
  *
