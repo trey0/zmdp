@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.3 $  $Author: trey $  $Date: 2005-01-27 05:34:10 $
+ * $Revision: 1.4 $  $Author: trey $  $Date: 2005-01-28 03:20:45 $
  *  
  * @file    sla.h
  * @brief   No brief
@@ -36,12 +36,13 @@ namespace sla {
     std::vector<double> data;
     
     dvector(void) {}
-    dvector(unsigned int _size) { resize(_size); }
+    explicit dvector(unsigned int _size) { resize(_size); }
 
     double& operator()(unsigned int i) { return data[i]; }
     double operator()(unsigned int i) const { return data[i]; }
     void operator*=(double s);
     void operator+=(const dvector& x);
+    void operator-=(const dvector& x);
 
     unsigned int size(void) const { return data.size(); }
     void resize(unsigned int _size, double value = 0.0);
@@ -71,7 +72,7 @@ namespace sla {
     std::vector< cvector_entry > data;
     
     cvector(void) : size_(0) {}
-    cvector(unsigned int _size) { resize(_size); }
+    explicit cvector(unsigned int _size) { resize(_size); }
 
     double operator()(unsigned int index) const;
     void operator*=(double s);
@@ -124,6 +125,9 @@ namespace sla {
     unsigned int size1_, size2_;
     std::vector< kmatrix_entry > data;
 
+    kmatrix(void) : size1_(0), size2_(0) {}
+    kmatrix(unsigned int _size1, unsigned int _size2) { resize(_size1,_size2); }
+
     double operator()(unsigned int r, unsigned int c) const;
 
     unsigned int size1(void) const { return size1_; }
@@ -144,6 +148,9 @@ namespace sla {
     unsigned int size1_, size2_;
     std::vector< unsigned int > col_starts;
     std::vector< cvector_entry > data;
+
+    cmatrix(void) : size1_(0), size2_(0) {}
+    cmatrix(unsigned int _size1, unsigned int _size2) { resize(_size1,_size2); }
 
     double operator()(unsigned int r, unsigned int c) const;
 
@@ -175,8 +182,8 @@ namespace sla {
   void cmatrix_from_kmatrix(cmatrix& result, kmatrix& A);
 
   // result = A(.,c)
-  inline void cvector_from_cmatrix_column(cvector& result, const cmatrix& A,
-					  int c);
+  void cvector_from_cmatrix_column(cvector& result, const cmatrix& A,
+				   unsigned int c);
 
   // A(r,c) = v
   void kmatrix_set_entry(kmatrix& A, unsigned int r, unsigned int c,
@@ -202,8 +209,26 @@ namespace sla {
   // result = x .* y [for all i, result(i) = x(i) * y(i)]
   void emult(cvector& result, const cvector& x, const cvector& y);
 
+  // result = A(:,c) .* x
+  void emult_column(cvector& result, const cmatrix& A, unsigned int c,
+		    const cvector& x);
+
+  // result = x .* y
+  void emult(dvector& result, const dvector& x, const cvector& y);
+
+  // result = x .* A(:,c)
+  void emult_column(dvector& result, const dvector& x,
+		    const cmatrix& A, unsigned int c);
+
   // return x' * y
   double inner_prod(const dvector& x, const cvector& y);
+
+  // return x' * y
+  double inner_prod(const cvector& x, const cvector& y);
+
+  // return A(:,c)' * y
+  double inner_prod_column(const cmatrix& A, unsigned int c,
+			   const cvector& y);
 
   template <class T>
   void read_from_file(T& x, const std::string& file_name);
@@ -222,18 +247,22 @@ namespace sla {
     }
   }
 
-  inline void dvector::operator+=(const dvector& x)
-  {
-    typeof(x.data.begin()) xi;
-
-    assert( size() == x.size() );
-
-    xi = x.data.begin();
-    FOR_EACH (di, data) {
-      (*di) += (*xi);
-      xi++;
-    }
+#define DVECTOR_OPERATOR( OP )                       \
+  inline void dvector::operator OP(const dvector& x) \
+  {                                                  \
+    typeof(x.data.begin()) xi;                       \
+                                                     \
+    assert( size() == x.size() );                    \
+                                                     \
+    xi = x.data.begin();                             \
+    FOR_EACH (di, data) {                            \
+      (*di) OP (*xi);                                \
+      xi++;                                          \
+    }                                                \
   }
+
+  DVECTOR_OPERATOR( += );
+  DVECTOR_OPERATOR( -= );
 
   inline void dvector::resize(unsigned int _size, double value)
   {
@@ -557,19 +586,35 @@ namespace sla {
     result.canonicalize();
   }
 
-  // result = A(.,c)
-  inline void cvector_from_cmatrix_column(cvector& result, const cmatrix& A, int c)
+  // result = A(:,c)
+  inline void cvector_from_cmatrix_column(cvector& result, const cmatrix& A, unsigned int c)
   {
+    assert( 0 <= c && c < A.size2() );
+
     typeof(A.data.begin()) Ai, col_start, col_end;
     typeof(result.data.begin()) ri;
 
     col_start = A.data.begin() + A.col_starts[c];
     col_end   = A.data.begin() + A.col_starts[c+1];
 
-    result.resize( A.size2() );
+    result.resize( A.size1() );
     result.data.resize( col_end - col_start );
     for (Ai = col_start, ri=result.data.begin(); Ai != col_end; Ai++, ri++) {
       (*ri) = (*Ai);
+    }
+  }
+
+  // result = A(:,c)
+  inline void dvector_from_cmatrix_column(dvector& result, const cmatrix& A, unsigned int c)
+  {
+    assert( 0 <= c && c < A.size2() );
+    typeof(A.data.begin()) Ai, col_end;
+
+    result.resize( A.size1() );
+
+    col_end = A.data.begin() + A.col_starts[c+1];
+    for (Ai = A.data.begin() + A.col_starts[c]; Ai != col_end; Ai++) {
+      result(Ai->index) = Ai->value;
     }
   }
 
@@ -647,10 +692,10 @@ namespace sla {
   {
     typeof(A.data.begin()) Ai, col_end;
 
-    assert( x.size() == A.size2() );
-    result.resize( x.size() );
+    assert( x.size() == A.size1() );
+    result.resize( A.size2() );
 
-    FOR (c, result.size()) {
+    FOR (c, A.size2()) {
       col_end = A.data.begin() + A.col_starts[c+1];
       for (Ai = A.data.begin() + A.col_starts[c];
 	   Ai != col_end; Ai++) {
@@ -660,20 +705,15 @@ namespace sla {
   }
 
   // result = x .* y [for all i, result(i) = x(i) * y(i)]
-  inline void emult(cvector& result, const cvector& x, const cvector& y) {
-    typeof(x.data.begin()) xi, xend;
-    typeof(y.data.begin()) yi, yend;
-
-    assert( x.size() == y.size() );
-    result.resize( x.size() );
-
-    yi = y.data.begin();
-    xend = x.data.end();
-    yend = y.data.end();
-
-    for (xi = x.data.begin(); xi != xend; xi++) {
+  template <class T, class U>
+  void emult_cc_internal(cvector& result,
+			 T xbegin, T xend,
+			 U ybegin, U yend)
+  {
+    U yi = ybegin;
+    for (T xi = xbegin; xi != xend; xi++) {
       while (1) {
-	if (yi == yend) goto break_outer_loop;
+	if (yi == yend) return;
 	if (yi->index >= xi->index) {
 	  if (yi->index == xi->index) {
 	    result.push_back( xi->index, xi->value * yi->value);
@@ -683,8 +723,66 @@ namespace sla {
 	yi++;
       }
     }
-  break_outer_loop:
+  }
+
+  // result = x .* y [for all i, result(i) = x(i) * y(i)]
+  inline void emult(cvector& result, const cvector& x, const cvector& y) {
+    assert( x.size() == y.size() );
+    result.resize( x.size() );
+
+    emult_cc_internal( result, x.data.begin(), x.data.end(),
+		       y.data.begin(), y.data.end() );
+
     result.canonicalize();
+  }
+
+  // result = A(:,c) .* x
+  inline void emult_column(cvector& result, const cmatrix& A, unsigned int c,
+			   const cvector& x)
+  {
+    assert( A.size1() == x.size() );
+    assert( 0 <= c && c < A.size2() );
+    result.resize( x.size() );
+
+    emult_cc_internal( result,
+		       A.data.begin() + A.col_starts[c],
+		       A.data.begin() + A.col_starts[c+1],
+		       x.data.begin(), x.data.end() );
+
+    result.canonicalize();
+  }
+
+  // result = x .* y [for all i, result(i) = x(i) * y(i)]
+  template <class T>
+  void emult_dc_internal(dvector& result,
+			 const dvector& x,
+			 T ybegin, T yend)
+  {
+    int yind;
+    for (T yi = ybegin; yi != yend; yi++) {
+      yind = yi->index;
+      result(yind) = x(yind) * yi->value;
+    }
+  }
+
+  // result = x .* y
+  inline void emult(dvector& result, const dvector& x, const cvector& y)
+  {
+    assert( x.size() == y.size() );
+    result.resize( x.size() );
+    emult_dc_internal( result, x, y.data.begin(), y.data.end() );
+  }
+
+  // result = x .* A(:,c)
+  inline void emult_column(dvector& result, const dvector& x,
+			   const cmatrix& A, unsigned int c)
+  {
+    assert( A.size1() == x.size() );
+    assert( 0 <= c && c < A.size2() );
+    result.resize( x.size() );
+    emult_dc_internal( result, x,
+		       A.data.begin() + A.col_starts[c],
+		       A.data.begin() + A.col_starts[c+1] );
   }
 
   // return x' * y
@@ -696,6 +794,47 @@ namespace sla {
       sum += x(yi->index) * yi->value;
     }
     return sum;
+  }
+
+  // result = x .* y [for all i, result(i) = x(i) * y(i)]
+  template <class T, class U>
+  double inner_prod_cvector_internal(T xbegin, T xend,
+				     U ybegin, U yend)
+  {
+    double sum = 0.0;
+    U yi = ybegin;
+    for (T xi = xbegin; xi != xend; xi++) {
+      while (1) {
+	if (yi == yend) return sum;
+	if (yi->index >= xi->index) {
+	  if (yi->index == xi->index) {
+	    sum += xi->value * yi->value;
+	  }
+	  break;
+	}
+	yi++;
+      }
+    }
+    return sum;
+  }
+
+  // return x' * y
+  inline double inner_prod(const cvector& x, const cvector& y)
+  {
+    assert( x.size() == y.size() );
+    return inner_prod_cvector_internal( x.data.begin(), x.data.end(),
+					y.data.begin(), y.data.end() );
+  }
+
+  // return A(:,c)' * x
+  inline double inner_prod_column(const cmatrix& A, unsigned int c,
+				  const cvector& x)
+  {
+    assert( A.size1() == x.size() );
+    assert( 0 <= c && c < A.size2() );
+    return inner_prod_cvector_internal( A.data.begin() + A.col_starts[c],
+					A.data.begin() + A.col_starts[c+1],
+					x.data.begin(), x.data.end() );
   }
 
   template <class T>
@@ -740,6 +879,9 @@ typedef sla::dvector obs_prob_vector;
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2005/01/27 05:34:10  trey
+ * added several functions and fixed bugs
+ *
  * Revision 1.2  2005/01/26 04:10:12  trey
  * implemented several functions
  *
