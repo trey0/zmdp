@@ -1,0 +1,38 @@
+#!/usr/bin/perl
+# $Id: fgprof,v 1.1 2005-03-10 21:14:48 trey Exp $
+#
+# DESCRIPTION:  
+
+sub print_wrap {
+    my $text = shift;
+    my $width = shift;
+    my $indent = shift;
+
+    do {
+	$x = substr($text,0,$width);
+	$y = substr($text,$width);
+	print "$x\n";
+	if (length($y) > 0) {
+	    $text = (" " x $indent) . $y;
+	} else {
+	    $text = "";
+	}
+    } while (length($text) > 0);
+}
+
+open(GPROF, "gprof --no-flat-profile ~/p/bin/linux2/testPomdp |");
+
+while (<GPROF>) {
+    s/std::basic_string<char, std::char_traits<char>, std::allocator<char> >/string/g;
+    s/std::vector<([\w:]*), std::allocator<[\w:]*> >/std::vector<\1>/g;
+    s/__gnu_cxx::__normal_iterator<sla::(\w+)_entry const\*, std::vector<sla::\w+_entry> >/\1_iterator/g;
+    s/__gnu_cxx::__normal_iterator<sla::(\w+)_entry\*, std::vector<sla::\w+_entry> >/\1_iterator/g;
+    s/__gnu_cxx::__normal_iterator<([\w\*]+), std::vector<[\w\*]+> >/std::vector<\1>::iterator/g;
+
+    chop;
+    &print_wrap($_,180,51);
+}
+
+######################################################################
+# $Log: not supported by cvs2svn $
+#
