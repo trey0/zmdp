@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: options.mak,v 1.7 2005-02-08 23:54:59 trey Exp $
+# $Id: options.mak,v 1.8 2005-02-09 20:44:15 trey Exp $
 
 # algorithm configuration options
 
@@ -10,9 +10,9 @@ CFLAGS += -DDO_UB_CACHED_Q=1
 #CFLAGS += -DDO_AGGRESSIVE_LB_PRUNE=1
 #CFLAGS += -DUSE_UBLAS=1
 #CFLAGS += -DUSE_EMPOMDP=1
-CFLAGS += -DUSE_RANDOM_OBS=1
+#CFLAGS += -DUSE_RANDOM_OBS=1
 #CFLAGS += -DUSE_COMPRESSED_ALPHA=1
-CFLAGS += -DUSE_MORE_UB_BACKUPS=1
+#CFLAGS += -DUSE_MORE_UB_BACKUPS=1
 
 # turns on optimization in boost matrix library (see commonTypes.h)
 CFLAGS += -DVEC_OPTIM=1
@@ -27,6 +27,9 @@ endif
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.7  2005/02/08 23:54:59  trey
+# added USE_COMPRESSED_ALPHA, USE_RANDOM_OBS, and USE_MORE_UB_BACKUPS options
+#
 # Revision 1.6  2005/02/06 16:40:10  trey
 # added USE_EMPOMDP option, changed USE_CPLEX to be off by default
 #
