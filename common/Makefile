@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.1 2004-11-09 21:28:24 trey Exp $
+# $Id: Makefile,v 1.2 2004-11-13 23:29:44 trey Exp $
 #
 # PROJECT:      FIRE Architecture Project
 # DESCRIPTION:  
@@ -16,8 +16,28 @@ include $(CHECKOUT_DIR)/src/build/header.mak
 # ADD ANY SUBDIRS THAT NEED TO BE VISITED DURING A BUILD TO THE SUBDIRS LIST
 SUBDIRS := 
 
-INSTALLHEADERS_HEADERS := SmartRef.h commonTime.h
+CFLAGS += -I$(CHECKOUT_DIR)/external/boost
+
+INSTALLHEADERS_HEADERS := \
+	commonDefs.h \
+	commonTime.h \
+	commonTypes.h \
+	SmartRef.h \
+	Interleave.h \
+	MatrixUtils.h \
+	PomdpM.h \
+	PomdpSim.h \
+	Solver.h
 include $(BUILD_DIR)/installheaders.mak
+
+BUILDLIB_TARGET := libpomdpUtils.a
+BUILDLIB_SRCS := \
+	commonTypes.cc \
+	Interleave.cc \
+	MatrixUtils.cc \
+	PomdpM.cc \
+	PomdpSim.cc
+include $(BUILD_DIR)/buildlib.mak
 
 BUILDLIB_TARGET := libcommonTime.a
 BUILDLIB_SRCS := commonTime.cc
@@ -30,6 +50,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.1  2004/11/09 21:28:24  trey
+# check-in to pomdp repository
+#
 # Revision 1.13  2002/10/09 00:53:00  trey
 # added testIPCTimer
 #
