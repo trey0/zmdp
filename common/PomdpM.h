@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.1 $  $Author: trey $  $Date: 2004-11-13 23:29:44 $
+ * $Revision: 1.2 $  $Author: trey $  $Date: 2004-11-24 20:50:16 $
  *  
  * @file    PomdpM.h
  * @brief   No brief
@@ -38,13 +38,17 @@ public:
   void readFromFile(const std::string& fileName);
 };
 
-typedef SmartRef<PomdpM> PomdpP;
+//typedef SmartRef<PomdpM> PomdpP;
+typedef PomdpM* PomdpP;
 
 #endif // INCPomdpM_h
 
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2004/11/13 23:29:44  trey
+ * moved many files from hsvi to common
+ *
  * Revision 1.2  2004/11/09 21:31:59  trey
  * got pomdp source tree into a building state again
  *
