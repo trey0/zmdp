@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.1 $  $Author: trey $  $Date: 2004-11-13 23:29:44 $
+ * $Revision: 1.2 $  $Author: trey $  $Date: 2005-01-26 04:08:42 $
  *  
  * @file    Interleave.cc
  * @brief   No brief
@@ -53,11 +53,7 @@ void Interleave::interleave(PomdpP pomdp, Solver& solver, int numSteps,
       cout << "interleave: elapsed time total=" << elapsed
 	   << ", per step=" << (elapsed / (i+1)) << endl;
       cout << "interleave: b=";
-      if (sim->currentBelief.size() < 5) {
-	cout << sim->currentBelief << endl;
-      } else {
-	cout << vector_range<bvector>(sim->currentBelief, range(0,5)) << endl;
-      }
+      cout << sparseRep(sim->currentBelief) << endl;
     }
     int action = solver.planFixedTime(sim->currentBelief, maxTime, minPrecision);
     sim->performAction(action);
@@ -255,6 +251,9 @@ void Interleave::batchTest(int numIterations,
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2004/11/13 23:29:44  trey
+ * moved many files from hsvi to common
+ *
  * Revision 1.2  2004/11/09 21:31:59  trey
  * got pomdp source tree into a building state again
  *
