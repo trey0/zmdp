@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.4 $  $Author: trey $  $Date: 2005-01-26 04:14:15 $
+ * $Revision: 1.5 $  $Author: trey $  $Date: 2005-01-28 03:20:11 $
  *  
  * @file    commonTypes.h
  * @brief   No brief
@@ -8,12 +8,26 @@
 #ifndef INCcommonTypes_h
 #define INCcommonTypes_h
 
+// if VEC_OPTIM is set (check the makefile), set NDEBUG just for the vector/matrix headers
+#if VEC_OPTIM
+#  ifdef NDEBUG
+#     define VEC_NDEBUG_WAS_DEFINED 1
+#  else
+#     define NDEBUG 1
+#  endif
+#endif
+
 #if USE_UBLAS
 # include "ublasMatrixTypes.h"
 # define MATRIX_NAMESPACE boost::numeric::ublas
 #else
 # include "sla.h"
 # define MATRIX_NAMESPACE sla
+#endif
+
+// undefine NDEBUG if it was previously undefined
+#if VEC_OPTIM && !VEC_NDEBUG_WAS_DEFINED
+#   undef NDEBUG
 #endif
 
 struct ValueInterval {
@@ -35,6 +49,9 @@ std::ostream& operator<<(std::ostream& out, const ValueInterval& v);
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2005/01/26 04:14:15  trey
+ * added MATRIX_NAMESPACE
+ *
  * Revision 1.3  2005/01/21 18:07:02  trey
  * preparing for transition to sla matrix types
  *
