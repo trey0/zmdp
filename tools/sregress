@@ -1,0 +1,92 @@
+#!/usr/bin/perl -w
+
+&main();
+
+######################################################################
+
+sub mean {
+    my @data = @_;
+    my $sum = 0;
+    for (@data) {
+	$sum += $_;
+    }
+    my $n = $#data+1;
+    return $sum/$n;
+}
+
+sub stdev {
+    my @data = @_;
+
+    my $sum = 0;
+    my $sqsum = 0;
+    for (@data) {
+	$sum += $_;
+	$sqsum += $_*$_;
+    }
+    my $n = ($#data+1);
+    return sqrt( ($sqsum - ($sum * $sum) / $n) / ($n-1) );
+}
+
+sub conf95 {
+    my @data = @_;
+    my $n = $#data+1;
+    return 1.96 * &stdev(@data) / sqrt($n);
+}
+
+sub gen_stats {
+    my @data = @_;
+
+    my @time_data = map { $_->{time} } @data;
+    my @reward_data = map { $_->{reward} } @data;
+    
+    return ( &mean(@time_data), &mean(@reward_data), &conf95(@reward_data) );
+}
+
+sub regress {
+    my $infile = shift;
+    my $outfile = shift;
+    my $num_bins = shift;
+
+    my $num_to_splice;
+    my @data = ();
+    my (@bin, @stats);
+    
+    open(IN,"<$infile") or die "ERROR: couldn't open $infile for reading: $!\n";
+    while (<IN>) {
+	my ($time, $reward, $success) = split /\s+/;
+	push @data, { time => $time, reward => $reward, success => $success };
+    }
+    close(IN);
+
+    @data = sort { $a->{time} <=> $b->{time} } @data;
+
+    open(OUT,">$outfile") or die "ERROR: couldn't open $outfile for writing: $!\n";
+    print OUT "# Data from scatter.plot sorted into n bins based on time,\n";
+    print OUT "# first and last bin discarded.  One line for each bin, containing:\n";
+    print OUT "#   mean(time) mean(reward) 95%_confidence_interval(reward)\n";
+    print OUT "#\n";
+
+    my $k = int(($#data+1)/$num_bins);
+    splice(@data, 0, $k); # discard first bin
+    while (1) {
+	last if (($#data+1) < $k); # discard last bin
+	@bin = splice @data, 0, $k;
+	@stats = &gen_stats(@bin);
+	printf OUT "%9.5f %9.5f %9.5f\n", @stats;
+    }
+
+    close(OUT);
+}
+
+sub usage {
+    die
+	"usage: sregress OPTIONS\n".
+	"  -h or --help   Print this help\n";
+}
+
+sub main {
+    if ($#ARGV+1 > 0) {
+	&usage();
+    }
+    &regress("scatter.plot","sregress.plot",5);
+}
