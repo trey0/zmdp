@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.1 $  $Author: trey $  $Date: 2004-11-09 21:28:24 $
+ * $Revision: 1.1 $  $Author: trey $  $Date: 2005-10-21 20:11:52 $
  *
  * PROJECT:      Distributed Robotic Agents
  * DESCRIPTION:  
@@ -7,12 +7,14 @@
  * (c) Copyright 2000 CMU. All rights reserved.
  ***************************************************************************/
 
-#ifndef INCcommonTime_h
-#define INCcommonTime_h
+#ifndef INCpomdpCommonTime_h
+#define INCpomdpCommonTime_h
 
 #include <sys/time.h>
 #include <sys/types.h>
 #include <unistd.h>
+
+namespace pomdp {
 
 void fsleep(double seconds);
 
@@ -32,11 +34,16 @@ timeval operator +(const timeval &a, const timeval &b);
 bool operator <(const timeval &a, const timeval &b);
 timeval getTime(void);
 
-#endif // INCcommonTime_h
+}; // namespace pomdp
+
+#endif // INCpomdpCommonTime_h
 
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2004/11/09 21:28:24  trey
+ * check-in to pomdp repository
+ *
  * Revision 1.2  2003/03/05 22:37:59  danig
  * added getTime() function
  *

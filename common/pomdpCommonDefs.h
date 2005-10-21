@@ -1,18 +1,23 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.3 $  $Author: trey $  $Date: 2005-01-27 05:29:19 $
+ * $Revision: 1.1 $  $Author: trey $  $Date: 2005-10-21 20:11:52 $
  *  
- * @file    commonDefs.h
+ * @file    pomdpCommonDefs.h
  * @brief   No brief
  ***************************************************************************/
 
-#ifndef INCcommonDefs_h
-#define INCcommonDefs_h
+#ifndef INCpomdpCommonDefs_h
+#define INCpomdpCommonDefs_h
 
+namespace pomdp {
+
+#undef FOR_EACH
 #define FOR_EACH(elt,collection) \
   for (typeof((collection).begin()) elt=(collection).begin(), \
          __end=(collection).end(); \
        elt != __end; \
        elt++)
+
+#undef FOR
 #define FOR(i,n) \
   for (unsigned int i=0, __n = (n); i<__n; i++)
 
@@ -49,4 +54,6 @@ const _InType& argmax_tp(_ForwardIterator start, _ForwardIterator end,
   return *max_elt;
 }
 
-#endif // INCcommonDefs_h
+}; // namespace pomdp
+
+#endif // INCpomdpCommonDefs_h

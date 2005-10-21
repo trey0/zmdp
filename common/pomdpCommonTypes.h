@@ -1,12 +1,12 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.5 $  $Author: trey $  $Date: 2005-01-28 03:20:11 $
+ * $Revision: 1.1 $  $Author: trey $  $Date: 2005-10-21 20:11:52 $
  *  
- * @file    commonTypes.h
+ * @file    pomdpCommonTypes.h
  * @brief   No brief
  ***************************************************************************/
 
-#ifndef INCcommonTypes_h
-#define INCcommonTypes_h
+#ifndef INCpomdpCommonTypes_h
+#define INCpomdpCommonTypes_h
 
 // if VEC_OPTIM is set (check the makefile), set NDEBUG just for the vector/matrix headers
 #if VEC_OPTIM
@@ -30,6 +30,8 @@
 #   undef NDEBUG
 #endif
 
+namespace pomdp {
+
 struct ValueInterval {
   double l, u;
 
@@ -44,11 +46,16 @@ struct ValueInterval {
 };
 std::ostream& operator<<(std::ostream& out, const ValueInterval& v);
 
-#endif // INCcommonTypes_h
+}; // namespace pomdp
+
+#endif // INCpomdpCommonTypes_h
 
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.5  2005/01/28 03:20:11  trey
+ * VEC_OPTIM now implies NDEBUG for sla as well as ublas
+ *
  * Revision 1.4  2005/01/26 04:14:15  trey
  * added MATRIX_NAMESPACE
  *

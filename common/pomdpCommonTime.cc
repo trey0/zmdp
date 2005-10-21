@@ -1,5 +1,5 @@
 /****************************************************************************
- * $Revision: 1.1 $  $Author: trey $  $Date: 2004-11-09 21:28:24 $
+ * $Revision: 1.1 $  $Author: trey $  $Date: 2005-10-21 20:11:52 $
  *
  * PROJECT:      Distributed Robotic Agents
  * DESCRIPTION:  
@@ -16,7 +16,9 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <iostream>
-#include "commonTime.h"
+#include "pomdpCommonTime.h"
+
+namespace pomdp {
 
 // fsleep: like sleep, but can handle a non-integer number of seconds to
 //   wait
@@ -94,9 +96,14 @@ getTime(void) {
   return tv;
 }
 
+}; // namespace pomdp
+
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2004/11/09 21:28:24  trey
+ * check-in to pomdp repository
+ *
  * Revision 1.2  2003/03/05 22:37:59  danig
  * added getTime() function
  *
