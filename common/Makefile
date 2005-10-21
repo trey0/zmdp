@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.10 2005-03-25 16:09:12 trey Exp $
+# $Id: Makefile,v 1.11 2005-10-21 20:07:57 trey Exp $
 #
 # PROJECT:      FIRE Architecture Project
 # DESCRIPTION:  
@@ -21,12 +21,12 @@ SUBDIRS :=
 CFLAGS += -I$(CHECKOUT_DIR)/external/boost
 
 INSTALLHEADERS_HEADERS := \
-	commonDefs.h \
-	commonTime.h \
+	pomdpCommonDefs.h \
+	pomdpCommonTime.h \
 	ublasMatrixTypes.h \
 	sla.h \
 	sla_mask.h \
-	commonTypes.h \
+	pomdpCommonTypes.h \
 	SmartRef.h \
 	Interleave.h \
 	ublasMatrixUtils.h \
@@ -42,7 +42,7 @@ include $(BUILD_DIR)/installheaders.mak
 
 BUILDLIB_TARGET := libpomdpUtils.a
 BUILDLIB_SRCS := \
-	commonTypes.cc \
+	pomdpCommonTypes.cc \
 	PomdpM.cc \
 	Interleave.cc \
 	PomdpSim.cc \
@@ -50,8 +50,8 @@ BUILDLIB_SRCS := \
 	MDPValueFunction.cc
 include $(BUILD_DIR)/buildlib.mak
 
-BUILDLIB_TARGET := libcommonTime.a
-BUILDLIB_SRCS := commonTime.cc
+BUILDLIB_TARGET := libpomdpCommonTime.a
+BUILDLIB_SRCS := pomdpCommonTime.cc
 include $(BUILD_DIR)/buildlib.mak
 
 ifneq (,$(TEST))
@@ -83,6 +83,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.10  2005/03/25 16:09:12  trey
+# added install of QMDP.h and MatrixUtils.h
+#
 # Revision 1.9  2005/03/10 21:12:04  trey
 # commented out test_aadd
 #

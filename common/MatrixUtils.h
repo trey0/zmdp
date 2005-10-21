@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.5 $  $Author: trey $  $Date: 2005-01-28 03:17:47 $
+ * $Revision: 1.6 $  $Author: trey $  $Date: 2005-10-21 20:08:10 $
  *  
  * @file    MatrixUtils.h
  * @brief   No brief
@@ -22,8 +22,8 @@
 #include <functional>
 #include <sstream>
 
-#include "commonDefs.h"
-#include "commonTypes.h"
+#include "pomdpCommonDefs.h"
+#include "pomdpCommonTypes.h"
 
 #if USE_UBLAS
 #  include "ublasMatrixUtils.h"
@@ -293,6 +293,9 @@ namespace MatrixUtils {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.5  2005/01/28 03:17:47  trey
+ * migrated some functions from ublasMatrixUtils to MatrixUtils
+ *
  * Revision 1.4  2005/01/27 05:30:56  trey
  * moved sparseRep() to MatrixUtils.h and added a version for dvectors
  *
