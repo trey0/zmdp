@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.5 $  $Author: trey $  $Date: 2005-01-28 03:22:38 $
+ * $Revision: 1.6 $  $Author: trey $  $Date: 2005-10-21 20:17:11 $
  *  
  * @file    ublasMatrixTypes.h
  * @brief   No brief
@@ -19,7 +19,7 @@
 // for some reason, this needs to be included after the others
 #include <boost/numeric/ublas/io.hpp>
 
-#include "commonDefs.h"
+#include "pomdpCommonDefs.h"
 
 typedef boost::numeric::ublas::vector<double> dvector;
 typedef boost::numeric::ublas::matrix<double> dmatrix;
@@ -191,6 +191,9 @@ namespace boost { namespace numeric { namespace ublas {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.5  2005/01/28 03:22:38  trey
+ * added functions and fixed some bugs with resize() calls
+ *
  * Revision 1.4  2005/01/27 05:36:11  trey
  * added more sla compatibility functions
  *

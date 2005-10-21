@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.9 $  $Author: trey $  $Date: 2005-03-28 18:12:28 $
+ * $Revision: 1.10 $  $Author: trey $  $Date: 2005-10-21 20:12:10 $
  *  
  * @file    sla.h
  * @brief   No brief
@@ -11,7 +11,7 @@
 #include <vector>
 #include <fstream>
 
-#include "commonDefs.h"
+#include "pomdpCommonDefs.h"
 
 // sla     = simple linear algebra
 // dvector = dense vector
@@ -1241,6 +1241,9 @@ typedef sla::dvector obs_prob_vector;
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.9  2005/03/28 18:12:28  trey
+ * added set_to_one() and emult(dvector,dvector,dvector)
+ *
  * Revision 1.8  2005/03/10 21:12:58  trey
  * added norm_inf(cvector) and dominates(x,y)
  *
