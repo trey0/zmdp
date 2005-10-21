@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: options.mak,v 1.13 2005-03-28 18:13:38 trey Exp $
+# $Id: options.mak,v 1.14 2005-10-21 20:04:59 trey Exp $
 
 # algorithm configuration options
 
@@ -17,7 +17,9 @@ CFLAGS += -DDO_UB_CACHED_Q=1
 CFLAGS += -DUSE_COMPRESSED_ALPHA=1
 #CFLAGS += -DUSE_MASKED_ALPHA=1
 CFLAGS += -DUSE_UB_HASH=0
-CFLAGS += -DUSE_SAFE_HSVI=1
+#CFLAGS += -DUSE_SAFE_HSVI=1
+#CFLAGS += -DUSE_EXEC_HEURISTIC=1
+#CFLAGS += -DUSE_FIXED_DEPTH=1
 
 # turns on optimization in boost matrix library (see commonTypes.h)
 CFLAGS += -DVEC_OPTIM=1
@@ -35,6 +37,9 @@ CFLAGS += -DCFLAGS="\"$(XCFLAGS)\""
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.13  2005/03/28 18:13:38  trey
+# turned off USE_MASKED_ALPHA for now; EnduranceCrater problem seems to have exposed a bug
+#
 # Revision 1.12  2005/03/25 21:42:30  trey
 # added USE_SAFE_HSVI
 #
