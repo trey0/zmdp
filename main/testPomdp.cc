@@ -16,15 +16,20 @@
 
 using namespace std;
 using namespace MatrixUtils;
+using namespace pomdp;
 
 void usage(void) {
   cerr <<
     "usage: testPomdp OPTIONS <algorithm> <probname> [minOrder maxOrder]\n"
-    "  -h or --help       Print this help\n"
-    "  --version          Print version information\n"
-    "  -f or --fast       Use fast (but very picky) alternate problem parser\n"
-    "  -i or --iterations Set number of simulation iterations (default: 1000)\n"
-    "  -n or --no-console Do not poll for user console commands\n"
+    "  -h or --help           Print this help\n"
+    "  --version              Print version information\n"
+    "  -f or --fast           Use fast (but very picky) alternate problem parser\n"
+    "  -i or --iterations     Set number of simulation iterations (default: 1000)\n"
+    "  -n or --no-console     Do not poll for user console commands\n"
+    "  --interleave           Test planner in interleaved mode\n"
+    "  -p or --min-precision  Set minimum precision (for interleaving)\n"
+    "  -s or --min-safety     Set minimum safety (for interleaving)\n"
+    "  -w or --min-wait       Set minimum planning time between actions (for interleaving)\n"
     "\n"
     "  available algorithms:\n"
     "    hsvi\n"
@@ -41,7 +46,11 @@ void testBatchIncremental(string algorithm,
 			  int min_order,
 			  int max_order,
 			  int num_iterations,
-			  bool use_fast_parser)
+			  bool use_fast_parser,
+			  double minSafety,
+			  double minPrecision,
+			  double minWait,
+			  bool useInterleave)
 {
   PomdpM problem;
 
@@ -109,21 +118,35 @@ void testBatchIncremental(string algorithm,
   else {
     cerr << "ERROR: unknown algorithm " << algorithm << endl << endl;
     usage();
+    return;
   }
+
+  solver->setMinSafety( minSafety );
 
   //string prefix = "/tmp/";
   string prefix = "";
   Interleave x;
-  x.batchTestIncremental(/* numIterations = */ num_iterations,
-			 &problem, *solver,
-			 /* numSteps = */ 251,
-			 /* minPrecision = */ 1e-10,
-			 /* minOrder = */ min_order,
-			 /* maxOrder = */ max_order,
-			 /* ticksPerOrder = */ 3,
-			 /* outFileName = */ "inc.plot",
-			 /* boundsFileName = */ "bounds.plot",
-			 /* simFileName = */ "sim.plot");
+  if (useInterleave) {
+    x.interleave(/* numIterations = */ num_iterations,
+		 &problem, *solver,
+		 /* numSteps = */ 251,
+		 /* minPrecision = */ minPrecision,
+		 /* minWait = */ minWait,
+		 /* outFileName = */ "scatter.plot",
+		 /* boundsFileNameFmt = */ "plots/bounds%04d.plot",
+		 /* simFileNameFmt = */ "plots/sim%04d.plot");
+  } else {
+    x.batchTestIncremental(/* numIterations = */ num_iterations,
+			   &problem, *solver,
+			   /* numSteps = */ 251,
+			   /* minPrecision = */ minPrecision,
+			   /* minOrder = */ min_order,
+			   /* maxOrder = */ max_order,
+			   /* ticksPerOrder = */ 3,
+			   /* outFileName = */ "inc.plot",
+			   /* boundsFileName = */ "bounds.plot",
+			   /* simFileName = */ "sim.plot");
+  }
 
   x.printRewards();
 }
@@ -138,6 +161,10 @@ int main(int argc, char **argv) {
   bool use_fast_parser = false;
   int num_iterations = 1000;
   bool past_options = false;
+  double minSafety = -99e+20;
+  double minPrecision = 1e-10;
+  double minWait = 0;
+  bool useInterleave = false;
 
   for (int argi=1; argi < argc; argi++) {
     string args = argv[argi];
@@ -151,14 +178,34 @@ int main(int argc, char **argv) {
 	use_fast_parser = true;
       } else if (args == "-i" || args == "--iterations") {
 	if (++argi == argc) {
-	  cerr << "ERROR: -i flag without argument" << endl;
+	  cerr << "ERROR: -i flag without argument" << endl << endl;
+	  usage();
 	}
 	num_iterations = atoi(argv[argi]);
       } else if (args == "-n" || args == "--no-console") {
 	setPollingEnabled(0);
+      } else if (args == "--interleave") {
+	useInterleave = true;
+      } else if (args == "-p" || args == "--min-precision") {
+	if (++argi == argc) {
+	  cerr << "ERROR: -p flag without argument" << endl << endl;
+	  usage();
+	}
+	minPrecision = atof(argv[argi]);
+      } else if (args == "-s" || args == "--min-safety") {
+	if (++argi == argc) {
+	  cerr << "ERROR: -s flag without argument" << endl << endl;
+	  usage();
+	}
+	minSafety = atof(argv[argi]);
+      } else if (args == "-w" || args == "--min-wait") {
+	if (++argi == argc) {
+	  cerr << "ERROR: -w flag without argument" << endl << endl;
+	  usage();
+	}
+	minWait = atof(argv[argi]);
       } else if (args == "--") {
 	past_options = true;
-	cout << "got --" << endl;
       } else {
 	cerr << "ERROR: unknown option " << args << endl << endl;
 	usage();
@@ -189,7 +236,8 @@ int main(int argc, char **argv) {
   }
 
   testBatchIncremental(algorithm, prob_name, min_order, max_order,
-		       num_iterations, use_fast_parser);
+		       num_iterations, use_fast_parser, minSafety,
+		       minPrecision, minWait, useInterleave);
 
   // signal we are done
   FILE *fp = fopen("/tmp/testPomdp_done", "w");
