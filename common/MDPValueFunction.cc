@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.5 $  $Author: trey $  $Date: 2005-03-28 18:11:40 $
+ * $Revision: 1.6 $  $Author: trey $  $Date: 2005-10-21 20:07:17 $
  *  
  * @file    MDPValueIteration.cc
  * @brief   No brief
@@ -23,6 +23,8 @@
 
 using namespace std;
 using namespace MatrixUtils;
+
+namespace pomdp {
 
 void MDPValueFunction::nextAlphaAction(dvector& result, int a) {
 #if 0
@@ -121,9 +123,14 @@ void testMDP(void) {
   cout << "final alpha = " << sparseRep(m.alpha) << endl;
 }
 
+}; // namespace pomdp
+
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.5  2005/03/28 18:11:40  trey
+ * changed definition of residual
+ *
  * Revision 1.4  2005/02/08 23:53:04  trey
  * updated to work for alpha_vector = cvector
  *

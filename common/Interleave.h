@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.1 $  $Author: trey $  $Date: 2004-11-13 23:29:44 $
+ * $Revision: 1.2 $  $Author: trey $  $Date: 2005-10-21 20:07:00 $
  *  
  * @file    Interleave.h
  * @brief   No brief
@@ -13,15 +13,22 @@
 #include "Solver.h"
 #include "PomdpSim.h"
 
+namespace pomdp {
+
 class Interleave {
 public:
   SmartRef<PomdpSim> sim;
   std::vector<double> rewardRecord;
   
-  void interleave(PomdpP pomdp, Solver& solver, int numSteps,
+  void interleave(int numIterations,
+		  PomdpP pomdp,
+		  Solver& solver,
+		  int numSteps,
 		  double minPrecision,
-		  double initialPlanTimeSeconds,
-		  double perStepPlanTimeSeconds);
+		  double minWait,
+		  const std::string& outFileName,
+		  const std::string& boundsFileNameFmt,
+		  const std::string& simFileNameFmt);
   double getReward(void) { return sim->rewardSoFar; }
   void batchTestIncremental(int numIterations,
 			    PomdpP pomdp, Solver& solver, int numSteps,
@@ -55,12 +62,16 @@ void testBatch(void);
  * IMPLEMENTATION
  **********************************************************************/
 
+}; // namespace pomdp
 
 #endif // INCInterleave_h
 
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2004/11/13 23:29:44  trey
+ * moved many files from hsvi to common
+ *
  * Revision 1.1.1.1  2004/11/09 16:18:56  trey
  * imported hsvi into new repository
  *

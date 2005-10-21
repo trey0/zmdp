@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.1 $  $Author: trey $  $Date: 2005-03-25 16:09:31 $
+ * $Revision: 1.2 $  $Author: trey $  $Date: 2005-10-21 20:09:11 $
  *  
  * @file    QMDP.h
  * @brief   No brief
@@ -9,6 +9,8 @@
 #define INCQMDP_h
 
 #include "MDPValueFunction.h"
+
+namespace pomdp {
 
 struct QMDP : public MDPValueFunction, public Solver {
 
@@ -114,11 +116,15 @@ struct QMDP : public MDPValueFunction, public Solver {
 
 void testMDP(void);
 
+}; // namespace pomdp
 
 #endif // INCQMDP_h
 
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2005/03/25 16:09:31  trey
+ * initial check-in
+ *
  *
  ***************************************************************************/

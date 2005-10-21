@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.2 $  $Author: trey $  $Date: 2005-01-21 18:07:02 $
+ * $Revision: 1.3 $  $Author: trey $  $Date: 2005-10-21 20:09:11 $
  *  
  * PROJECT: FIRE Architecture Project
  *
@@ -12,10 +12,13 @@
 
 #include "PomdpSim.h"
 
+namespace pomdp {
+
 class Solver {
 public:
   // sets up the problem
   virtual void planInit(PomdpP pomdp) = 0;
+
   // plan for a fixed amount of time.  if maxTimeSeconds < 0,
   //   the amount of time is chosen by the solver to optimize
   //   time performance.  returns true if minPrecision has been
@@ -34,13 +37,23 @@ public:
 
   virtual void setBoundsFile(std::ostream* boundsFile) = 0;
   virtual ValueInterval getValueAt(const belief_vector& currentBelief) const = 0;
+
+  // sets the minimum safety value, for a solver that understands safety
+  virtual void setMinSafety(double _minSafety) {}
+
+  
 };
+
+}; // namespace pomdp
 
 #endif // INCSolver_h
 
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2005/01/21 18:07:02  trey
+ * preparing for transition to sla matrix types
+ *
  * Revision 1.1  2004/11/13 23:29:44  trey
  * moved many files from hsvi to common
  *

@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.4 $  $Author: trey $  $Date: 2005-03-28 18:11:21 $
+ * $Revision: 1.5 $  $Author: trey $  $Date: 2005-10-21 20:07:17 $
  *  
  * @file    MDPValueFunction.h
  * @brief   No brief
@@ -12,6 +12,8 @@
 #include "ValueFunction.h"
 
 #define MDP_MAX_ITERS (1000000)
+
+namespace pomdp {
 
 class MDPValueFunction : public ValueFunction {
 public:
@@ -30,12 +32,16 @@ public:
 
 void testMDP(void);
 
+}; // namespace pomdp
 
 #endif // INCMDPValueFunction_h
 
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2005/03/28 18:11:21  trey
+ * made MDP_MAX_ITERS effectively infinite
+ *
  * Revision 1.3  2005/02/08 23:53:04  trey
  * updated to work for alpha_vector = cvector
  *

@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.6 $  $Author: trey $  $Date: 2005-03-10 22:53:32 $
+ * $Revision: 1.7 $  $Author: trey $  $Date: 2005-10-21 20:08:41 $
  *  
  * @file    PomdpM.h
  * @brief   No brief
@@ -15,11 +15,13 @@
 #include <string>
 #include <vector>
 
-#include "commonDefs.h"
-#include "commonTypes.h"
+#include "pomdpCommonDefs.h"
+#include "pomdpCommonTypes.h"
 #include "SmartRef.h"
 
 using namespace MATRIX_NAMESPACE;
+
+namespace pomdp {
 
 // this is a wrapper class around Pomdp that uses Lapack matrices
 class PomdpM {
@@ -56,11 +58,16 @@ protected:
 //typedef SmartRef<PomdpM> PomdpP;
 typedef PomdpM* PomdpP;
 
+}; // namespace pomdp
+
 #endif // INCPomdpM_h
 
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.6  2005/03/10 22:53:32  trey
+ * now initialize T matrix even when using sla
+ *
  * Revision 1.5  2005/01/27 05:32:02  trey
  * switched to use Ttr instead of T under sla
  *

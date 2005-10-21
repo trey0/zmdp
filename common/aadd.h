@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.3 $  $Author: trey $  $Date: 2005-03-09 18:51:28 $
+ * $Revision: 1.4 $  $Author: trey $  $Date: 2005-10-21 20:10:30 $
  *  
  * @file    aadd.h
  * @brief   No brief
@@ -13,7 +13,7 @@
 #include <iostream>
 #include <ext/hash_map>
 
-#include "commonDefs.h"
+#include "pomdpCommonDefs.h"
 #include "sla.h"
 
 #define EXT_NAMESPACE __gnu_cxx
@@ -589,6 +589,9 @@ namespace aadd {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2005/03/09 18:51:28  trey
+ * added emult(), made some function args const
+ *
  * Revision 1.2  2005/02/25 19:43:31  trey
  * add() works
  *

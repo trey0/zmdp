@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.6 $  $Author: trey $  $Date: 2005-03-10 22:53:32 $
+ * $Revision: 1.7 $  $Author: trey $  $Date: 2005-10-21 20:08:28 $
  *  
  * PROJECT: FIRE Architecture Project
  *
@@ -20,13 +20,15 @@
 #include <iostream>
 #include <fstream>
 
-#include "commonDefs.h"
+#include "pomdpCommonDefs.h"
 #include "pomdp.h"
 #include "PomdpM.h"
 #include "MatrixUtils.h"
 
 using namespace std;
 using namespace MatrixUtils;
+
+namespace pomdp {
 
 /***************************************************************************
  * STATIC HELPER FUNCTIONS
@@ -408,9 +410,14 @@ void PomdpM::debugDensity(void) {
 #endif
 }
 
+}; // namespace pomdp
+
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.6  2005/03/10 22:53:32  trey
+ * now initialize T matrix even when using sla
+ *
  * Revision 1.5  2005/02/08 23:54:25  trey
  * updated to use less type-specific function names
  *

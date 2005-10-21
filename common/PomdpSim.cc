@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.3 $  $Author: trey $  $Date: 2005-01-28 03:19:38 $
+ * $Revision: 1.4 $  $Author: trey $  $Date: 2005-10-21 20:08:53 $
  *  
  * @file    PomdpSim.cc
  * @brief   No brief
@@ -23,6 +23,8 @@
 
 using namespace std;
 using namespace MatrixUtils;
+
+namespace pomdp {
 
 PomdpSim::PomdpSim(PomdpP _pomdp) :
   pomdp(_pomdp)
@@ -160,10 +162,14 @@ void PomdpSim::performAction(int a) {
   }
 }
 
+}; // namespace pomdp
 
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2005/01/28 03:19:38  trey
+ * switched to use emult_column for efficiency
+ *
  * Revision 1.2  2005/01/27 05:33:20  trey
  * modified for sla compatibility
  *

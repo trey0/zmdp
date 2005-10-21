@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.4 $  $Author: trey $  $Date: 2005-02-08 23:54:35 $
+ * $Revision: 1.5 $  $Author: trey $  $Date: 2005-10-21 20:10:10 $
  *  
  * @file    ValueFunction.cc
  * @brief   No brief
@@ -18,13 +18,15 @@
 #include <iostream>
 #include <fstream>
 
-#include "commonDefs.h"
+#include "pomdpCommonDefs.h"
 #include "MatrixUtils.h"
 #include "ValueFunction.h"
 
 using namespace std;
 using namespace MatrixUtils;
 using namespace MATRIX_NAMESPACE;
+
+namespace pomdp {
 
 /**********************************************************************
  * MEMBER FUNCTIONS
@@ -59,9 +61,14 @@ bool ValueFunction::consistentWith(const ValueFunction& rhs, int numSamples,
   return true;
 }
 
+}; // namespace pomdp
+
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2005/02/08 23:54:35  trey
+ * updated to use less type-specific function names
+ *
  * Revision 1.3  2005/01/27 05:33:40  trey
  * modified for sla compatibility
  *
