@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.3 $  $Author: trey $  $Date: 2005-03-28 18:10:50 $
+ * $Revision: 1.4 $  $Author: trey $  $Date: 2005-10-21 20:06:32 $
  *  
  * @file    Interleave.cc
  * @brief   No brief
@@ -17,59 +17,126 @@
 #include <iostream>
 #include <fstream>
 
-#include "commonTime.h"
+#include "pomdpCommonTime.h"
 #include "Interleave.h"
-#include "commonDefs.h"
+#include "pomdpCommonDefs.h"
 #include "MatrixUtils.h"
 
 using namespace std;
 using namespace MatrixUtils;
 
-void Interleave::interleave(PomdpP pomdp, Solver& solver, int numSteps,
+namespace pomdp {
+
+void Interleave::interleave(int numIterations,
+			    PomdpP pomdp,
+			    Solver& solver,
+			    int numSteps,
 			    double minPrecision,
-			    double initialPlanTimeSeconds,
-			    double perStepPlanTimeSeconds)
+			    double minWait,
+			    const string& scatterFileName,
+			    const string& boundsFileNameFmt,
+			    const string& simFileNameFmt)
 {
-  if (initialPlanTimeSeconds == -1) {
-    // batchTest passes in initialPlanTimeSeconds as -1 to instruct us to reuse
-    // existing solution in the solver
-    sim->restart();
-    initialPlanTimeSeconds = 0;
-  } else {
-    sim = new PomdpSim(pomdp);
+  int action;
+  belief_vector last_belief, diff;
+  ofstream scatterFile, boundsFile, simFile;
+  char boundsFileName[PATH_MAX], simFileName[PATH_MAX];
+  double deltaTime, timeSoFar, episodeTimeSoFar;
+  bool achievedPrecision, achievedTerminalState;
+
+  sim = new PomdpSim(pomdp);
+
+  scatterFile.open( scatterFileName.c_str() );
+  if (! scatterFile) {
+    cerr << "ERROR: couldn't open " << scatterFileName << " for writing: "
+	 << strerror(errno) << endl;
+    exit(EXIT_FAILURE);
+  }
+
+  system("mkdir -p plots");
+
+  FOR (i, numIterations) {
+    cout << "=-=-=-=-= interleave: trial " << (i+1) << " / " << numIterations << endl;
+
+    // reset the planner
     solver.planInit(pomdp);
-  }
-  timeval startRun = getTime();
-  FOR (i, numSteps) {
-    double elapsed = timevalToSeconds(getTime() - startRun);
-    double maxTime = (i == 0) ? initialPlanTimeSeconds : perStepPlanTimeSeconds;
-    if (maxTime == 0.0) {
-      cout << "(" << (i+1) << ") ";
-      cout.flush();
-    } else {
-      cout << endl
-	   << "interleave: " << (i+1) << " / " << numSteps
-	   << "----------------" << endl;
-      cout << "interleave: elapsed time total=" << elapsed
-	   << ", per step=" << (elapsed / (i+1)) << endl;
-      cout << "interleave: b=";
-      cout << sparseRep(sim->currentBelief) << endl;
+
+    // set up a new bounds file and sim file for each iteration
+    snprintf( boundsFileName, sizeof(boundsFileName), boundsFileNameFmt.c_str(), i );
+    boundsFile.open( boundsFileName );
+    if (! boundsFile) {
+      cerr << "ERROR: couldn't open " << boundsFileName << " for writing: "
+	   << strerror(errno) << endl;
+      exit(EXIT_FAILURE);
     }
-    int action = solver.planFixedTime(sim->currentBelief, maxTime, minPrecision);
-    sim->performAction(action);
+    solver.setBoundsFile(&boundsFile);
+    
+    snprintf( simFileName, sizeof(simFileName), simFileNameFmt.c_str(), i );
+    simFile.open( simFileName );
+    if (! simFile) {
+      cerr << "ERROR: couldn't open " << simFileName << " for writing: "
+	   << strerror(errno) << endl;
+      exit(EXIT_FAILURE);
+    }
+    sim->simOutFile = &simFile;
+
+    // restart the sim
+    sim->restart();
+    timeSoFar = 0;
+    achievedTerminalState = false;
+
+    // run in interleaved mode
+    FOR (t, numSteps) {
+      cout << "#-#-#-#-#-#-# interleave: trial " << (i+1) << " / " << numIterations
+	   << ", time step " << (t+1) << " / " << numSteps << endl;
+      // iterate the planner until it achieves the desired precision
+      episodeTimeSoFar = 0.0;
+      do {
+	timeval plan_start = getTime();
+	achievedPrecision =
+	  solver.planFixedTime(pomdp->initialBelief, /* maxTime = */ -1, /* minPrecision = */ minPrecision);
+	deltaTime = timevalToSeconds(getTime() - plan_start);
+	timeSoFar += deltaTime;
+	episodeTimeSoFar += deltaTime;
+      } while ( !(achievedPrecision && episodeTimeSoFar >= minWait) );
+
+      // take one action
+      action = solver.chooseAction(sim->currentBelief);
+      sim->performAction(action);
+      
+      // check if we reached a terminal state
+      if (sim->terminated) {
+	achievedTerminalState = true;
+	break;
+      }
+    }
+
+    // record the total planning time and reward from this interleaved run
+    scatterFile << timeSoFar << " "
+		<< sim->rewardSoFar << " "
+		<< achievedTerminalState << endl;
+
+    boundsFile.close();
+    simFile.close();
   }
-  cout << "interleave: run complete, total reward was " << getReward() << endl;
+  scatterFile.close();
 }
 
 void Interleave::batchTestIncremental(int numIterations,
-				      PomdpP pomdp, Solver& solver, int numSteps,
+				      PomdpP pomdp,
+				      Solver& solver,
+				      int numSteps,
 				      double minPrecision,
-				      double minOrder, double maxOrder, double ticksPerOrder,
+				      double minOrder, double maxOrder,
+				      double ticksPerOrder,
 				      const string& outFileName,
 				      const string& boundsFileName,
 				      const string& simFileName)
 {
-  // make the initial solution
+  int action, last_action;
+  belief_vector last_belief, diff;
+  bool can_reuse_last_action;
+
   sim = new PomdpSim(pomdp);
   solver.planInit(pomdp);
 
@@ -122,14 +189,28 @@ void Interleave::batchTestIncremental(int numIterations,
 	cout << "#-#-#-#-#-#-# batchTest " << (i+1) << " / " << numIterations;
 	cout.flush();
 	sim->restart();
+	last_action = -1;
 	achieved_terminal_state = false;
 	FOR (j, numSteps) {
-	  int action = solver.chooseAction(sim->currentBelief);
+	  can_reuse_last_action = false;
+	  if (-1 != last_action) {
+	    diff = sim->currentBelief;
+	    diff -= last_belief;
+	    if (norm_inf(diff) < 1e-10) {
+	      can_reuse_last_action = true;
+	    }
+	  }
+	  if (can_reuse_last_action) {
+	    action = last_action;
+	  } else {
+	    action = solver.chooseAction(sim->currentBelief);
+	  }
+
+	  last_action = action;
+	  last_belief = sim->currentBelief;
+
 	  sim->performAction(action);
-#if 0
-	  cout << "(" << (j+1) << ") ";
-	  cout.flush();
-#endif
+
 	  if (sim->terminated) {
 	    num_successes++;
 	    achieved_terminal_state = true;
@@ -151,7 +232,8 @@ void Interleave::batchTestIncremental(int numIterations,
 
       ValueInterval val = solver.getValueAt(pomdp->initialBelief);
       // for some reason, if i use sqrt() instead of ::sqrt(), it's ambiguous
-      out << timeSoFar << " " << avg << " " << (stdev/::sqrt(numIterations)*1.96) << " "
+      out << timeSoFar << " " << avg << " "
+	  << (stdev/::sqrt(numIterations)*1.96) << " "
 	  << val.l << " " << val.u << " " << success_rate << endl;
       out.flush();
     }
@@ -252,11 +334,19 @@ void Interleave::batchTest(int numIterations,
   }
 }
 
-#endif
+#endif // #if 0
+
+}; // namespace pomdp
 
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2005/03/29 16:56:51  trey
+ * added shortcut for reusing actions if the belief has not changed
+ *
+ * Revision 1.3  2005/03/28 18:10:50  trey
+ * added debug statement during simulation
+ *
  * Revision 1.2  2005/01/26 04:08:42  trey
  * switched to use sparseRep in debug print
  *
