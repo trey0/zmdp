@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.4 $  $Author: trey $  $Date: 2005-10-21 20:06:32 $
+ * $Revision: 1.5 $  $Author: trey $  $Date: 2005-10-27 22:11:43 $
  *  
  * @file    Interleave.cc
  * @brief   No brief
@@ -254,93 +254,14 @@ void Interleave::printRewards(void) {
   cout << "reward avg stdev: " << avg << " " << stdev << endl;
 }
 
-#if 0
-
-void testInterleave(void) {
-  string prob_name = "network-e";
-
-  PomdpP p = new PomdpM;
-  string probfile = "examples/" + prob_name + ".pomdp";
-  cout << "reading problem from " << probfile << endl;
-  p->readFromFile(probfile);
-
-  FocusedPomdp solver;
-
-  Interleave x;
-  x.interleave(p, solver,
-	       /* numSteps = */ 20,
-	       /* minPrecision = */ 1e-10,
-	       /* initial time = */ 5.0,
-	       /* per step time = */ 5.0);
-}
-
-void testBatch(void) {
-  //string prob_name = "hallway2";
-  string prob_name = "network-u";
-
-  PomdpP p = new PomdpM;
-  string probfile = "examples/" + prob_name + ".pomdp";
-  cout << "reading problem from " << probfile << endl;
-  p->readFromFile(probfile);
-
-  FocusedPomdp solver;
-
-  Interleave x;
-  x.batchTestReuse(/* numIterations = */ 100,
-		   p, solver,
-		   /* numSteps = */ 20,
-		   /* minPrecision = */ 1e-10,
-		   /* initialPlanTime = */ 60);
-  x.printRewards();
-}
-
-void Interleave::batchTestReuse(int numIterations,
-				PomdpP pomdp, Solver& solver, int numSteps,
-				double minPrecision,
-				double initialPlanTimeSeconds)
-{
-  // make the initial solution
-  sim = new PomdpSim(pomdp);
-  solver.planInit(pomdp);
-  solver.planFixedTime(pomdp->initialBelief, initialPlanTimeSeconds, minPrecision);
-  
-  // repeatedly simulate, reusing the initial solution
-  FOR (i, numIterations) {
-    cout << "#-#-#-#-#-#-# batchTest " << (i+1) << " / " << numIterations << endl;
-    sim->restart();
-    FOR (j, numSteps) {
-      int action = solver.planFixedTime(sim->currentBelief, /* maxTime = */ 0,
-					minPrecision);
-      sim->performAction(action);
-      //cout << "(" << (j+1) << ") ";
-      cout.flush();
-    }
-    cout << "(reward " << sim->rewardSoFar << ")" << endl;
-    rewardRecord.push_back(sim->rewardSoFar);
-  }
-}
-
-void Interleave::batchTest(int numIterations,
-			   PomdpP pomdp, Solver& solver, int numSteps,
-			   double minPrecision,
-			   double initialPlanTimeSeconds,
-			   double perStepPlanTimeSeconds)
-{
-  FOR (i, numIterations) {
-    cout << "#-#-#-#-#-#-# batchTest" << (i+1) << " / " << numIterations << endl;
-    interleave(pomdp, solver, numSteps, minPrecision, initialPlanTimeSeconds,
-	       perStepPlanTimeSeconds);
-    rewardRecord.push_back(sim->rewardSoFar);
-  }
-}
-
-#endif // #if 0
-
 }; // namespace pomdp
 
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2005/10/21 20:06:32  trey
+ * added shortcut for reusing actions if the belief has not changed
+ *
  * Revision 1.4  2005/03/29 16:56:51  trey
  * added shortcut for reusing actions if the belief has not changed
  *

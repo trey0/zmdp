@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.2 $  $Author: trey $  $Date: 2005-10-21 20:07:00 $
+ * $Revision: 1.3 $  $Author: trey $  $Date: 2005-10-27 22:11:43 $
  *  
  * @file    Interleave.h
  * @brief   No brief
@@ -39,28 +39,7 @@ public:
 			    const std::string& simFileName);
   void printRewards(void);
 
-
-#if 0
-  void batchTest(int numIterations,
-		 PomdpP pomdp, Solver& solver, int numSteps,
-		 double minPrecision,
-		 double initialPlanTimeSeconds,
-		 double perStepPlanTimeSeconds);
-  void batchTestReuse(int numIterations,
-		      PomdpP pomdp, Solver& solver, int numSteps,
-		      double minPrecision,
-		      double initialPlanTimeSeconds);
-#endif
 };
-
-#if 0
-void testInterleave(void);
-void testBatch(void);
-#endif
-
-/**********************************************************************
- * IMPLEMENTATION
- **********************************************************************/
 
 }; // namespace pomdp
 
@@ -69,6 +48,9 @@ void testBatch(void);
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2005/10/21 20:07:00  trey
+ * added namespace pomdp
+ *
  * Revision 1.1  2004/11/13 23:29:44  trey
  * moved many files from hsvi to common
  *
