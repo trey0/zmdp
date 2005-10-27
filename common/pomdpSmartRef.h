@@ -1,11 +1,10 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.2 $  $Author: trey $  $Date: 2004-12-16 03:58:50 $
+ * $Revision: 1.1 $  $Author: trey $  $Date: 2005-10-27 22:06:00 $
  *  
- * PROJECT: FIRE Architecture Project
- *
  * @file    SmartRef.h
  * @brief   from http://www.geocities.com/botstein/refcnt.html
  *          Author: Boris Botstein, botstein@yahoo.com
+ *          Minor modifications by Trey Smith
  ***************************************************************************/
 
 #ifndef INCSmartRef_h
@@ -25,13 +24,10 @@
  * CLASSES AND TYPEDEFS
  ***************************************************************************/
 
-struct GenericSmartRef
-{
-  virtual ~GenericSmartRef(void) {}
-};
+namespace pomdp {
 
 template < class X >
-class SmartRef : public GenericSmartRef
+class SmartRef
 {
  protected:
   class holder {
@@ -99,11 +95,16 @@ class SmartRef : public GenericSmartRef
   unsigned accessed() const { return value->accessed; }
 };
 
+}; // namespace pomdp
+
 #endif /* INCSmartRef_h */
 
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2004/12/16 03:58:50  trey
+ * added defined()
+ *
  * Revision 1.1  2004/11/09 21:28:24  trey
  * check-in to pomdp repository
  *
