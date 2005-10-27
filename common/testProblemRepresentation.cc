@@ -1,5 +1,5 @@
 
-#include "PomdpM.h"
+#include "Pomdp.h"
 #include "MatrixUtils.h"
 
 using namespace std;
@@ -8,17 +8,8 @@ using namespace MatrixUtils;
 int main(int argc, char** argv) {
   init_matrix_utils();
 
-  PomdpM problem;
-  //prob_name = "examples/" + prob_name + ".pomdp";
+  Pomdp problem;
   problem.readFromFile( argv[1], /* use_fast_parser = */ false );
-
-#if 0
-  char buf[256];
-  FOR (a, problem.numActions) {
-    snprintf(buf,sizeof(buf),"O_%02d.dat", a);
-    write_to_file(problem.O[a],buf);
-  }
-#endif
 
   write_to_file(problem.R,"R.dat");
 
