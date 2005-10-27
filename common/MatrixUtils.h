@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.6 $  $Author: trey $  $Date: 2005-10-21 20:08:10 $
+ * $Revision: 1.7 $  $Author: trey $  $Date: 2005-10-27 22:09:42 $
  *  
  * @file    MatrixUtils.h
  * @brief   No brief
@@ -25,11 +25,7 @@
 #include "pomdpCommonDefs.h"
 #include "pomdpCommonTypes.h"
 
-#if USE_UBLAS
-#  include "ublasMatrixUtils.h"
-#else
-#  include "slaMatrixUtils.h"
-#endif
+#include "slaMatrixUtils.h"
 
 namespace MatrixUtils {
 
@@ -293,6 +289,9 @@ namespace MatrixUtils {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.6  2005/10/21 20:08:10  trey
+ * renamed some source files to avoid potential conflicts with other projects
+ *
  * Revision 1.5  2005/01/28 03:17:47  trey
  * migrated some functions from ublasMatrixUtils to MatrixUtils
  *
