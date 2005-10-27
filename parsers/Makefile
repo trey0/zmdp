@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.3 2005-01-17 19:37:14 trey Exp $
+# $Id: Makefile,v 1.4 2005-10-27 21:36:58 trey Exp $
 #
 # PROJECT:      FIRE Architecture Project
 # DESCRIPTION:  
@@ -18,13 +18,13 @@ include $(SRC_DIR)/common/options.mak
 # ADD ANY SUBDIRS THAT NEED TO BE VISITED DURING A BUILD TO THE SUBDIRS LIST
 SUBDIRS := 
 
-INSTALLHEADERS_HEADERS := pomdp.h
+INSTALLHEADERS_HEADERS := pomdpCassandraWrapper.h
 include $(BUILD_DIR)/installheaders.mak
 
 BUILDLIB_TARGET := libpomdp_spec.a
 BUILDLIB_SRCS := pomdp_spec.tab.cc pomdp_spec.yy.cc \
   imm-reward.c parse_err.c parse_hash.c \
-  sparse-matrix.c mdp.c pomdp.cc
+  sparse-matrix.c mdp.c pomdpCassandraWrapper.cc
 include $(BUILD_DIR)/buildlib.mak
 
 # use 'gmake TEST=1 install' to build the following stuff
@@ -45,6 +45,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.3  2005/01/17 19:37:14  trey
+# added include of options.mak
+#
 # Revision 1.2  2004/11/09 21:31:59  trey
 # got pomdp source tree into a building state again
 #
