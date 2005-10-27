@@ -1,8 +1,6 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.1 $  $Author: trey $  $Date: 2005-10-27 21:27:10 $
+ * $Revision: 1.2 $  $Author: trey $  $Date: 2005-10-27 21:34:20 $
  *  
- * PROJECT: FIRE Architecture Project
- *
  * @file    pomdpCassandraWrapper.cc
  * @brief   A wrapper that provides access to the pomdp read in by
  *          Tony Cassandra's file reading code, without requiring you
@@ -26,43 +24,43 @@ using namespace std;
 #include "pomdpCassandraWrapper.h"
 #include "mdp.h"
 
-int Pomdp::getNumStates(void) const {
+int PomdpCassandraWrapper::getNumStates(void) const {
   return gNumStates;
 }
 
-int Pomdp::getNumActions(void) const {
+int PomdpCassandraWrapper::getNumActions(void) const {
   return gNumActions;
 }
 
-int Pomdp::getNumObservations(void) const {
+int PomdpCassandraWrapper::getNumObservations(void) const {
   return gNumObservations;
 }
 
-ValueType Pomdp::getDiscount(void) const {
+ValueType PomdpCassandraWrapper::getDiscount(void) const {
   return gDiscount;
 }
 
-ValueType Pomdp::getInitialBelief(StateType s) const {
+ValueType PomdpCassandraWrapper::getInitialBelief(StateType s) const {
   return gInitialBelief[s];
 }
 
-bool Pomdp::isTerminalState(StateType s) const {
+bool PomdpCassandraWrapper::isTerminalState(StateType s) const {
   return gTerminalStates[s];
 }
 
-ValueType Pomdp::R(StateType s, ActionType a) const {
+ValueType PomdpCassandraWrapper::R(StateType s, ActionType a) const {
   return getEntryMatrix( Q, a, s );
 }
 
-ProbType Pomdp::T(StateType s, ActionType a, StateType sp) const {
+ProbType PomdpCassandraWrapper::T(StateType s, ActionType a, StateType sp) const {
   return getEntryMatrix( P[a], s, sp );
 }
 
-ProbType Pomdp::O(StateType sp, ActionType a, ObsType o) const {
+ProbType PomdpCassandraWrapper::O(StateType sp, ActionType a, ObsType o) const {
   return getEntryMatrix( ::R[a], sp, o );
 }
 
-void Pomdp::readFromFile(const string& fileName) {
+void PomdpCassandraWrapper::readFromFile(const string& fileName) {
   if (! readMDP(const_cast<char *>(fileName.c_str())) ) {
     throw InputError();
   }
@@ -71,6 +69,9 @@ void Pomdp::readFromFile(const string& fileName) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2005/10/27 21:27:10  trey
+ * renamed pomdp to pomdpCassandraWrapper
+ *
  * Revision 1.1.1.1  2004/11/09 16:18:56  trey
  * imported hsvi into new repository
  *
