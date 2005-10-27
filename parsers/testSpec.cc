@@ -1,8 +1,6 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.1.1.1 $  $Author: trey $  $Date: 2004-11-09 16:18:56 $
+ * $Revision: 1.2 $  $Author: trey $  $Date: 2005-10-27 21:37:17 $
  *  
- * PROJECT: FIRE Architecture Project
- *
  * @file    testSpec.cc
  * @brief   No brief
  ***************************************************************************/
@@ -19,7 +17,7 @@
 #include <iostream>
 using namespace std;
 
-#include "spec.h"
+#include "pomdpCassandraWrapper.h"
 
 void usage(void) {
   cerr <<
@@ -46,43 +44,43 @@ int main(int argc, char *argv[]) {
   }
 
   // read it in
-  Pomdp spec;
-  spec.readFromFile(pomdpFileName);
+  PomdpCassandraWrapper p;
+  p.readFromFile(pomdpFileName);
 
   // print out stats
-  cout << "numStates = " << spec.numStates() << endl;
-  cout << "numActions = " << spec.numActions() << endl;
-  cout << "numObservations = " << spec.numObservations() << endl;
-  cout << "discount = " << spec.discount() << endl;
+  cout << "numStates = " << p.numStates() << endl;
+  cout << "numActions = " << p.numActions() << endl;
+  cout << "numObservations = " << p.numObservations() << endl;
+  cout << "discount = " << p.discount() << endl;
   cout << endl;
 
   int s, sp, a, o;
 
   cout << "R(s,a) matrix = " << endl;
-  for (s=0; s < spec.numStates(); s++) {
-    for (a=0; a < spec.numActions(); a++) {
-      printf("%9.2f ", spec.R(s,a));
+  for (s=0; s < p.numStates(); s++) {
+    for (a=0; a < p.numActions(); a++) {
+      printf("%9.2f ", p.R(s,a));
     }
     cout << endl;
   }
   cout << endl;
 
-  for (a=0; a < spec.numActions(); a++) {
+  for (a=0; a < p.numActions(); a++) {
     cout << "T(s," << a << ",sp) matrix = " << endl;
-    for (s=0; s < spec.numStates(); s++) {
-      for (sp=0; sp < spec.numStates(); sp++) {
-	printf("%5.3f ", spec.T(s,a,sp));
+    for (s=0; s < p.numStates(); s++) {
+      for (sp=0; sp < p.numStates(); sp++) {
+	printf("%5.3f ", p.T(s,a,sp));
       }
       cout << endl;
     }
     cout << endl;
   }
 
-  for (a=0; a < spec.numActions(); a++) {
+  for (a=0; a < p.numActions(); a++) {
     cout << "O(sp," << a << ",o) matrix = " << endl;
-    for (sp=0; sp < spec.numStates(); sp++) {
-      for (o=0; o < spec.numObservations(); o++) {
-	printf("%5.3f ", spec.O(sp,a,o));
+    for (sp=0; sp < p.numStates(); sp++) {
+      for (o=0; o < p.numObservations(); o++) {
+	printf("%5.3f ", p.O(sp,a,o));
       }
       cout << endl;
     }
@@ -94,6 +92,9 @@ int main(int argc, char *argv[]) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1.1.1  2004/11/09 16:18:56  trey
+ * imported hsvi into new repository
+ *
  * Revision 1.1.1.1  2003/01/07 19:19:41  trey
  * Imported sources
  *
