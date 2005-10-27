@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.1 $  $Author: trey $  $Date: 2005-10-27 21:38:16 $
+ * $Revision: 1.2 $  $Author: trey $  $Date: 2005-10-27 22:29:12 $
  *  
  * @file    Pomdp.h
  * @brief   No brief
@@ -14,7 +14,6 @@
 
 #include "pomdpCommonDefs.h"
 #include "pomdpCommonTypes.h"
-#include "pomdpSmartRef.h"
 
 using namespace MATRIX_NAMESPACE;
 
@@ -53,6 +52,9 @@ typedef Pomdp* PomdpP;
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2005/10/27 21:38:16  trey
+ * renamed PomdpM to Pomdp
+ *
  * Revision 1.7  2005/10/21 20:08:41  trey
  * added namespace pomdp
  *

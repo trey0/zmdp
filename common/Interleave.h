@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.3 $  $Author: trey $  $Date: 2005-10-27 22:11:43 $
+ * $Revision: 1.4 $  $Author: trey $  $Date: 2005-10-27 22:28:54 $
  *  
  * @file    Interleave.h
  * @brief   No brief
@@ -17,9 +17,17 @@ namespace pomdp {
 
 class Interleave {
 public:
-  SmartRef<PomdpSim> sim;
+  PomdpSim* sim;
   std::vector<double> rewardRecord;
   
+  Interleave(void) : sim(NULL) {}
+  ~Interleave(void) {
+    if (NULL != sim) {
+      delete sim;
+      sim = NULL;
+    }
+  }
+
   void interleave(int numIterations,
 		  PomdpP pomdp,
 		  Solver& solver,
@@ -48,6 +56,9 @@ public:
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2005/10/27 22:11:43  trey
+ * cleaned out cruft
+ *
  * Revision 1.2  2005/10/21 20:07:00  trey
  * added namespace pomdp
  *
