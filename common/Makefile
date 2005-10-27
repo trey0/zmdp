@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.11 2005-10-21 20:07:57 trey Exp $
+# $Id: Makefile,v 1.12 2005-10-27 22:09:53 trey Exp $
 #
 # PROJECT:      FIRE Architecture Project
 # DESCRIPTION:  
@@ -23,16 +23,14 @@ CFLAGS += -I$(CHECKOUT_DIR)/external/boost
 INSTALLHEADERS_HEADERS := \
 	pomdpCommonDefs.h \
 	pomdpCommonTime.h \
-	ublasMatrixTypes.h \
 	sla.h \
 	sla_mask.h \
 	pomdpCommonTypes.h \
-	SmartRef.h \
+	pomdpSmartRef.h \
 	Interleave.h \
-	ublasMatrixUtils.h \
 	slaMatrixUtils.h \
 	MatrixUtils.h \
-	PomdpM.h \
+	Pomdp.h \
 	PomdpSim.h \
 	Solver.h \
 	ValueFunction.h \
@@ -43,7 +41,7 @@ include $(BUILD_DIR)/installheaders.mak
 BUILDLIB_TARGET := libpomdpUtils.a
 BUILDLIB_SRCS := \
 	pomdpCommonTypes.cc \
-	PomdpM.cc \
+	Pomdp.cc \
 	Interleave.cc \
 	PomdpSim.cc \
 	ValueFunction.cc \
@@ -68,8 +66,8 @@ include $(BUILD_DIR)/buildbin.mak
 #BUILDBIN_DEP_LIBS :=
 #include $(BUILD_DIR)/buildbin.mak
 
-BUILDBIN_TARGET := testPomdpM
-BUILDBIN_SRCS := testPomdpM.cc
+BUILDBIN_TARGET := testProblemRepresentation
+BUILDBIN_SRCS := testProblemRepresentation.cc
 BUILDBIN_INDEP_LIBS :=
 BUILDBIN_DEP_LIBS := -lpomdpUtils -lpomdp_spec
 include $(BUILD_DIR)/buildbin.mak
@@ -83,6 +81,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.11  2005/10/21 20:07:57  trey
+# renamed some source files to avoid potential conflicts with other projects
+#
 # Revision 1.10  2005/03/25 16:09:12  trey
 # added install of QMDP.h and MatrixUtils.h
 #
