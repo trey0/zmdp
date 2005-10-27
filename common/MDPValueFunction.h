@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.5 $  $Author: trey $  $Date: 2005-10-21 20:07:17 $
+ * $Revision: 1.6 $  $Author: trey $  $Date: 2005-10-27 22:06:19 $
  *  
  * @file    MDPValueFunction.h
  * @brief   No brief
@@ -8,7 +8,7 @@
 #ifndef INCMDPValueFunction_h
 #define INCMDPValueFunction_h
 
-#include "PomdpM.h"
+#include "Pomdp.h"
 #include "ValueFunction.h"
 
 #define MDP_MAX_ITERS (1000000)
@@ -39,6 +39,9 @@ void testMDP(void);
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.5  2005/10/21 20:07:17  trey
+ * added namespace pomdp
+ *
  * Revision 1.4  2005/03/28 18:11:21  trey
  * made MDP_MAX_ITERS effectively infinite
  *

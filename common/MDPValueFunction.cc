@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.6 $  $Author: trey $  $Date: 2005-10-21 20:07:17 $
+ * $Revision: 1.7 $  $Author: trey $  $Date: 2005-10-27 22:06:19 $
  *  
  * @file    MDPValueIteration.cc
  * @brief   No brief
@@ -116,7 +116,7 @@ void MDPValueFunction::valueIteration(PomdpP _pomdp, double eps) {
 
 void testMDP(void) {
   MDPValueFunction m;
-  PomdpM* p = new PomdpM();
+  PomdpP p = new Pomdp();
   //p->readFromFile("examples/simple.pomdp");
   p->readFromFile("examples/hallway.pomdp");
   m.valueIteration(p, 1e-3);
@@ -128,6 +128,9 @@ void testMDP(void) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.6  2005/10/21 20:07:17  trey
+ * added namespace pomdp
+ *
  * Revision 1.5  2005/03/28 18:11:40  trey
  * changed definition of residual
  *
