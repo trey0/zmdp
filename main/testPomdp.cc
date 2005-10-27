@@ -5,11 +5,8 @@
 #include <iostream>
 #include <fstream>
 
-#include "PomdpM.h"
-#include "FocusedPomdp.h"
-#if USE_EMPOMDP
-#  include "EMPomdp.h"
-#endif
+#include "Pomdp.h"
+#include "HSVI.h"
 #include "QMDP.h"
 #include "Interleave.h"
 #include "stdinInterface.h"
@@ -22,21 +19,18 @@ void usage(void) {
   cerr <<
     "usage: testPomdp OPTIONS <algorithm> <probname> [minOrder maxOrder]\n"
     "  -h or --help           Print this help\n"
-    "  --version              Print version information\n"
+    "  --version              Print version information (CFLAGS used at compilation)\n"
     "  -f or --fast           Use fast (but very picky) alternate problem parser\n"
     "  -i or --iterations     Set number of simulation iterations (default: 1000)\n"
-    "  -n or --no-console     Do not poll for user console commands\n"
+    "  -n or --no-console     Do not poll stdin for user quit command (helps when running in background)\n"
+    "\n"
+    "Available algorithms: hsvi qmdp\n"
+    "\n"
+    "These options are experimental, you probably don't want to use them:\n"
     "  --interleave           Test planner in interleaved mode\n"
     "  -p or --min-precision  Set minimum precision (for interleaving)\n"
     "  -s or --min-safety     Set minimum safety (for interleaving)\n"
     "  -w or --min-wait       Set minimum planning time between actions (for interleaving)\n"
-    "\n"
-    "  available algorithms:\n"
-    "    hsvi\n"
-#if USE_EMPOMDP
-    "    empomdp\n"
-#endif
-    "    qmdp\n"
 ;
   exit(-1);
 }
@@ -52,66 +46,16 @@ void testBatchIncremental(string algorithm,
 			  double minWait,
 			  bool useInterleave)
 {
-  PomdpM problem;
+  Pomdp problem;
 
   cout << "CFLAGS = " << CFLAGS << endl;
 
-  //prob_name = "examples/" + prob_name + ".pomdp";
   problem.readFromFile( prob_name, use_fast_parser );
 
-#if 0
-  // test benchmark code
-
-  cout << "numStates = " << problem.numStates << endl;
-  cout << "T.size = " << problem.T[4].size1()
-       << " " << problem.T[4].size2() << endl;
-
-  timeval startTime, endTime;
-  belief_vector result(problem.numStates);
-  bmatrix& T = problem.T[4];
-  belief_vector& b0 = problem.initialBelief;
-  dvector tmp(problem.numStates);
-
-  gettimeofday(&startTime,0);
-  for (int i=0; i < 10; i++) {
-    //noalias(result) = prod( T, b0 );
-    axpy_prod( T, b0, tmp, true );
-    result = tmp;
-  }
-  gettimeofday(&endTime,0);
-
-  cout << "multiplies: elapsed time = "
-       << ((endTime.tv_sec - startTime.tv_sec)
-	   + 1e-6*(endTime.tv_usec - startTime.tv_usec))
-       << endl;
-
-  const char* fname = "result_tp.dat";
-  ofstream out(fname);
-  if (!out) {
-    cerr << "ERROR: couldn't open " << fname << " for writing: "
-	 << strerror(errno) << endl;
-    exit(EXIT_FAILURE);
-  }
-  out << problem.numStates << endl;
-  FOR (i, problem.numStates) {
-    out << result[i] << endl;
-  }
-  out.close();
-
-  exit(0);
-#endif
-
   Solver* solver;
-  if (0) {
+  if (algorithm == "hsvi") {
+    solver = new HSVI();
   }
-  else if (algorithm == "hsvi") {
-    solver = new FocusedPomdp();
-  }
-#if USE_EMPOMDP
-  else if (algorithm == "empomdp") {
-    solver = new EMPomdp();
-  }
-#endif
   else if (algorithm == "qmdp") {
     solver = new QMDP();
   }
