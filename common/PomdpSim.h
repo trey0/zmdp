@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.3 $  $Author: trey $  $Date: 2005-10-21 20:08:53 $
+ * $Revision: 1.4 $  $Author: trey $  $Date: 2005-10-27 22:09:21 $
  *  
  * @file    PomdpSim.h
  * @brief   No brief
@@ -8,7 +8,7 @@
 #ifndef INCPomdpSim_h
 #define INCPomdpSim_h
 
-#include "PomdpM.h"
+#include "Pomdp.h"
 
 namespace pomdp {
 
@@ -39,6 +39,9 @@ public:
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2005/10/21 20:08:53  trey
+ * added namespace pomdp
+ *
  * Revision 1.2  2005/01/26 04:11:31  trey
  * replaced bvector with cvector
  *
