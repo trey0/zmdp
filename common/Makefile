@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.12 2005-10-27 22:09:53 trey Exp $
+# $Id: Makefile,v 1.13 2005-10-27 22:32:24 trey Exp $
 #
 # PROJECT:      FIRE Architecture Project
 # DESCRIPTION:  
@@ -26,7 +26,6 @@ INSTALLHEADERS_HEADERS := \
 	sla.h \
 	sla_mask.h \
 	pomdpCommonTypes.h \
-	pomdpSmartRef.h \
 	Interleave.h \
 	slaMatrixUtils.h \
 	MatrixUtils.h \
@@ -81,6 +80,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.12  2005/10/27 22:09:53  trey
+# renamed and removed some files
+#
 # Revision 1.11  2005/10/21 20:07:57  trey
 # renamed some source files to avoid potential conflicts with other projects
 #
