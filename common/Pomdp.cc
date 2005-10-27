@@ -1,9 +1,9 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.7 $  $Author: trey $  $Date: 2005-10-21 20:08:28 $
+ * $Revision: 1.1 $  $Author: trey $  $Date: 2005-10-27 21:38:16 $
  *  
  * PROJECT: FIRE Architecture Project
  *
- * @file    template.cc
+ * @file    Pomdp.cc
  * @brief   No brief
  ***************************************************************************/
 
@@ -21,8 +21,8 @@
 #include <fstream>
 
 #include "pomdpCommonDefs.h"
-#include "pomdp.h"
-#include "PomdpM.h"
+#include "pomdpCassandraWrapper.h"
+#include "Pomdp.h"
 #include "MatrixUtils.h"
 
 using namespace std;
@@ -67,7 +67,7 @@ static void trimTrailingWhiteSpace(char *s)
  * POMDPM FUNCTIONS
  ***************************************************************************/
 
-void PomdpM::readFromFile(const std::string& fileName,
+void Pomdp::readFromFile(const std::string& fileName,
 			  bool useFastParser)
 {
   if (useFastParser) {
@@ -77,7 +77,7 @@ void PomdpM::readFromFile(const std::string& fileName,
   }
 }
 
-void PomdpM::readFromFileCassandra(const string& fileName) {
+void Pomdp::readFromFileCassandra(const string& fileName) {
   dvector initialBeliefx;
   std::vector<bool> isTerminalStatex;
   kmatrix Rx;
@@ -87,7 +87,7 @@ void PomdpM::readFromFileCassandra(const string& fileName) {
 
   cout << "reading problem from " << fileName << endl;
   gettimeofday(&startTime,0);
-  Pomdp p;
+  PomdpCassandraWrapper p;
   p.readFromFile(fileName);
   
   numStates = p.getNumStates();
@@ -128,24 +128,12 @@ void PomdpM::readFromFileCassandra(const string& fileName) {
   copy( R, Rx );
   Ttr.resize(numActions);
   O.resize(numActions);
-#if 1
   T.resize(numActions);
-#endif
-#if USE_UBLAS
-  Otr.resize(numActions);
-#endif
   FOR (a, numActions) {
-#if 1
     copy( T[a], Tx[a] );
-#endif
     kmatrix_transpose_in_place( Tx[a] );
     copy( Ttr[a], Tx[a] );
-
     copy( O[a], Ox[a] );
-#if USE_UBLAS
-    kmatrix_transpose_in_place( Ox[a] );
-    copy( Otr[a], Ox[a] );
-#endif
   }
 
   gettimeofday(&endTime,0);
@@ -159,7 +147,7 @@ void PomdpM::readFromFileCassandra(const string& fileName) {
 
 // this is functionally similar to readFromFile() but much faster.
 // the POMDP file must obey a restricted syntax.
-void PomdpM::readFromFileFast(const std::string& fileName)
+void Pomdp::readFromFileFast(const std::string& fileName)
 {
   char buf[1<<20];
   int lineNumber;
@@ -332,24 +320,12 @@ void PomdpM::readFromFileFast(const std::string& fileName)
   copy( R, Rx );
   Ttr.resize(numActions);
   O.resize(numActions);
-#if 1
   T.resize(numActions);
-#endif
-#if USE_UBLAS
-  Otr.resize(numActions);
-#endif
   FOR (a, numActions) {
-#if 1
     copy( T[a], Tx[a] );
-#endif
     kmatrix_transpose_in_place( Tx[a] );
     copy( Ttr[a], Tx[a] );
-
     copy( O[a], Ox[a] );
-#if USE_UBLAS
-    kmatrix_transpose_in_place( Ox[a] );
-    copy( Otr[a], Ox[a] );
-#endif
   }
 
   gettimeofday(&endTime,0);
@@ -361,36 +337,7 @@ void PomdpM::readFromFileFast(const std::string& fileName)
   debugDensity();
 }
 
-#if 0
-void PomdpM::preProcess(void) {
-  // resize
-  initialBelief.resize(numStates);
-  isTerminalState.resize(numStates);
-  R.resize(numStates, numActions);
-  T.resize(numActions);
-  Ttr.resize(numActions);
-  O.resize(numActions);
-  Otr.resize(numActions);
-  FOR (a, numActions) {
-    T[a].resize(numStates, numStates);
-    Ttr[a].resize(numStates, numStates);
-    O[a].resize(numStates, numObservations);
-    Otr[a].resize(numStates, numObservations);
-  }
-
-  // zero
-  set_to_zero(initialBelief);
-  set_to_zero(R);
-  FOR (a, numActions) {
-    set_to_zero(T[a]);
-    set_to_zero(Ttr[a]);
-    set_to_zero(O[a]);
-    set_to_zero(Otr[a]);
-  }
-}
-#endif
-
-void PomdpM::debugDensity(void) {
+void Pomdp::debugDensity(void) {
   int Ttr_size = 0;
   int Ttr_filled = 0;
   int O_size = 0;
@@ -415,6 +362,9 @@ void PomdpM::debugDensity(void) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.7  2005/10/21 20:08:28  trey
+ * added namespace pomdp
+ *
  * Revision 1.6  2005/03/10 22:53:32  trey
  * now initialize T matrix even when using sla
  *

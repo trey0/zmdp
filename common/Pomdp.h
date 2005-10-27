@@ -1,30 +1,27 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.7 $  $Author: trey $  $Date: 2005-10-21 20:08:41 $
+ * $Revision: 1.1 $  $Author: trey $  $Date: 2005-10-27 21:38:16 $
  *  
- * @file    PomdpM.h
+ * @file    Pomdp.h
  * @brief   No brief
  ***************************************************************************/
 
-#ifndef INCPomdpM_h
-#define INCPomdpM_h
+#ifndef INCPomdp_h
+#define INCPomdp_h
 
-// this causes problems if it is included after the Lapack headers, so
-//  pre-emptively include it here.  not sure exactly what the problem is.
 #include <iostream>
-
 #include <string>
 #include <vector>
 
 #include "pomdpCommonDefs.h"
 #include "pomdpCommonTypes.h"
-#include "SmartRef.h"
+#include "pomdpSmartRef.h"
 
 using namespace MATRIX_NAMESPACE;
 
 namespace pomdp {
 
 // this is a wrapper class around Pomdp that uses Lapack matrices
-class PomdpM {
+class Pomdp {
 public:
   int numStates, numActions, numObservations;
   double discount;
@@ -33,16 +30,8 @@ public:
   cvector initialBelief;
   // R(s,a)
   cmatrix R;
-  // T[a](s,s'), O[a](s,o)
-  // Ttr[a](s',s), Otr[a](o,s)
-  std::vector<cmatrix> Ttr, O;
-#if 1
-  std::vector<cmatrix> T;
-#endif
-#if USE_UBLAS
-  std::vector<cmatrix> Otr;
-#endif
-
+  // T[a](s,s'), Ttr[a](s',s), O[a](s,o)
+  std::vector<cmatrix> T, Ttr, O;
   std::vector<bool> isTerminalState;
 
   void readFromFile(const std::string& fileName,
@@ -55,16 +44,18 @@ protected:
   void debugDensity(void);
 };
 
-//typedef SmartRef<PomdpM> PomdpP;
-typedef PomdpM* PomdpP;
+typedef Pomdp* PomdpP;
 
 }; // namespace pomdp
 
-#endif // INCPomdpM_h
+#endif // INCPomdp_h
 
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.7  2005/10/21 20:08:41  trey
+ * added namespace pomdp
+ *
  * Revision 1.6  2005/03/10 22:53:32  trey
  * now initialize T matrix even when using sla
  *
