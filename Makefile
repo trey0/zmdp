@@ -1,6 +1,6 @@
 # COPYRIGHT 2004, Carnegie Mellon University
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.8 2005-10-28 03:56:13 trey Exp $
+# $Id: Makefile,v 1.9 2005-10-28 22:04:21 trey Exp $
 #
 # Copyright (c) 2002-2005, Trey Smith
 # All rights reserved.
@@ -34,7 +34,7 @@ include $(CHECKOUT_DIR)/src/build/header.mak
 include $(SRC_DIR)/common/options.mak
 
 # ADD ANY SUBDIRS THAT NEED TO BE VISITED DURING A BUILD TO THE SUBDIRS LIST
-SUBDIRS = common spec main hsvi
+SUBDIRS = common spec main hsvi2
 
 include $(BUILD_DIR)/toplevel.mak
 
@@ -45,6 +45,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.8  2005/10/28 03:56:13  trey
+# simplified license
+#
 # Revision 1.7  2005/10/28 02:57:00  trey
 # added copyright header
 #
