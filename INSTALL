@@ -28,7 +28,7 @@ INSTALLATION INSTRUCTIONS IN BRIEF:
 REQUIREMENTS:
 
 Tested operating systems: Linux kernel 2.6.x (Fedora Core 2 and 4)
-Tested compilers:         gcc 3.2.3
+Tested compilers:         gcc 3.2.2, 3.2.3
 
 NOTE: Fedora Core users with more recent gcc versions: the easiest way
 to get gcc 3.2.3 is to install the following rpms, which do not conflict
@@ -55,4 +55,4 @@ Other dependencies:
 * No dependence on external linear algebra packages or linear program solvers.
 
 ==========================================================
-$Id: INSTALL,v 1.1 2005-10-28 22:04:28 trey Exp $
+$Id: INSTALL,v 1.2 2005-10-28 22:07:19 trey Exp $
