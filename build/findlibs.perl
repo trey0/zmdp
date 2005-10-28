@@ -1,107 +1,79 @@
 #!/usr/bin/perl
-###  findlibs.perl
-###
-###	Written by Mark Maimone, 1 April 1999   mark.maimone@jpl.nasa.gov
-###
-###	Parse linker switches to generate dependencies for library
-###	inclusion.  This allows us to extend "makedepend"s capabilities
-###	by embedding not only header dependencies, but also library
-###	dependencies.
+#
+# Copyright (c) 1996-2005, Carnegie Mellon University
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are
+# met:
+#
+# * This code and derivatives may not be incorporated into commercial
+#   products without specific prior written permission.
+# * Redistributions of source code must retain the above copyright
+#   notice, this list of conditions and the following disclaimer.
+# * Redistributions in binary form must reproduce the above copyright
+#   notice, this list of conditions and the following disclaimer in the
+#   documentation and/or other materials provided with the distribution.
+# * Neither the name of Carnegie Mellon University nor the names of its
+#   contributors may be used to endorse or promote products derived from
+#   this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-###  Usage:
-###	perl findlibs.perl [switches]
+######################################################################
 
-$dirsep = "/";
-$pathsep = ':';
-
-#if ($ENV{"OS"} eq "Windows_NT") {
-#   $dirsep = "\\\\";
-#   $pathsep = ';';
-#}
-
-$bn = $0;
-$bn =~ s:^.*$dirsep::;
-
-##############################################################################
-###  Check for command line arguments.  No arguments returns empty.
-
-if ($#ARGV == -1) {
-    exit 0;
+sub usage {
+    die "usage: findlibs.perl OPTIONS\n".
+	"  -h or --help    Print this help.\n".
+	"  -L<dir>         Add a search directory\n".
+        "  -l<lib>         Add a file to search for\n".
+        "\n".
+        "(Other options are silently ignored)\n";
 }
 
-$lpath = "";
-$libnum = 0;
+sub findLib {
+    my $lib = shift;
 
-##############################################################################
-###  Parse command line arguments
-
-for ($file = 0; $file <= $#ARGV; $file++) {
-    $_ = $ARGV[$file];
-  FOO: {
-      if (/^-L/) {
-	  $_ =~ s/^-L//;
-	  if ($lpath ne "") {
-	      $lpath .= "$pathsep" . $_;
-	  } else {
-	      $lpath = $_;
-	  }
-	  last FOO;
-      }
-      if (/^-l/) {
-	  $_ =~ s/^-l//;
-	  $libnames[$libnum++] = $_;
-      }
-  }
+    # prefer static libraries
+    for (@LIBDIRS) {
+	my $file = "$_/lib${lib}.a";
+	if (-f $file) { return $file; }
+    }
+    # but also locate shared libraries if nothing else is available
+    for (@LIBDIRS) {
+	my $file = "$_/lib${lib}.so";
+	if (-f $file) { return $file; }
+    }
+    return "";
 }
 
-##############################################################################
-###  Add extra directories into the library search path
-
-if ($ENV{"LPATH"} ne "") {
-    if ($lpath eq "") {
-	$lpath = $ENV{"LPATH"};
+our @LIBDIRS = ();
+@libs = ();
+while ($_ = shift @ARGV) {
+    if ($_ eq "-h" or $_ eq "--help") {
+	&usage();
+    } elsif (/^-L(.*)/) {
+	push @LIBDIRS, $1;
+    } elsif (/^-l(.*)/) {
+	push @libs, $1;
     } else {
-	$lpath .= "$pathsep" . $ENV{"LPATH"};
+	# ignore other options
     }
 }
-
-##############################################################################
-###  Make any references to the current directory explicit with "."
-
-$lpath =~ s/^$pathsep/.$pathsep/;
-$lpath =~ s/$pathsep$/$pathsep./;
-$lpath =~ s/$pathsep$pathsep/$pathsep.$pathsep/g;
-
-@lpathdirs = split ($pathsep, $lpath);
-
-##############################################################################
-###  Iterate over each "-l" named on the command line.  If you found it in
-###  the filesystem, print the pathname
-
-for ($i = 0; $i <= $#libnames; $i++) {
-    $ind = &first_index("lib" . $libnames[$i] . ".a");
-    if ($ind >= 0) {
-	print " $lpathdirs[$ind]$dirsep" . "lib$libnames[$i].a";
-    } else {
-	$ind = &first_index("lib" . $libnames[$i] . ".so");
-	if ($ind >= 0) {
-	    print " $lpathdirs[$ind]$dirsep" . "lib$libnames[$i].so";
-	}
+for (@libs) {
+    $file = &findLib($_);
+    if ($file ne "") {
+	print " $file";
     }
 }
 print "\n";
-exit 0;
-
-##############################################################################
-###  first_index -- returns the index of the first directory in global
-###  @lpathdirs that contains the file named in the subroutine parameter
-
-sub first_index {
-    for ($j = 0; $j <= $#lpathdirs; $j++) {
-	$testname = "$lpathdirs[$j]$dirsep$_[0]";
-	if (-f $testname) {
-	    return $j;
-	}
-    }
-    return -1;
-}
