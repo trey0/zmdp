@@ -1,8 +1,25 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.4 2005-10-27 21:36:58 trey Exp $
+# $Id: Makefile,v 1.5 2005-10-28 03:54:39 trey Exp $
 #
-# PROJECT:      FIRE Architecture Project
-# DESCRIPTION:  
+# Copyright (c) 2002-2005, Trey Smith
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are
+# met:
+#
+# * The software may not be sold or incorporated into a commercial
+#   product without specific prior written permission.
+# * The above copyright notice and this permission notice shall be
+#   included in all copies or substantial portions of the software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+# NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+# LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+# OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+# WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ######################################################################
 # DO NOT MODIFY THIS HEADER SECTION
@@ -45,6 +62,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.4  2005/10/27 21:36:58  trey
+# renamed pomdp.{h,cc} to pomdpCassandraWrapper.{h,cc}
+#
 # Revision 1.3  2005/01/17 19:37:14  trey
 # added include of options.mak
 #
