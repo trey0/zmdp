@@ -1,0 +1,157 @@
+README for zpomdp
+
+This C source code implements the HSVI2 approximate value iteration
+algorithm for partially observable Markov decision processes (POMDPs)
+described in [1,2].  The software takes as input a POMDP problem
+specification in Tony Cassandra's POMDP file format [3] and computes an
+approximate solution to it.
+
+More information can be found at http://www.cs.cmu.edu/~trey/pomdp
+
+Please let me know if you have any comments!
+
+Trey Smith <trey@ri.cmu.edu>
+
+Copyright (c) 2005, Trey Smith.  All rights reserved.
+More information is in the file named COPYING.
+
+Table of contents of this README
+1. package contents
+2. usage instructions
+3. example sessions
+4. plotting results
+5. acknowledgments
+6. references
+
+========================================================================
+1. PACKAGE CONTENTS
+
+src/build     Makefile system
+src/spec      POMDP problem parsing code (thanks to Tony Cassandra!)
+src/common    Utility code, including a sparse linear algebra library
+src/hsvi2     Implementation of HSVI2 algorithm.
+src/main      Testing harness, select 'qmdp' or 'hsvi' algorithm.
+src/problems  Problems from [1] and a trivial example.
+src/tools     Tools for scripting multiple runs and plotting results.
+
+========================================================================
+2. USAGE INSTRUCTIONS
+
+To get started please first follow the instructions in INSTALL.
+
+The binary that allows testing of HSVI is testPomdp.  (Usage instructions
+copied here.)
+
+usage: testPomdp OPTIONS <algorithm> <probname> [minOrder maxOrder]
+  -h or --help           Print this help
+  --version              Print version information (CFLAGS used at compilation)
+  -f or --fast           Use fast (but very picky) alternate problem parser
+  -i or --iterations     Set number of simulation iterations (default: 1000)
+  -n or --no-console     Do not poll stdin for user quit command (helps when
+                           running in background)
+
+Available algorithms: hsvi qmdp
+
+========================================================================
+3. EXAMPLE SESSIONS
+
+(Examples assume the testPomdp binary is in your path.)
+
+COMMAND:
+
+  testPomdp -i 100 hsvi problems/three_state.pomdp -- -1 1
+
+EXPLANATION:
+
+  The '-i 100' flag sets the number of iterations that should be used
+  when evaluating solution quality at each simulation epoch.  Reducing
+  the number of iterations decreases the total testing time but provides
+  less precision in the solution quality measurement (reflected in wider
+  error bars for plots).
+
+  'hsvi' indicates that the HSVI2 algorithm should be used.
+
+  'problems/three_state.pomdp' indicates what problem to solve.
+
+  '--' is a special marker to prevent later arguments that begin
+  with '-' from being interpreted as flags.  If this is not used
+  the '-1' argument later will cause an error.
+
+  '-1 1' are the minOrder and maxOrder, specifying when to insert
+  simulation epochs for testing solution quality.  The first epoch comes
+  after the solution algorithm has run for 10^minOrder seconds.
+  Subsequent epochs are spaced logarithmically with three epochs per
+  order of magnitude of running time.  This is nice for semi-log plots.
+  After 10^maxOrder seconds the test run ends.  NOTE: to be more
+  accurate, testing epochs can only be inserted when the solution
+  algorithm yields control to the testing harness, so the logarithmic
+  spacing rule is only approximate.
+
+COMMAND:
+
+  testPomdp -f hsvi problems/RockSample_5_7.pomdp 0 3
+
+EXPLANATION:
+
+  Mostly the same as the previous explanation.  Note maxOrder=3 for a
+  longer run.  The '-f' flag tells testPomdp to use a faster problem
+  parser that is also very picky.  The fast parser will probably only
+  accept RockSample problems, but you will really want to use it on
+  large problem instances!
+
+========================================================================
+4. PLOTTING RESULTS
+
+Two of the plotting scripts in the src/tools directory are worth
+mentioning.
+
+=== MAKEPLOT
+
+usage: makeplot OPTIONS <results_directory>
+   -h    Print this help
+   -i    Plot bounds vs. number of top-level iterations
+   -p    Generate postscript output
+
+makeplot plots the HSVI2 upper bound, lower bound, and measured solution
+quality at testing epochs in a single graph with a logarithmic x axis.
+It looks in <results_directory> for the files bounds.plot and inc.plot,
+output by testPomdp.  By default the plot is displayed in an X window.
+Using the -p option drops it into a PostScript file instead, e.g. for
+inclusion in a paper.
+
+=== COMPAREPLOTS
+
+usage: compareplots OPTIONS <dir1> <dir2>
+   -h    Print this help
+   -t    Plot bounds vs. time
+   -i    Plot bounds vs. number of top-level iterations
+   -s    Plot speed (iterations v. time)
+   -p    Generate postscript output
+  
+compareplots is similar to makeplot but pulls in results from two
+directories.  The plot that comes out is very busy, but still useful
+to look at performance differences between algorithm variants.
+
+========================================================================
+5. ACKNOWLEDGMENTS
+
+Thanks to Geoff Gordon for helpful discussions.
+
+Thanks to Tony Cassandra for developing the POMDP problem format and
+distributing his problem reading and solution code.
+
+========================================================================
+6. REFERENCES
+
+[1] Heuristic Search Value Iteration for POMDPs.
+    T. Smith and R. Simmons. In  Proc. of UAI, 2004.
+    http://www.cs.cmu.edu/~trey/papers/smith04_hsvi.pdf
+
+[2] Point-based POMDP Algorithms: Improved Analysis and Implementation.
+    T. Smith and R. Simmons. In Proc. of UAI, 2005.
+    http://www.cs.cmu.edu/~trey/papers/smith05_point_based_pomdp.pdf
+
+[3] Tony's POMDP Page. http://www.cs.brown.edu/research/ai/pomdp/
+
+==========================================================
+$Id: README,v 1.1 2005-10-28 22:04:28 trey Exp $
