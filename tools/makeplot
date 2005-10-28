@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 
 sub usage {
-    die  "usage: makeplot OPTIONS <prob_name>\n"
+    die  "usage: makeplot OPTIONS <results_directory>\n"
 	."   -h    Print this help\n"
         ."   -i    Plot bounds vs. number of top-level iterations\n"
         ."   -p    Generate postscript output\n";
@@ -9,7 +9,7 @@ sub usage {
 
 my $postscript_output = 0;
 my $plot_vs_iterations = 0;
-my $prob_name;
+my $results_directory;
 for (@ARGV) {
     if (/^-/) {
 	if ($_ eq "-h" or $_ eq "--help") {
@@ -23,29 +23,29 @@ for (@ARGV) {
 	    &usage;
 	}
     } else {
-	if (!defined $prob_name) {
-	    $prob_name = $_;
+	if (!defined $results_directory) {
+	    $results_directory = $_;
 	} else {
 	    print STDERR "ERROR: too many arguments\n\n";
 	    &usage;
 	}
     }
 }
-if (!defined $prob_name) {
+if (!defined $results_directory) {
     print STDERR "ERROR: not enough arguments\n\n";
     &usage;
 }
 
 
-my $plot_file = "${prob_name}/inc.plot";
+my $plot_file = "${results_directory}/inc.plot";
 my $options = "";
 if ($postscript_output) {
-    $options = "> ${prob_name}/inc.ps";
+    $options = "> ${results_directory}/inc.ps";
 } else {
     $options = "-persist";
 }
 
-my $bounds_file = "${prob_name}/bounds.plot";
+my $bounds_file = "${results_directory}/bounds.plot";
 my $use_bounds_file = '';
 if (-e $bounds_file) {
     $use_bounds_file = 1;
