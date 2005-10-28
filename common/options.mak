@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: options.mak,v 1.16 2005-10-28 03:50:32 trey Exp $
+# $Id: options.mak,v 1.17 2005-10-28 22:18:29 trey Exp $
 #
 # Copyright (c) 2002-2005, Trey Smith
 # All rights reserved.
@@ -23,6 +23,7 @@
 
 # algorithm configuration options
 
+CFLAGS += -DZPOMDP_VERSION=0.1
 #CFLAGS += -DDO_LB_SELF_UPDATE=1
 CFLAGS += -DDO_UB_CACHED_Q=1
 #CFLAGS += -DDO_UB_SELF_UPDATE=1
@@ -57,6 +58,9 @@ CFLAGS += -DCFLAGS="\"$(XCFLAGS)\""
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.16  2005/10/28 03:50:32  trey
+# simplified license
+#
 # Revision 1.15  2005/10/28 02:51:40  trey
 # added copyright headers
 #
