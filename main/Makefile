@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.9 2005-10-28 03:53:08 trey Exp $
+# $Id: Makefile,v 1.10 2005-11-02 21:03:47 trey Exp $
 #
 # Copyright (c) 2002-2005, Trey Smith
 # All rights reserved.
@@ -35,45 +35,14 @@ include $(SRC_DIR)/common/options.mak
 # ADD ANY SUBDIRS THAT NEED TO BE VISITED DURING A BUILD TO THE SUBDIRS LIST
 SUBDIRS :=
 
-# because facilities changed the version (sigh)
-ifeq (1,0)
-  GCC_DIR := /usr/local/libexec/gcc-3.0.1/bin
-  CC  := $(GCC_DIR)/gcc
-  C++ := $(GCC_DIR)/g++
-  LD  := $(GCC_DIR)/g++
-  MAKEDEP := $(C++) -MM -MG
+ifneq (,$(USE_GHSVI))
+  EXTRA_LIBS := -lghsvi
 endif
 
-#C++ := insure
-#LD := insure
-
-CFLAGS += -I$(EXTERNAL_DIR)/boost
-
-# gprof
-ifeq (1,0)
-  CFLAGS += -pg
-  LDFLAGS += -pg
-endif
-
-BINARY_NAME := testPomdp
-
-ifneq (,$(USE_CPLEX))
-  # use cplex
-  BINARY_NAME := testPomdpWithCplex
-  CPLEX_DIR := $(EXTERNAL_DIR)/ilog/cplex81
-  CFLAGS += -DUSE_CPLEX=1 -I$(CPLEX_DIR)/include
-  LDFLAGS += \
-	-Wl,-rpath -Wl,$(CPLEX_DIR)/bin/i86_linux2_glibc2.2_gcc3.0 \
-	             -L$(CPLEX_DIR)/bin/i86_linux2_glibc2.2_gcc3.0 \
-	-Wl,-rpath -Wl,$(EXTERNAL_DIR)/stdc++ \
-	             -L$(EXTERNAL_DIR)/stdc++
-  LP_LIBS := -lcplex81 -lpthread
-endif
-
-BUILDBIN_TARGET := $(BINARY_NAME)
+BUILDBIN_TARGET := testPomdp
 BUILDBIN_SRCS := testPomdp.cc
-BUILDBIN_INDEP_LIBS := -lpomdpCommonTime $(LP_LIBS)
-BUILDBIN_DEP_LIBS := -lhsvi -lpomdpUtils -lpomdp_spec
+BUILDBIN_INDEP_LIBS := -lpomdpCommonTime
+BUILDBIN_DEP_LIBS := -lhsvi $(EXTRA_LIBS) -lpomdpUtils -lpomdp_spec
 include $(BUILD_DIR)/buildbin.mak
 
 ######################################################################
@@ -83,6 +52,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.9  2005/10/28 03:53:08  trey
+# simplified license
+#
 # Revision 1.8  2005/10/28 02:59:30  trey
 # added copyright header
 #
