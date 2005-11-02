@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.15 $  $Author: trey $  $Date: 2005-10-28 03:53:08 $
+ $Revision: 1.16 $  $Author: trey $  $Date: 2005-11-02 21:03:59 $
 
  @file    testPomdp.cc
  @brief   No brief
@@ -37,6 +37,9 @@
 #include "QMDP.h"
 #include "Interleave.h"
 #include "stdinInterface.h"
+#if USE_GHSVI
+#  include "GHSVI.h"
+#endif
 
 using namespace std;
 using namespace MatrixUtils;
@@ -51,7 +54,11 @@ void usage(void) {
     "  -i or --iterations     Set number of simulation iterations (default: 1000)\n"
     "  -n or --no-console     Do not poll stdin for user quit command (helps when running in background)\n"
     "\n"
-    "Available algorithms: hsvi qmdp\n"
+    "Available algorithms: hsvi "
+#if USE_GHSVI
+    "ghsvi "
+#endif
+    "qmdp\n"
     "\n"
     "These options are experimental, you probably don't want to use them:\n"
     "  --interleave           Test planner in interleaved mode\n"
@@ -83,6 +90,11 @@ void testBatchIncremental(string algorithm,
   if (algorithm == "hsvi") {
     solver = new HSVI();
   }
+#if USE_GHSVI
+  else if (algorithm == "ghsvi") {
+    solver = new GHSVI();
+  }
+#endif
   else if (algorithm == "qmdp") {
     solver = new QMDP();
   }
@@ -221,6 +233,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.15  2005/10/28 03:53:08  trey
+ * simplified license
+ *
  * Revision 1.14  2005/10/28 02:59:30  trey
  * added copyright header
  *
