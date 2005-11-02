@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: options.mak,v 1.17 2005-10-28 22:18:29 trey Exp $
+# $Id: options.mak,v 1.18 2005-11-02 21:03:09 trey Exp $
 #
 # Copyright (c) 2002-2005, Trey Smith
 # All rights reserved.
@@ -23,6 +23,8 @@
 
 # algorithm configuration options
 
+USE_GHSVI := 1
+
 CFLAGS += -DZPOMDP_VERSION=0.1
 #CFLAGS += -DDO_LB_SELF_UPDATE=1
 CFLAGS += -DDO_UB_CACHED_Q=1
@@ -41,6 +43,11 @@ CFLAGS += -DUSE_UB_HASH=0
 #CFLAGS += -DUSE_SAFE_HSVI=1
 #CFLAGS += -DUSE_EXEC_HEURISTIC=1
 #CFLAGS += -DUSE_FIXED_DEPTH=1
+#CFLAGS += -DUSE_RS_REMAP=1
+#CFLAGS += -DUSE_EXP_GAUGE=1
+ifneq (,$(USE_GHSVI))
+  CFLAGS += -DUSE_GHSVI=1
+endif
 
 # turns on optimization in boost matrix library (see commonTypes.h)
 CFLAGS += -DVEC_OPTIM=1
@@ -58,6 +65,9 @@ CFLAGS += -DCFLAGS="\"$(XCFLAGS)\""
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.17  2005/10/28 22:18:29  trey
+# added ZPOMDP_VERSION to CFLAGS
+#
 # Revision 1.16  2005/10/28 03:50:32  trey
 # simplified license
 #
