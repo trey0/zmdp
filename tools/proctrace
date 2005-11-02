@@ -2,21 +2,8 @@
 
 # processes sim traces from testPomdp output
 
-$prob_name = shift @ARGV;
-
-if ($prob_name =~ s/_([^_]+)$//) {
-    $variant = $1;
-}
-
-$trace_file = "${prob_name}_${variant}/sim.plot";
-
-$prob_file1 = "$ENV{HOME}/p/src/problems/${prob_name}_full.pomdp";
-$prob_file2 = "$ENV{HOME}/p/src/problems/${prob_name}.pomdp";
-if (-e $prob_file1) {
-    $prob_file = $prob_file1;
-} else {
-    $prob_file = $prob_file2;
-}
+$prob_file = shift @ARGV;
+$trace_file = shift @ARGV;
 
 open(PROB, "<$prob_file") or die "couldn't open $prob_file for reading: $!\n";
 
