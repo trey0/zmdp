@@ -38,7 +38,7 @@ if [ "$POMDP_SOFTWARE_DIR" == "" ]; then
 fi
 
 export CVS_RSH=ssh
-export CVSROOT=sputnik.frc.ri.cmu.edu:/home/trey/projects/pomdp/repository
+export CVSROOT=/home/trey/projects/pomdp/repository
 
 # path setup
 if [ "$PATH" != "" ]; then
@@ -73,6 +73,9 @@ function cvsstat () {
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.5  2005/10/28 03:50:32  trey
+# simplified license
+#
 # Revision 1.4  2005/10/28 02:51:40  trey
 # added copyright headers
 #
