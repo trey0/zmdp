@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.7 $  $Author: trey $  $Date: 2005-10-28 03:50:32 $
+ $Revision: 1.8 $  $Author: trey $  $Date: 2005-11-03 20:23:22 $
 
  @file    Interleave.cc
  @brief   No brief
@@ -251,11 +251,19 @@ void Interleave::batchTestIncremental(int numIterations,
       
       double success_rate = ((double) num_successes) / numIterations;
 
+#if 0
       ValueInterval val = solver.getValueAt(pomdp->initialBelief);
       // for some reason, if i use sqrt() instead of ::sqrt(), it's ambiguous
       out << timeSoFar << " " << avg << " "
 	  << (stdev/::sqrt(numIterations)*1.96) << " "
 	  << val.l << " " << val.u << " " << success_rate << endl;
+#else
+      out << timeSoFar
+	  << " " << avg
+	  << " " << (stdev/::sqrt(numIterations)*1.96)
+	  << " " << success_rate << endl;
+#endif
+     
       out.flush();
     }
   }
@@ -280,6 +288,9 @@ void Interleave::printRewards(void) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.7  2005/10/28 03:50:32  trey
+ * simplified license
+ *
  * Revision 1.6  2005/10/28 02:51:40  trey
  * added copyright headers
  *
