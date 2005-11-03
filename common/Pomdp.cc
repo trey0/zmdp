@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2005-10-28 03:50:32 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2005-11-03 17:45:30 $
   
  @file    Pomdp.cc
  @brief   No brief
@@ -83,17 +83,57 @@ static void trimTrailingWhiteSpace(char *s)
 }
 
 /***************************************************************************
- * POMDPM FUNCTIONS
+ * POMDP FUNCTIONS
  ***************************************************************************/
 
 void Pomdp::readFromFile(const std::string& fileName,
-			  bool useFastParser)
+			 bool useFastParser)
 {
   if (useFastParser) {
     readFromFileFast(fileName);
   } else {
     readFromFileCassandra(fileName);
   }
+}
+
+const belief_vector& Pomdp::getInitialBelief(void) const
+{
+  return initialBelief;
+}
+
+obs_prob_vector& Pomdp::getObsProbVector(obs_prob_vector& result,
+					 const belief_vector& b,
+					 int a) const
+{
+  dvector tmp;
+  // --- overall: result = O_a' * T_a' * b
+  // tmp = T_a' * b
+  mult( tmp, Ttr[a], b );
+  // result = O_a' * tmp
+  mult( result, tmp, O[a] );
+  
+  return result;
+}
+
+belief_vector& Pomdp::getNextBelief(belief_vector& result,
+				    const belief_vector& b,
+				    int a, int o) const
+{
+  belief_vector tmp;
+
+  // result = O_a(:,o) .* (T_a * b)
+  mult( tmp, Ttr[a], b );
+  emult_column( result, O[a], o, tmp );
+
+  // renormalize
+  result *= (1.0/norm_1(result));
+
+  return result;
+}
+
+double Pomdp::getReward(const belief_vector& b, int a) const
+{
+  return inner_prod_column( R, a, b );
 }
 
 void Pomdp::readFromFileCassandra(const string& fileName) {
@@ -109,7 +149,7 @@ void Pomdp::readFromFileCassandra(const string& fileName) {
   PomdpCassandraWrapper p;
   p.readFromFile(fileName);
   
-  numStates = p.getNumStates();
+  beliefSize = numStates = p.getNumStates();
   numActions = p.getNumActions();
   numObservations = p.getNumObservations();
   discount = p.getDiscount();
@@ -262,6 +302,7 @@ void Pomdp::readFromFileFast(const std::string& fileName)
 
       if (3 == numSizesSet) {
 	// pre-process
+	beliefSize = numStates;
 	initialBeliefx.resize(numStates);
 	set_to_zero(initialBeliefx);
 	isTerminalStatex.resize(numStates, false);
@@ -381,6 +422,9 @@ void Pomdp::debugDensity(void) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2005/10/28 03:50:32  trey
+ * simplified license
+ *
  * Revision 1.2  2005/10/28 02:51:40  trey
  * added copyright headers
  *

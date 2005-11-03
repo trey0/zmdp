@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.4 $  $Author: trey $  $Date: 2005-10-28 03:50:32 $
+ $Revision: 1.5 $  $Author: trey $  $Date: 2005-11-03 17:45:30 $
    
  @file    Pomdp.h
  @brief   No brief
@@ -35,27 +35,38 @@
 
 #include "pomdpCommonDefs.h"
 #include "pomdpCommonTypes.h"
+#include "BeliefMDP.h"
 
-using namespace MATRIX_NAMESPACE;
+using namespace sla;
 
 namespace pomdp {
 
 // this is a wrapper class around Pomdp that uses Lapack matrices
-class Pomdp {
+class Pomdp : public BeliefMDP {
 public:
-  int numStates, numActions, numObservations;
-  double discount;
-  // initialBelief(s)
+  int numStates;
 
+  // initialBelief(s)
   cvector initialBelief;
   // R(s,a)
   cmatrix R;
-  // T[a](s,s'), Ttr[a](s',s), O[a](s,o)
+  // T[a](s,s'), Ttr[a](s',s), O[a](s',o)
   std::vector<cmatrix> T, Ttr, O;
   std::vector<bool> isTerminalState;
 
   void readFromFile(const std::string& fileName,
 		    bool useFastParser = false);
+
+  // These functions implement the API defined in BeliefMDP:
+
+  // returns the initial belief
+  const belief_vector& getInitialBelief(void) const;
+  // sets result to be the vector of observation probabilities when from belief b action a is selected
+  obs_prob_vector& getObsProbVector(obs_prob_vector& result, const belief_vector& b, int a) const;
+  // sets result to be the next belief when from belief b action a is selected and observation o is observed
+  belief_vector& getNextBelief(belief_vector& result, const belief_vector& b, int a, int o) const;
+  // returns the expected immediate reward when from belief b action a is selected
+  double getReward(const belief_vector& b, int a) const;
 
 protected:
   void readFromFileCassandra(const std::string& fileName);
@@ -73,6 +84,9 @@ typedef Pomdp* PomdpP;
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2005/10/28 03:50:32  trey
+ * simplified license
+ *
  * Revision 1.3  2005/10/28 02:51:40  trey
  * added copyright headers
  *
