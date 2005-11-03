@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.15 2005-10-28 03:50:32 trey Exp $
+# $Id: Makefile,v 1.16 2005-11-03 17:46:28 trey Exp $
 #
 # Copyright (c) 2002-2005, Trey Smith
 # All rights reserved.
@@ -46,6 +46,7 @@ INSTALLHEADERS_HEADERS := \
 	Interleave.h \
 	slaMatrixUtils.h \
 	MatrixUtils.h \
+	BeliefMDP.h \
 	Pomdp.h \
 	PomdpSim.h \
 	Solver.h \
@@ -97,6 +98,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.15  2005/10/28 03:50:32  trey
+# simplified license
+#
 # Revision 1.14  2005/10/28 02:51:40  trey
 # added copyright headers
 #
