@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2005-10-28 03:50:32 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2005-11-03 17:46:16 $
    
  @file    pomdpCommonTypes.h
  @brief   No brief
@@ -29,22 +29,7 @@
 #ifndef INCpomdpCommonTypes_h
 #define INCpomdpCommonTypes_h
 
-// if VEC_OPTIM is set (check the makefile), set NDEBUG just for the vector/matrix headers
-#if VEC_OPTIM
-#  ifdef NDEBUG
-#     define VEC_NDEBUG_WAS_DEFINED 1
-#  else
-#     define NDEBUG 1
-#  endif
-#endif
-
 #include "sla.h"
-#define MATRIX_NAMESPACE sla
-
-// undefine NDEBUG if it was previously undefined
-#if VEC_OPTIM && !VEC_NDEBUG_WAS_DEFINED
-#   undef NDEBUG
-#endif
 
 namespace pomdp {
 
@@ -69,6 +54,9 @@ std::ostream& operator<<(std::ostream& out, const ValueInterval& v);
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2005/10/28 03:50:32  trey
+ * simplified license
+ *
  * Revision 1.2  2005/10/28 02:51:40  trey
  * added copyright headers
  *

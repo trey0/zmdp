@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.7 $  $Author: trey $  $Date: 2005-10-28 03:50:32 $
+ $Revision: 1.8 $  $Author: trey $  $Date: 2005-11-03 17:45:47 $
    
  @file    ValueFunction.cc
  @brief   No brief
@@ -45,7 +45,7 @@
 
 using namespace std;
 using namespace MatrixUtils;
-using namespace MATRIX_NAMESPACE;
+using namespace sla;
 
 namespace pomdp {
 
@@ -87,6 +87,9 @@ bool ValueFunction::consistentWith(const ValueFunction& rhs, int numSamples,
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.7  2005/10/28 03:50:32  trey
+ * simplified license
+ *
  * Revision 1.6  2005/10/28 02:51:40  trey
  * added copyright headers
  *
