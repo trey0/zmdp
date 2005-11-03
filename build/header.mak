@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: header.mak,v 1.5 2005-10-28 03:34:41 trey Exp $
+# $Id: header.mak,v 1.6 2005-11-03 20:24:32 trey Exp $
 #
 # Copyright (c) 1996-2005, Carnegie Mellon University
 # All rights reserved.
@@ -170,6 +170,9 @@ BUILDBIN_SYMLINKS_TO_CLEAN :=
 ######################################################################
 # DEPEND RULES
 
+# bit of a hack to add this
+OPTIONS_FILE := $(SRC_DIR)/common/options.mak
+
 # i forget why, but these rules can't go in footer.mak
 
 # need to add this rule explicitly in order to correctly infer that
@@ -179,32 +182,35 @@ $(OBJ_DIR)/%.tdl.d: $(LOCAL_INC_DIR)/%.tdl.cc
 	@echo "Updating dependencies for $<..."
 	@[ -d $(OBJ_DIR)/$(LOCAL_INC_DIR) ] || mkdir -p $(OBJ_DIR)/$(LOCAL_INC_DIR)
 	@$(SHELL) -ec '$(MAKEDEP) $(CFLAGS) $< \
-		| $(SED) '\''s|\($(*:%=%.tdl)\)\.o[ :]*|$(OBJ_DIR)/\1.o $@ : |'\'' > $@; \
+		| $(SED) '\''s|\($(*:%=%.tdl)\)\.o[ :]*|$(OBJ_DIR)/\1.o $@ : $(OPTIONS_FILE) |'\'' > $@; \
 		[ -s $@ ] || rm -f $@'
 
 $(OBJ_DIR)/%.d: %.c
 	@echo "Updating dependencies for $<..."
 	@[ -d $(OBJ_DIR)/$(LOCAL_INC_DIR) ] || mkdir -p $(OBJ_DIR)/$(LOCAL_INC_DIR)
 	@$(SHELL) -ec '$(MAKEDEP) $(CFLAGS) $< \
-		| $(SED) '\''s|\($*\)\.o[ :]*|$(OBJ_DIR)/\1.o $@ : |'\'' > $@; \
+		| $(SED) '\''s|\($*\)\.o[ :]*|$(OBJ_DIR)/\1.o $@ : $(OPTIONS_FILE) |'\'' > $@; \
 		[ -s $@ ] || rm -f $@'
 
 $(OBJ_DIR)/%.d: %.cc
 	@echo "Updating dependencies for $<..."
 	@[ -d $(OBJ_DIR)/$(LOCAL_INC_DIR) ] || mkdir -p $(OBJ_DIR)/$(LOCAL_INC_DIR)
 	@$(SHELL) -ec '$(MAKEDEP) $(CFLAGS) $< \
-		| $(SED) '\''s|\($*\)\.o[ :]*|$(OBJ_DIR)/\1.o $@ : |'\'' > $@; \
+		| $(SED) '\''s|\($*\)\.o[ :]*|$(OBJ_DIR)/\1.o $@ : $(OPTIONS_FILE) |'\'' > $@; \
 		[ -s $@ ] || rm -f $@'
 
 $(OBJ_DIR)/%.d: %.cpp
 	@echo "Updating dependencies for $<..."
 	@[ -d $(OBJ_DIR)/$(LOCAL_INC_DIR) ] || mkdir -p $(OBJ_DIR)/$(LOCAL_INC_DIR)
 	@$(SHELL) -ec '$(MAKEDEP) $(CFLAGS) $< \
-		| $(SED) '\''s|\($*\)\.o[ :]*|$(OBJ_DIR)/\1.o $@ : |'\'' > $@; \
+		| $(SED) '\''s|\($*\)\.o[ :]*|$(OBJ_DIR)/\1.o $@ : $(OPTIONS_FILE) |'\'' > $@; \
 		[ -s $@ ] || rm -f $@'
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.5  2005/10/28 03:34:41  trey
+# switched to simpler license
+#
 # Revision 1.4  2005/10/28 02:24:42  trey
 # added copyright headers
 #
