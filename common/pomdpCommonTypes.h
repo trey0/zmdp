@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.4 $  $Author: trey $  $Date: 2005-11-03 17:46:16 $
+ $Revision: 1.5 $  $Author: trey $  $Date: 2005-11-08 18:14:25 $
    
  @file    pomdpCommonTypes.h
  @brief   No brief
@@ -29,7 +29,26 @@
 #ifndef INCpomdpCommonTypes_h
 #define INCpomdpCommonTypes_h
 
+#include <ext/hash_map>
 #include "sla.h"
+
+// needed before we can use hash_map<string, type>
+#if 0
+// gcc 3.0
+#define EXT_NAMESPACE std
+#else
+// gcc 3.2
+#define EXT_NAMESPACE __gnu_cxx
+#endif
+namespace EXT_NAMESPACE {
+  template <>
+  struct hash<std::string> {
+    size_t operator()(const std::string& s) const {
+      hash<char const *> h;
+      return h(s.c_str());
+    }
+  };
+};
 
 namespace pomdp {
 
@@ -54,6 +73,9 @@ std::ostream& operator<<(std::ostream& out, const ValueInterval& v);
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2005/11/03 17:46:16  trey
+ * removed MATRIX_NAMESPACE macro
+ *
  * Revision 1.3  2005/10/28 03:50:32  trey
  * simplified license
  *
