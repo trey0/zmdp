@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: options.mak,v 1.18 2005-11-02 21:03:09 trey Exp $
+# $Id: options.mak,v 1.19 2005-11-08 18:14:48 trey Exp $
 #
 # Copyright (c) 2002-2005, Trey Smith
 # All rights reserved.
@@ -43,8 +43,10 @@ CFLAGS += -DUSE_UB_HASH=0
 #CFLAGS += -DUSE_SAFE_HSVI=1
 #CFLAGS += -DUSE_EXEC_HEURISTIC=1
 #CFLAGS += -DUSE_FIXED_DEPTH=1
-#CFLAGS += -DUSE_RS_REMAP=1
 #CFLAGS += -DUSE_EXP_GAUGE=1
+#CFLAGS += -DUSE_RS_NATIVE=1
+CFLAGS += -DUSE_BOUNDS_TERMINATION=1
+CFLAGS += -DUSE_NO_GENERALIZATION=1
 ifneq (,$(USE_GHSVI))
   CFLAGS += -DUSE_GHSVI=1
 endif
@@ -65,6 +67,9 @@ CFLAGS += -DCFLAGS="\"$(XCFLAGS)\""
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.18  2005/11/02 21:03:09  trey
+# added new flags
+#
 # Revision 1.17  2005/10/28 22:18:29  trey
 # added ZPOMDP_VERSION to CFLAGS
 #
