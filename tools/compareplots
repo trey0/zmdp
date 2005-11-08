@@ -106,10 +106,14 @@ print GP <<"EOF";
 set logscale x
 set logscale y
 set xlabel "wallclock time (seconds)"
-set ylabel "number of top-level iterations"
+#set ylabel "number of top-level iterations"
 set title "$dir1 vs. $dir2"
-plot "$bounds1_file" using 1:0    title "$dir1" with lines,     \\\
-     "$bounds2_file" using 1:0    title "$dir2" with lines
+plot "$bounds1_file" using 1:6    title "$dir1 # top level iterations" with lines,     \\\
+     "$bounds2_file" using 1:6    title "$dir2 # top level iterations" with lines,     \\\
+     "$bounds1_file" using 1:7    title "$dir1 # backups"              with lines,     \\\
+     "$bounds2_file" using 1:7    title "$dir2 # backups"              with lines,     \\\
+     "$bounds1_file" using 1:9    title "$dir1 # belief comparisons"   with lines,     \\\
+     "$bounds2_file" using 1:9    title "$dir2 # belief comparisons"   with lines
      
 ######################################################################
 
@@ -127,11 +131,11 @@ set title "$dir1 vs. $dir2"
 plot "$inc1_file"    using 1:2    title "simulation $dir1"  with lines,     \\\
      "$inc1_file"    using 1:2:3  notitle                   with errorbars, \\\
      "$inc2_file"    using 1:2    title "simulation $dir2"  with lines,     \\\
-     "$inc2_file"    using 1:2:3  notitle                   with errorbars, \\\
-     "$bounds1_file" using 1:3    title "upper bound $dir1" with lines,     \\\
-     "$bounds1_file" using 1:2    title "lower bound $dir1" with lines,     \\\
-     "$bounds2_file" using 1:3    title "upper bound $dir2" with lines,     \\\
-     "$bounds2_file" using 1:2    title "lower bound $dir2" with lines
+     "$inc2_file"    using 1:2:3  notitle                   with errorbars
+#     "$bounds1_file" using 1:3    title "upper bound $dir1" with lines,     \\\
+#     "$bounds1_file" using 1:2    title "lower bound $dir1" with lines,     \\\
+#     "$bounds2_file" using 1:3    title "upper bound $dir2" with lines,     \\\
+#     "$bounds2_file" using 1:2    title "lower bound $dir2" with lines
      
 ######################################################################
 
