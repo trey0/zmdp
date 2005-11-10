@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.16 $  $Author: trey $  $Date: 2005-11-02 21:03:59 $
+ $Revision: 1.17 $  $Author: trey $  $Date: 2005-11-10 22:10:01 $
 
  @file    testPomdp.cc
  @brief   No brief
@@ -84,8 +84,6 @@ void testBatchIncremental(string algorithm,
 
   cout << "CFLAGS = " << CFLAGS << endl;
 
-  problem.readFromFile( prob_name, use_fast_parser );
-
   Solver* solver;
   if (algorithm == "hsvi") {
     solver = new HSVI();
@@ -103,6 +101,8 @@ void testBatchIncremental(string algorithm,
     usage();
     return;
   }
+
+  problem.readFromFile( prob_name, use_fast_parser );
 
   solver->setMinSafety( minSafety );
 
@@ -233,6 +233,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.16  2005/11/02 21:03:59  trey
+ * added GHSVI
+ *
  * Revision 1.15  2005/10/28 03:53:08  trey
  * simplified license
  *
