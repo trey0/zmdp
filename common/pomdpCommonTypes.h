@@ -1,10 +1,10 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.5 $  $Author: trey $  $Date: 2005-11-08 18:14:25 $
+ $Revision: 1.6 $  $Author: trey $  $Date: 2005-11-10 22:06:52 $
    
  @file    pomdpCommonTypes.h
  @brief   No brief
 
- Copyright (c) 2002-2005, Trey Smith
+ Copyright (c) 2002-2005, Carnegie Mellon University
  All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
@@ -66,6 +66,63 @@ struct ValueInterval {
 };
 std::ostream& operator<<(std::ostream& out, const ValueInterval& v);
 
+// option_type<T> is like a pointer, but it follows copy-by-value semantics
+// when you assign option_type<T> = T or option_type<T> = option_type<T>.
+// it performs copy-by-reference when you assign option_type<T> = T*.
+// the name comes from the "'a option" type in ML.
+template <class _T>
+struct option_type {
+  typedef _T value_type;
+  
+  option_type(void) : val(NULL) {}
+  option_type(_T* _val) : val(_val) {}
+  option_type(const _T& ref) {
+    copyByValue(&ref);
+  }
+  option_type(const option_type<_T>& rhs) { copyByValue(rhs.val); }
+  ~option_type(void) {
+    unbind();
+  }
+  option_type<_T>& operator=(_T* _val) {
+    unbind();
+    val = _val;
+    return *this;
+  }
+  option_type<_T>& operator=(const _T& ref) {
+    unbind();
+    copyByValue(&ref);
+    return *this;
+  }
+  option_type<_T>& operator=(const option_type<_T>& rhs) {
+    unbind();
+    copyByValue(rhs.val);
+    return *this;
+  }
+  _T* operator->(void) { return val; }
+  _T& operator*(void) { return *val; }
+  const _T* operator->(void) const { return val; }
+  const _T& operator*(void) const { return *val; }
+  bool defined(void) const { return NULL != val; }
+  _T* pointer(void) const { return val; }
+
+protected:
+  _T *val;
+
+  void copyByValue(const _T* _val) {
+    if (NULL != _val) {
+      val = new _T(*_val);
+    } else {
+      val = NULL;
+    }
+  }
+  void unbind(void) {
+    if (NULL != val) {
+      delete val;
+      val = NULL;
+    }
+  }
+};
+
 }; // namespace pomdp
 
 #endif // INCpomdpCommonTypes_h
@@ -73,6 +130,9 @@ std::ostream& operator<<(std::ostream& out, const ValueInterval& v);
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.5  2005/11/08 18:14:25  trey
+ * moved hash_map setup code from AlphaList.h
+ *
  * Revision 1.4  2005/11/03 17:46:16  trey
  * removed MATRIX_NAMESPACE macro
  *
