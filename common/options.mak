@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: options.mak,v 1.21 2005-11-11 04:36:04 trey Exp $
+# $Id: options.mak,v 1.22 2005-11-28 20:46:16 trey Exp $
 #
 # Copyright (c) 2002-2005, Trey Smith
 # All rights reserved.
@@ -46,9 +46,11 @@ CFLAGS += -DUSE_UB_HASH=0
 #CFLAGS += -DUSE_EXP_GAUGE=1
 #CFLAGS += -DUSE_RS_NATIVE=1
 CFLAGS += -DUSE_BOUNDS_TERMINATION=1
-#CFLAGS += -DUSE_NO_GENERALIZATION=1
-CFLAGS += -DUSE_KD_BOUNDS=1
+CFLAGS += -DUSE_NO_GENERALIZATION=1
+#CFLAGS += -DUSE_KD_BOUNDS=1
 #CFLAGS += -DUSE_KD_NORMAL=1
+#CFLAGS += -DUSE_ALT_ACTION_SELECTION=1
+#CFLAGS += -DUSE_EXPLORE_LOWER=1
 ifneq (,$(USE_GHSVI))
   CFLAGS += -DUSE_GHSVI=1
 endif
@@ -69,6 +71,9 @@ CFLAGS += -DCFLAGS="\"$(XCFLAGS)\""
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.21  2005/11/11 04:36:04  trey
+# added USE_KD_NORMAL
+#
 # Revision 1.20  2005/11/10 22:07:08  trey
 # added USE_KD_BOUNDS
 #
