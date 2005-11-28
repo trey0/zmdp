@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.12 $  $Author: trey $  $Date: 2005-10-28 03:50:32 $
+ $Revision: 1.13 $  $Author: trey $  $Date: 2005-11-28 20:48:22 $
    
  @file    sla.h
  @brief   No brief
@@ -29,6 +29,8 @@
 #ifndef INCsla_h
 #define INCsla_h
 
+#include <math.h>
+#include <errno.h>
 #include <vector>
 #include <fstream>
 
@@ -1262,6 +1264,9 @@ typedef sla::dvector obs_prob_vector;
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.12  2005/10/28 03:50:32  trey
+ * simplified license
+ *
  * Revision 1.11  2005/10/28 02:51:41  trey
  * added copyright headers
  *
