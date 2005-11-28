@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.5 $  $Author: trey $  $Date: 2005-10-28 03:50:32 $
+ $Revision: 1.6 $  $Author: trey $  $Date: 2005-11-28 20:45:47 $
    
  @file    Solver.h
  @brief   No brief
@@ -35,6 +35,8 @@ namespace pomdp {
 
 class Solver {
 public:
+  virtual ~Solver(void) {}
+
   // sets up the problem
   virtual void planInit(PomdpP pomdp) = 0;
 
@@ -70,6 +72,9 @@ public:
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.5  2005/10/28 03:50:32  trey
+ * simplified license
+ *
  * Revision 1.4  2005/10/28 02:51:40  trey
  * added copyright headers
  *
