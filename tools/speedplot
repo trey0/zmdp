@@ -1,0 +1,162 @@
+#!/usr/bin/perl -w
+
+sub usage {
+    die  "usage: speedplot OPTIONS <dir1> <dir2>\n"
+	."   -h    Print this help\n"
+        ."   -p    Generate postscript output\n";
+}
+
+my $dir1;
+my $dir2;
+my $postscript_output = 0;
+my @plot_types = ();
+for (@ARGV) {
+    if (/^-/) {
+	if ($_ eq "-h" or $_ eq "--help") {
+	    &usage;
+	} elsif ($_ eq "-p") {
+	    $postscript_output = 1;
+	} else {
+	    print STDERR "ERROR: unknown option $_\n\n";
+	    &usage;
+	}
+    } else {
+	if (!defined $dir1) {
+	    $dir1 = $_;
+	} elsif (!defined $dir2) {
+	    $dir2 = $_;
+	} else {
+	    print STDERR "ERROR: too many arguments\n\n";
+	    &usage;
+	}
+    }
+}
+if (!defined $dir1 or !defined $dir2) {
+    print STDERR "ERROR: not enough arguments\n\n";
+    &usage;
+}
+&doPlot($dir1, $dir2, $postscript_output);
+
+sub readData {
+    my $file = shift;
+    
+    open(F, "<$file") or die "ERROR: couldn't open $file for reading: $!\n";
+    my @lines = ();
+    my $i = 0;
+    while (<F>) {
+	next if /^\#/;
+	chop;
+	push @lines, [split / /];
+	$i++;
+    }
+    close(F);
+
+    return \@lines;
+}
+
+sub writeData {
+    my $fname = shift;
+    my $dat = shift;
+    my $comment = shift;
+
+    open(F, ">$fname") or die "ERROR: couldn't open $fname for writing: $!\n";
+    if (defined $comment) {
+	print F "# $comment\n";
+    }
+    for (@{$dat}) {
+	print F join(" ", @{$_}), "\n";
+    }
+    close(F);
+}
+
+sub join {
+    my $file1 = shift;
+    my $joinCol1 = shift;
+    my $file2 = shift;
+    my $joinCol2 = shift;
+    my $outCols = shift;
+
+    my @dats = (&readData($file1), &readData($file2));
+    my @joinCols = ($joinCol1,$joinCol2);
+
+    my @entries = ();
+    for my $f (0..1) {
+	for my $r (0..$#{$dats[$f]}) {
+	    my $row = $dats[$f][$r];
+	    push @entries, { joinVal => $row->[$joinCols[$f]],
+			     fileIndex => $f,
+			     rowIndex => $r };
+	}
+    }
+#    print "ENTRIES:\n";
+#    for (@entries) {
+#	my $j = $_->{joinVal};
+#	my $f = $_->{fileIndex};
+#	my $r = $_->{rowIndex};
+#	print "  j=$j f=$f r=$r\n";
+#    }
+    @entries = sort { $a->{joinVal} <=> $b->{joinVal} } @entries;
+    
+    my @vals = (undef,undef);
+    my @out = ();
+    for my $e (@entries) {
+	$vals[$e->{fileIndex}] = $dats[$e->{fileIndex}][$e->{rowIndex}];
+	if ($e->{fileIndex} == 0 and defined $vals[1]) {
+	    push @out, [ map { $vals[$_->[0]][$_->[1]] } @{$outCols} ];
+	}
+    }
+
+    return \@out;
+}
+
+sub doPlot {
+    my $dir1 = shift;
+    my $dir2 = shift;
+    my $postscriptOutput = shift;
+
+    my @dirs = ($dir1, $dir2);
+    my @tmps = ("/tmp/speedplot1","/tmp/speedplot2");
+    for my $i (0..1) {
+	my $dir = $dirs[$i];
+	my $plot = &join("$dir/inc.plot", 0,
+			 "$dir/bounds.plot", 0,
+			 [[1,7], [0,1], [0,2]]);
+	&writeData($tmps[$i], $plot,
+		   "$dir data: # backups, solution quality, solution quality error");
+    }
+
+    my $options = "";
+    if ($postscriptOutput) {
+	$options = "> ${dir1}_${dir2}_speed.ps";
+    } else {
+	$options = "-persist";
+    }
+    
+    open(GP, "|gnuplot $options") or die "couldn't run gnuplot: $!\n";
+    select GP;
+    $| = 1;
+    select STDOUT;
+    
+    if ($postscriptOutput) {
+	print GP "set terminal postscript\n";
+    }
+
+    my ($tmp1, $tmp2) = @tmps;
+
+print GP <<"EOF";
+
+######################################################################
+set logscale x
+set xlabel "# backups"
+set ylabel "solution quality"
+set title "$dir1 vs. $dir2"
+plot "$tmp1"    using 1:2    title "simulation $dir1"  with lines,     \\\
+     "$tmp1"    using 1:2:3  notitle                   with errorbars, \\\
+     "$tmp2"    using 1:2    title "simulation $dir2"  with lines,     \\\
+     "$tmp2"    using 1:2:3  notitle                   with errorbars
+######################################################################
+
+EOF
+
+} # end sub
+

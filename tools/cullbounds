@@ -1,0 +1,2 @@
+#!/bin/sh
+perl -i -nle 'if (/^#/) { print; next; } else { @f = split / /; $t = $f[0]; if (!defined $l or $t > $l * 1.01) { print; $l = $t; } }' $*
