@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.9 $  $Author: trey $  $Date: 2005-10-28 03:50:32 $
+ $Revision: 1.10 $  $Author: trey $  $Date: 2005-11-28 20:45:31 $
    
  @file    MatrixUtils.h
  @brief   No brief
@@ -274,7 +274,7 @@ namespace MatrixUtils {
     }
     sort(sorted.begin(), sorted.end(), AbsValGreater());
     std::ostringstream out;
-    int num_to_print = std::min((unsigned)8, sorted.size());
+    int num_to_print = std::min((size_t)8, sorted.size());
     if ( 0 == num_to_print) {
       out << "(no non-zero entries)";
     } else {
@@ -292,7 +292,7 @@ namespace MatrixUtils {
     }
     sort(sorted.begin(), sorted.end(), AbsValGreater());
     std::ostringstream out;
-    int num_to_print = std::min((unsigned)8, sorted.size());
+    int num_to_print = std::min((size_t)8, sorted.size());
     if ( 0 == num_to_print) {
       out << "(no non-zero entries)";
     } else {
@@ -310,6 +310,9 @@ namespace MatrixUtils {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.9  2005/10/28 03:50:32  trey
+ * simplified license
+ *
  * Revision 1.8  2005/10/28 02:51:40  trey
  * added copyright headers
  *
