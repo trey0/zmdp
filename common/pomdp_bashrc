@@ -40,6 +40,11 @@ fi
 export CVS_RSH=ssh
 export CVSROOT=/home/trey/projects/pomdp/repository
 
+OS_SYSNAME=`uname -s | perl -ple 'tr/A-Z/a-z/;'`
+OS_RELEASE=`uname -r | perl -ple 's/\..*$//;'`
+export OS=${OS_SYSNAME}${OS_RELEASE}
+
+
 # path setup
 if [ "$PATH" != "" ]; then
     # the following perl script takes the current path and edits out
@@ -50,10 +55,10 @@ else
 fi
 
 # now we add what we want.
-export PATH=$POMDP_SOFTWARE_DIR/bin/linux2:$POMDP_SOFTWARE_DIR/bin/common:$POMDP_SOFTWARE_DIR/external/bin/linux2:$POMDP_SOFTWARE_DIR/src/tools:$fpath
+export PATH=$POMDP_SOFTWARE_DIR/bin/${OS}:$POMDP_SOFTWARE_DIR/bin/common:$POMDP_SOFTWARE_DIR/external/bin/${OS}:$POMDP_SOFTWARE_DIR/src/tools:$fpath
 
 # for loading shared libs
-#export LD_LIBRARY_PATH=$POMDP_SOFTWARE_DIR/lib/linux2:$POMDP_SOFTWARE_DIR/external/lib/linux2
+#export LD_LIBRARY_PATH=$POMDP_SOFTWARE_DIR/lib/${OS}:$POMDP_SOFTWARE_DIR/external/lib/${OS}
 
 # handy for checking which project environment you are in
 export PROJECT=pomdp
@@ -73,6 +78,9 @@ function cvsstat () {
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.6  2005/11/02 21:03:25  trey
+# removed host name from CVSROOT setting
+#
 # Revision 1.5  2005/10/28 03:50:32  trey
 # simplified license
 #
