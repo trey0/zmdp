@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: header.mak,v 1.6 2005-11-03 20:24:32 trey Exp $
+# $Id: header.mak,v 1.7 2005-11-28 20:55:26 trey Exp $
 #
 # Copyright (c) 1996-2005, Carnegie Mellon University
 # All rights reserved.
@@ -36,30 +36,30 @@ defaultbuildrule: all
 help:
 	@echo -e "\nUse one of the following:" \
 		 "\n" \
-		 "\ngmake all		   Build all files (default)" \
-		 "\ngmake install          Build/install all files" \
-		 "\ngmake clean            Remove object, dependency files" \
-                 "\ngmake uninstall        Remove installed libs, bins, data files" \
-		 "\ngmake realclean        realclean = clean + uninstall" \
-		 "\ngmake doc              Generate documentation using doxygen (only at top level)\n" \
-		 "\ngmake advanced         Get more usage help" \
+		 "\nmake all		   Build all files (default)" \
+		 "\nmake install          Build/install all files" \
+		 "\nmake clean            Remove object, dependency files" \
+                 "\nmake uninstall        Remove installed libs, bins, data files" \
+		 "\nmake realclean        realclean = clean + uninstall" \
+		 "\nmake doc              Generate documentation using doxygen (only at top level)\n" \
+		 "\nmake advanced         Get more usage help" \
 		 "\n"
 
 advanced:
 	@echo -e "\nAdvanced targets:" \
 		 "\n" \
-		 "\ngmake foo-local        'gmake foo' without recursion" \
-		 "\ngmake <filename>       Builds file according to make rules" \
-		 "\ngmake localdoc         Build docs for this dir only in gen/html" \
+		 "\nmake foo-local        'make foo' without recursion" \
+		 "\nmake <filename>       Builds file according to make rules" \
+		 "\nmake localdoc         Build docs for this dir only in gen/html" \
 		 "\n" \
 		 "\nVariables:" \
 		 "\n" \
-		 "\ngmake OS=VxWorks       Cross-compile (not currently set up)" \
-		 "\ngmake NO_DEPEND=1      Do not update dependencies" \
-		 "\ngmake TEST=1           Many individual makefiles build extra" \
+		 "\nmake OS=VxWorks       Cross-compile (not currently set up)" \
+		 "\nmake NO_DEPEND=1      Do not update dependencies" \
+		 "\nmake TEST=1           Many individual makefiles build extra" \
 		 "\n                         test binaries if TEST=1" \
-		 "\ngmake echo-foo         Echo value of the make variable 'foo'" \
-		 "\ngmake vars             Echo value of all make variables" \
+		 "\nmake echo-foo         Echo value of the make variable 'foo'" \
+		 "\nmake vars             Echo value of all make variables" \
 		 "\n"
 
 ######################################################################
@@ -80,33 +80,12 @@ include $(BUILD_DIR)/Platforms/generic.mak
 
 # Determine what operating system we are trying to build for
 # Override this on the command line for cross compilation (e.g. OS=m68kVx5.1)
-SHELL = /bin/sh
-#OS_SYSNAME := $(shell uname -s)
-#OS_RELEASE := $(shell uname -r)
+#SHELL = /bin/sh
+OS_SYSNAME := $(shell uname -s | perl -ple 'tr/A-Z/a-z/;')
+OS_RELEASE := $(shell uname -r | perl -ple 's/\..*$$//;')
 
-# Assume that we are not building 64 bit binaries.
-#ifeq ($(OS_SYSNAME),IRIX64)
-#OS_SYSNAME := IRIX
-#endif
+OS := $(OS_SYSNAME)$(OS_RELEASE)
 
-#ifeq ($(OS_SYSNAME),Linux)
-#LINUX_MAJOR_VERSION_CMD := $(PERL) -e '$$_ = shift @ARGV; ($$major,$$minor,$$patchlevel) = split(/\./,$$_,3); print "$$major.$$minor\n";'
-## cut off patch level, keep only major and minor OS version numbers.
-#OS_RELEASE := $(shell $(LINUX_MAJOR_VERSION_CMD) $(OS_RELEASE))
-#endif
-
-#OS := $(OS_SYSNAME)-$(OS_RELEASE)
-## we want to go by the gcc version
-#ifeq ($(OS),Linux-2.4)
-#  ifeq ($(CC_VER),2.95.3)
-#     OS := Linux-2.2
-#  endif
-#endif
-
-# put detection back in later if needed
-OS_SYSNAME := linux
-OS_RELEASE := 2
-OS := linux2
 
 include $(BUILD_DIR)/Platforms/$(OS).mak
 
@@ -208,6 +187,9 @@ $(OBJ_DIR)/%.d: %.cpp
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.6  2005/11/03 20:24:32  trey
+# added options.mak as a dependency of all *.o files
+#
 # Revision 1.5  2005/10/28 03:34:41  trey
 # switched to simpler license
 #
