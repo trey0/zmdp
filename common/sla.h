@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.13 $  $Author: trey $  $Date: 2005-11-28 20:48:22 $
+ $Revision: 1.14 $  $Author: trey $  $Date: 2005-11-29 04:43:55 $
    
  @file    sla.h
  @brief   No brief
@@ -32,6 +32,7 @@
 #include <math.h>
 #include <errno.h>
 #include <vector>
+#include <iostream>
 #include <fstream>
 
 #include "pomdpCommonDefs.h"
@@ -1264,6 +1265,9 @@ typedef sla::dvector obs_prob_vector;
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.13  2005/11/28 20:48:22  trey
+ * added #include of math.h, errno.h to avoid errors under gcc 4.0
+ *
  * Revision 1.12  2005/10/28 03:50:32  trey
  * simplified license
  *
