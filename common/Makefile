@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.16 2005-11-03 17:46:28 trey Exp $
+# $Id: Makefile,v 1.17 2005-11-29 04:44:53 trey Exp $
 #
 # Copyright (c) 2002-2005, Trey Smith
 # All rights reserved.
@@ -52,7 +52,8 @@ INSTALLHEADERS_HEADERS := \
 	Solver.h \
 	ValueFunction.h \
 	MDPValueFunction.h \
-	QMDP.h
+	QMDP.h \
+	PQueue.h
 include $(BUILD_DIR)/installheaders.mak
 
 BUILDLIB_TARGET := libpomdpUtils.a
@@ -77,14 +78,14 @@ BUILDBIN_INDEP_LIBS :=
 BUILDBIN_DEP_LIBS :=
 include $(BUILD_DIR)/buildbin.mak
 
-#BUILDBIN_TARGET := test_aadd
-#BUILDBIN_SRCS := test_aadd.cc aadd.cc
-#BUILDBIN_INDEP_LIBS :=
-#BUILDBIN_DEP_LIBS :=
-#include $(BUILD_DIR)/buildbin.mak
-
 BUILDBIN_TARGET := testProblemRepresentation
 BUILDBIN_SRCS := testProblemRepresentation.cc
+BUILDBIN_INDEP_LIBS :=
+BUILDBIN_DEP_LIBS := -lpomdpUtils -lpomdp_spec
+include $(BUILD_DIR)/buildbin.mak
+
+BUILDBIN_TARGET := testPQueue
+BUILDBIN_SRCS := testPQueue.cc
 BUILDBIN_INDEP_LIBS :=
 BUILDBIN_DEP_LIBS := -lpomdpUtils -lpomdp_spec
 include $(BUILD_DIR)/buildbin.mak
@@ -98,6 +99,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.16  2005/11/03 17:46:28  trey
+# added BeliefMDP.h
+#
 # Revision 1.15  2005/10/28 03:50:32  trey
 # simplified license
 #
