@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2005-10-28 03:50:32 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2005-11-29 04:44:15 $
    
  @file    testProblemRepresentation.cc
  @brief   No brief
@@ -31,6 +31,7 @@
 
 using namespace std;
 using namespace MatrixUtils;
+using namespace pomdp;
 
 int main(int argc, char** argv) {
   init_matrix_utils();
@@ -90,6 +91,9 @@ int main(int argc, char** argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2005/10/28 03:50:32  trey
+ * simplified license
+ *
  * Revision 1.2  2005/10/28 02:51:41  trey
  * added copyright headers
  *
