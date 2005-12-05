@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.10 $  $Author: trey $  $Date: 2005-11-28 20:45:31 $
+ $Revision: 1.11 $  $Author: trey $  $Date: 2005-12-05 16:04:15 $
    
  @file    MatrixUtils.h
  @brief   No brief
@@ -84,7 +84,7 @@ namespace MatrixUtils {
 
   // Returns a nice printable representation for big vectors (sorted in order
   //   of decreasing absolute value, with the index of each value labeled).
-  std::string sparseRep(const cvector& v);
+  std::string sparseRep(const cvector& v, int num_to_print = 4);
 
   /**********************************************************************
    * FUNCTIONS
@@ -267,14 +267,14 @@ namespace MatrixUtils {
     }
   };
 
-  inline std::string sparseRep(const cvector& v) {
+  inline std::string sparseRep(const cvector& v, int num_to_print) {
     std::vector<IndPair> sorted;
     FOR_CV (v) {
       sorted.push_back(IndPair(CV_INDEX(v), CV_VAL(v)));
     }
     sort(sorted.begin(), sorted.end(), AbsValGreater());
     std::ostringstream out;
-    int num_to_print = std::min((size_t)8, sorted.size());
+    num_to_print = std::min((size_t)num_to_print, sorted.size());
     if ( 0 == num_to_print) {
       out << "(no non-zero entries)";
     } else {
@@ -310,6 +310,9 @@ namespace MatrixUtils {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.10  2005/11/28 20:45:31  trey
+ * fixed errors under gcc 4.0
+ *
  * Revision 1.9  2005/10/28 03:50:32  trey
  * simplified license
  *
