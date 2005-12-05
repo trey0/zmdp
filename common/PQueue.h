@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2005-11-29 04:43:05 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2005-12-05 16:05:13 $
    
  @file    PQueue.h
  @brief   No brief
@@ -37,7 +37,8 @@
 namespace pomdp {
 
 template <class ValueType, class PriorityType>
-struct PQueue {
+class PQueue {
+protected:
   typedef size_t HeapIndex;
   struct PQEntry {
     ValueType v;
@@ -47,10 +48,21 @@ struct PQueue {
       v(_v), prio(_prio), heapIndex(_heapIndex)
     {}
   };
+  typedef EXT_NAMESPACE::hash_map<ValueType, PQEntry*> Lookup;
 
+public:
   PQueue(void) {}
 
-  void setPriority(const ValueType& v, const PriorityType prio) {
+  const ValueType& top(void) const {
+    return heap[0]->v;
+  }
+  const PriorityType& getTopPriority(void) const {
+    return heap[0]->prio;
+  }
+  size_t size(void) const { return heap.size(); }
+  bool empty(void) const { return heap.empty(); }
+
+  void setPriority(const ValueType& v, const PriorityType& prio) {
     typeof(lookup.begin()) pr = lookup.find(v);
     if (lookup.end() == pr) {
       PQEntry* e = new PQEntry(v, prio, heap.size());
@@ -63,21 +75,25 @@ struct PQueue {
       _heapify(e->heapIndex);
     }
   }
-  const PQEntry& top(void) {
-    return *heap[0];
-  }
   void pop(void) {
     _erase(heap[0]);
   }
   void erase(const ValueType& v) {
     _erase(lookup[v]);
   }
-  size_t size(void) { return heap.size(); }
-  bool empty(void) { return heap.empty(); }
-  void printEntry(PQEntry* e) {
+  void clear(void) {
+    FOR_EACH (eltp, heap) {
+      delete *eltp;
+    }
+    heap.clear();
+    lookup.clear();
+  }
+
+  // useful for debugging
+  void printEntry(PQEntry* e) const {
     std::cout << e->v << " " << e->prio << " " << e->heapIndex;
   }
-  void print(void) {
+  void print(void) const {
     std::cout << "heap:" << std::endl;
     FOR (i, heap.size()) {
       std::cout << "  " << i << " ";
@@ -93,8 +109,6 @@ struct PQueue {
   }
   
 protected:
-  typedef EXT_NAMESPACE::hash_map<ValueType, PQEntry*> Lookup;
-
   std::vector<PQEntry*> heap;
   Lookup lookup;
 
@@ -199,6 +213,9 @@ protected:
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2005/11/29 04:43:05  trey
+ * initial check-in
+ *
  *
  ***************************************************************************/
 
