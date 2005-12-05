@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.6 $  $Author: trey $  $Date: 2005-11-10 22:06:52 $
+ $Revision: 1.7 $  $Author: trey $  $Date: 2005-12-05 16:05:46 $
    
  @file    pomdpCommonTypes.h
  @brief   No brief
@@ -46,6 +46,13 @@ namespace EXT_NAMESPACE {
     size_t operator()(const std::string& s) const {
       hash<char const *> h;
       return h(s.c_str());
+    }
+  };
+  template <class T>
+  struct hash<T*> {
+    size_t operator()(T* p) const {
+      hash<size_t> h;
+      return h((size_t) p);
     }
   };
 };
@@ -130,6 +137,9 @@ protected:
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.6  2005/11/10 22:06:52  trey
+ * added option_type<T>
+ *
  * Revision 1.5  2005/11/08 18:14:25  trey
  * moved hash_map setup code from AlphaList.h
  *
