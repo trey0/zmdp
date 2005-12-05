@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2005-11-29 04:43:19 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2005-12-05 16:06:16 $
    
  @file    testPQueue.cc
  @brief   No brief
@@ -44,26 +44,24 @@ void fill(PQueue<int, double>& q) {
 }
 
 int main(int argc, char** argv) {
-  PQueue<int, double> q, q2;
-
+  PQueue<int, double> q;
   fill(q);
 
   printf("--1\n");
   while (!q.empty()) {
-    typeof(q.top()) e = q.top();
-    printf("v=%d prio=%f\n", e.v, e.prio);
+    printf("v=%d prio=%f\n", q.top(), q.getTopPriority());
     q.pop();
   }
 		
-  fill(q2);
-  q2.setPriority(1, 1.7);
-  q2.setPriority(3, 2.7);
+  fill(q);
+  q.setPriority(1, 1.7);
+  q.setPriority(3, 2.7);
+  q.erase(5);
 
   printf("--2\n");
-  while (!q2.empty()) {
-    typeof(q2.top()) e = q2.top();
-    printf("v=%d prio=%f\n", e.v, e.prio);
-    q2.pop();
+  while (!q.empty()) {
+    printf("v=%d prio=%f\n", q.top(), q.getTopPriority());
+    q.pop();
   }
 
   return 0;
@@ -72,5 +70,8 @@ int main(int argc, char** argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2005/11/29 04:43:19  trey
+ * initial check-in
+ *
  *
  ***************************************************************************/
