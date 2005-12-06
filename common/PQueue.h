@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2005-12-05 16:05:13 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2005-12-06 20:28:15 $
    
  @file    PQueue.h
  @brief   No brief
@@ -36,7 +36,8 @@
 
 namespace pomdp {
 
-template <class ValueType, class PriorityType>
+template <typename ValueType, typename PriorityType,
+	  typename CompareType = std::less<PriorityType> >
 class PQueue {
 protected:
   typedef size_t HeapIndex;
@@ -52,6 +53,7 @@ protected:
 
 public:
   PQueue(void) {}
+  CompareType comp;
 
   const ValueType& top(void) const {
     return heap[0]->v;
@@ -59,6 +61,7 @@ public:
   const PriorityType& getTopPriority(void) const {
     return heap[0]->prio;
   }
+  bool contains(const ValueType& v) const { return (lookup.find(v) != lookup.end()); }
   size_t size(void) const { return heap.size(); }
   bool empty(void) const { return heap.empty(); }
 
@@ -100,12 +103,14 @@ public:
       printEntry(heap[i]);
       std::cout << std::endl;
     }
+#if 0
     std::cout << "lookup:" << std::endl;
     FOR_EACH (pr, lookup) {
       std::cout << "  " << pr->first << " ";
       printEntry(pr->second);
       std::cout << std::endl;
     }
+#endif
   }
   
 protected:
@@ -136,8 +141,8 @@ protected:
     PQEntry* parent = _getEntry(parentIndex);
     PQEntry* child0 = _getEntry(i0);
     PQEntry* child1 = _getEntry(i1);
-    if (child0 && child0->prio < parent->prio) {
-      if (child1 && child1->prio < child0->prio) {
+    if (child0 && comp(child0->prio, parent->prio)) {
+      if (child1 && comp(child1->prio, child0->prio)) {
 	_swap(parentIndex, i1);
 	return i1;
       } else {
@@ -145,7 +150,7 @@ protected:
 	return i0;
       }
     } else {
-      if (child1 && child1->prio < parent->prio) {
+      if (child1 && comp(child1->prio, parent->prio)) {
 	_swap(parentIndex, i1);
 	return i1;
       } else {
@@ -213,6 +218,9 @@ protected:
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2005/12/05 16:05:13  trey
+ * api now a better match to std::priority_queue
+ *
  * Revision 1.1  2005/11/29 04:43:05  trey
  * initial check-in
  *
