@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2005-12-05 16:06:16 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2005-12-06 20:28:44 $
    
  @file    testPQueue.cc
  @brief   No brief
@@ -31,7 +31,9 @@
 using namespace std;
 using namespace pomdp;
 
-void fill(PQueue<int, double>& q) {
+typedef PQueue<int, double, std::greater<double> > QType;
+
+void fill(QType& q) {
   q.setPriority(0, 0.5);
   q.setPriority(1, 4.5);
   q.setPriority(2, 1.5);
@@ -44,7 +46,7 @@ void fill(PQueue<int, double>& q) {
 }
 
 int main(int argc, char** argv) {
-  PQueue<int, double> q;
+  QType q;
   fill(q);
 
   printf("--1\n");
@@ -70,6 +72,9 @@ int main(int argc, char** argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2005/12/05 16:06:16  trey
+ * added more tests
+ *
  * Revision 1.1  2005/11/29 04:43:19  trey
  * initial check-in
  *
