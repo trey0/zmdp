@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.18 $  $Author: trey $  $Date: 2005-11-16 21:04:52 $
+ $Revision: 1.19 $  $Author: trey $  $Date: 2005-12-06 20:31:07 $
 
  @file    testPomdp.cc
  @brief   No brief
@@ -40,6 +40,7 @@
 #if USE_GHSVI
 #  include "GHSVI.h"
 #  include "EpsGreedy.h"
+#  include "PAOStar.h"
 #endif
 
 using namespace std;
@@ -59,6 +60,7 @@ void usage(void) {
 #if USE_GHSVI
     "ghsvi "
     "epsgreedy "
+    "paostar "
 #endif
     "qmdp\n"
     "\n"
@@ -96,6 +98,9 @@ void testBatchIncremental(string algorithm,
   }
   else if (algorithm == "epsgreedy") {
     solver = new EpsGreedy();
+  }
+  else if (algorithm == "paostar") {
+    solver = new PAOStar();
   }
 #endif
   else if (algorithm == "qmdp") {
@@ -238,6 +243,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.18  2005/11/16 21:04:52  trey
+ * added epsgreedy support
+ *
  * Revision 1.17  2005/11/10 22:10:01  trey
  * reordered initialization steps in order to get better error messages
  *
