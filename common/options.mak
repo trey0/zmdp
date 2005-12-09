@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: options.mak,v 1.23 2005-12-06 20:28:56 trey Exp $
+# $Id: options.mak,v 1.24 2005-12-09 17:51:50 trey Exp $
 #
 # Copyright (c) 2002-2005, Trey Smith
 # All rights reserved.
@@ -51,9 +51,10 @@ CFLAGS += -DUSE_NO_GENERALIZATION=1
 #CFLAGS += -DUSE_KD_NORMAL=1
 #CFLAGS += -DUSE_ALT_ACTION_SELECTION=1
 #CFLAGS += -DUSE_EXPLORE_LOWER=1
-CFLAGS += -DUSE_RELEVANCE_IE_MAX=1
-#CFLAGS += -DUSE_RELEVANCE_BOTH=1
+#CFLAGS += -DUSE_RELEVANCE_IE_MAX=1
+CFLAGS += -DUSE_RELEVANCE_BOTH=1
 CFLAGS += -DUSE_PROPAGATE_WEIGHT=1
+CFLAGS += -DUSE_DEPTH_FIRST=1
 ifneq (,$(USE_GHSVI))
   CFLAGS += -DUSE_GHSVI=1
 endif
@@ -74,6 +75,9 @@ CFLAGS += -DCFLAGS="\"$(XCFLAGS)\""
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.23  2005/12/06 20:28:56  trey
+# added three new flags
+#
 # Revision 1.22  2005/11/28 20:46:16  trey
 # added ALT_ACTION_SELECTION and USE_EXPLORE_LOWER options
 #
