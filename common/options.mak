@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: options.mak,v 1.25 2005-12-12 15:47:25 trey Exp $
+# $Id: options.mak,v 1.26 2005-12-14 01:34:06 trey Exp $
 #
 # Copyright (c) 2002-2005, Trey Smith
 # All rights reserved.
@@ -53,9 +53,13 @@ CFLAGS += -DUSE_NO_GENERALIZATION=1
 #CFLAGS += -DUSE_EXPLORE_LOWER=1
 CFLAGS += -DUSE_RELEVANCE_IE_MAX=1
 #CFLAGS += -DUSE_RELEVANCE_BOTH=1
+#CFLAGS += -DUSE_RELEVANCE_BOLTZ=1
 CFLAGS += -DUSE_PROPAGATE_WEIGHT=1
 #CFLAGS += -DUSE_DEPTH_FIRST=1
-#CFLAGS += -DUSE_ACCUM_SUM=1
+CFLAGS += -DUSE_ACCUM_SUM=1
+#CFLAGS += -DUSE_MORE_MAX=1
+#CFLAGS += -DUSE_LESS_REPETITION=1
+#CFLAGS += -DUSE_PERSISTENCE=1
 ifneq (,$(USE_GHSVI))
   CFLAGS += -DUSE_GHSVI=1
 endif
@@ -76,6 +80,9 @@ CFLAGS += -DCFLAGS="\"$(XCFLAGS)\""
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.25  2005/12/12 15:47:25  trey
+# added USE_ACCUM_SUM
+#
 # Revision 1.24  2005/12/09 17:51:50  trey
 # added USE_DEPTH_FIRST
 #
