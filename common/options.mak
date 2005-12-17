@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: options.mak,v 1.26 2005-12-14 01:34:06 trey Exp $
+# $Id: options.mak,v 1.27 2005-12-17 19:08:49 trey Exp $
 #
 # Copyright (c) 2002-2005, Trey Smith
 # All rights reserved.
@@ -55,11 +55,13 @@ CFLAGS += -DUSE_RELEVANCE_IE_MAX=1
 #CFLAGS += -DUSE_RELEVANCE_BOTH=1
 #CFLAGS += -DUSE_RELEVANCE_BOLTZ=1
 CFLAGS += -DUSE_PROPAGATE_WEIGHT=1
-#CFLAGS += -DUSE_DEPTH_FIRST=1
+CFLAGS += -DUSE_DEPTH_FIRST=1
 CFLAGS += -DUSE_ACCUM_SUM=1
 #CFLAGS += -DUSE_MORE_MAX=1
 #CFLAGS += -DUSE_LESS_REPETITION=1
 #CFLAGS += -DUSE_PERSISTENCE=1
+#CFLAGS += -DUSE_NO_INTERNAL_PRIORITY=1
+CFLAGS += -DUSE_DF_NON_MYOPIC=1
 ifneq (,$(USE_GHSVI))
   CFLAGS += -DUSE_GHSVI=1
 endif
@@ -67,7 +69,7 @@ endif
 # turns on optimization in boost matrix library (see commonTypes.h)
 CFLAGS += -DVEC_OPTIM=1
 
-USER_CFLAGS := -O3
+#USER_CFLAGS := -O3
 #USER_CFLAGS := -g
 #USE_CPLEX := 1
 
@@ -80,6 +82,9 @@ CFLAGS += -DCFLAGS="\"$(XCFLAGS)\""
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.26  2005/12/14 01:34:06  trey
+# added several new flags for PAOStar
+#
 # Revision 1.25  2005/12/12 15:47:25  trey
 # added USE_ACCUM_SUM
 #
