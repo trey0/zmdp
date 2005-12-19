@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.7 $  $Author: trey $  $Date: 2005-10-28 03:50:32 $
+ $Revision: 1.8 $  $Author: trey $  $Date: 2005-12-19 22:38:47 $
    
  @file    slaMatrixUtils.h
  @brief   No brief
@@ -49,8 +49,14 @@
  * MACROS
  **********************************************************************/
 
+// FIX adjusting this based on observed bounds violations
+#define HASH_VECTOR_PRECISION "%5d:%11.9lf "
+#define HASH_VECTOR_LEN (19)
+
+#if 0
 #define HASH_VECTOR_PRECISION "%5d:%6.4lf "
 #define HASH_VECTOR_LEN (14)
+#endif
 
 // convenience macros for iterating through compressed matrices and vectors
 
@@ -125,6 +131,9 @@ namespace MatrixUtils {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.7  2005/10/28 03:50:32  trey
+ * simplified license
+ *
  * Revision 1.6  2005/10/28 02:51:41  trey
  * added copyright headers
  *
