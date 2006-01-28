@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.14 $  $Author: trey $  $Date: 2005-11-29 04:43:55 $
+ $Revision: 1.15 $  $Author: trey $  $Date: 2006-01-28 03:07:23 $
    
  @file    sla.h
  @brief   No brief
@@ -1252,12 +1252,14 @@ namespace sla {
  **********************************************************************/
 
 // select storage types of the data structures we use
+typedef sla::cvector state_vector;
 typedef sla::cvector belief_vector;
 #if USE_COMPRESSED_ALPHA
 typedef sla::cvector alpha_vector;
 #else
 typedef sla::dvector alpha_vector;
 #endif
+typedef sla::dvector outcome_prob_vector;
 typedef sla::dvector obs_prob_vector;
 
 #endif // INCsla_h
@@ -1265,6 +1267,9 @@ typedef sla::dvector obs_prob_vector;
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.14  2005/11/29 04:43:55  trey
+ * fixed missing header
+ *
  * Revision 1.13  2005/11/28 20:48:22  trey
  * added #include of math.h, errno.h to avoid errors under gcc 4.0
  *
