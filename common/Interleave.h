@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.6 $  $Author: trey $  $Date: 2005-10-28 03:50:32 $
+ $Revision: 1.7 $  $Author: trey $  $Date: 2006-01-28 03:02:14 $
    
  @file    Interleave.h
  @brief   No brief
@@ -32,13 +32,13 @@
 #include <vector>
 
 #include "Solver.h"
-#include "PomdpSim.h"
+#include "AbstractSim.h"
 
 namespace pomdp {
 
 class Interleave {
 public:
-  PomdpSim* sim;
+  AbstractSim* sim;
   std::vector<double> rewardRecord;
   
   Interleave(void) : sim(NULL) {}
@@ -50,7 +50,7 @@ public:
   }
 
   void interleave(int numIterations,
-		  PomdpP pomdp,
+		  AbstractSim* _sim,
 		  Solver& solver,
 		  int numSteps,
 		  double minPrecision,
@@ -60,7 +60,8 @@ public:
 		  const std::string& simFileNameFmt);
   double getReward(void) { return sim->rewardSoFar; }
   void batchTestIncremental(int numIterations,
-			    PomdpP pomdp, Solver& solver, int numSteps,
+			    AbstractSim* _sim,
+			    Solver& solver, int numSteps,
 			    double minPrecision,
 			    double minOrder, double maxOrder, double ticksPerOrder,
 			    const std::string& outFileName,
@@ -77,6 +78,9 @@ public:
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.6  2005/10/28 03:50:32  trey
+ * simplified license
+ *
  * Revision 1.5  2005/10/28 02:51:40  trey
  * added copyright headers
  *

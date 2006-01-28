@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.8 $  $Author: trey $  $Date: 2005-11-03 20:23:22 $
+ $Revision: 1.9 $  $Author: trey $  $Date: 2006-01-28 03:02:14 $
 
  @file    Interleave.cc
  @brief   No brief
@@ -49,7 +49,7 @@ using namespace MatrixUtils;
 namespace pomdp {
 
 void Interleave::interleave(int numIterations,
-			    PomdpP pomdp,
+			    AbstractSim* _sim,
 			    Solver& solver,
 			    int numSteps,
 			    double minPrecision,
@@ -65,7 +65,7 @@ void Interleave::interleave(int numIterations,
   double deltaTime, timeSoFar, episodeTimeSoFar;
   bool achievedPrecision, achievedTerminalState;
 
-  sim = new PomdpSim(pomdp);
+  sim = _sim;
 
   scatterFile.open( scatterFileName.c_str() );
   if (! scatterFile) {
@@ -80,7 +80,7 @@ void Interleave::interleave(int numIterations,
     cout << "=-=-=-=-= interleave: trial " << (i+1) << " / " << numIterations << endl;
 
     // reset the planner
-    solver.planInit(pomdp);
+    solver.planInit(sim->getModel());
 
     // set up a new bounds file and sim file for each iteration
     snprintf( boundsFileName, sizeof(boundsFileName), boundsFileNameFmt.c_str(), i );
@@ -115,14 +115,15 @@ void Interleave::interleave(int numIterations,
       do {
 	timeval plan_start = getTime();
 	achievedPrecision =
-	  solver.planFixedTime(pomdp->initialBelief, /* maxTime = */ -1, /* minPrecision = */ minPrecision);
+	  solver.planFixedTime(sim->getModel()->getInitialState(),
+			       /* maxTime = */ -1, /* minPrecision = */ minPrecision);
 	deltaTime = timevalToSeconds(getTime() - plan_start);
 	timeSoFar += deltaTime;
 	episodeTimeSoFar += deltaTime;
       } while ( !(achievedPrecision && episodeTimeSoFar >= minWait) );
 
       // take one action
-      action = solver.chooseAction(sim->currentBelief);
+      action = solver.chooseAction(sim->getInformationState());
       sim->performAction(action);
       
       // check if we reached a terminal state
@@ -144,7 +145,7 @@ void Interleave::interleave(int numIterations,
 }
 
 void Interleave::batchTestIncremental(int numIterations,
-				      PomdpP pomdp,
+				      AbstractSim* _sim,
 				      Solver& solver,
 				      int numSteps,
 				      double minPrecision,
@@ -158,8 +159,8 @@ void Interleave::batchTestIncremental(int numIterations,
   belief_vector last_belief, diff;
   bool can_reuse_last_action;
 
-  sim = new PomdpSim(pomdp);
-  solver.planInit(pomdp);
+  sim = _sim;
+  solver.planInit(sim->getModel());
 
   ofstream out( outFileName.c_str() );
   if (! out) {
@@ -191,7 +192,8 @@ void Interleave::batchTestIncremental(int numIterations,
   while (!achieved_precision && timeSoFar < pow(10,maxOrder)) {
     timeval plan_start = getTime();
     achieved_precision =
-      solver.planFixedTime(pomdp->initialBelief, /* maxTime = */ -1, minPrecision);
+      solver.planFixedTime(sim->getModel()->getInitialState(),
+			   /* maxTime = */ -1, minPrecision);
     double deltaTime = timevalToSeconds(getTime() - plan_start);
     timeSoFar += deltaTime;
 
@@ -215,7 +217,7 @@ void Interleave::batchTestIncremental(int numIterations,
 	FOR (j, numSteps) {
 	  can_reuse_last_action = false;
 	  if (-1 != last_action) {
-	    diff = sim->currentBelief;
+	    diff = sim->getInformationState();
 	    diff -= last_belief;
 	    if (norm_inf(diff) < 1e-10) {
 	      can_reuse_last_action = true;
@@ -224,11 +226,11 @@ void Interleave::batchTestIncremental(int numIterations,
 	  if (can_reuse_last_action) {
 	    action = last_action;
 	  } else {
-	    action = solver.chooseAction(sim->currentBelief);
+	    action = solver.chooseAction(sim->getInformationState());
 	  }
 
 	  last_action = action;
-	  last_belief = sim->currentBelief;
+	  last_belief = sim->getInformationState();
 
 	  sim->performAction(action);
 
@@ -252,7 +254,7 @@ void Interleave::batchTestIncremental(int numIterations,
       double success_rate = ((double) num_successes) / numIterations;
 
 #if 0
-      ValueInterval val = solver.getValueAt(pomdp->initialBelief);
+      ValueInterval val = solver.getValueAt(model->getInitialState());
       // for some reason, if i use sqrt() instead of ::sqrt(), it's ambiguous
       out << timeSoFar << " " << avg << " "
 	  << (stdev/::sqrt(numIterations)*1.96) << " "
@@ -288,6 +290,9 @@ void Interleave::printRewards(void) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.8  2005/11/03 20:23:22  trey
+ * removed bounds information in inc.plot
+ *
  * Revision 1.7  2005/10/28 03:50:32  trey
  * simplified license
  *
