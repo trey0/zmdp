@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.7 $  $Author: trey $  $Date: 2006-01-28 03:07:05 $
+ $Revision: 1.8 $  $Author: trey $  $Date: 2006-01-28 22:01:10 $
    
  @file    Solver.h
  @brief   No brief
@@ -29,7 +29,7 @@
 #ifndef INCSolver_h
 #define INCSolver_h
 
-#include "PomdpSim.h"
+#include "MDP.h"
 
 namespace pomdp {
 
@@ -65,6 +65,9 @@ public:
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.7  2006/01/28 03:07:05  trey
+ * improved flexibility for use with mdps
+ *
  * Revision 1.6  2005/11/28 20:45:47  trey
  * fixed warning about non-virtual destructor
  *
