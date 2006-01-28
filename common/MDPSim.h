@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-01-28 03:01:05 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-01-28 22:00:36 $
    
  @file    MDPSim.h
  @brief   No brief
@@ -37,10 +37,8 @@ namespace pomdp {
 class MDPSim : public AbstractSim {
 public:
   MDP* model;
-  double rewardSoFar;
   int elapsedTime;
   cvector state;
-  std::ostream *simOutFile;
   
   MDPSim(MDP* _model);
 
@@ -57,5 +55,8 @@ public:
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/01/28 03:01:05  trey
+ * initial check-in
+ *
  *
  ***************************************************************************/

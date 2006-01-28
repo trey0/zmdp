@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.7 $  $Author: trey $  $Date: 2006-01-28 03:04:39 $
+ $Revision: 1.8 $  $Author: trey $  $Date: 2006-01-28 22:00:45 $
    
  @file    PomdpSim.h
  @brief   No brief
@@ -37,12 +37,10 @@ namespace pomdp {
 class PomdpSim : public AbstractSim {
 public:
   Pomdp* pomdp;
-  double rewardSoFar;
   int elapsedTime;
   int state;
   cvector currentBelief;
   int lastState;
-  std::ostream *simOutFile;
   
   PomdpSim(Pomdp* _pomdp);
 
@@ -59,6 +57,9 @@ public:
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.7  2006/01/28 03:04:39  trey
+ * PomdpSim now inherits from AbstractSim
+ *
  * Revision 1.6  2005/10/28 03:50:32  trey
  * simplified license
  *
