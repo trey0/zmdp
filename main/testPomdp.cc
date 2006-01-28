@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.19 $  $Author: trey $  $Date: 2005-12-06 20:31:07 $
+ $Revision: 1.20 $  $Author: trey $  $Date: 2006-01-28 22:09:21 $
 
  @file    testPomdp.cc
  @brief   No brief
@@ -36,6 +36,7 @@
 #include "HSVI.h"
 #include "QMDP.h"
 #include "Interleave.h"
+#include "PomdpSim.h"
 #include "stdinInterface.h"
 #if USE_GHSVI
 #  include "GHSVI.h"
@@ -116,12 +117,14 @@ void testBatchIncremental(string algorithm,
 
   solver->setMinSafety( minSafety );
 
+  AbstractSim* sim = new PomdpSim(&problem);
+
   //string prefix = "/tmp/";
   string prefix = "";
   Interleave x;
   if (useInterleave) {
     x.interleave(/* numIterations = */ num_iterations,
-		 &problem, *solver,
+		 sim, *solver,
 		 /* numSteps = */ 251,
 		 /* minPrecision = */ minPrecision,
 		 /* minWait = */ minWait,
@@ -130,7 +133,7 @@ void testBatchIncremental(string algorithm,
 		 /* simFileNameFmt = */ "plots/sim%04d.plot");
   } else {
     x.batchTestIncremental(/* numIterations = */ num_iterations,
-			   &problem, *solver,
+			   sim, *solver,
 			   /* numSteps = */ 251,
 			   /* minPrecision = */ minPrecision,
 			   /* minOrder = */ min_order,
@@ -243,6 +246,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.19  2005/12/06 20:31:07  trey
+ * added paostar algorithm
+ *
  * Revision 1.18  2005/11/16 21:04:52  trey
  * added epsgreedy support
  *
