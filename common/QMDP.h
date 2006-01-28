@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.4 $  $Author: trey $  $Date: 2005-10-28 03:50:32 $
+ $Revision: 1.5 $  $Author: trey $  $Date: 2006-01-28 22:01:51 $
    
  @file    QMDP.h
  @brief   No brief
@@ -35,12 +35,12 @@ namespace pomdp {
 
 struct QMDP : public MDPValueFunction, public Solver {
 
-  PomdpP pomdp;
+  const Pomdp* pomdp;
   std::vector< dvector > Q;
 
-  void planInit(PomdpP _pomdp)
+  void planInit(const MDP* _pomdp)
   {
-    pomdp = _pomdp;
+    pomdp = (const Pomdp*) _pomdp;
   }
 
   bool planFixedTime(const belief_vector& currentBelief,
@@ -144,6 +144,9 @@ void testMDP(void);
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2005/10/28 03:50:32  trey
+ * simplified license
+ *
  * Revision 1.3  2005/10/28 02:51:40  trey
  * added copyright headers
  *
