@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.6 $  $Author: trey $  $Date: 2005-10-28 03:50:32 $
+ $Revision: 1.7 $  $Author: trey $  $Date: 2006-01-28 03:04:39 $
    
  @file    PomdpSim.cc
  @brief   No brief
@@ -47,7 +47,7 @@ using namespace MatrixUtils;
 
 namespace pomdp {
 
-PomdpSim::PomdpSim(PomdpP _pomdp) :
+PomdpSim::PomdpSim(Pomdp* _pomdp) :
   pomdp(_pomdp)
 {
   simOutFile = NULL;
@@ -127,7 +127,7 @@ void PomdpSim::performAction(int a) {
   // draw observation o based on sp ond O
   r = unit_rand();
   o = 0;
-  FOR (i, pomdp->numObservations) {
+  FOR (i, pomdp->numOutcomes) {
     r -= pomdp->O[a](sp,i);
     if (r < 0) {
       o = i;
@@ -150,7 +150,7 @@ void PomdpSim::performAction(int a) {
 
   // we used to check termination *before* the transition to take into account
   // weirdness in the hallway and hallway2 problems; but that's resolved now.
-  if (pomdp->isTerminalState[state]) {
+  if (pomdp->isPomdpTerminalState[state]) {
     terminated = true;
     lastState = state;
     if (simOutFile) {
@@ -188,6 +188,9 @@ void PomdpSim::performAction(int a) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.6  2005/10/28 03:50:32  trey
+ * simplified license
+ *
  * Revision 1.5  2005/10/28 02:51:40  trey
  * added copyright headers
  *

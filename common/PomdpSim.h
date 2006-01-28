@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.6 $  $Author: trey $  $Date: 2005-10-28 03:50:32 $
+ $Revision: 1.7 $  $Author: trey $  $Date: 2006-01-28 03:04:39 $
    
  @file    PomdpSim.h
  @brief   No brief
@@ -29,28 +29,27 @@
 #ifndef INCPomdpSim_h
 #define INCPomdpSim_h
 
+#include "AbstractSim.h"
 #include "Pomdp.h"
 
 namespace pomdp {
 
-class PomdpSim {
+class PomdpSim : public AbstractSim {
 public:
-  PomdpP pomdp;
+  Pomdp* pomdp;
   double rewardSoFar;
   int elapsedTime;
   int state;
   cvector currentBelief;
   int lastState;
-  bool terminated;
   std::ostream *simOutFile;
   
-  PomdpSim(PomdpP _pomdp);
+  PomdpSim(Pomdp* _pomdp);
 
-  // sets us back to the initial belief (choosing state randomly according to
-  // initial belief) and zeros elapsed time and reward
+  const MDP* getModel(void) const { return pomdp; }
   void restart(void);
-
   void performAction(int a);
+  const state_vector& getInformationState(void) const { return currentBelief; }
 };
 
 }; // namespace pomdp
@@ -60,6 +59,9 @@ public:
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.6  2005/10/28 03:50:32  trey
+ * simplified license
+ *
  * Revision 1.5  2005/10/28 02:51:40  trey
  * added copyright headers
  *
