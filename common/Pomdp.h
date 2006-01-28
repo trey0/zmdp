@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.5 $  $Author: trey $  $Date: 2005-11-03 17:45:30 $
+ $Revision: 1.6 $  $Author: trey $  $Date: 2006-01-28 03:03:23 $
    
  @file    Pomdp.h
  @brief   No brief
@@ -35,14 +35,13 @@
 
 #include "pomdpCommonDefs.h"
 #include "pomdpCommonTypes.h"
-#include "BeliefMDP.h"
+#include "MDP.h"
 
 using namespace sla;
 
 namespace pomdp {
 
-// this is a wrapper class around Pomdp that uses Lapack matrices
-class Pomdp : public BeliefMDP {
+class Pomdp : public MDP {
 public:
   int numStates;
 
@@ -52,30 +51,49 @@ public:
   cmatrix R;
   // T[a](s,s'), Ttr[a](s',s), O[a](s',o)
   std::vector<cmatrix> T, Ttr, O;
-  std::vector<bool> isTerminalState;
+  std::vector<bool> isPomdpTerminalState;
 
   void readFromFile(const std::string& fileName,
 		    bool useFastParser = false);
 
-  // These functions implement the API defined in BeliefMDP:
-
   // returns the initial belief
   const belief_vector& getInitialBelief(void) const;
-  // sets result to be the vector of observation probabilities when from belief b action a is selected
-  obs_prob_vector& getObsProbVector(obs_prob_vector& result, const belief_vector& b, int a) const;
-  // sets result to be the next belief when from belief b action a is selected and observation o is observed
-  belief_vector& getNextBelief(belief_vector& result, const belief_vector& b, int a, int o) const;
+
+  // sets result to be the vector of observation probabilities when from
+  // belief b action a is selected
+  obs_prob_vector& getObsProbVector(obs_prob_vector& result, const belief_vector& b,
+				    int a) const;
+
+  // sets result to be the next belief when from belief b action a is
+  // selected and observation o is observed
+  belief_vector& getNextBelief(belief_vector& result, const belief_vector& b,
+			       int a, int o) const;
+
   // returns the expected immediate reward when from belief b action a is selected
   double getReward(const belief_vector& b, int a) const;
 
+  // POMDP-as-belief-MDP aliases for functions implemented in MDP
+  int getBeliefSize(void) const { return getNumStateDimensions(); }
+  int getNumObservations(void) const { return getNumOutcomes(); }
+  void setBeliefSize(int beliefSize) { numStateDimensions = beliefSize; }
+  void setNumObservations(int numObservations) { numOutcomes = numObservations; }
+
+  // POMDP-as-belief-MDP implementations for virtual functions declared in MDP
+  const state_vector& getInitialState(void) const { return getInitialBelief(); }
+  bool getIsTerminalState(const state_vector& s) const { return false; }
+  outcome_prob_vector& getOutcomeProbVector(outcome_prob_vector& result, const state_vector& b,
+					    int a) const
+    { return getObsProbVector(result,b,a); }
+  state_vector& getNextState(state_vector& result, const state_vector& s,
+			     int a, int o) const
+    { return getNextBelief(result,s,a,o); }
+  
 protected:
   void readFromFileCassandra(const std::string& fileName);
   void readFromFileFast(const std::string& fileName);
 
   void debugDensity(void);
 };
-
-typedef Pomdp* PomdpP;
 
 }; // namespace pomdp
 
@@ -84,6 +102,9 @@ typedef Pomdp* PomdpP;
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.5  2005/11/03 17:45:30  trey
+ * moved transition dynamics from HSVI implementation to Pomdp
+ *
  * Revision 1.4  2005/10/28 03:50:32  trey
  * simplified license
  *

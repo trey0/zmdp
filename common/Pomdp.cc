@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.4 $  $Author: trey $  $Date: 2005-11-03 17:45:30 $
+ $Revision: 1.5 $  $Author: trey $  $Date: 2006-01-28 03:03:23 $
   
  @file    Pomdp.cc
  @brief   No brief
@@ -138,7 +138,7 @@ double Pomdp::getReward(const belief_vector& b, int a) const
 
 void Pomdp::readFromFileCassandra(const string& fileName) {
   dvector initialBeliefx;
-  std::vector<bool> isTerminalStatex;
+  std::vector<bool> isPomdpTerminalStatex;
   kmatrix Rx;
   std::vector<kmatrix> Tx, Ox;
 
@@ -149,33 +149,34 @@ void Pomdp::readFromFileCassandra(const string& fileName) {
   PomdpCassandraWrapper p;
   p.readFromFile(fileName);
   
-  beliefSize = numStates = p.getNumStates();
+  numStates = p.getNumStates();
+  setBeliefSize(numStates);
   numActions = p.getNumActions();
-  numObservations = p.getNumObservations();
+  numOutcomes = p.getNumObservations();
   discount = p.getDiscount();
 
   // pre-process
   initialBeliefx.resize(numStates);
   set_to_zero(initialBeliefx);
-  isTerminalStatex.resize(numStates, /* initialValue = */ false);
+  isPomdpTerminalStatex.resize(numStates, /* initialValue = */ false);
   Rx.resize(numStates, numActions);
   Tx.resize(numActions);
   Ox.resize(numActions);
   FOR (a, numActions) {
     Tx[a].resize(numStates, numStates);
-    Ox[a].resize(numStates, numObservations);
+    Ox[a].resize(numStates, numOutcomes);
   }
 
   // copy
   FOR (s, numStates) {
     initialBeliefx(s) = p.getInitialBelief(s);
-    isTerminalStatex[s] = p.isTerminalState(s);
+    isPomdpTerminalStatex[s] = p.isTerminalState(s);
     FOR (a, numActions) {
       kmatrix_set_entry( Rx, s, a, p.R(s,a) );
       FOR (sp, numStates) {
 	kmatrix_set_entry( Tx[a], s, sp, p.T(s,a,sp) );
       }
-      FOR (o, numObservations) {
+      FOR (o, numOutcomes) {
 	kmatrix_set_entry( Ox[a], s, o, p.O(s,a,o) );
       }
     }
@@ -183,7 +184,7 @@ void Pomdp::readFromFileCassandra(const string& fileName) {
 
   // post-process
   copy( initialBelief, initialBeliefx );
-  isTerminalState = isTerminalStatex;
+  isPomdpTerminalState = isPomdpTerminalStatex;
   copy( R, Rx );
   Ttr.resize(numActions);
   O.resize(numActions);
@@ -228,7 +229,7 @@ void Pomdp::readFromFileFast(const std::string& fileName)
   }
 
   dvector initialBeliefx;
-  std::vector<bool> isTerminalStatex;
+  std::vector<bool> isPomdpTerminalStatex;
   kmatrix Rx;
   std::vector<kmatrix> Tx, Ox;
 
@@ -278,7 +279,7 @@ void Pomdp::readFromFileFast(const std::string& fileName)
 	}
 	numSizesSet++;
       } else if (PM_PREFIX_MATCHES("observations:")) {
-	if (1 != sscanf(buf,"observations: %d", &numObservations)) {
+	if (1 != sscanf(buf,"observations: %d", &numOutcomes)) {
 	  cerr << "ERROR: line " << lineNumber
 	       << ": syntax error in observations statement"
 	       << endl;
@@ -302,16 +303,16 @@ void Pomdp::readFromFileFast(const std::string& fileName)
 
       if (3 == numSizesSet) {
 	// pre-process
-	beliefSize = numStates;
+	setBeliefSize(numStates);
 	initialBeliefx.resize(numStates);
 	set_to_zero(initialBeliefx);
-	isTerminalStatex.resize(numStates, false);
+	isPomdpTerminalStatex.resize(numStates, false);
 	Rx.resize(numStates, numActions);
 	Tx.resize(numActions);
 	Ox.resize(numActions);
 	FOR (a, numActions) {
 	  Tx[a].resize(numStates, numStates);
-	  Ox[a].resize(numStates, numObservations);
+	  Ox[a].resize(numStates, numOutcomes);
 	}
 
 	inPreamble = false;
@@ -330,7 +331,7 @@ void Pomdp::readFromFileFast(const std::string& fileName)
 	       << endl;
 	  exit(EXIT_FAILURE);
 	}
-	isTerminalStatex[s] = true;
+	isPomdpTerminalStatex[s] = true;
       } else if (PM_PREFIX_MATCHES("R:")) {
 	int s, a;
 	double reward;
@@ -376,7 +377,7 @@ void Pomdp::readFromFileFast(const std::string& fileName)
 
   // post-process
   copy( initialBelief, initialBeliefx );
-  isTerminalState = isTerminalStatex;
+  isPomdpTerminalState = isPomdpTerminalStatex;
   copy( R, Rx );
   Ttr.resize(numActions);
   O.resize(numActions);
@@ -422,6 +423,9 @@ void Pomdp::debugDensity(void) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2005/11/03 17:45:30  trey
+ * moved transition dynamics from HSVI implementation to Pomdp
+ *
  * Revision 1.3  2005/10/28 03:50:32  trey
  * simplified license
  *
