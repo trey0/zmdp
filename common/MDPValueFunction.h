@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.9 $  $Author: trey $  $Date: 2006-01-28 03:02:45 $
+ $Revision: 1.10 $  $Author: trey $  $Date: 2006-01-28 22:02:47 $
    
  @file    MDPValueFunction.h
  @brief   No brief
@@ -39,7 +39,7 @@ namespace pomdp {
 class MDPValueFunction : public ValueFunction {
 public:
   dvector alpha;
-  Pomdp* pomdp;
+  const Pomdp* pomdp;
 
   ValueInterval getValueAt(const belief_vector& b) const {
     return ValueInterval(0, inner_prod( alpha, b ));
@@ -47,7 +47,7 @@ public:
 
   void nextAlphaAction(dvector& result, int a);
   double valueIterationOneStep(void);
-  void valueIteration(Pomdp* _pomdp, double eps);
+  void valueIteration(const Pomdp* _pomdp, double eps);
 };
 
 
@@ -60,6 +60,9 @@ void testMDP(void);
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.9  2006/01/28 03:02:45  trey
+ * replaced PomdpP -> Pomdp*
+ *
  * Revision 1.8  2005/10/28 03:50:32  trey
  * simplified license
  *
