@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.9 $  $Author: trey $  $Date: 2005-10-28 03:50:32 $
+ $Revision: 1.10 $  $Author: trey $  $Date: 2006-01-28 03:02:45 $
    
  @file    MDPValueIteration.cc
  @brief   No brief
@@ -109,7 +109,7 @@ double MDPValueFunction::valueIterationOneStep(void) {
   return maxResidual;
 }
 
-void MDPValueFunction::valueIteration(PomdpP _pomdp, double eps) {
+void MDPValueFunction::valueIteration(Pomdp* _pomdp, double eps) {
   pomdp = _pomdp;
   numStates = pomdp->numStates;
 
@@ -137,7 +137,7 @@ void MDPValueFunction::valueIteration(PomdpP _pomdp, double eps) {
 
 void testMDP(void) {
   MDPValueFunction m;
-  PomdpP p = new Pomdp();
+  Pomdp* p = new Pomdp();
   //p->readFromFile("examples/simple.pomdp");
   p->readFromFile("examples/hallway.pomdp");
   m.valueIteration(p, 1e-3);
@@ -149,6 +149,9 @@ void testMDP(void) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.9  2005/10/28 03:50:32  trey
+ * simplified license
+ *
  * Revision 1.8  2005/10/28 02:51:40  trey
  * added copyright headers
  *
