@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.6 $  $Author: trey $  $Date: 2005-11-28 20:45:47 $
+ $Revision: 1.7 $  $Author: trey $  $Date: 2006-01-28 03:07:05 $
    
  @file    Solver.h
  @brief   No brief
@@ -38,30 +38,23 @@ public:
   virtual ~Solver(void) {}
 
   // sets up the problem
-  virtual void planInit(PomdpP pomdp) = 0;
+  virtual void planInit(const MDP* problem) = 0;
 
   // plan for a fixed amount of time.  if maxTimeSeconds < 0,
   //   the amount of time is chosen by the solver to optimize
   //   time performance.  returns true if minPrecision has been
   //   reached.
-  virtual bool planFixedTime(const belief_vector& currentBelief,
+  virtual bool planFixedTime(const state_vector& currentState,
 			     double maxTimeSeconds,
 			     double minPrecision) = 0;
 
-#if 0
-  virtual void executeInit(const belief_vector& currentBelief);
-  virtual int  executeChooseAction(void);
-  virtual void executeObserve(int obs);
-#endif
-
-  virtual int chooseAction(const belief_vector& currentBelief) = 0;
+  virtual int chooseAction(const state_vector& currentState) = 0;
 
   virtual void setBoundsFile(std::ostream* boundsFile) = 0;
-  virtual ValueInterval getValueAt(const belief_vector& currentBelief) const = 0;
+  virtual ValueInterval getValueAt(const state_vector& currentState) const = 0;
 
   // sets the minimum safety value, for a solver that understands safety
   virtual void setMinSafety(double _minSafety) {}
-
   
 };
 
@@ -72,6 +65,9 @@ public:
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.6  2005/11/28 20:45:47  trey
+ * fixed warning about non-virtual destructor
+ *
  * Revision 1.5  2005/10/28 03:50:32  trey
  * simplified license
  *
