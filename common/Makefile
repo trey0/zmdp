@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.17 2005-11-29 04:44:53 trey Exp $
+# $Id: Makefile,v 1.18 2006-01-28 03:05:00 trey Exp $
 #
 # Copyright (c) 2002-2005, Trey Smith
 # All rights reserved.
@@ -46,8 +46,10 @@ INSTALLHEADERS_HEADERS := \
 	Interleave.h \
 	slaMatrixUtils.h \
 	MatrixUtils.h \
-	BeliefMDP.h \
+	MDP.h \
 	Pomdp.h \
+	AbstractSim.h \
+	MDPSim.h \
 	PomdpSim.h \
 	Solver.h \
 	ValueFunction.h \
@@ -61,6 +63,7 @@ BUILDLIB_SRCS := \
 	pomdpCommonTypes.cc \
 	Pomdp.cc \
 	Interleave.cc \
+	MDPSim.cc \
 	PomdpSim.cc \
 	ValueFunction.cc \
 	MDPValueFunction.cc
@@ -99,6 +102,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.17  2005/11/29 04:44:53  trey
+# added install of PQueue.h
+#
 # Revision 1.16  2005/11/03 17:46:28  trey
 # added BeliefMDP.h
 #
