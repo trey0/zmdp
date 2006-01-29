@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.6 $  $Author: trey $  $Date: 2006-01-28 03:03:23 $
+ $Revision: 1.7 $  $Author: trey $  $Date: 2006-01-29 00:18:36 $
    
  @file    Pomdp.h
  @brief   No brief
@@ -53,6 +53,9 @@ public:
   std::vector<cmatrix> T, Ttr, O;
   std::vector<bool> isPomdpTerminalState;
 
+  Pomdp(void) {}
+  Pomdp(const std::string& fileName, bool useFastParser = false);
+
   void readFromFile(const std::string& fileName,
 		    bool useFastParser = false);
 
@@ -102,6 +105,9 @@ protected:
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.6  2006/01/28 03:03:23  trey
+ * replaced BeliefMDP -> MDP, corresponding changes in API
+ *
  * Revision 1.5  2005/11/03 17:45:30  trey
  * moved transition dynamics from HSVI implementation to Pomdp
  *
