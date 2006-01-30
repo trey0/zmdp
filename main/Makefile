@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.10 2005-11-02 21:03:47 trey Exp $
+# $Id: Makefile,v 1.11 2006-01-30 19:26:40 trey Exp $
 #
 # Copyright (c) 2002-2005, Trey Smith
 # All rights reserved.
@@ -39,10 +39,10 @@ ifneq (,$(USE_GHSVI))
   EXTRA_LIBS := -lghsvi
 endif
 
-BUILDBIN_TARGET := testPomdp
-BUILDBIN_SRCS := testPomdp.cc
+BUILDBIN_TARGET := solvePomdpHsvi
+BUILDBIN_SRCS := solvePomdpHsvi.cc
 BUILDBIN_INDEP_LIBS := -lpomdpCommonTime
-BUILDBIN_DEP_LIBS := -lhsvi $(EXTRA_LIBS) -lpomdpUtils -lpomdp_spec
+BUILDBIN_DEP_LIBS := -lhsvi -lpomdpUtils -lpomdp_spec
 include $(BUILD_DIR)/buildbin.mak
 
 ######################################################################
@@ -52,6 +52,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.10  2005/11/02 21:03:47  trey
+# removed cruft and added ghsvi
+#
 # Revision 1.9  2005/10/28 03:53:08  trey
 # simplified license
 #
