@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.12 2006-01-31 18:14:04 trey Exp $
+# $Id: Makefile,v 1.13 2006-01-31 20:26:21 trey Exp $
 #
 # Copyright (c) 2002-2005, Trey Smith
 # All rights reserved.
@@ -35,20 +35,16 @@ include $(SRC_DIR)/common/options.mak
 # ADD ANY SUBDIRS THAT NEED TO BE VISITED DURING A BUILD TO THE SUBDIRS LIST
 SUBDIRS :=
 
-ifneq (,$(USE_GHSVI))
-  EXTRA_LIBS := -lghsvi
-endif
-
 BUILDBIN_TARGET := solvePomdpHsvi
 BUILDBIN_SRCS := solvePomdpHsvi.cc
-BUILDBIN_INDEP_LIBS := -lpomdpCommonTime
-BUILDBIN_DEP_LIBS := -lhsvi -lpomdpUtils -lpomdp_spec
+BUILDBIN_INDEP_LIBS :=
+BUILDBIN_DEP_LIBS := -lzmdpHsvi -lzmdpPomdpCore -lzmdpPomdpParser -lzmdpCommon
 include $(BUILD_DIR)/buildbin.mak
 
 BUILDBIN_TARGET := solvePomdpGhsvi
 BUILDBIN_SRCS := solvePomdpGhsvi.cc
-BUILDBIN_INDEP_LIBS := -lpomdpCommonTime
-BUILDBIN_DEP_LIBS := -lghsvi -lpomdpUtils -lpomdp_spec
+BUILDBIN_INDEP_LIBS :=
+BUILDBIN_DEP_LIBS := -lzmdpGhsvi -lzmdpPomdpCore -lzmdpPomdpParser -lzmdpCommon
 include $(BUILD_DIR)/buildbin.mak
 
 ######################################################################
@@ -58,6 +54,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.12  2006/01/31 18:14:04  trey
+# added solvePomdpGhsvi
+#
 # Revision 1.11  2006/01/30 19:26:40  trey
 # replaced generic testPomdp with separate binaries for different problem types and algorithms
 #
