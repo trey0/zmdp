@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-01-31 19:13:18 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-01-31 20:08:24 $
    
  @file    AbstractBound.h
  @brief   No brief
@@ -39,8 +39,10 @@ using namespace sla;
 namespace pomdp {
 
 struct AbstractBound {
+  virtual ~AbstractBound(void) {}
+
   // performs any computation necessary to initialize the bound
-  virtual void initialize(const MDP* problem) = 0;
+  virtual void initialize(void) = 0;
 
   // returns the bound value at state s
   virtual double getValue(const state_vector& s) const = 0;
@@ -53,6 +55,9 @@ struct AbstractBound {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/01/31 19:13:18  trey
+ * initial check-in
+ *
  *
  ***************************************************************************/
 
