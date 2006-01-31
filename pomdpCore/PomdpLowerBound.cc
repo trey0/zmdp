@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-01-31 19:18:24 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-01-31 20:13:45 $
    
  @file    PomdpLowerBound.cc
  @brief   No brief
@@ -52,9 +52,13 @@ using namespace MatrixUtils;
 
 namespace pomdp {
 
-void PomdpLowerBound::initialize(const MDP* problem)
+PomdpLowerBound::PomdpLowerBound(const MDP* problem) {
+  pomdp = (const Pomdp*) problem;
+}
+
+void PomdpLowerBound::initialize(void)
 {
-  initBlind(problem);
+  initBlind();
 }
 
 double PomdpLowerBound::getValue(const belief_vector& b) const
@@ -69,10 +73,8 @@ double PomdpLowerBound::getValue(const belief_vector& b) const
   return bestVal;
 }
 
-void PomdpLowerBound::initBlindWorstCase(const MDP* problem)
+void PomdpLowerBound::initBlindWorstCase(void)
 {
-  Pomdp* pomdp = (Pomdp*) problem;
-
   // set alpha to be a lower bound on the value of the best blind policy
 
   double worstStateVal;
@@ -80,7 +82,7 @@ void PomdpLowerBound::initBlindWorstCase(const MDP* problem)
   double worstCaseReward = -99e+20;
   // calculate worstCaseReward = max_a min_s R(s,a)
   // safestAction = argmax_a min_s R(s,a)
-  FOR (a, problem->getNumActions()) {
+  FOR (a, pomdp->getNumActions()) {
     worstStateVal = 99e+20;
     FOR (s, pomdp->numStates) {
       worstStateVal = std::min(worstStateVal, pomdp->R(s,a));
@@ -90,9 +92,9 @@ void PomdpLowerBound::initBlindWorstCase(const MDP* problem)
       worstCaseReward = worstStateVal;
     }
   }
-  dvector worstCaseDVector(problem->getNumStateDimensions());
-  assert(problem->getDiscount() < 1);
-  double worstCaseLongTerm = worstCaseReward / (1 - problem->getDiscount());
+  dvector worstCaseDVector(pomdp->getNumStateDimensions());
+  assert(pomdp->getDiscount() < 1);
+  double worstCaseLongTerm = worstCaseReward / (1 - pomdp->getDiscount());
   FOR (i, pomdp->numStates) {
     worstCaseDVector(i) = worstCaseLongTerm;
   }
@@ -102,17 +104,15 @@ void PomdpLowerBound::initBlindWorstCase(const MDP* problem)
   cout << "initLowerBoundBlindWorstCase: alpha=" << sparseRep(calpha) << endl;
 }
 
-void PomdpLowerBound::initBlind(const MDP* problem)
+void PomdpLowerBound::initBlind(void)
 {
-  Pomdp* pomdp = (Pomdp*) problem;
-
   alpha_vector al(pomdp->numStates);
   alpha_vector nextAl, tmp, diff;
   alpha_vector weakAl;
   belief_vector dummy; // ignored
   double maxResidual;
 
-  initBlindWorstCase(problem);
+  initBlindWorstCase();
   weakAl = alphas[0];
   alphas.clear();
 
@@ -149,5 +149,8 @@ void PomdpLowerBound::initBlind(const MDP* problem)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/01/31 19:18:24  trey
+ * initial check-in
+ *
  *
  ***************************************************************************/

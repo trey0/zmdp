@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-01-31 19:18:24 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-01-31 20:13:45 $
    
  @file    PomdpUpperBound.cc
  @brief   No brief
@@ -52,9 +52,14 @@ using namespace MatrixUtils;
 
 namespace pomdp {
 
-void PomdpUpperBound::initialize(const MDP* problem)
+PomdpUpperBound::PomdpUpperBound(const MDP* problem)
 {
-  initFIB(problem);
+  pomdp = (const Pomdp*) problem;
+}
+
+void PomdpUpperBound::initialize(void)
+{
+  initFIB();
 }
 
 double PomdpUpperBound::getValue(const belief_vector& b) const
@@ -69,10 +74,8 @@ double PomdpUpperBound::getValue(const belief_vector& b) const
   return bestVal;
 }
 
-void PomdpUpperBound::initMDP(const MDP* problem)
+void PomdpUpperBound::initMDP(void)
 {
-  Pomdp* pomdp = (Pomdp*) problem;
-
   // set alpha to be the mdp upper bound
   MDPValueFunction m;
   m.valueIteration(pomdp, INIT1_RESIDUAL);
@@ -86,10 +89,8 @@ void PomdpUpperBound::initMDP(const MDP* problem)
   cout << "initUpperBoundMDP: val(b)=" << inner_prod(alphas[0], pomdp->initialBelief) << endl;
 }
 
-void PomdpUpperBound::initFIB(const MDP* problem)
+void PomdpUpperBound::initFIB(void)
 {
-  Pomdp* pomdp = (Pomdp*) problem;
-
   typedef sla::dvector dvector;
   // calculates the fast informed bound (Hauskrecht, JAIR 2000)
   std::vector< dvector > al(pomdp->numActions);
@@ -98,7 +99,7 @@ void PomdpUpperBound::initFIB(const MDP* problem)
   double maxResidual;
   alpha_vector backup;
 
-  initMDP(problem);
+  initMDP();
 
   // initialize al array with weak MDP upper bound
   MDPValueFunction m;
@@ -171,5 +172,8 @@ void PomdpUpperBound::initFIB(const MDP* problem)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/01/31 19:18:24  trey
+ * initial check-in
+ *
  *
  ***************************************************************************/

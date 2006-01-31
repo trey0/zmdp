@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-01-31 19:18:24 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-01-31 20:13:45 $
    
  @file    PomdpLowerBound.h
  @brief   No brief
@@ -30,18 +30,21 @@
 
 #include "MatrixUtils.h"
 #include "AbstractBound.h"
+#include "Pomdp.h"
 
 namespace pomdp {
 
 struct PomdpLowerBound : public AbstractBound {
+  const Pomdp* pomdp;
   std::vector<alpha_vector> alphas;
 
-  void initialize(const MDP* problem);
+  PomdpLowerBound(const MDP* problem);
+  void initialize(void);
   double getValue(const belief_vector& s) const;
 
 protected:
-  void initBlind(const MDP* problem);
-  void initBlindWorstCase(const MDP* problem);
+  void initBlind(void);
+  void initBlindWorstCase(void);
 };
 
 }; // namespace pomdp
@@ -51,5 +54,8 @@ protected:
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/01/31 19:18:24  trey
+ * initial check-in
+ *
  *
  ***************************************************************************/
