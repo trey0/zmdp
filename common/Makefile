@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.19 2006-01-31 18:36:23 trey Exp $
+# $Id: Makefile,v 1.20 2006-01-31 19:13:30 trey Exp $
 #
 # Copyright (c) 2002-2005, Trey Smith
 # All rights reserved.
@@ -47,6 +47,7 @@ INSTALLHEADERS_HEADERS := \
 	slaMatrixUtils.h \
 	MatrixUtils.h \
 	MDP.h \
+	AbstractBound.h \
 	AbstractSim.h \
 	MDPSim.h \
 	Solver.h \
@@ -86,6 +87,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.19  2006/01/31 18:36:23  trey
+# moved many files from common to pomdpCore
+#
 # Revision 1.18  2006/01/28 03:05:00  trey
 # added MDP, MDPSim, AbstractSim
 #
