@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.5 2005-10-28 03:54:39 trey Exp $
+# $Id: Makefile,v 1.6 2006-01-31 20:26:43 trey Exp $
 #
 # Copyright (c) 2002-2005, Trey Smith
 # All rights reserved.
@@ -38,7 +38,7 @@ SUBDIRS :=
 INSTALLHEADERS_HEADERS := pomdpCassandraWrapper.h
 include $(BUILD_DIR)/installheaders.mak
 
-BUILDLIB_TARGET := libpomdp_spec.a
+BUILDLIB_TARGET := libzmdpPomdpParser.a
 BUILDLIB_SRCS := pomdp_spec.tab.cc pomdp_spec.yy.cc \
   imm-reward.c parse_err.c parse_hash.c \
   sparse-matrix.c mdp.c pomdpCassandraWrapper.cc
@@ -62,6 +62,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.5  2005/10/28 03:54:39  trey
+# simplified license
+#
 # Revision 1.4  2005/10/27 21:36:58  trey
 # renamed pomdp.{h,cc} to pomdpCassandraWrapper.{h,cc}
 #
