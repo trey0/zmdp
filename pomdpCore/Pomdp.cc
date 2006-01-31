@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-01-31 18:31:50 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-01-31 20:12:44 $
   
  @file    Pomdp.cc
  @brief   No brief
@@ -43,6 +43,8 @@
 #include "pomdpCassandraWrapper.h"
 #include "Pomdp.h"
 #include "MatrixUtils.h"
+#include "PomdpLowerBound.h"
+#include "PomdpUpperBound.h"
 
 using namespace std;
 using namespace MatrixUtils;
@@ -139,6 +141,16 @@ belief_vector& Pomdp::getNextBelief(belief_vector& result,
 double Pomdp::getReward(const belief_vector& b, int a) const
 {
   return inner_prod_column( R, a, b );
+}
+
+AbstractBound* Pomdp::newLowerBound(void) const
+{
+  return new PomdpLowerBound(this);
+}
+
+AbstractBound* Pomdp::newUpperBound(void) const
+{
+  return new PomdpUpperBound(this);
 }
 
 void Pomdp::readFromFileCassandra(const string& fileName) {
@@ -428,6 +440,9 @@ void Pomdp::debugDensity(void) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/01/31 18:31:50  trey
+ * moved many files from common to pomdpCore
+ *
  * Revision 1.6  2006/01/29 00:18:36  trey
  * added Pomdp() constructor that calls readFromFile()
  *

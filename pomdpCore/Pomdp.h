@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-01-31 18:31:51 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-01-31 20:12:44 $
    
  @file    Pomdp.h
  @brief   No brief
@@ -75,6 +75,9 @@ public:
   // returns the expected immediate reward when from belief b action a is selected
   double getReward(const belief_vector& b, int a) const;
 
+  AbstractBound* newLowerBound(void) const;
+  AbstractBound* newUpperBound(void) const;
+
   // POMDP-as-belief-MDP aliases for functions implemented in MDP
   int getBeliefSize(void) const { return getNumStateDimensions(); }
   int getNumObservations(void) const { return getNumOutcomes(); }
@@ -105,6 +108,9 @@ protected:
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/01/31 18:31:51  trey
+ * moved many files from common to pomdpCore
+ *
  * Revision 1.7  2006/01/29 00:18:36  trey
  * added Pomdp() constructor that calls readFromFile()
  *
