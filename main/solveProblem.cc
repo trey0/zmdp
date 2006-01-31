@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-01-30 19:27:01 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-01-31 18:13:42 $
 
  @file    solveProblem.cc
  @brief   No brief
@@ -45,7 +45,7 @@ void usage(const char* cmdName) {
     "  --version              Print version information (CFLAGS used at compilation)\n"
     "  -f or --fast           Use fast (but very picky) alternate problem parser\n"
     "  -i or --iterations     Set number of simulation iterations (default: 1000)\n"
-    "  -n or --no-console     Do not poll stdin for user quit command (for running in background)\n"
+//    "  -n or --no-console     Do not poll stdin for user quit command (for running in background)\n"
     "\n"
     "These options are experimental, you probably don't want to use them:\n"
     "  --interleave           Test planner in interleaved mode\n"
@@ -131,8 +131,10 @@ int main(int argc, char **argv) {
 	  usage(argv[0]);
 	}
 	num_iterations = atoi(argv[argi]);
+#if 0
       } else if (args == "-n" || args == "--no-console") {
 	setPollingEnabled(0);
+#endif
       } else if (args == "--interleave") {
 	useInterleave = true;
       } else if (args == "-p" || args == "--min-precision") {
@@ -200,6 +202,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/01/30 19:27:01  trey
+ * initial check-in
+ *
  * Revision 1.20  2006/01/28 22:09:21  trey
  * updated to reflect changes in Interleave
  *
