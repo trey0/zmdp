@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.6 $  $Author: trey $  $Date: 2006-01-29 00:18:36 $
+ $Revision: 1.1 $  $Author: trey $  $Date: 2006-01-31 18:31:50 $
   
  @file    Pomdp.cc
  @brief   No brief
@@ -428,6 +428,9 @@ void Pomdp::debugDensity(void) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.6  2006/01/29 00:18:36  trey
+ * added Pomdp() constructor that calls readFromFile()
+ *
  * Revision 1.5  2006/01/28 03:03:23  trey
  * replaced BeliefMDP -> MDP, corresponding changes in API
  *

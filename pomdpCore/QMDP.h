@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.5 $  $Author: trey $  $Date: 2006-01-28 22:01:51 $
+ $Revision: 1.1 $  $Author: trey $  $Date: 2006-01-31 18:31:51 $
    
  @file    QMDP.h
  @brief   No brief
@@ -144,6 +144,9 @@ void testMDP(void);
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.5  2006/01/28 22:01:51  trey
+ * fixed PomdpP -> Pomdp* and MDP*
+ *
  * Revision 1.4  2005/10/28 03:50:32  trey
  * simplified license
  *

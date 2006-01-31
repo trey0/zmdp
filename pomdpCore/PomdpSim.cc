@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.7 $  $Author: trey $  $Date: 2006-01-28 03:04:39 $
+ $Revision: 1.1 $  $Author: trey $  $Date: 2006-01-31 18:31:51 $
    
  @file    PomdpSim.cc
  @brief   No brief
@@ -188,6 +188,9 @@ void PomdpSim::performAction(int a) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.7  2006/01/28 03:04:39  trey
+ * PomdpSim now inherits from AbstractSim
+ *
  * Revision 1.6  2005/10/28 03:50:32  trey
  * simplified license
  *

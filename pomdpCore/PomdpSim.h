@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.8 $  $Author: trey $  $Date: 2006-01-28 22:00:45 $
+ $Revision: 1.1 $  $Author: trey $  $Date: 2006-01-31 18:31:51 $
    
  @file    PomdpSim.h
  @brief   No brief
@@ -57,6 +57,9 @@ public:
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.8  2006/01/28 22:00:45  trey
+ * removed shadowed fields rewardSoFar and simOutFile, conflicting with parent class AbstractSim
+ *
  * Revision 1.7  2006/01/28 03:04:39  trey
  * PomdpSim now inherits from AbstractSim
  *

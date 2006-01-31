@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.10 $  $Author: trey $  $Date: 2006-01-28 22:02:47 $
+ $Revision: 1.1 $  $Author: trey $  $Date: 2006-01-31 18:31:50 $
    
  @file    MDPValueFunction.h
  @brief   No brief
@@ -60,6 +60,9 @@ void testMDP(void);
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.10  2006/01/28 22:02:47  trey
+ * switched Pomdp* -> const Pomdp* in valueIteration()
+ *
  * Revision 1.9  2006/01/28 03:02:45  trey
  * replaced PomdpP -> Pomdp*
  *

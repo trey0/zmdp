@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.18 2006-01-28 03:05:00 trey Exp $
+# $Id: Makefile,v 1.19 2006-01-31 18:36:23 trey Exp $
 #
 # Copyright (c) 2002-2005, Trey Smith
 # All rights reserved.
@@ -47,30 +47,20 @@ INSTALLHEADERS_HEADERS := \
 	slaMatrixUtils.h \
 	MatrixUtils.h \
 	MDP.h \
-	Pomdp.h \
 	AbstractSim.h \
 	MDPSim.h \
-	PomdpSim.h \
 	Solver.h \
 	ValueFunction.h \
-	MDPValueFunction.h \
-	QMDP.h \
 	PQueue.h
 include $(BUILD_DIR)/installheaders.mak
 
-BUILDLIB_TARGET := libpomdpUtils.a
+BUILDLIB_TARGET := libzmdpCommon.a
 BUILDLIB_SRCS := \
 	pomdpCommonTypes.cc \
-	Pomdp.cc \
 	Interleave.cc \
 	MDPSim.cc \
-	PomdpSim.cc \
 	ValueFunction.cc \
-	MDPValueFunction.cc
-include $(BUILD_DIR)/buildlib.mak
-
-BUILDLIB_TARGET := libpomdpCommonTime.a
-BUILDLIB_SRCS := pomdpCommonTime.cc
+	pomdpCommonTime.cc
 include $(BUILD_DIR)/buildlib.mak
 
 ifneq (,$(TEST))
@@ -79,12 +69,6 @@ BUILDBIN_TARGET := test_sla
 BUILDBIN_SRCS := test_sla.cc
 BUILDBIN_INDEP_LIBS :=
 BUILDBIN_DEP_LIBS :=
-include $(BUILD_DIR)/buildbin.mak
-
-BUILDBIN_TARGET := testProblemRepresentation
-BUILDBIN_SRCS := testProblemRepresentation.cc
-BUILDBIN_INDEP_LIBS :=
-BUILDBIN_DEP_LIBS := -lpomdpUtils -lpomdp_spec
 include $(BUILD_DIR)/buildbin.mak
 
 BUILDBIN_TARGET := testPQueue
@@ -102,6 +86,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.18  2006/01/28 03:05:00  trey
+# added MDP, MDPSim, AbstractSim
+#
 # Revision 1.17  2005/11/29 04:44:53  trey
 # added install of PQueue.h
 #
