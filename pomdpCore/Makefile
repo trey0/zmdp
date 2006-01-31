@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.1 2006-01-31 18:31:50 trey Exp $
+# $Id: Makefile,v 1.2 2006-01-31 19:18:12 trey Exp $
 #
 # Copyright (c) 2002-2005, Trey Smith
 # All rights reserved.
@@ -40,6 +40,8 @@ CFLAGS += -I$(CHECKOUT_DIR)/external/boost
 INSTALLHEADERS_HEADERS := \
 	Pomdp.h \
 	PomdpSim.h \
+	PomdpLowerBound.h \
+	PomdpUpperBound.h \
 	MDPValueFunction.h \
 	QMDP.h
 include $(BUILD_DIR)/installheaders.mak
@@ -48,6 +50,8 @@ BUILDLIB_TARGET := libzmdpPomdpCore.a
 BUILDLIB_SRCS := \
 	Pomdp.cc \
 	PomdpSim.cc \
+	PomdpLowerBound.cc \
+	PomdpUpperBound.cc \
 	MDPValueFunction.cc
 include $(BUILD_DIR)/buildlib.mak
 
@@ -64,4 +68,7 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.1  2006/01/31 18:31:50  trey
+# moved many files from common to pomdpCore
+#
 #
