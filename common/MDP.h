@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-01-28 03:01:05 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-01-31 20:09:11 $
    
  @file    MDP.h
  @brief   No brief
@@ -39,6 +39,8 @@ using namespace sla;
 
 namespace pomdp {
 
+struct AbstractBound;
+
 // Represents an MDP where state is continuous, time is discrete,
 // actions are discrete, and the possible outcomes of an action form a
 // discrete probability distribution.  This data structure can
@@ -73,6 +75,16 @@ struct MDP {
 
   // returns the expected immediate reward when from state s action a is selected
   virtual double getReward(const state_vector& s, int a) const = 0;
+
+  // returns a new lower bound or upper bound that is valid for
+  // this MDP.  notes:
+  // * the resulting bound must be initialized before it is used, and
+  //   initialization may take significant computation time.
+  // * some types of MDP might not define one of these bounds, which
+  //   could be signaled by returning NULL.  so far this hasn't been
+  //   explored.
+  virtual AbstractBound* newLowerBound(void) const = 0;
+  virtual AbstractBound* newUpperBound(void) const = 0;
 };
 
 }; // namespace pomdp
@@ -82,6 +94,9 @@ struct MDP {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/01/28 03:01:05  trey
+ * initial check-in
+ *
  *
  ***************************************************************************/
 
