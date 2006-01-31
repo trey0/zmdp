@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.11 2006-01-30 19:26:40 trey Exp $
+# $Id: Makefile,v 1.12 2006-01-31 18:14:04 trey Exp $
 #
 # Copyright (c) 2002-2005, Trey Smith
 # All rights reserved.
@@ -45,6 +45,12 @@ BUILDBIN_INDEP_LIBS := -lpomdpCommonTime
 BUILDBIN_DEP_LIBS := -lhsvi -lpomdpUtils -lpomdp_spec
 include $(BUILD_DIR)/buildbin.mak
 
+BUILDBIN_TARGET := solvePomdpGhsvi
+BUILDBIN_SRCS := solvePomdpGhsvi.cc
+BUILDBIN_INDEP_LIBS := -lpomdpCommonTime
+BUILDBIN_DEP_LIBS := -lghsvi -lpomdpUtils -lpomdp_spec
+include $(BUILD_DIR)/buildbin.mak
+
 ######################################################################
 # DO NOT MODIFY BELOW THIS POINT
 
@@ -52,6 +58,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.11  2006/01/30 19:26:40  trey
+# replaced generic testPomdp with separate binaries for different problem types and algorithms
+#
 # Revision 1.10  2005/11/02 21:03:47  trey
 # removed cruft and added ghsvi
 #
