@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: options.mak,v 1.29 2006-01-28 03:08:49 trey Exp $
+# $Id: options.mak,v 1.30 2006-02-01 01:13:35 trey Exp $
 #
 # Copyright (c) 2002-2005, Trey Smith
 # All rights reserved.
@@ -25,7 +25,7 @@
 
 USE_GHSVI := 1
 
-CFLAGS += -DZPOMDP_VERSION=0.1
+CFLAGS += -DZMDP_VERSION=0.1
 #CFLAGS += -DDO_LB_SELF_UPDATE=1
 CFLAGS += -DDO_UB_CACHED_Q=1
 #CFLAGS += -DDO_UB_SELF_UPDATE=1
@@ -84,6 +84,9 @@ CFLAGS += -DCFLAGS="\"$(XCFLAGS)\""
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.29  2006/01/28 03:08:49  trey
+# added USE_DF_IGNORE_UNC
+#
 # Revision 1.28  2005/12/18 21:20:39  trey
 # added USE_DF_DEPTH_TERMINATION
 #
