@@ -1,7 +1,7 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-01-31 18:13:54 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-02-01 18:01:30 $
 
- @file    solveProblem.cc
+ @file    solvePomdpGhsvi.cc
  @brief   No brief
 
  Copyright (c) 2006, Trey Smith
