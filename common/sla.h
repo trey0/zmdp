@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.15 $  $Author: trey $  $Date: 2006-01-28 03:07:23 $
+ $Revision: 1.16 $  $Author: trey $  $Date: 2006-02-01 01:09:37 $
    
  @file    sla.h
  @brief   No brief
@@ -35,7 +35,7 @@
 #include <iostream>
 #include <fstream>
 
-#include "pomdpCommonDefs.h"
+#include "zmdpCommonDefs.h"
 
 // sla     = simple linear algebra
 // dvector = dense vector
@@ -1267,6 +1267,9 @@ typedef sla::dvector obs_prob_vector;
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.15  2006/01/28 03:07:23  trey
+ * added state_vector and outcome_prob_vector types
+ *
  * Revision 1.14  2005/11/29 04:43:55  trey
  * fixed missing header
  *

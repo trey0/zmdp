@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.9 $  $Author: trey $  $Date: 2006-01-28 03:02:14 $
+ $Revision: 1.10 $  $Author: trey $  $Date: 2006-02-01 01:09:37 $
 
  @file    Interleave.cc
  @brief   No brief
@@ -38,15 +38,15 @@
 #include <iostream>
 #include <fstream>
 
-#include "pomdpCommonTime.h"
+#include "zmdpCommonTime.h"
 #include "Interleave.h"
-#include "pomdpCommonDefs.h"
+#include "zmdpCommonDefs.h"
 #include "MatrixUtils.h"
 
 using namespace std;
 using namespace MatrixUtils;
 
-namespace pomdp {
+namespace zmdp {
 
 void Interleave::interleave(int numIterations,
 			    AbstractSim* _sim,
@@ -285,11 +285,14 @@ void Interleave::printRewards(void) {
   cout << "reward avg stdev: " << avg << " " << stdev << endl;
 }
 
-}; // namespace pomdp
+}; // namespace zmdp
 
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.9  2006/01/28 03:02:14  trey
+ * increased flexibiilty for use with mdps
+ *
  * Revision 1.8  2005/11/03 20:23:22  trey
  * removed bounds information in inc.plot
  *

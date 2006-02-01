@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2006-01-31 20:13:45 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2006-02-01 01:09:38 $
    
  @file    PomdpLowerBound.h
  @brief   No brief
@@ -32,7 +32,7 @@
 #include "AbstractBound.h"
 #include "Pomdp.h"
 
-namespace pomdp {
+namespace zmdp {
 
 struct PomdpLowerBound : public AbstractBound {
   const Pomdp* pomdp;
@@ -47,13 +47,16 @@ protected:
   void initBlindWorstCase(void);
 };
 
-}; // namespace pomdp
+}; // namespace zmdp
 
 #endif /* INCPomdpLowerBound_h */
 
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2006/01/31 20:13:45  trey
+ * changed when MDP* arguments are passed into bounds initialization
+ *
  * Revision 1.1  2006/01/31 19:18:24  trey
  * initial check-in
  *

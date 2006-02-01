@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.7 $  $Author: trey $  $Date: 2006-01-28 03:02:14 $
+ $Revision: 1.8 $  $Author: trey $  $Date: 2006-02-01 01:09:37 $
    
  @file    Interleave.h
  @brief   No brief
@@ -34,7 +34,7 @@
 #include "Solver.h"
 #include "AbstractSim.h"
 
-namespace pomdp {
+namespace zmdp {
 
 class Interleave {
 public:
@@ -71,13 +71,16 @@ public:
 
 };
 
-}; // namespace pomdp
+}; // namespace zmdp
 
 #endif // INCInterleave_h
 
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.7  2006/01/28 03:02:14  trey
+ * increased flexibiilty for use with mdps
+ *
  * Revision 1.6  2005/10/28 03:50:32  trey
  * simplified license
  *
@@ -91,7 +94,7 @@ public:
  * cleaned out cruft
  *
  * Revision 1.2  2005/10/21 20:07:00  trey
- * added namespace pomdp
+ * added namespace zmdp
  *
  * Revision 1.1  2004/11/13 23:29:44  trey
  * moved many files from hsvi to common

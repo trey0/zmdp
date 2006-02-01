@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2005-12-06 20:28:15 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2006-02-01 01:09:37 $
    
  @file    PQueue.h
  @brief   No brief
@@ -31,10 +31,10 @@
 
 #include <vector>
 
-#include "pomdpCommonDefs.h"
-#include "pomdpCommonTypes.h"
+#include "zmdpCommonDefs.h"
+#include "zmdpCommonTypes.h"
 
-namespace pomdp {
+namespace zmdp {
 
 template <typename ValueType, typename PriorityType,
 	  typename CompareType = std::less<PriorityType> >
@@ -211,13 +211,16 @@ protected:
   PQueue& operator=(const PQueue& b) { return *this; }
 };
 
-}; // namespace pomdp
+}; // namespace zmdp
 
 #endif // INCPQueue_h
 
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2005/12/06 20:28:15  trey
+ * now you can specify the priority comparison operator to use
+ *
  * Revision 1.2  2005/12/05 16:05:13  trey
  * api now a better match to std::priority_queue
  *

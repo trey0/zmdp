@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-01-31 18:31:51 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-02-01 01:09:38 $
    
  @file    PomdpSim.cc
  @brief   No brief
@@ -45,7 +45,7 @@
 using namespace std;
 using namespace MatrixUtils;
 
-namespace pomdp {
+namespace zmdp {
 
 PomdpSim::PomdpSim(Pomdp* _pomdp) :
   pomdp(_pomdp)
@@ -183,11 +183,14 @@ void PomdpSim::performAction(int a) {
   }
 }
 
-}; // namespace pomdp
+}; // namespace zmdp
 
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/01/31 18:31:51  trey
+ * moved many files from common to pomdpCore
+ *
  * Revision 1.7  2006/01/28 03:04:39  trey
  * PomdpSim now inherits from AbstractSim
  *
@@ -198,7 +201,7 @@ void PomdpSim::performAction(int a) {
  * added copyright headers
  *
  * Revision 1.4  2005/10/21 20:08:53  trey
- * added namespace pomdp
+ * added namespace zmdp
  *
  * Revision 1.3  2005/01/28 03:19:38  trey
  * switched to use emult_column for efficiency

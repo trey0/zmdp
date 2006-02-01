@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-01-28 03:01:05 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-02-01 01:09:37 $
    
  @file    MDPSim.cc
  @brief   No brief
@@ -45,7 +45,7 @@
 using namespace std;
 using namespace MatrixUtils;
 
-namespace pomdp {
+namespace zmdp {
 
 MDPSim::MDPSim(MDP* _model) :
   model(_model)
@@ -108,10 +108,13 @@ void MDPSim::performAction(int a) {
   }
 }
 
-}; // namespace pomdp
+}; // namespace zmdp
 
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/01/28 03:01:05  trey
+ * initial check-in
+ *
  *
  ***************************************************************************/

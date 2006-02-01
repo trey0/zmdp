@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-01-31 18:12:30 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-02-01 01:09:38 $
    
  @file    RaceTrack.h
  @brief   No brief
@@ -35,7 +35,7 @@
 
 #include "MDP.h"
 
-namespace pomdp {
+namespace zmdp {
 
 struct TrackMap {
   int width, height;
@@ -83,13 +83,16 @@ public:
   double getReward(const state_vector& s, int a) const;
 };
 
-}; // namespace pomdp
+}; // namespace zmdp
 
 #endif // INCRaceTrack_h
 
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/01/31 18:12:30  trey
+ * initial check-in in mdps directory
+ *
  *
  ***************************************************************************/
 

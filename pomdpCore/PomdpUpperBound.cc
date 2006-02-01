@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2006-01-31 20:13:45 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2006-02-01 01:09:38 $
    
  @file    PomdpUpperBound.cc
  @brief   No brief
@@ -33,7 +33,7 @@
 #include <iostream>
 #include <fstream>
 
-#include "pomdpCommonDefs.h"
+#include "zmdpCommonDefs.h"
 #include "MatrixUtils.h"
 #include "Pomdp.h"
 #include "PomdpUpperBound.h"
@@ -50,7 +50,7 @@ using namespace MatrixUtils;
 #define INIT1_RESIDUAL (1e-10)
 #define INIT2_RESIDUAL (1e-3)
 
-namespace pomdp {
+namespace zmdp {
 
 PomdpUpperBound::PomdpUpperBound(const MDP* problem)
 {
@@ -167,11 +167,14 @@ void PomdpUpperBound::initFIB(void)
   copy(alpha, dalpha);
 }
 
-}; // namespace pomdp
+}; // namespace zmdp
 
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2006/01/31 20:13:45  trey
+ * changed when MDP* arguments are passed into bounds initialization
+ *
  * Revision 1.1  2006/01/31 19:18:24  trey
  * initial check-in
  *

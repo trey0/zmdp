@@ -78,6 +78,9 @@ function cvsstat () {
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.7  2005/11/28 20:47:26  trey
+# replaced "linux2" references with $OS variable that varies according to the OS used
+#
 # Revision 1.6  2005/11/02 21:03:25  trey
 # removed host name from CVSROOT setting
 #

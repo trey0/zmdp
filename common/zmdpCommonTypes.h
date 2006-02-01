@@ -1,7 +1,7 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.7 $  $Author: trey $  $Date: 2005-12-05 16:05:46 $
+ $Revision: 1.1 $  $Author: trey $  $Date: 2006-02-01 01:09:38 $
    
- @file    pomdpCommonTypes.h
+ @file    zmdpCommonTypes.h
  @brief   No brief
 
  Copyright (c) 2002-2005, Carnegie Mellon University
@@ -26,8 +26,8 @@
 
  ***************************************************************************/
 
-#ifndef INCpomdpCommonTypes_h
-#define INCpomdpCommonTypes_h
+#ifndef INCzmdpCommonTypes_h
+#define INCzmdpCommonTypes_h
 
 #include <ext/hash_map>
 #include "sla.h"
@@ -57,7 +57,7 @@ namespace EXT_NAMESPACE {
   };
 };
 
-namespace pomdp {
+namespace zmdp {
 
 struct ValueInterval {
   double l, u;
@@ -130,13 +130,16 @@ protected:
   }
 };
 
-}; // namespace pomdp
+}; // namespace zmdp
 
-#endif // INCpomdpCommonTypes_h
+#endif // INCzmdpCommonTypes_h
 
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.7  2005/12/05 16:05:46  trey
+ * added hash<T*> template class
+ *
  * Revision 1.6  2005/11/10 22:06:52  trey
  * added option_type<T>
  *

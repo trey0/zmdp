@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2006-01-31 20:09:11 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2006-02-01 01:09:37 $
    
  @file    MDP.h
  @brief   No brief
@@ -32,12 +32,12 @@
 #include <string>
 #include <vector>
 
-#include "pomdpCommonDefs.h"
-#include "pomdpCommonTypes.h"
+#include "zmdpCommonDefs.h"
+#include "zmdpCommonTypes.h"
 
 using namespace sla;
 
-namespace pomdp {
+namespace zmdp {
 
 struct AbstractBound;
 
@@ -87,13 +87,16 @@ struct MDP {
   virtual AbstractBound* newUpperBound(void) const = 0;
 };
 
-}; // namespace pomdp
+}; // namespace zmdp
 
 #endif // INCMDP_h
 
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2006/01/31 20:09:11  trey
+ * added generic mechanism for getting bounds
+ *
  * Revision 1.1  2006/01/28 03:01:05  trey
  * initial check-in
  *

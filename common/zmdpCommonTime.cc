@@ -1,5 +1,5 @@
 /****************************************************************************
- $Revision: 1.3 $  $Author: trey $  $Date: 2005-10-28 03:50:32 $
+ $Revision: 1.1 $  $Author: trey $  $Date: 2006-02-01 01:09:37 $
 
  Copyright (c) 2002-2005, Carnegie Mellon University
  All rights reserved.
@@ -32,9 +32,9 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <iostream>
-#include "pomdpCommonTime.h"
+#include "zmdpCommonTime.h"
 
-namespace pomdp {
+namespace zmdp {
 
 // fsleep: like sleep, but can handle a non-integer number of seconds to
 //   wait
@@ -112,11 +112,14 @@ getTime(void) {
   return tv;
 }
 
-}; // namespace pomdp
+}; // namespace zmdp
 
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2005/10/28 03:50:32  trey
+ * simplified license
+ *
  * Revision 1.2  2005/10/28 02:51:40  trey
  * added copyright headers
  *

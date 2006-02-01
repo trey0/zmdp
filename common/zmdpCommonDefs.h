@@ -1,7 +1,7 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2005-10-28 03:50:32 $
+ $Revision: 1.1 $  $Author: trey $  $Date: 2006-02-01 01:09:37 $
    
- @file    pomdpCommonDefs.h
+ @file    zmdpCommonDefs.h
  @brief   No brief
 
  Copyright (c) 2002-2005, Trey Smith
@@ -26,10 +26,10 @@
 
  ***************************************************************************/
 
-#ifndef INCpomdpCommonDefs_h
-#define INCpomdpCommonDefs_h
+#ifndef INCzmdpCommonDefs_h
+#define INCzmdpCommonDefs_h
 
-namespace pomdp {
+namespace zmdp {
 
 #undef FOR_EACH
 #define FOR_EACH(elt,collection) \
@@ -75,6 +75,6 @@ const _InType& argmax_tp(_ForwardIterator start, _ForwardIterator end,
   return *max_elt;
 }
 
-}; // namespace pomdp
+}; // namespace zmdp
 
-#endif // INCpomdpCommonDefs_h
+#endif // INCzmdpCommonDefs_h

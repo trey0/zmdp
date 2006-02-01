@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2005-10-28 03:50:32 $
+ $Revision: 1.1 $  $Author: trey $  $Date: 2006-02-01 01:09:37 $
    
  @file    commonTypes.cc
  @brief   No brief
@@ -37,11 +37,11 @@
 
 #include <iostream>
 
-#include "pomdpCommonTypes.h"
+#include "zmdpCommonTypes.h"
 
 using namespace std;
 
-namespace pomdp {
+namespace zmdp {
 
 ostream& operator<<(ostream& out, const ValueInterval& v) {
   out << "[" << v.l << " .. " << v.u << "]";
@@ -53,6 +53,9 @@ ostream& operator<<(ostream& out, const ValueInterval& v) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2005/10/28 03:50:32  trey
+ * simplified license
+ *
  * Revision 1.2  2005/10/28 02:51:40  trey
  * added copyright headers
  *

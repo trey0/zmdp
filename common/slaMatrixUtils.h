@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.8 $  $Author: trey $  $Date: 2005-12-19 22:38:47 $
+ $Revision: 1.9 $  $Author: trey $  $Date: 2006-02-01 01:09:37 $
    
  @file    slaMatrixUtils.h
  @brief   No brief
@@ -42,8 +42,8 @@
 #include <algorithm>
 #include <functional>
 
-#include "pomdpCommonDefs.h"
-#include "pomdpCommonTypes.h"
+#include "zmdpCommonDefs.h"
+#include "zmdpCommonTypes.h"
 
 /**********************************************************************
  * MACROS
@@ -131,6 +131,9 @@ namespace MatrixUtils {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.8  2005/12/19 22:38:47  trey
+ * made hashable() precision tighter to avoid serious bounds violations caused by belief caching
+ *
  * Revision 1.7  2005/10/28 03:50:32  trey
  * simplified license
  *

@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2005-12-06 20:28:44 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2006-02-01 01:09:37 $
    
  @file    testPQueue.cc
  @brief   No brief
@@ -29,7 +29,7 @@
 #include "PQueue.h"
 
 using namespace std;
-using namespace pomdp;
+using namespace zmdp;
 
 typedef PQueue<int, double, std::greater<double> > QType;
 
@@ -72,6 +72,9 @@ int main(int argc, char** argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2005/12/06 20:28:44  trey
+ * now test specifying the comparison operator
+ *
  * Revision 1.2  2005/12/05 16:06:16  trey
  * added more tests
  *

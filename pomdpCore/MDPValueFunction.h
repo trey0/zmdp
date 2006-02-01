@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-01-31 18:31:50 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-02-01 01:09:38 $
    
  @file    MDPValueFunction.h
  @brief   No brief
@@ -34,7 +34,7 @@
 
 #define MDP_MAX_ITERS (1000000)
 
-namespace pomdp {
+namespace zmdp {
 
 class MDPValueFunction : public ValueFunction {
 public:
@@ -53,13 +53,16 @@ public:
 
 void testMDP(void);
 
-}; // namespace pomdp
+}; // namespace zmdp
 
 #endif // INCMDPValueFunction_h
 
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/01/31 18:31:50  trey
+ * moved many files from common to pomdpCore
+ *
  * Revision 1.10  2006/01/28 22:02:47  trey
  * switched Pomdp* -> const Pomdp* in valueIteration()
  *
@@ -76,7 +79,7 @@ void testMDP(void);
  * renamed PomdpM to Pomdp
  *
  * Revision 1.5  2005/10/21 20:07:17  trey
- * added namespace pomdp
+ * added namespace zmdp
  *
  * Revision 1.4  2005/03/28 18:11:21  trey
  * made MDP_MAX_ITERS effectively infinite

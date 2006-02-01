@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2006-01-28 22:00:36 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2006-02-01 01:09:37 $
    
  @file    MDPSim.h
  @brief   No brief
@@ -32,7 +32,7 @@
 #include "AbstractSim.h"
 #include "MDP.h"
 
-namespace pomdp {
+namespace zmdp {
 
 class MDPSim : public AbstractSim {
 public:
@@ -48,13 +48,16 @@ public:
   const state_vector& getInformationState(void) const { return state; }
 };
 
-}; // namespace pomdp
+}; // namespace zmdp
 
 #endif // INCMDPSim_h
 
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2006/01/28 22:00:36  trey
+ * removed shadowed fields rewardSoFar and simOutFile, conflicting with parent class AbstractSim
+ *
  * Revision 1.1  2006/01/28 03:01:05  trey
  * initial check-in
  *

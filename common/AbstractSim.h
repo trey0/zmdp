@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-01-28 03:01:39 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-02-01 01:09:37 $
    
  @file    AbstractSim.h
  @brief   No brief
@@ -31,7 +31,7 @@
 
 #include "MDP.h"
 
-namespace pomdp {
+namespace zmdp {
 
 class AbstractSim {
 public:
@@ -47,12 +47,15 @@ public:
   virtual const state_vector& getInformationState(void) const = 0;
 };
 
-}; // namespace pomdp
+}; // namespace zmdp
 
 #endif // INCAbstractSim_h
 
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/01/28 03:01:39  trey
+ * initial check-in
+ *
  *
  ***************************************************************************/

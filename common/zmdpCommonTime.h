@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- * $Revision: 1.3 $  $Author: trey $  $Date: 2005-10-28 03:50:32 $
+ * $Revision: 1.1 $  $Author: trey $  $Date: 2006-02-01 01:09:37 $
 
  Copyright (c) 2002-2005, Carnegie Mellon University
  All rights reserved.
@@ -23,14 +23,14 @@
 
  ***************************************************************************/
 
-#ifndef INCpomdpCommonTime_h
-#define INCpomdpCommonTime_h
+#ifndef INCzmdpCommonTime_h
+#define INCzmdpCommonTime_h
 
 #include <sys/time.h>
 #include <sys/types.h>
 #include <unistd.h>
 
-namespace pomdp {
+namespace zmdp {
 
 void fsleep(double seconds);
 
@@ -50,13 +50,16 @@ timeval operator +(const timeval &a, const timeval &b);
 bool operator <(const timeval &a, const timeval &b);
 timeval getTime(void);
 
-}; // namespace pomdp
+}; // namespace zmdp
 
-#endif // INCpomdpCommonTime_h
+#endif // INCzmdpCommonTime_h
 
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2005/10/28 03:50:32  trey
+ * simplified license
+ *
  * Revision 1.2  2005/10/28 02:51:40  trey
  * added copyright headers
  *

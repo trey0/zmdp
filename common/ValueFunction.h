@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.4 $  $Author: trey $  $Date: 2005-10-28 03:50:32 $
+ $Revision: 1.5 $  $Author: trey $  $Date: 2006-02-01 01:09:37 $
    
  @file    ValueFunction.h
  @brief   No brief
@@ -41,14 +41,14 @@
 #include <vector>
 #include <ext/hash_map>
 
-#include "pomdpCommonDefs.h"
-#include "pomdpCommonTypes.h"
+#include "zmdpCommonDefs.h"
+#include "zmdpCommonTypes.h"
 
 /**********************************************************************
  * CLASSES
  **********************************************************************/
 
-namespace pomdp {
+namespace zmdp {
 
 class ValueFunction {
 public:
@@ -62,18 +62,21 @@ public:
 		      bool debug = false) const;
 };
 
-}; // namespace pomdp
+}; // namespace zmdp
 
 #endif // INCValueFunction_h
 
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2005/10/28 03:50:32  trey
+ * simplified license
+ *
  * Revision 1.3  2005/10/28 02:51:40  trey
  * added copyright headers
  *
  * Revision 1.2  2005/10/21 20:10:10  trey
- * added namespace pomdp
+ * added namespace zmdp
  *
  * Revision 1.1  2004/11/24 20:48:04  trey
  * moved to common from hsvi

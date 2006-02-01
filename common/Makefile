@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.20 2006-01-31 19:13:30 trey Exp $
+# $Id: Makefile,v 1.21 2006-02-01 01:09:37 trey Exp $
 #
 # Copyright (c) 2002-2005, Trey Smith
 # All rights reserved.
@@ -38,11 +38,11 @@ SUBDIRS :=
 CFLAGS += -I$(CHECKOUT_DIR)/external/boost
 
 INSTALLHEADERS_HEADERS := \
-	pomdpCommonDefs.h \
-	pomdpCommonTime.h \
+	zmdpCommonDefs.h \
+	zmdpCommonTime.h \
 	sla.h \
 	sla_mask.h \
-	pomdpCommonTypes.h \
+	zmdpCommonTypes.h \
 	Interleave.h \
 	slaMatrixUtils.h \
 	MatrixUtils.h \
@@ -57,11 +57,11 @@ include $(BUILD_DIR)/installheaders.mak
 
 BUILDLIB_TARGET := libzmdpCommon.a
 BUILDLIB_SRCS := \
-	pomdpCommonTypes.cc \
+	zmdpCommonTypes.cc \
 	Interleave.cc \
 	MDPSim.cc \
 	ValueFunction.cc \
-	pomdpCommonTime.cc
+	zmdpCommonTime.cc
 include $(BUILD_DIR)/buildlib.mak
 
 ifneq (,$(TEST))
@@ -87,6 +87,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.20  2006/01/31 19:13:30  trey
+# added AbstractBound.h
+#
 # Revision 1.19  2006/01/31 18:36:23  trey
 # moved many files from common to pomdpCore
 #

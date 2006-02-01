@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.8 $  $Author: trey $  $Date: 2006-01-28 22:01:10 $
+ $Revision: 1.9 $  $Author: trey $  $Date: 2006-02-01 01:09:37 $
    
  @file    Solver.h
  @brief   No brief
@@ -31,7 +31,7 @@
 
 #include "MDP.h"
 
-namespace pomdp {
+namespace zmdp {
 
 class Solver {
 public:
@@ -58,13 +58,16 @@ public:
   
 };
 
-}; // namespace pomdp
+}; // namespace zmdp
 
 #endif // INCSolver_h
 
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.8  2006/01/28 22:01:10  trey
+ * switched include PomdpSim.h -> MDP.h
+ *
  * Revision 1.7  2006/01/28 03:07:05  trey
  * improved flexibility for use with mdps
  *
@@ -78,7 +81,7 @@ public:
  * added copyright headers
  *
  * Revision 1.3  2005/10/21 20:09:11  trey
- * added namespace pomdp
+ * added namespace zmdp
  *
  * Revision 1.2  2005/01/21 18:07:02  trey
  * preparing for transition to sla matrix types

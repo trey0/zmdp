@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.11 $  $Author: trey $  $Date: 2005-12-05 16:04:15 $
+ $Revision: 1.12 $  $Author: trey $  $Date: 2006-02-01 01:09:37 $
    
  @file    MatrixUtils.h
  @brief   No brief
@@ -43,8 +43,8 @@
 #include <functional>
 #include <sstream>
 
-#include "pomdpCommonDefs.h"
-#include "pomdpCommonTypes.h"
+#include "zmdpCommonDefs.h"
+#include "zmdpCommonTypes.h"
 
 #include "slaMatrixUtils.h"
 
@@ -310,6 +310,9 @@ namespace MatrixUtils {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.11  2005/12/05 16:04:15  trey
+ * added num_to_print arg for sparseRep()
+ *
  * Revision 1.10  2005/11/28 20:45:31  trey
  * fixed errors under gcc 4.0
  *

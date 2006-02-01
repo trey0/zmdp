@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2006-01-31 18:13:42 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2006-02-01 01:09:38 $
 
  @file    solveProblem.cc
  @brief   No brief
@@ -36,7 +36,7 @@
 
 using namespace std;
 using namespace MatrixUtils;
-using namespace pomdp;
+using namespace zmdp;
 
 void usage(const char* cmdName) {
   cerr <<
@@ -202,6 +202,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2006/01/31 18:13:42  trey
+ * removed stdin polling
+ *
  * Revision 1.1  2006/01/30 19:27:01  trey
  * initial check-in
  *

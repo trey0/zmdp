@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-01-31 18:31:50 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-02-01 01:09:38 $
    
  @file    MDPValueIteration.cc
  @brief   No brief
@@ -45,7 +45,7 @@
 using namespace std;
 using namespace MatrixUtils;
 
-namespace pomdp {
+namespace zmdp {
 
 void MDPValueFunction::nextAlphaAction(dvector& result, int a) {
 #if 0
@@ -144,11 +144,14 @@ void testMDP(void) {
   cout << "final alpha = " << sparseRep(m.alpha) << endl;
 }
 
-}; // namespace pomdp
+}; // namespace zmdp
 
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/01/31 18:31:50  trey
+ * moved many files from common to pomdpCore
+ *
  * Revision 1.11  2006/01/28 22:02:48  trey
  * switched Pomdp* -> const Pomdp* in valueIteration()
  *
@@ -165,7 +168,7 @@ void testMDP(void) {
  * renamed PomdpM to Pomdp
  *
  * Revision 1.6  2005/10/21 20:07:17  trey
- * added namespace pomdp
+ * added namespace zmdp
  *
  * Revision 1.5  2005/03/28 18:11:40  trey
  * changed definition of residual

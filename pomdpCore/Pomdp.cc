@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2006-01-31 20:12:44 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2006-02-01 01:09:38 $
   
  @file    Pomdp.cc
  @brief   No brief
@@ -39,7 +39,7 @@
 #include <iostream>
 #include <fstream>
 
-#include "pomdpCommonDefs.h"
+#include "zmdpCommonDefs.h"
 #include "pomdpCassandraWrapper.h"
 #include "Pomdp.h"
 #include "MatrixUtils.h"
@@ -49,7 +49,7 @@
 using namespace std;
 using namespace MatrixUtils;
 
-namespace pomdp {
+namespace zmdp {
 
 /***************************************************************************
  * STATIC HELPER FUNCTIONS
@@ -435,11 +435,14 @@ void Pomdp::debugDensity(void) {
 #endif
 }
 
-}; // namespace pomdp
+}; // namespace zmdp
 
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2006/01/31 20:12:44  trey
+ * added newXXXBound() functions
+ *
  * Revision 1.1  2006/01/31 18:31:50  trey
  * moved many files from common to pomdpCore
  *
@@ -462,7 +465,7 @@ void Pomdp::debugDensity(void) {
  * renamed PomdpM to Pomdp
  *
  * Revision 1.7  2005/10/21 20:08:28  trey
- * added namespace pomdp
+ * added namespace zmdp
  *
  * Revision 1.6  2005/03/10 22:53:32  trey
  * now initialize T matrix even when using sla
