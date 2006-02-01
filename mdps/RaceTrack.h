@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2006-02-01 01:09:38 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2006-02-01 18:03:14 $
    
  @file    RaceTrack.h
  @brief   No brief
@@ -34,11 +34,12 @@
 #include <vector>
 
 #include "MDP.h"
+#include "AbstractBound.h"
 
 namespace zmdp {
 
 struct TrackMap {
-  int width, height;
+  unsigned int width, height;
   unsigned char* open;
   unsigned char* finish;
   std::vector<int> startX, startY;
@@ -48,7 +49,7 @@ struct TrackMap {
   bool getIsOpen(int x, int y) const { return open[width*y + x]; }
   bool getIsFinish(int x, int y) const { return finish[width*y + x]; }
   bool lineIsOpen(int x0, int y0, int dx, int dy) const;
-  void readFromFile(const string& mapFileName, FILE* mapFile, int lnum);
+  void readFromFile(const std::string& mapFileName, FILE* mapFile, int lnum);
 };
 
 class RaceTrack : public MDP {
@@ -81,6 +82,9 @@ public:
 
   // returns the expected immediate reward when from state s action a is selected
   double getReward(const state_vector& s, int a) const;
+
+  AbstractBound* newLowerBound(void) const;
+  AbstractBound* newUpperBound(void) const;
 };
 
 }; // namespace zmdp
@@ -90,6 +94,9 @@ public:
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2006/02/01 01:09:38  trey
+ * renamed pomdp namespace -> zmdp
+ *
  * Revision 1.1  2006/01/31 18:12:30  trey
  * initial check-in in mdps directory
  *

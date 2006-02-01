@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-01-31 18:12:29 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-02-01 18:03:14 $
   
  @file    racetrack.cc
  @brief   No brief
@@ -42,8 +42,11 @@
 #include <map>
 
 #include "Solver.h"
+#include "RaceTrack.h"
 
 using namespace std;
+
+namespace zmdp {
 
 /**********************************************************************
  * PROPERTYLIST DATA STRUCTURE
@@ -116,7 +119,6 @@ void PropertyList::readFromFile(const string& fname)
 
 TrackMap::TrackMap(void)
 {
-  data = NULL;
   open = NULL;
   finish = NULL;
 }
@@ -173,6 +175,8 @@ bool TrackMap::lineIsOpen(int x0, int y0, int dx, int dy) const
     x++;
   }
   RT_PLOT(adx,ady);
+
+  return true;
 }
 
 void TrackMap::readFromFile(const string& mapFileName, FILE* mapFile, int lnum)
@@ -196,7 +200,7 @@ void TrackMap::readFromFile(const string& mapFileName, FILE* mapFile, int lnum)
       }
     }
     assert(datap + width < &data[sizeof(data)]);
-    strcpy(datap, lbuf, width);
+    memcpy(datap, lbuf, width);
     datap += width;
   }
   height = (datap-data)/width;
@@ -204,7 +208,7 @@ void TrackMap::readFromFile(const string& mapFileName, FILE* mapFile, int lnum)
   unsigned int numPixels = width*height;
   open = new unsigned char[numPixels];
   finish = new unsigned char[numPixels];
-  for (int i=0; i < numPixels; i++) {
+  for (unsigned int i=0; i < numPixels; i++) {
     char c = data[i];
     open[i] = '@' != c;
     finish[i] = 'f' == c;
@@ -230,7 +234,7 @@ void RaceTrack::readFromFile(const std::string& specFileName)
 {
   PropertyList plist;
   plist.readFromFile(specFileName);
-  errorProbability = plist.getValue("errorProbability");
+  errorProbability = atof(plist.getValue("errorProbability").c_str());
 
   tmap.readFromFile(specFileName, plist.inFile, plist.lnum);
   fclose(plist.inFile);
@@ -246,7 +250,7 @@ const state_vector& RaceTrack::getInitialState(void) const
 
 bool RaceTrack::getIsTerminalState(const state_vector& s) const
 {
-  return tmap.getIsFinish((int) s[0], (int) s[1]);
+  return tmap.getIsFinish((int) s(0), (int) s(1));
 }
 
 outcome_prob_vector& RaceTrack::getOutcomeProbVector(outcome_prob_vector& result,
@@ -254,7 +258,7 @@ outcome_prob_vector& RaceTrack::getOutcomeProbVector(outcome_prob_vector& result
 {
   if (IS_BOGUS_INITIAL_STATE(s)) {
     // transition to one of the starting line cells (uniform probability distribution)
-    int n = startX.size();
+    int n = tmap.startX.size();
     double p = 1.0 / n;
     result.resize(n);
     for (int i=0; i < n; i++) {
@@ -282,32 +286,33 @@ outcome_prob_vector& RaceTrack::getOutcomeProbVector(outcome_prob_vector& result
   // positions causes a crash... if so, move probability mass from that
   // outcome to outcome 2 (the 'crash' outcome), which transitions to
   // the bogus initial state.
-  int oldX =  (int) s[0];
-  int oldY =  (int) s[1];
-  int oldVX = (int) s[2];
-  int oldVY = (int) s[3];
+  int oldX =  (int) s(0);
+  int oldY =  (int) s(1);
+  int oldVX = (int) s(2);
+  int oldVY = (int) s(3);
 
 #define RT_CHECK_CRASH(AX,AY,WHICH_OUTCOME)                \
   if (!tmap.lineIsOpen(oldX, oldY, oldVX+AX, oldVY+AY)) {  \
     result(2) += result(WHICH_OUTCOME);                    \
-    result(RESULT_INDEX) = 0;                              \
+    result(WHICH_OUTCOME) = 0;                             \
   }
 
   RT_CHECK_CRASH(ax, ay, 0);
   if (result(1) > 0.0) {
     RT_CHECK_CRASH(0, 0, 1);
   }
+
+  return result;
 }
 
-state_vector& getNextState(state_vector& result, const state_vector& s, int a,
-			   int o) const
+state_vector& RaceTrack::getNextState(state_vector& result, const state_vector& s,
+				      int a, int o) const
 {
   if (IS_BOGUS_INITIAL_STATE(s)) {
     // transition to one of the starting line cells; which one indicated by o
-    s(0) = startX[o];
-    s(1) = startY[o];
-    s(2) = 0;
-    s(3) = 0;
+    result.resize(4);
+    result.push_back(0, tmap.startX[o]);
+    result.push_back(1, tmap.startY[o]);
   }
 
   if (2 == o) {
@@ -317,34 +322,51 @@ state_vector& getNextState(state_vector& result, const state_vector& s, int a,
   } else {
     int ax = (a / 3) - 1;
     int ay = (a % 3) - 1;
+    sla::dvector tmp(4);
     if (o == 0) { // commanded acceleration succeeded
-      result(2) = s(2) + ax;
-      result(3) = s(3) + ay;
+      tmp(2) = s(2) + ax;
+      tmp(3) = s(3) + ay;
     } else {      // commanded acceleration failed
-      result(2) = s(2);
-      result(3) = s(3);
+      tmp(2) = s(2);
+      tmp(3) = s(3);
     }
-    result(0) = s(0) + result(2);
-    result(1) = s(1) + result(3);
+    tmp(0) = s(0) + tmp(2);
+    tmp(1) = s(1) + tmp(3);
+    copy(result, tmp);
   }
 
   return result;
 }
 
-double getReward(const state_vector& s, int a) const
+double RaceTrack::getReward(const state_vector& s, int a) const
 {
   if (IS_BOGUS_INITIAL_STATE(s)) {
     // the 'first move' to the starting line is bogus, no cost
     return 0;
   }
 
-  // uniform cost for all real moves
+  // uniform cost (negative reward) for all real moves
   return -1;
 }
+
+AbstractBound* RaceTrack::newLowerBound(void) const
+{
+  return NULL; // FIX implement me
+}
+
+AbstractBound* RaceTrack::newUpperBound(void) const
+{
+  return NULL; // FIX implement me
+}
+
+}; // namespace zmdp
 
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/01/31 18:12:29  trey
+ * initial check-in in mdps directory
+ *
  * Revision 1.1  2006/01/30 23:50:02  trey
  * initial check-in
  *
