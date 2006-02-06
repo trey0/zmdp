@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2006-02-01 18:03:14 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2006-02-06 19:27:24 $
    
  @file    RaceTrack.h
  @brief   No brief
@@ -38,27 +38,16 @@
 
 namespace zmdp {
 
-struct TrackMap {
-  unsigned int width, height;
-  unsigned char* open;
-  unsigned char* finish;
-  std::vector<int> startX, startY;
-
-  TrackMap(void);
-  ~TrackMap(void);
-  bool getIsOpen(int x, int y) const { return open[width*y + x]; }
-  bool getIsFinish(int x, int y) const { return finish[width*y + x]; }
-  bool lineIsOpen(int x0, int y0, int dx, int dy) const;
-  void readFromFile(const std::string& mapFileName, FILE* mapFile, int lnum);
-};
+struct TrackMap;
 
 class RaceTrack : public MDP {
-protected:
-  double errorProbability;
-  TrackMap tmap;
-
 public:
-  RaceTrack(void) {}
+  double errorProbability;
+  state_vector bogusInitialState, terminalState;
+  TrackMap *tmap;
+
+  RaceTrack(void);
+  ~RaceTrack(void);
   RaceTrack(const std::string& specFileName);
 
   void readFromFile(const std::string& specFileName);
@@ -94,6 +83,9 @@ public:
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2006/02/01 18:03:14  trey
+ * fixed compile-time errors, not quite done yet
+ *
  * Revision 1.2  2006/02/01 01:09:38  trey
  * renamed pomdp namespace -> zmdp
  *

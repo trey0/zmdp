@@ -1,7 +1,7 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2006-02-01 18:03:14 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2006-02-06 19:27:25 $
   
- @file    racetrack.cc
+ @file    RaceTrack.cc
  @brief   No brief
 
  Copyright (c) 2006, Trey Smith. All rights reserved.
@@ -41,12 +41,27 @@
 #include <fstream>
 #include <map>
 
+#include "MatrixUtils.h"
 #include "Solver.h"
 #include "RaceTrack.h"
 
 using namespace std;
+using namespace MatrixUtils;
 
 namespace zmdp {
+
+#define IS_INITIAL_STATE(s) (s(0) == -1)
+#define IS_TERMINAL_STATE(s) (s(0) == -2)
+
+#define RT_DEBUG_PRINT (1)
+
+enum RTOutcomeEnum {
+  RT_NORMAL = 0,
+  RT_SLIP   = 1,
+  RT_FINISH = 2,
+  RT_CRASH  = 3,
+  RT_MAX    = 4
+};
 
 /**********************************************************************
  * PROPERTYLIST DATA STRUCTURE
@@ -60,7 +75,7 @@ struct PropertyList {
   PropertyList(void);
   void setValue(const string& key, const string& value);
   const string& getValue(const string& key) const;
-  void readFromFile(const string& fname);
+  void readFromFile(const string& fname, char endMarker);
 };
 
 PropertyList::PropertyList(void)
@@ -84,10 +99,10 @@ const string& PropertyList::getValue(const string& key) const
   return p->second;
 }
 
-void PropertyList::readFromFile(const string& fname)
+void PropertyList::readFromFile(const string& fname, char endMarker)
 {
-  FILE* f = fopen(fname.c_str(), "rb");
-  if (NULL == f) {
+  inFile = fopen(fname.c_str(), "r");
+  if (NULL == inFile) {
     fprintf(stderr, "ERROR: could not open spec file %s for reading: %s\n",
 	    fname.c_str(), strerror(errno));
     exit(EXIT_FAILURE);
@@ -98,12 +113,12 @@ void PropertyList::readFromFile(const string& fname)
   char lbuf[1024];
   char key[1024], value[1024];
   lnum = 0;
-  while (!feof(f)) {
-    fgets(lbuf, sizeof(lbuf), f);
+  while (!feof(inFile)) {
+    fgets(lbuf, sizeof(lbuf), inFile);
     lnum++;
     if (0 == strlen(lbuf)) continue;
     if ('#' == lbuf[0]) continue;
-    if ('-' == lbuf[0]) break;
+    if (endMarker == lbuf[0]) break;
     if (2 != sscanf(lbuf, "%s %s", key, value)) {
       fprintf(stderr, "ERROR: %s: line %d: syntax error, expected '<key> <value>'\n",
 	      fname.c_str(), lnum);
@@ -116,6 +131,20 @@ void PropertyList::readFromFile(const string& fname)
 /**********************************************************************
  * TRACKMAP DATA STRUCTURE
  **********************************************************************/
+
+struct TrackMap {
+  unsigned int width, height;
+  unsigned char* open;
+  unsigned char* finish;
+  std::vector<int> startX, startY;
+
+  TrackMap(void);
+  ~TrackMap(void);
+  bool getIsOpen(int x, int y) const { return open[width*y + x]; }
+  bool getIsFinish(int x, int y) const { return finish[width*y + x]; }
+  int lineType(int x0, int y0, int dx, int dy) const;
+  void readFromFile(const std::string& mapFileName, FILE* mapFile, int lnum);
+};
 
 TrackMap::TrackMap(void)
 {
@@ -130,10 +159,12 @@ TrackMap::~TrackMap(void)
 }
 
 // Plots a line from the center of cell (x0,y0) to the center of cell
-// (x0+dx,y0+dy).  Returns false iff the line crosses a closed cell
-// before it crosses a finish line cell.  Code is a modified version of
-// Bresenham's line algorithm -- it is not optimized but it is exact.
-bool TrackMap::lineIsOpen(int x0, int y0, int dx, int dy) const
+// (x0+dx,y0+dy).  Returns RT_NORMAL if the line is entirely open cells,
+// RT_FINISH if the line hits a finish cell (before it hits any closed
+// cells), and RT_CRASH if it hits a closed cell (before hitting any
+// finish cells).  Code is a modified version of Bresenham's line
+// algorithm -- it is not optimized but it is exact.
+int TrackMap::lineType(int x0, int y0, int dx, int dy) const
 {
   // Transform (dx,dy) into (adx,ady) so that 0 <= ady <= adx as
   // required for the plotting loop. The matrix C inverts the transform.
@@ -151,12 +182,12 @@ bool TrackMap::lineIsOpen(int x0, int y0, int dx, int dy) const
 
   // Set up what it means to 'plot' a cell.
   int tx, ty;
-#define RT_PLOT(A,B)                     \
-  {                                      \
-    tx = x0 + c11*A + c12*B;             \
-    ty = y0 + c21*A + c22*B;             \
-    if (getIsFinish(tx,ty)) return true; \
-    if (!getIsOpen(tx,ty)) return false; \
+#define RT_PLOT(A,B)                          \
+  {                                           \
+    tx = x0 + c11*A + c12*B;                  \
+    ty = y0 + c21*A + c22*B;                  \
+    if (getIsFinish(tx,ty)) return RT_FINISH; \
+    if (!getIsOpen(tx,ty)) return RT_CRASH;   \
   }
 
   // Plot the line.
@@ -176,14 +207,14 @@ bool TrackMap::lineIsOpen(int x0, int y0, int dx, int dy) const
   }
   RT_PLOT(adx,ady);
 
-  return true;
+  return RT_NORMAL;
 }
 
 void TrackMap::readFromFile(const string& mapFileName, FILE* mapFile, int lnum)
 {
   char lbuf[1024];
   char data[1024*1024];
-  char* datap = data;
+  unsigned int i = 0;
   width = 0;
   while (!feof(mapFile)) {
     fgets(lbuf, sizeof(lbuf), mapFile);
@@ -199,16 +230,16 @@ void TrackMap::readFromFile(const string& mapFileName, FILE* mapFile, int lnum)
 	exit(EXIT_FAILURE);
       }
     }
-    assert(datap + width < &data[sizeof(data)]);
-    memcpy(datap, lbuf, width);
-    datap += width;
+    assert(i + width < sizeof(data));
+    memcpy(&data[i], lbuf, width);
+    i += width;
   }
-  height = (datap-data)/width;
+  height = i/width;
 
   unsigned int numPixels = width*height;
   open = new unsigned char[numPixels];
   finish = new unsigned char[numPixels];
-  for (unsigned int i=0; i < numPixels; i++) {
+  for (i=0; i < numPixels; i++) {
     char c = data[i];
     open[i] = '@' != c;
     finish[i] = 'f' == c;
@@ -220,87 +251,233 @@ void TrackMap::readFromFile(const string& mapFileName, FILE* mapFile, int lnum)
 }
 
 /**********************************************************************
+ * RTLOWERBOUND STRUCTURE
+ **********************************************************************/
+
+struct RTLowerBound : public AbstractBound {
+  const RaceTrack* problem;
+
+  RTLowerBound(const RaceTrack* _problem) : problem(_problem) {}
+  void initialize(void) {}
+  double getValue(const state_vector& s) const;
+};
+
+double RTLowerBound::getValue(const state_vector& s) const
+{
+  double maxCost;
+  if (IS_TERMINAL_STATE(s)) {
+    maxCost = 0;
+  } else {
+    maxCost = 1.0 / (1 - problem->discount);
+  }
+#if RT_DEBUG_PRINT
+  printf("getValue: s=[%s] maxCost=%g\n", denseRep(s).c_str(), maxCost);
+#endif
+  return -maxCost;
+}
+
+/**********************************************************************
+ * RTUPPERBOUND STRUCTURE
+ **********************************************************************/
+
+struct RTUpperBound : public AbstractBound {
+  const RaceTrack* problem;
+  int minFinishX, maxFinishX;
+  int minFinishY, maxFinishY;
+  bool initialized;
+
+  RTUpperBound(const RaceTrack* _problem) : problem(_problem), initialized(false) {}
+  void initialize(void);
+  double getValue(const state_vector& s) const;
+};
+
+void RTUpperBound::initialize(void)
+{
+  if (initialized) return;
+
+  TrackMap* t = problem->tmap;
+  minFinishX = minFinishY = 9999;
+  maxFinishX = maxFinishY = -9999;
+  int h = problem->tmap->height;
+  int w = problem->tmap->width;
+  for (int y=0; y < h; y++) {
+    for (int x=0; x < w; x++) {
+      if (t->getIsFinish(x,y)) {
+	if (x < minFinishX) minFinishX = x;
+	if (x > maxFinishX) maxFinishX = x;
+	if (y < minFinishY) minFinishY = y;
+	if (y > maxFinishY) maxFinishY = y;
+      }
+    }
+  }
+
+  initialized = true;
+}
+
+#if 0
+static int getMinTime(int x, int xmin, int xmax, int v)
+{
+  int dist = 0;
+  if (x < xmin) {
+    dist = (xmin-x);
+  }
+  if (x > xmax) {
+    dist = (x-xmax);
+    v = -v;
+  }
+  if (0 == dist) return 0;
+  return (int) (-v + sqrt(v*v + 2*dist));
+}
+#endif
+
+static double getDist(int x, int xmin, int xmax)
+{
+  int dist = 0;
+  if (x < xmin) {
+    dist = (xmin-x);
+  }
+  if (x > xmax) {
+    dist = (x-xmax);
+  }
+  return dist;
+}
+
+double RTUpperBound::getValue(const state_vector& s) const
+{
+  assert(initialized);
+
+  double minCost;
+  if (IS_INITIAL_STATE(s) || IS_TERMINAL_STATE(s)) {
+    minCost = 0;
+  } else {
+    int x  = (int) s(0);
+    int y  = (int) s(1);
+    
+#if 0
+    int vx = (int) s(2);
+    int vy = (int) s(3);
+    int xtime = getMinTime(x, minFinishX, maxFinishX, vx);
+    int ytime = getMinTime(y, minFinishY, maxFinishY, vy);
+    int t = std::max(xtime, ytime);
+    double discount = problem->discount;
+    minCost = (1 - pow(discount, t)) / (1 - discount);
+#endif
+
+    double eps = 1e-3;
+    double xtime = eps * getDist(x, minFinishX, maxFinishX);
+    double ytime = eps * getDist(y, minFinishY, maxFinishY);
+    double t = xtime + ytime;
+    minCost = t;
+  }
+
+#if RT_DEBUG_PRINT
+  printf("getValue: s=[%s] minCost=%g\n", denseRep(s).c_str(), minCost);
+#endif
+  return -minCost;
+  //return 0;
+}
+
+/**********************************************************************
  * MAIN FUNCTIONS
  **********************************************************************/
 
-#define IS_BOGUS_INITIAL_STATE(s) (s(0) == -1)
-
 RaceTrack::RaceTrack(const std::string& specFileName)
 {
+  tmap = NULL;
   readFromFile(specFileName);
+}
+
+RaceTrack::~RaceTrack(void)
+{
+  if (NULL != tmap) delete tmap;
 }
 
 void RaceTrack::readFromFile(const std::string& specFileName)
 {
+  numStateDimensions = 4;
+  numActions = 9;
+
+  bogusInitialState.resize(4);
+  bogusInitialState.push_back(0, -1);
+  terminalState.resize(4);
+  terminalState.push_back(0, -2);
+
   PropertyList plist;
-  plist.readFromFile(specFileName);
+  plist.readFromFile(specFileName, /* endMarker = */ '-');
+  discount = atof(plist.getValue("discount").c_str());
   errorProbability = atof(plist.getValue("errorProbability").c_str());
 
-  tmap.readFromFile(specFileName, plist.inFile, plist.lnum);
+  tmap = new TrackMap();
+  tmap->readFromFile(specFileName, plist.inFile, plist.lnum);
   fclose(plist.inFile);
 }
 
 const state_vector& RaceTrack::getInitialState(void) const
 {
-  // return bogus initial state
-  static state_vector s(4);
-  s.push_back(0,-1);
-  return s;
+  return bogusInitialState;
 }
 
 bool RaceTrack::getIsTerminalState(const state_vector& s) const
 {
-  return tmap.getIsFinish((int) s(0), (int) s(1));
+  bool isTerminal = IS_TERMINAL_STATE(s);
+  return isTerminal;
 }
 
 outcome_prob_vector& RaceTrack::getOutcomeProbVector(outcome_prob_vector& result,
 						     const state_vector& s, int a) const
 {
-  if (IS_BOGUS_INITIAL_STATE(s)) {
+  if (IS_INITIAL_STATE(s)) {
     // transition to one of the starting line cells (uniform probability distribution)
-    int n = tmap.startX.size();
+    int n = tmap->startX.size();
     double p = 1.0 / n;
     result.resize(n);
     for (int i=0; i < n; i++) {
       result(i) = p;
     }
+  } else if (IS_TERMINAL_STATE(s)) {
+    // terminal state: self-transition with probability 1
+    result.resize(1);
+    result(0) = 1;
+  } else {
+    result.resize(RT_MAX);
+    result(RT_NORMAL) = 1-errorProbability;
+    result(RT_SLIP)   = errorProbability;
+    result(RT_FINISH) = 0;
+    result(RT_CRASH)  = 0;
+    
+    int oldX =  (int) s(0);
+    int oldY =  (int) s(1);
+    int oldVX = (int) s(2);
+    int oldVY = (int) s(3);
+    int ax = (a / 3) - 1;
+    int ay = (a % 3) - 1;
+
+    // if the commanded acceleration was 0, outcomes RT_NORMAL and
+    // RT_SLIP are the same: combine their probabilities
+    if (0 == ax && 0 == ay) {
+      result(RT_NORMAL) += result(RT_SLIP);
+      result(RT_SLIP) = 0;
+    }
+    
+    // the rest of the code determines if either the normal or slip case
+    // causes a crash or successful finish... if so, move probability
+    // mass from that outcome to outcome RT_FINISH or RT_CRASH.
+#define RT_CHECK_OUTCOME(WHICH_OUTCOME,AX,AY)                      \
+    int lineType = tmap->lineType(oldX, oldY, oldVX+AX, oldVY+AY); \
+    if (RT_NORMAL != lineType) {                                   \
+      result(lineType) += result(WHICH_OUTCOME);                   \
+      result(WHICH_OUTCOME) = 0;                                   \
+    }
+
+    RT_CHECK_OUTCOME(RT_NORMAL, ax, ay);
+    if (result(RT_SLIP) > 0.0) {
+      RT_CHECK_OUTCOME(RT_SLIP, 0, 0);
+    }
   }
 
-  // non-crash case: transition either obeying the commanded
-  // acceleration or not
-  result.resize(3);
-  result(0) = 1-errorProbability;
-  result(1) = errorProbability;
-  result(2) = 0;
-
-  // if the commanded acceleration was 0, outcomes 0 and 1 are the same;
-  // combine the probabilities
-  int ax = (a / 3) - 1;
-  int ay = (a % 3) - 1;
-  if (0 == ax && 0 == ay) {
-    result(0) += result(1);
-    result(1) = 0;
-  }
-
-  // the rest of the code determines if either of the possible outcome
-  // positions causes a crash... if so, move probability mass from that
-  // outcome to outcome 2 (the 'crash' outcome), which transitions to
-  // the bogus initial state.
-  int oldX =  (int) s(0);
-  int oldY =  (int) s(1);
-  int oldVX = (int) s(2);
-  int oldVY = (int) s(3);
-
-#define RT_CHECK_CRASH(AX,AY,WHICH_OUTCOME)                \
-  if (!tmap.lineIsOpen(oldX, oldY, oldVX+AX, oldVY+AY)) {  \
-    result(2) += result(WHICH_OUTCOME);                    \
-    result(WHICH_OUTCOME) = 0;                             \
-  }
-
-  RT_CHECK_CRASH(ax, ay, 0);
-  if (result(1) > 0.0) {
-    RT_CHECK_CRASH(0, 0, 1);
-  }
+#if RT_DEBUG_PRINT
+  printf("getOutcomeProbVector: s=[%s] a=%d result=[%s]\n", denseRep(s).c_str(), a, denseRep(result).c_str());
+#endif
 
   return result;
 }
@@ -308,55 +485,82 @@ outcome_prob_vector& RaceTrack::getOutcomeProbVector(outcome_prob_vector& result
 state_vector& RaceTrack::getNextState(state_vector& result, const state_vector& s,
 				      int a, int o) const
 {
-  if (IS_BOGUS_INITIAL_STATE(s)) {
+  if (IS_INITIAL_STATE(s)) {
     // transition to one of the starting line cells; which one indicated by o
     result.resize(4);
-    result.push_back(0, tmap.startX[o]);
-    result.push_back(1, tmap.startY[o]);
+    result.push_back(0, tmap->startX[o]);
+    result.push_back(1, tmap->startY[o]);
+  } else if (IS_TERMINAL_STATE(s)) {
+    // terminal state: self-transition with probability 1
+    result = s;
+  } else {
+    switch (o) {
+    case RT_FINISH:
+      // 'finish' outcome: transition to terminal state
+      result = terminalState;
+      break;
+    case RT_CRASH:
+      // 'crash' outcome: reset to bogus initial state
+      result = bogusInitialState;
+      break;
+    default:
+      int ax = (a / 3) - 1;
+      int ay = (a % 3) - 1;
+      sla::dvector tmp(4);
+      if (RT_NORMAL == o) { // normal case
+	tmp(2) = s(2) + ax;
+	tmp(3) = s(3) + ay;
+      } else {              // 'slip' case (acceleration command failed)
+	tmp(2) = s(2);
+	tmp(3) = s(3);
+      }
+      tmp(0) = s(0) + tmp(2);
+      tmp(1) = s(1) + tmp(3);
+      copy(result, tmp);
+    }
   }
 
-  if (2 == o) {
-    // 'crash' outcome: transition to bogus initial state
-    result.resize(4);
-    result.push_back(0,-1);
-  } else {
-    int ax = (a / 3) - 1;
-    int ay = (a % 3) - 1;
-    sla::dvector tmp(4);
-    if (o == 0) { // commanded acceleration succeeded
-      tmp(2) = s(2) + ax;
-      tmp(3) = s(3) + ay;
-    } else {      // commanded acceleration failed
-      tmp(2) = s(2);
-      tmp(3) = s(3);
-    }
-    tmp(0) = s(0) + tmp(2);
-    tmp(1) = s(1) + tmp(3);
-    copy(result, tmp);
-  }
+#if RT_DEBUG_PRINT
+  printf("s=[%s] a=%d o=%d sp=[%s] r=%f\n", denseRep(s).c_str(), a, o,
+	 denseRep(result).c_str(), getReward(s,a));
+#endif
 
   return result;
 }
 
 double RaceTrack::getReward(const state_vector& s, int a) const
 {
-  if (IS_BOGUS_INITIAL_STATE(s)) {
-    // the 'first move' to the starting line is bogus, no cost
-    return 0;
+  double cost;
+  if (IS_TERMINAL_STATE(s)) {
+    // terminal state: model as self-transition with no cost
+    cost = 0;
   }
+#if 0
+  else if (IS_INITIAL_STATE(s)) {
+    // the 'first move' to the starting line is bogus, no cost
+    cost = 0;
+  }
+#endif
+  else {
+    // uniform cost for all real moves
+    cost = 1;
+  }
+#if RT_DEBUG_PRINT
+  printf("getReward: cost=%g\n", cost);
+#endif
 
-  // uniform cost (negative reward) for all real moves
-  return -1;
+  // reward = -cost
+  return -cost;
 }
 
 AbstractBound* RaceTrack::newLowerBound(void) const
 {
-  return NULL; // FIX implement me
+  return new RTLowerBound(this);
 }
 
 AbstractBound* RaceTrack::newUpperBound(void) const
 {
-  return NULL; // FIX implement me
+  return new RTUpperBound(this);
 }
 
 }; // namespace zmdp
@@ -364,6 +568,9 @@ AbstractBound* RaceTrack::newUpperBound(void) const
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2006/02/01 18:03:14  trey
+ * fixed compile-time errors, not quite done yet
+ *
  * Revision 1.1  2006/01/31 18:12:29  trey
  * initial check-in in mdps directory
  *
