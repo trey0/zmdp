@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.1 2006-02-01 18:02:07 trey Exp $
+# $Id: Makefile,v 1.2 2006-02-06 19:27:59 trey Exp $
 #
 # Copyright (c) 2002-2005, Trey Smith
 # All rights reserved.
@@ -32,6 +32,9 @@ include $(CHECKOUT_DIR)/src/build/header.mak
 
 include $(SRC_DIR)/common/options.mak
 
+maininstall:
+	$(MAKE) $(MFLAGS) -C .. -fMakefile SUBDIRS='mdps main' install
+
 # ADD ANY SUBDIRS THAT NEED TO BE VISITED DURING A BUILD TO THE SUBDIRS LIST
 SUBDIRS := 
 
@@ -59,6 +62,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.1  2006/02/01 18:02:07  trey
+# initial check-in
+#
 # Revision 1.2  2006/01/31 19:18:12  trey
 # added Pomdp{Lower,Upper}Bound
 #
