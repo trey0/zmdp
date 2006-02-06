@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2006-02-01 01:09:38 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2006-02-06 19:26:09 $
    
  @file    Pomdp.h
  @brief   No brief
@@ -43,7 +43,7 @@ namespace zmdp {
 
 class Pomdp : public MDP {
 public:
-  int numStates;
+  int numStates, numObservations;
 
   // initialBelief(s)
   cvector initialBelief;
@@ -80,9 +80,9 @@ public:
 
   // POMDP-as-belief-MDP aliases for functions implemented in MDP
   int getBeliefSize(void) const { return getNumStateDimensions(); }
-  int getNumObservations(void) const { return getNumOutcomes(); }
+  int getNumObservations(void) const { return numObservations; }
   void setBeliefSize(int beliefSize) { numStateDimensions = beliefSize; }
-  void setNumObservations(int numObservations) { numOutcomes = numObservations; }
+  void setNumObservations(int _numObservations) { numObservations = _numObservations; }
 
   // POMDP-as-belief-MDP implementations for virtual functions declared in MDP
   const state_vector& getInitialState(void) const { return getInitialBelief(); }
@@ -108,6 +108,9 @@ protected:
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2006/02/01 01:09:38  trey
+ * renamed pomdp namespace -> zmdp
+ *
  * Revision 1.2  2006/01/31 20:12:44  trey
  * added newXXXBound() functions
  *

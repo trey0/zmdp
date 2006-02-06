@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2006-02-01 01:09:38 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2006-02-06 19:26:09 $
    
  @file    PomdpUpperBound.cc
  @brief   No brief
@@ -122,7 +122,7 @@ void PomdpUpperBound::initFIB(void)
 
       set_to_zero( beta_a );
 
-      FOR (o, pomdp->numOutcomes) {
+      FOR (o, pomdp->numObservations) {
 	FOR (i, pomdp->numActions) {
 	  emult_column( tmp, pomdp->O[a], o, al[i] );
 	  mult( beta_aoi, tmp, pomdp->Ttr[a] );
@@ -172,6 +172,9 @@ void PomdpUpperBound::initFIB(void)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2006/02/01 01:09:38  trey
+ * renamed pomdp namespace -> zmdp
+ *
  * Revision 1.2  2006/01/31 20:13:45  trey
  * changed when MDP* arguments are passed into bounds initialization
  *

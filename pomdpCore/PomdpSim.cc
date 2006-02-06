@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2006-02-01 01:09:38 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2006-02-06 19:26:09 $
    
  @file    PomdpSim.cc
  @brief   No brief
@@ -127,7 +127,7 @@ void PomdpSim::performAction(int a) {
   // draw observation o based on sp ond O
   r = unit_rand();
   o = 0;
-  FOR (i, pomdp->numOutcomes) {
+  FOR (i, pomdp->numObservations) {
     r -= pomdp->O[a](sp,i);
     if (r < 0) {
       o = i;
@@ -188,6 +188,9 @@ void PomdpSim::performAction(int a) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2006/02/01 01:09:38  trey
+ * renamed pomdp namespace -> zmdp
+ *
  * Revision 1.1  2006/01/31 18:31:51  trey
  * moved many files from common to pomdpCore
  *

@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2006-02-01 01:09:38 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2006-02-06 19:26:09 $
   
  @file    Pomdp.cc
  @brief   No brief
@@ -169,7 +169,7 @@ void Pomdp::readFromFileCassandra(const string& fileName) {
   numStates = p.getNumStates();
   setBeliefSize(numStates);
   numActions = p.getNumActions();
-  numOutcomes = p.getNumObservations();
+  numObservations = p.getNumObservations();
   discount = p.getDiscount();
 
   // pre-process
@@ -181,7 +181,7 @@ void Pomdp::readFromFileCassandra(const string& fileName) {
   Ox.resize(numActions);
   FOR (a, numActions) {
     Tx[a].resize(numStates, numStates);
-    Ox[a].resize(numStates, numOutcomes);
+    Ox[a].resize(numStates, numObservations);
   }
 
   // copy
@@ -193,7 +193,7 @@ void Pomdp::readFromFileCassandra(const string& fileName) {
       FOR (sp, numStates) {
 	kmatrix_set_entry( Tx[a], s, sp, p.T(s,a,sp) );
       }
-      FOR (o, numOutcomes) {
+      FOR (o, numObservations) {
 	kmatrix_set_entry( Ox[a], s, o, p.O(s,a,o) );
       }
     }
@@ -296,7 +296,7 @@ void Pomdp::readFromFileFast(const std::string& fileName)
 	}
 	numSizesSet++;
       } else if (PM_PREFIX_MATCHES("observations:")) {
-	if (1 != sscanf(buf,"observations: %d", &numOutcomes)) {
+	if (1 != sscanf(buf,"observations: %d", &numObservations)) {
 	  cerr << "ERROR: line " << lineNumber
 	       << ": syntax error in observations statement"
 	       << endl;
@@ -329,7 +329,7 @@ void Pomdp::readFromFileFast(const std::string& fileName)
 	Ox.resize(numActions);
 	FOR (a, numActions) {
 	  Tx[a].resize(numStates, numStates);
-	  Ox[a].resize(numStates, numOutcomes);
+	  Ox[a].resize(numStates, numObservations);
 	}
 
 	inPreamble = false;
@@ -440,6 +440,9 @@ void Pomdp::debugDensity(void) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2006/02/01 01:09:38  trey
+ * renamed pomdp namespace -> zmdp
+ *
  * Revision 1.2  2006/01/31 20:12:44  trey
  * added newXXXBound() functions
  *
