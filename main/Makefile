@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.14 2006-02-01 18:01:47 trey Exp $
+# $Id: Makefile,v 1.15 2006-02-06 19:31:43 trey Exp $
 #
 # Copyright (c) 2002-2005, Trey Smith
 # All rights reserved.
@@ -47,10 +47,22 @@ BUILDBIN_INDEP_LIBS :=
 BUILDBIN_DEP_LIBS := -lzmdpGhsvi -lzmdpPomdpCore -lzmdpPomdpParser -lzmdpCommon
 include $(BUILD_DIR)/buildbin.mak
 
+BUILDBIN_TARGET := solvePomdpPAOStar
+BUILDBIN_SRCS := solvePomdpPAOStar.cc
+BUILDBIN_INDEP_LIBS :=
+BUILDBIN_DEP_LIBS := -lzmdpPAOStar -lzmdpPomdpCore -lzmdpPomdpParser -lzmdpCommon
+include $(BUILD_DIR)/buildbin.mak
+
 BUILDBIN_TARGET := solveRaceTrackPAOStar
 BUILDBIN_SRCS := solveRaceTrackPAOStar.cc
 BUILDBIN_INDEP_LIBS :=
 BUILDBIN_DEP_LIBS := -lzmdpPAOStar -lzmdpRaceTrack -lzmdpCommon
+include $(BUILD_DIR)/buildbin.mak
+
+BUILDBIN_TARGET := solveRaceTrackGhsvi
+BUILDBIN_SRCS := solveRaceTrackGhsvi.cc
+BUILDBIN_INDEP_LIBS :=
+BUILDBIN_DEP_LIBS := -lzmdpGhsvi -lzmdpRaceTrack -lzmdpCommon
 include $(BUILD_DIR)/buildbin.mak
 
 ######################################################################
@@ -60,6 +72,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.14  2006/02/01 18:01:47  trey
+# added solveRaceTrackPAOStar
+#
 # Revision 1.13  2006/01/31 20:26:21  trey
 # refactored/renamed libs
 #
