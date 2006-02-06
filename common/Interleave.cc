@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.10 $  $Author: trey $  $Date: 2006-02-01 01:09:37 $
+ $Revision: 1.11 $  $Author: trey $  $Date: 2006-02-06 19:28:55 $
 
  @file    Interleave.cc
  @brief   No brief
@@ -47,6 +47,8 @@ using namespace std;
 using namespace MatrixUtils;
 
 namespace zmdp {
+
+#define NUM_SIM_ITERATIONS_TO_LOG (1)
 
 void Interleave::interleave(int numIterations,
 			    AbstractSim* _sim,
@@ -183,7 +185,6 @@ void Interleave::batchTestIncremental(int numIterations,
 	 << strerror(errno) << endl;
     exit(EXIT_FAILURE);
   }
-  sim->simOutFile = &simOutFile;
 
   double timeSoFar = 1e-20;
   double logLastSimTime = -99;
@@ -196,6 +197,8 @@ void Interleave::batchTestIncremental(int numIterations,
 			   /* maxTime = */ -1, minPrecision);
     double deltaTime = timevalToSeconds(getTime() - plan_start);
     timeSoFar += deltaTime;
+
+    sim->simOutFile = &simOutFile;
 
     if ((timeSoFar > pow(10,minOrder)
 	 && log(timeSoFar) - logLastSimTime > ::log(10) / ticksPerOrder)
@@ -211,6 +214,9 @@ void Interleave::batchTestIncremental(int numIterations,
       FOR (i, numIterations) {
 	cout << "#-#-#-#-#-#-# batchTest " << (i+1) << " / " << numIterations;
 	cout.flush();
+	if (i >= NUM_SIM_ITERATIONS_TO_LOG) {
+	  sim->simOutFile = NULL;
+	}
 	sim->restart();
 	last_action = -1;
 	achieved_terminal_state = false;
@@ -290,6 +296,9 @@ void Interleave::printRewards(void) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.10  2006/02/01 01:09:37  trey
+ * renamed pomdp namespace -> zmdp
+ *
  * Revision 1.9  2006/01/28 03:02:14  trey
  * increased flexibiilty for use with mdps
  *
