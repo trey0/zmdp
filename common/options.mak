@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: options.mak,v 1.30 2006-02-01 01:13:35 trey Exp $
+# $Id: options.mak,v 1.31 2006-02-06 19:29:52 trey Exp $
 #
 # Copyright (c) 2002-2005, Trey Smith
 # All rights reserved.
@@ -62,8 +62,9 @@ CFLAGS += -DUSE_ACCUM_SUM=1
 #CFLAGS += -DUSE_PERSISTENCE=1
 #CFLAGS += -DUSE_NO_INTERNAL_PRIORITY=1
 CFLAGS += -DUSE_DF_NON_MYOPIC=1
-#CFLAGS += -DUSE_DF_DEPTH_TERMINATION=1
+CFLAGS += -DUSE_DF_DEPTH_TERMINATION=1
 #CFLAGS += -DUSE_DF_IGNORE_UNC=1
+CFLAGS += -DUSE_OLD_ANYTIME=1
 ifneq (,$(USE_GHSVI))
   CFLAGS += -DUSE_GHSVI=1
 endif
@@ -84,6 +85,9 @@ CFLAGS += -DCFLAGS="\"$(XCFLAGS)\""
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.30  2006/02/01 01:13:35  trey
+# renamed ZPOMDP_VERSION flag -> ZMDP_VERSION
+#
 # Revision 1.29  2006/01/28 03:08:49  trey
 # added USE_DF_IGNORE_UNC
 #
