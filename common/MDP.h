@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2006-02-01 01:09:37 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2006-02-06 19:29:23 $
    
  @file    MDP.h
  @brief   No brief
@@ -46,14 +46,13 @@ struct AbstractBound;
 // discrete probability distribution.  This data structure can
 // represent the belief MDP corresponding to a discrete POMDP.
 struct MDP {
-  int numStateDimensions, numActions, numOutcomes;
+  int numStateDimensions, numActions;
   double discount;
 
   virtual ~MDP(void) {}
 
   int getNumStateDimensions(void) const { return numStateDimensions; }
   int getNumActions(void) const { return numActions; }
-  int getNumOutcomes(void) const { return numOutcomes; }
   double getDiscount(void) const { return discount; }
 
   // returns the initial state
@@ -94,6 +93,9 @@ struct MDP {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2006/02/01 01:09:37  trey
+ * renamed pomdp namespace -> zmdp
+ *
  * Revision 1.2  2006/01/31 20:09:11  trey
  * added generic mechanism for getting bounds
  *
