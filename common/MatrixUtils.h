@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.12 $  $Author: trey $  $Date: 2006-02-01 01:09:37 $
+ $Revision: 1.13 $  $Author: trey $  $Date: 2006-02-06 19:29:40 $
    
  @file    MatrixUtils.h
  @brief   No brief
@@ -85,6 +85,12 @@ namespace MatrixUtils {
   // Returns a nice printable representation for big vectors (sorted in order
   //   of decreasing absolute value, with the index of each value labeled).
   std::string sparseRep(const cvector& v, int num_to_print = 4);
+  std::string sparseRep(const dvector& v);
+
+  // Returns a full printable representation of v.  Probably not best to use
+  //   with large vectors.
+  std::string denseRep(const cvector& v);
+  std::string denseRep(const dvector& v);
 
   /**********************************************************************
    * FUNCTIONS
@@ -303,6 +309,22 @@ namespace MatrixUtils {
     return out.str();
   }
 
+  inline std::string denseRep(const cvector& v) {
+    std::ostringstream out;
+    FOR (i, v.size()) {
+      out << v(i) << " ";
+    }
+    return out.str();
+  }
+
+  inline std::string denseRep(const dvector& v) {
+    std::ostringstream out;
+    FOR (i, v.size()) {
+      out << v(i) << " ";
+    }
+    return out.str();
+  }
+
 }; // namespace MatrixUtils
 
 #endif // INCMatrixUtils_h
@@ -310,6 +332,9 @@ namespace MatrixUtils {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.12  2006/02/01 01:09:37  trey
+ * renamed pomdp namespace -> zmdp
+ *
  * Revision 1.11  2005/12/05 16:04:15  trey
  * added num_to_print arg for sparseRep()
  *
