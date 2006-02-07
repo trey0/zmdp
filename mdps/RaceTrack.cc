@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2006-02-06 19:27:25 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2006-02-07 18:48:36 $
   
  @file    RaceTrack.cc
  @brief   No brief
@@ -50,10 +50,10 @@ using namespace MatrixUtils;
 
 namespace zmdp {
 
-#define IS_INITIAL_STATE(s) (s(0) == -1)
-#define IS_TERMINAL_STATE(s) (s(0) == -2)
+#define IS_INITIAL_STATE(s)  (-1 == s(0))
+#define IS_TERMINAL_STATE(s) (-2 == s(0))
 
-#define RT_DEBUG_PRINT (1)
+#define RT_DEBUG_PRINT (0)
 
 enum RTOutcomeEnum {
   RT_NORMAL = 0,
@@ -568,6 +568,9 @@ AbstractBound* RaceTrack::newUpperBound(void) const
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2006/02/06 19:27:25  trey
+ * fixed several problems
+ *
  * Revision 1.2  2006/02/01 18:03:14  trey
  * fixed compile-time errors, not quite done yet
  *
