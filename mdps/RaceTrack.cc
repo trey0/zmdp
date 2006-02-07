@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.4 $  $Author: trey $  $Date: 2006-02-07 18:48:36 $
+ $Revision: 1.5 $  $Author: trey $  $Date: 2006-02-07 19:53:43 $
   
  @file    RaceTrack.cc
  @brief   No brief
@@ -314,23 +314,7 @@ void RTUpperBound::initialize(void)
   initialized = true;
 }
 
-#if 0
-static int getMinTime(int x, int xmin, int xmax, int v)
-{
-  int dist = 0;
-  if (x < xmin) {
-    dist = (xmin-x);
-  }
-  if (x > xmax) {
-    dist = (x-xmax);
-    v = -v;
-  }
-  if (0 == dist) return 0;
-  return (int) (-v + sqrt(v*v + 2*dist));
-}
-#endif
-
-static double getDist(int x, int xmin, int xmax)
+int rtGetDist(int x, int xmin, int xmax)
 {
   int dist = 0;
   if (x < xmin) {
@@ -341,6 +325,14 @@ static double getDist(int x, int xmin, int xmax)
   }
   return dist;
 }
+
+int rtGetMinTime(int x, int xmin, int xmax, int v)
+{
+  int dist = rtGetDist(x,xmin,xmax);
+  if (0 == dist) return 0;
+  return (int) (-v + sqrt(v*v + 2*dist));
+}
+
 
 double RTUpperBound::getValue(const state_vector& s) const
 {
@@ -353,21 +345,26 @@ double RTUpperBound::getValue(const state_vector& s) const
     int x  = (int) s(0);
     int y  = (int) s(1);
     
-#if 0
+#if 1
+    // a weak 'tie-breaking' heuristic based on Manhattan distance
+    double eps = 1e-3;
+    double xtime = eps * rtGetDist(x, minFinishX, maxFinishX);
+    double ytime = eps * rtGetDist(y, minFinishY, maxFinishY);
+    double t = xtime + ytime;
+    minCost = t;
+#else
+    // stronger heuristic using velocity and acceleration, still
+    //   does not take obstacles into account.
+    // not sure this heuristic is valid -- check the math
     int vx = (int) s(2);
     int vy = (int) s(3);
-    int xtime = getMinTime(x, minFinishX, maxFinishX, vx);
-    int ytime = getMinTime(y, minFinishY, maxFinishY, vy);
+    int xtime = rtGetMinTime(x, minFinishX, maxFinishX, vx);
+    int ytime = rtGetMinTime(y, minFinishY, maxFinishY, vy);
     int t = std::max(xtime, ytime);
     double discount = problem->discount;
     minCost = (1 - pow(discount, t)) / (1 - discount);
 #endif
 
-    double eps = 1e-3;
-    double xtime = eps * getDist(x, minFinishX, maxFinishX);
-    double ytime = eps * getDist(y, minFinishY, maxFinishY);
-    double t = xtime + ytime;
-    minCost = t;
   }
 
 #if RT_DEBUG_PRINT
@@ -568,6 +565,9 @@ AbstractBound* RaceTrack::newUpperBound(void) const
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2006/02/07 18:48:36  trey
+ * turned off some debugging
+ *
  * Revision 1.3  2006/02/06 19:27:25  trey
  * fixed several problems
  *
