@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.9 $  $Author: trey $  $Date: 2006-02-01 01:09:37 $
+ $Revision: 1.10 $  $Author: trey $  $Date: 2006-02-07 18:50:11 $
    
  @file    slaMatrixUtils.h
  @brief   No brief
@@ -50,8 +50,8 @@
  **********************************************************************/
 
 // FIX adjusting this based on observed bounds violations
-#define HASH_VECTOR_PRECISION "%5d:%11.9lf "
-#define HASH_VECTOR_LEN (19)
+#define HASH_VECTOR_PRECISION "%6d:%15.9lf "
+#define HASH_VECTOR_LEN (24)
 
 #if 0
 #define HASH_VECTOR_PRECISION "%5d:%6.4lf "
@@ -131,6 +131,9 @@ namespace MatrixUtils {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.9  2006/02/01 01:09:37  trey
+ * renamed pomdp namespace -> zmdp
+ *
  * Revision 1.8  2005/12/19 22:38:47  trey
  * made hashable() precision tighter to avoid serious bounds violations caused by belief caching
  *
