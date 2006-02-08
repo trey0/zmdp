@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.5 $  $Author: trey $  $Date: 2006-02-07 19:53:43 $
+ $Revision: 1.6 $  $Author: trey $  $Date: 2006-02-08 20:04:36 $
   
  @file    RaceTrack.cc
  @brief   No brief
@@ -280,6 +280,18 @@ double RTLowerBound::getValue(const state_vector& s) const
  * RTUPPERBOUND STRUCTURE
  **********************************************************************/
 
+#define RT_UPPER_TRIVIAL (1)
+
+#if RT_UPPER_TRIVIAL
+
+struct RTUpperBound : public AbstractBound {
+  RTUpperBound(const RaceTrack* _problem) {}
+  void initialize(void) {}
+  double getValue(const state_vector& s) const { return 0; }
+};
+
+#else // if RT_UPPER_TRIVIAL
+
 struct RTUpperBound : public AbstractBound {
   const RaceTrack* problem;
   int minFinishX, maxFinishX;
@@ -373,6 +385,8 @@ double RTUpperBound::getValue(const state_vector& s) const
   return -minCost;
   //return 0;
 }
+
+#endif // if RT_UPPER_TRIVIAL / else
 
 /**********************************************************************
  * MAIN FUNCTIONS
@@ -565,6 +579,9 @@ AbstractBound* RaceTrack::newUpperBound(void) const
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.5  2006/02/07 19:53:43  trey
+ * cleaned up heuristic code
+ *
  * Revision 1.4  2006/02/07 18:48:36  trey
  * turned off some debugging
  *
