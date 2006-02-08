@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.21 2006-02-01 01:09:37 trey Exp $
+# $Id: Makefile,v 1.22 2006-02-08 19:22:01 trey Exp $
 #
 # Copyright (c) 2002-2005, Trey Smith
 # All rights reserved.
@@ -52,7 +52,9 @@ INSTALLHEADERS_HEADERS := \
 	MDPSim.h \
 	Solver.h \
 	ValueFunction.h \
-	PQueue.h
+	PQueue.h \
+	MDPCache.h \
+	RelaxBound.h
 include $(BUILD_DIR)/installheaders.mak
 
 BUILDLIB_TARGET := libzmdpCommon.a
@@ -62,6 +64,10 @@ BUILDLIB_SRCS := \
 	MDPSim.cc \
 	ValueFunction.cc \
 	zmdpCommonTime.cc
+include $(BUILD_DIR)/buildlib.mak
+
+BUILDLIB_TARGET := libzmdpRelaxBound.a
+BUILDLIB_SRCS := RelaxBound.cc
 include $(BUILD_DIR)/buildlib.mak
 
 ifneq (,$(TEST))
@@ -87,6 +93,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.21  2006/02/01 01:09:37  trey
+# renamed pomdp namespace -> zmdp
+#
 # Revision 1.20  2006/01/31 19:13:30  trey
 # added AbstractBound.h
 #
