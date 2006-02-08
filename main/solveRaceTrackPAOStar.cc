@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-02-01 18:01:55 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-02-08 20:29:35 $
 
  @file    solveRaceTrackPAOStar.cc
  @brief   No brief
@@ -29,11 +29,12 @@
 #include "MDPSim.h"
 #include "RaceTrack.h"
 #include "PAOStar.h"
+#include "RelaxBound.h"
 
 #define SP_EXTRA_ARGS        "<x.racetrack>"
 #define SP_REQUIRE_PROB_NAME (1)
-#define SP_GENERATE_SOLVER   PAOStar()
 #define SP_GENERATE_PROBLEM  RaceTrack(prob_name)
+#define SP_GENERATE_SOLVER   PAOStar(useHeuristic ? new RelaxBound(problem) : problem->newUpperBound())
 #define SP_GENERATE_SIM      MDPSim(problem)
 
 #include "solveProblem.cc"
