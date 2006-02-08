@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2006-02-01 01:09:38 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2006-02-08 20:28:35 $
 
  @file    solveProblem.cc
  @brief   No brief
@@ -45,6 +45,8 @@ void usage(const char* cmdName) {
     "  --version              Print version information (CFLAGS used at compilation)\n"
     "  -f or --fast           Use fast (but very picky) alternate problem parser\n"
     "  -i or --iterations     Set number of simulation iterations (default: 1000)\n"
+    "  --heuristic            Use a non-trivial upper bound heuristic (interpretation\n"
+    "                           depends on the problem)\n"
 //    "  -n or --no-console     Do not poll stdin for user quit command (for running in background)\n"
     "\n"
     "These options are experimental, you probably don't want to use them:\n"
@@ -64,13 +66,14 @@ void testBatchIncremental(string prob_name,
 			  double minSafety,
 			  double minPrecision,
 			  double minWait,
-			  bool useInterleave)
+			  bool useInterleave,
+			  bool useHeuristic)
 {
 
   cout << "CFLAGS = " << CFLAGS << endl;
 
-  Solver* solver   = new SP_GENERATE_SOLVER;
   MDP* problem     = new SP_GENERATE_PROBLEM;
+  Solver* solver   = new SP_GENERATE_SOLVER;
   AbstractSim* sim = new SP_GENERATE_SIM;
 
   solver->setMinSafety( minSafety );
@@ -114,6 +117,7 @@ int main(int argc, char **argv) {
   double minPrecision = 1e-10;
   double minWait = 0;
   bool useInterleave = false;
+  bool useHeuristic = false;
 
   for (int argi=1; argi < argc; argi++) {
     string args = argv[argi];
@@ -131,6 +135,8 @@ int main(int argc, char **argv) {
 	  usage(argv[0]);
 	}
 	num_iterations = atoi(argv[argi]);
+      } else if (args == "--heuristic") {
+	useHeuristic = true;
 #if 0
       } else if (args == "-n" || args == "--no-console") {
 	setPollingEnabled(0);
@@ -189,7 +195,8 @@ int main(int argc, char **argv) {
   testBatchIncremental((prob_name ? prob_name : ""),
 		       min_order, max_order,
 		       num_iterations, use_fast_parser, minSafety,
-		       minPrecision, minWait, useInterleave);
+		       minPrecision, minWait, useInterleave,
+		       useHeuristic);
 
   // signal we are done
   FILE *fp = fopen("/tmp/solveProblem_done", "w");
@@ -202,6 +209,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2006/02/01 01:09:38  trey
+ * renamed pomdp namespace -> zmdp
+ *
  * Revision 1.2  2006/01/31 18:13:42  trey
  * removed stdin polling
  *
