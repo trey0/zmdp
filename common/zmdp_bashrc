@@ -21,24 +21,24 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ######################################################################
-# --- Source this file to pick up pomdp environment variables
+# --- Source this file to pick up zmdp environment variables
 #
 # Suggestion: place these lines in your .bashrc file:
 #
-# export POMDP_SOFTWARE_DIR=<your_working_dir>
-# alias pomdp='source $POMDP_SOFTWARE_DIR/src/common/pomdp_bashrc'
+# export ZMDP_SOFTWARE_DIR=<your_working_dir>
+# alias zmdp='source $ZMDP_SOFTWARE_DIR/src/common/zmdp_bashrc'
 #
-# This allows you to run 'pomdp' at the prompt to source this file.
+# This allows you to run 'zmdp' at the prompt to source this file.
 # You might want to do that automatically on login if you are mostly
 # working on this project.
 
-if [ "$POMDP_SOFTWARE_DIR" == "" ]; then
-    echo You must setenv POMDP_SOFTWARE_DIR before sourcing pomdp_bashrc
+if [ "$ZMDP_SOFTWARE_DIR" == "" ]; then
+    echo You must setenv ZMDP_SOFTWARE_DIR before sourcing zmdp_bashrc
     return
 fi
 
 export CVS_RSH=ssh
-export CVSROOT=/home/trey/projects/pomdp/repository
+export CVSROOT=/home/trey/projects/zmdp/repository
 
 OS_SYSNAME=`uname -s | perl -ple 'tr/A-Z/a-z/;'`
 OS_RELEASE=`uname -r | perl -ple 's/\..*$//;'`
@@ -49,19 +49,19 @@ export OS=${OS_SYSNAME}${OS_RELEASE}
 if [ "$PATH" != "" ]; then
     # the following perl script takes the current path and edits out
     # entries involving popular project names :)
-    fpath=`echo $PATH | perl -e '@d = split(/:/,<STDIN>); for $arg (@ARGV) { @d = grep { \\!/$arg/ } @d } print join(":",@d);' dira marsrover fire atacama pomdp`
+    fpath=`echo $PATH | perl -e '@d = split(/:/,<STDIN>); for $arg (@ARGV) { @d = grep { \\!/$arg/ } @d } print join(":",@d);' dira marsrover fire atacama zmdp`
 else
     fpath=''
 fi
 
 # now we add what we want.
-export PATH=$POMDP_SOFTWARE_DIR/bin/${OS}:$POMDP_SOFTWARE_DIR/bin/common:$POMDP_SOFTWARE_DIR/external/bin/${OS}:$POMDP_SOFTWARE_DIR/src/tools:$fpath
+export PATH=$ZMDP_SOFTWARE_DIR/bin/${OS}:$ZMDP_SOFTWARE_DIR/bin/common:$ZMDP_SOFTWARE_DIR/external/bin/${OS}:$ZMDP_SOFTWARE_DIR/src/tools:$fpath
 
 # for loading shared libs
-#export LD_LIBRARY_PATH=$POMDP_SOFTWARE_DIR/lib/${OS}:$POMDP_SOFTWARE_DIR/external/lib/${OS}
+#export LD_LIBRARY_PATH=$ZMDP_SOFTWARE_DIR/lib/${OS}:$ZMDP_SOFTWARE_DIR/external/lib/${OS}
 
 # handy for checking which project environment you are in
-export PROJECT=pomdp
+export PROJECT=zmdp
 alias project='echo "PROJECT = $PROJECT"'
 
 # these functions serve as aliases
@@ -78,6 +78,9 @@ function cvsstat () {
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.1  2006/02/01 01:09:38  trey
+# renamed pomdp namespace -> zmdp
+#
 # Revision 1.7  2005/11/28 20:47:26  trey
 # replaced "linux2" references with $OS variable that varies according to the OS used
 #
