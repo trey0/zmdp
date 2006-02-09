@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-02-08 19:21:44 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-02-09 21:56:27 $
    
  @file    RelaxBound.cc
  @brief   No brief
@@ -107,8 +107,10 @@ void RelaxBound::expand(MDPNode& cn)
   }
 }
 
-void RelaxBound::updateInternal(MDPNode& cn)
+void RelaxBound::updateInternal(MDPNode& cn, int* maxUBActionP)
 {
+  int maxUBAction = -1;
+
   cn.lbVal = -99e+20;
   cn.ubVal = -99e+20;
   FOR (a, cn.getNumActions()) {
@@ -127,16 +129,21 @@ void RelaxBound::updateInternal(MDPNode& cn)
     Qa.ubVal = Qa.immediateReward + problem->getDiscount() * Qa.ubVal;
 
     cn.lbVal = std::max(cn.lbVal, Qa.lbVal);
-    cn.ubVal = std::max(cn.ubVal, Qa.ubVal);
+    if (Qa.ubVal > cn.ubVal) {
+      cn.ubVal = Qa.ubVal;
+      maxUBAction = a;
+    }
   }
+
+  if (NULL != maxUBActionP) *maxUBActionP = maxUBAction;
 }
 
-void RelaxBound::update(MDPNode& cn)
+void RelaxBound::update(MDPNode& cn, int* maxUBActionP)
 {
   if (cn.isFringe()) {
     expand(cn);
   }
-  updateInternal(cn);
+  updateInternal(cn, maxUBActionP);
 }
 
 void RelaxBound::trialRecurse(MDPNode& cn, double pTarget, int depth)
@@ -151,22 +158,12 @@ void RelaxBound::trialRecurse(MDPNode& cn, double pTarget, int depth)
   }
 
   // update to ensure cached values in cn.Q are correct
-  update(cn);
-
-  // select greedy action (highest upper bound)
-  double bestVal = -99e+20;
-  int bestAction = -1;
-  FOR (a, cn.getNumActions()) {
-    MDPQEntry& Qa = cn.Q[a];
-    if (Qa.ubVal > bestVal) {
-      bestVal = Qa.ubVal;
-      bestAction = a;
-    }
-  }
+  int maxUBAction;
+  update(cn, &maxUBAction);
 
   // select best possible outcome
-  MDPQEntry& Qbest = cn.Q[bestAction];
-  bestVal = -99e+20;
+  MDPQEntry& Qbest = cn.Q[maxUBAction];
+  double bestVal = -99e+20;
   int bestOutcome = -1;
   FOR (o, Qbest.getNumOutcomes()) {
     MDPEdge* e = Qbest.outcomes[o];
@@ -181,16 +178,16 @@ void RelaxBound::trialRecurse(MDPNode& cn, double pTarget, int depth)
 
 #if USE_DEBUG_PRINT
   printf("  trialRecurse: depth=%d a=%d o=%d [%g .. %g] width=%g pTarget=%g\n",
-	 depth, bestAction, bestOutcome, cn.lbVal, cn.ubVal, (cn.ubVal-cn.lbVal), pTarget);
+	 depth, maxUBAction, bestOutcome, cn.lbVal, cn.ubVal, (cn.ubVal-cn.lbVal), pTarget);
   printf("  trialRecurse: s=%s\n", sparseRep(cn.s).c_str());
 #endif
 
   // recurse to successor
-  MDPNode& bestSuccessor = *cn.Q[bestAction].outcomes[bestOutcome]->nextState;
+  MDPNode& bestSuccessor = *cn.Q[maxUBAction].outcomes[bestOutcome]->nextState;
   double pNextTarget = pTarget / problem->getDiscount();
   trialRecurse(bestSuccessor, pNextTarget, depth+1);
 
-  update(cn);
+  update(cn, NULL);
 }
 
 void RelaxBound::doTrial(MDPNode& cn, double pTarget)
@@ -241,5 +238,8 @@ double RelaxBound::getValue(const state_vector& s) const
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/02/08 19:21:44  trey
+ * initial check-in
+ *
  *
  ***************************************************************************/
