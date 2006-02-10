@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-02-09 21:59:04 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-02-10 19:33:54 $
    
  @file    RTDP.h
  @brief   No brief
@@ -46,6 +46,7 @@ struct RTDP : public Solver {
   int numInternalNodes;
   int numBoundUpdates;
   int numWeightPropUpdates;
+  int numTrials;
   std::ostream* boundsFile;
   bool initialized;
 
@@ -77,5 +78,8 @@ struct RTDP : public Solver {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/02/09 21:59:04  trey
+ * initial check-in
+ *
  *
  ***************************************************************************/
