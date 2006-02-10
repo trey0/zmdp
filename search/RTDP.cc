@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-02-09 21:59:04 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-02-10 19:33:32 $
    
  @file    RTDP.cc
  @brief   No brief
@@ -69,6 +69,7 @@ void RTDP::init(void)
   numNodes = 0;
   numInternalNodes = 0;
   numWeightPropUpdates = 0;
+  numTrials = 0;
 
   if (NULL != boundsFile) {
     (*boundsFile) << "# wallclock time"
@@ -145,27 +146,29 @@ void RTDP::expand(MDPNode& cn)
 void RTDP::updateInternal(MDPNode& cn, int* maxUBActionP)
 {
   int maxUBAction = -1;
-
+  double ubVal;
   // FIX: this initialization relies on uniform improvability -- is that what we want?
-  cn.ubVal = -99e+20;
+  double maxUBVal = -99e+20;
   FOR (a, cn.getNumActions()) {
     MDPQEntry& Qa = cn.Q[a];
-    Qa.ubVal = 0;
+    ubVal = 0;
     FOR (o, Qa.getNumOutcomes()) {
       MDPEdge* e = Qa.outcomes[o];
       if (NULL != e) {
 	MDPNode& sn = *e->nextState;
 	double oprob = e->obsProb;
-	Qa.ubVal += oprob * sn.ubVal;
+	ubVal += oprob * sn.ubVal;
       }
     }
-    Qa.ubVal = Qa.immediateReward + problem->getDiscount() * Qa.ubVal;
+    ubVal = Qa.immediateReward + problem->getDiscount() * ubVal;
+    Qa.ubVal = ubVal;
 
-    if (Qa.ubVal > cn.ubVal) {
-      cn.ubVal = Qa.ubVal;
+    if (ubVal > maxUBVal) {
+      maxUBVal = ubVal;
       maxUBAction = a;
     }
   }
+  cn.ubVal = maxUBVal;
 
   if (NULL != maxUBActionP) *maxUBActionP = maxUBAction;
 }
@@ -226,7 +229,12 @@ void RTDP::trialRecurse(MDPNode& cn, double pTarget, int depth)
 
 void RTDP::doTrial(MDPNode& cn, double pTarget)
 {
+#if USE_DEBUG_PRINT
+  printf("-*- doTrial: trial %d\n", (numTrials+1));
+#endif
+
   trialRecurse(cn, pTarget, 0);
+  numTrials++;
 }
 
 bool RTDP::planFixedTime(const state_vector& currentBelief,
@@ -242,7 +250,6 @@ bool RTDP::planFixedTime(const state_vector& currentBelief,
 
   // disable this termination check for now
   //if (root->ubVal - root->lbVal < minPrecision) return true;
-
   doTrial(*root, minPrecision);
 
   previousElapsedTime = getTime() - boundsStartTime;
@@ -270,25 +277,25 @@ int RTDP::chooseAction(const state_vector& s)
 {
   outcome_prob_vector opv;
   state_vector sp;
-  double bestLB = -99e+20;
-  int bestLBAction = -1;
+  double bestUB = -99e+20;
+  int bestUBAction = -1;
   FOR (a, problem->getNumActions()) {
     problem->getOutcomeProbVector(opv, s, a);
-    double sumLB = 0;
+    double sumUB = 0;
     FOR (o, opv.size()) {
       if (opv(o) > OBS_IS_ZERO_EPS) {
 	ValueInterval intv = getValueAt(problem->getNextState(sp, s, a, o));
-	sumLB += opv(o) * intv.l;
+	sumUB += opv(o) * intv.u;
       }
     }
-    sumLB = problem->getReward(s,a) + problem->getDiscount() * sumLB;
-    if (sumLB > bestLB) {
-      bestLB = sumLB;
-      bestLBAction = a;
+    sumUB = problem->getReward(s,a) + problem->getDiscount() * sumUB;
+    if (sumUB > bestUB) {
+      bestUB = sumUB;
+      bestUBAction = a;
     }
   }
 
-  return bestLBAction;
+  return bestUBAction;
 }
 
 void RTDP::setBoundsFile(std::ostream* _boundsFile)
@@ -314,5 +321,8 @@ ValueInterval RTDP::getValueAt(const state_vector& s) const
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/02/09 21:59:04  trey
+ * initial check-in
+ *
  *
  ***************************************************************************/
