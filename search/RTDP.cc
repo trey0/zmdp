@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2006-02-10 19:33:32 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2006-02-10 20:14:33 $
    
  @file    RTDP.cc
  @brief   No brief
@@ -65,21 +65,19 @@ void RTDP::init(void)
 
   previousElapsedTime = secondsToTimeval(0.0);
 
-  numBoundUpdates = 0;
-  numNodes = 0;
-  numInternalNodes = 0;
-  numWeightPropUpdates = 0;
+  numStatesTouched = 0;
+  numStatesExpanded = 0;
   numTrials = 0;
+  numBackups = 0;
 
   if (NULL != boundsFile) {
     (*boundsFile) << "# wallclock time"
-		  << ", lower bound"
+		  << ", lower bound (n/a)"
 		  << ", upper bound"
-		  << ", # lower bound pts"
-		  << ", # upper bound pts"
-		  << ", # top level iterations"
+		  << ", # states touched"
+		  << ", # states expanded"
+		  << ", # trials"
 		  << ", # backups"
-		  << ", # value queries"
 		  << endl;
     boundsFile->flush();
   }
@@ -108,7 +106,7 @@ MDPNode* RTDP::getNode(const state_vector& s)
       cn.ubVal = initUpperBound->getValue(s);
     }
     (*lookup)[hs] = &cn;
-    numNodes++;
+    numStatesTouched++;
     return &cn;
   } else {
     // return existing node
@@ -140,14 +138,13 @@ void RTDP::expand(MDPNode& cn)
     }
   }
 
-  numInternalNodes++;
+  numStatesExpanded++;
 }
 
 void RTDP::updateInternal(MDPNode& cn, int* maxUBActionP)
 {
   int maxUBAction = -1;
   double ubVal;
-  // FIX: this initialization relies on uniform improvability -- is that what we want?
   double maxUBVal = -99e+20;
   FOR (a, cn.getNumActions()) {
     MDPQEntry& Qa = cn.Q[a];
@@ -168,7 +165,7 @@ void RTDP::updateInternal(MDPNode& cn, int* maxUBActionP)
       maxUBAction = a;
     }
   }
-  cn.ubVal = maxUBVal;
+  cn.ubVal = std::min(cn.ubVal, maxUBVal);
 
   if (NULL != maxUBActionP) *maxUBActionP = maxUBAction;
 }
@@ -180,7 +177,7 @@ void RTDP::update(MDPNode& cn, int* maxUBActionP)
   }
   updateInternal(cn, maxUBActionP);
 
-  numBoundUpdates++;
+  numBackups++;
 }
 
 void RTDP::trialRecurse(MDPNode& cn, double pTarget, int depth)
@@ -255,16 +252,19 @@ bool RTDP::planFixedTime(const state_vector& currentBelief,
   previousElapsedTime = getTime() - boundsStartTime;
 
   if (NULL != boundsFile) {
-    (*boundsFile) << timevalToSeconds(getTime() - boundsStartTime)
-		  << " " << -1 // lower bound, n/a
-		  << " " << root->ubVal
-		  << " " << numNodes // lower bound # 'alpha vectors'
-		  << " " << numNodes // upper bound # pts
-		  << " " << -1 // num top-level iterations, n/a
-		  << " " << numBoundUpdates
-		  << " " << -1 // num value queries, n/a
-		  << endl;
-    boundsFile->flush();
+    double elapsed = timevalToSeconds(getTime() - boundsStartTime);
+    if (elapsed / lastPrintTime >= 1.01) {
+      (*boundsFile) << timevalToSeconds(getTime() - boundsStartTime)
+		    << " " << -1 // lower bound, n/a
+		    << " " << root->ubVal // upper bound
+		    << " " << numStatesTouched // # states touched
+		    << " " << numStatesExpanded // # states expanded
+		    << " " << numTrials
+		    << " " << numBackups
+		    << endl;
+      boundsFile->flush();
+      lastPrintTime = elapsed;
+    }
   }
 
   return false;
@@ -321,6 +321,9 @@ ValueInterval RTDP::getValueAt(const state_vector& s) const
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2006/02/10 19:33:32  trey
+ * chooseAction() now relies on upper bound as it should (since the lower bound is not even calculated in vanilla RTDP!
+ *
  * Revision 1.1  2006/02/09 21:59:04  trey
  * initial check-in
  *

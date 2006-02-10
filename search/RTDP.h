@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2006-02-10 19:33:54 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2006-02-10 20:14:33 $
    
  @file    RTDP.h
  @brief   No brief
@@ -42,11 +42,11 @@ struct RTDP : public Solver {
   AbstractBound* initUpperBound;
   timeval boundsStartTime;
   timeval previousElapsedTime;
-  int numNodes;
-  int numInternalNodes;
-  int numBoundUpdates;
-  int numWeightPropUpdates;
+  int numStatesTouched;
+  int numStatesExpanded;
   int numTrials;
+  int numBackups;
+  double lastPrintTime;
   std::ostream* boundsFile;
   bool initialized;
 
@@ -78,6 +78,9 @@ struct RTDP : public Solver {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2006/02/10 19:33:54  trey
+ * added numTrials, useful in debug output
+ *
  * Revision 1.1  2006/02/09 21:59:04  trey
  * initial check-in
  *
