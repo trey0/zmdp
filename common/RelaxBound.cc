@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2006-02-09 21:56:27 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2006-02-10 19:31:44 $
    
  @file    RelaxBound.cc
  @brief   No brief
@@ -151,7 +151,7 @@ void RelaxBound::trialRecurse(MDPNode& cn, double pTarget, int depth)
   // check for termination
   if (cn.ubVal - cn.lbVal < pTarget) {
 #if USE_DEBUG_PRINT
-    printf("trialRecurse: depth=%d [%g .. %g] width=%g pTarget=%g (terminating)\n",
+    printf("  RB trialRecurse: depth=%d [%g .. %g] width=%g pTarget=%g (terminating)\n",
 	   depth, cn.lbVal, cn.ubVal, (cn.ubVal - cn.lbVal), pTarget);
 #endif
     return;
@@ -177,9 +177,9 @@ void RelaxBound::trialRecurse(MDPNode& cn, double pTarget, int depth)
   }
 
 #if USE_DEBUG_PRINT
-  printf("  trialRecurse: depth=%d a=%d o=%d [%g .. %g] width=%g pTarget=%g\n",
+  printf("  RB trialRecurse: depth=%d a=%d o=%d [%g .. %g] width=%g pTarget=%g\n",
 	 depth, maxUBAction, bestOutcome, cn.lbVal, cn.ubVal, (cn.ubVal-cn.lbVal), pTarget);
-  printf("  trialRecurse: s=%s\n", sparseRep(cn.s).c_str());
+  printf("  RB trialRecurse: s=%s\n", sparseRep(cn.s).c_str());
 #endif
 
   // recurse to successor
@@ -208,7 +208,7 @@ void RelaxBound::initialize(void)
   while (1) {
     width = root->ubVal - root->lbVal;
 #if USE_DEBUG_PRINT
-    printf("-*- RelaxBound initialize trial=%d width=%g target=%g\n",
+    printf("-*- RB initialize trial=%d width=%g target=%g\n",
 	   trialNum, width, RLRT_PRECISION);
 #endif
     if (width < RLRT_PRECISION) break;
@@ -218,7 +218,7 @@ void RelaxBound::initialize(void)
 
 #if USE_DEBUG_PRINT
   double elapsedTime = timevalToSeconds(getTime() - startTime);
-  printf("--> RelaxBound initialization completed after %g seconds\n",
+  printf("--> RB initialization completed after %g seconds\n",
 	 elapsedTime);
 #endif
 }
@@ -238,6 +238,9 @@ double RelaxBound::getValue(const state_vector& s) const
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2006/02/09 21:56:27  trey
+ * added minor efficiency enhancement to calculate maxUBAction during update
+ *
  * Revision 1.1  2006/02/08 19:21:44  trey
  * initial check-in
  *
