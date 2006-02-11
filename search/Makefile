@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.1 2006-02-09 21:59:04 trey Exp $
+# $Id: Makefile,v 1.2 2006-02-11 22:38:19 trey Exp $
 #
 # Copyright (c) 2006, Trey Smith. All rights reserved.
 #
@@ -38,11 +38,12 @@ maininstall:
 SUBDIRS :=
 
 INSTALLHEADERS_HEADERS := \
+	RTDPCore.h \
 	RTDP.h
 include $(BUILD_DIR)/installheaders.mak
 
 BUILDLIB_TARGET := libzmdpRtdp.a
-BUILDLIB_SRCS := RTDP.cc
+BUILDLIB_SRCS := RTDP.cc RTDPCore.cc
 include $(BUILD_DIR)/buildlib.mak
 
 #BUILDLIB_TARGET := libzmdpLrtdp.a
@@ -60,4 +61,7 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.1  2006/02/09 21:59:04  trey
+# initial check-in
+#
 #
