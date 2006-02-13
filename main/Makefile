@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.18 2006-02-13 19:07:55 trey Exp $
+# $Id: Makefile,v 1.19 2006-02-13 21:49:14 trey Exp $
 #
 # Copyright (c) 2002-2005, Trey Smith
 # All rights reserved.
@@ -65,6 +65,12 @@ BUILDBIN_INDEP_LIBS :=
 BUILDBIN_DEP_LIBS := -lzmdpLrtdp -lzmdpRelaxBound -lzmdpRaceTrack -lzmdpCommon
 include $(BUILD_DIR)/buildbin.mak
 
+BUILDBIN_TARGET := solveRaceTrackFrtdp
+BUILDBIN_SRCS := solveRaceTrackFrtdp.cc
+BUILDBIN_INDEP_LIBS :=
+BUILDBIN_DEP_LIBS := -lzmdpFrtdp -lzmdpRelaxBound -lzmdpRaceTrack -lzmdpCommon
+include $(BUILD_DIR)/buildbin.mak
+
 BUILDBIN_TARGET := solveRaceTrackPAOStar
 BUILDBIN_SRCS := solveRaceTrackPAOStar.cc
 BUILDBIN_INDEP_LIBS :=
@@ -84,6 +90,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.18  2006/02/13 19:07:55  trey
+# added solveRaceTrackLrtdp
+#
 # Revision 1.17  2006/02/09 21:58:29  trey
 # added solveRaceTrackRtdp
 #
