@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-02-13 19:09:24 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-02-13 19:52:44 $
    
  @file    LRTDP.cc
  @brief   No brief
@@ -122,11 +122,6 @@ double LRTDP::residual(MDPNode& cn)
 
 bool LRTDP::checkSolved(MDPNode& cn, double pTarget)
 {
-#if USE_DEBUG_PRINT
-  printf("checkSolved: s=[%s] pTarget=%g\n",
-	 denseRep(cn.s).c_str(), pTarget);
-#endif
-
   bool rv = true;
   LStack open, closed;
   int a;
@@ -176,8 +171,8 @@ bool LRTDP::checkSolved(MDPNode& cn, double pTarget)
   }
 
 #if USE_DEBUG_PRINT
-  printf("  checkSolved: numClosedStates=%d rv=%d\n",
-	 numClosedStates, rv);
+  printf("  checkSolved: s=[%s] numClosedStates=%d rv=%d\n",
+	 sparseRep(cn.s).c_str(), numClosedStates, rv);
 #endif
   return rv;
 }
@@ -185,7 +180,9 @@ bool LRTDP::checkSolved(MDPNode& cn, double pTarget)
 void LRTDP::updateInternal(MDPNode& cn, int* maxUBActionP)
 {
   cacheQ(cn);
-  if (NULL != maxUBActionP) *maxUBActionP = greedyAction(cn);
+  int a = greedyAction(cn);
+  cn.ubVal = cn.Q[a].ubVal;
+  if (NULL != maxUBActionP) *maxUBActionP = a;
 }
 
 bool LRTDP::trialRecurse(MDPNode& cn, double pTarget, int depth)
@@ -249,5 +246,8 @@ void LRTDP::doTrial(MDPNode& cn, double pTarget)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/02/13 19:09:24  trey
+ * initial check-in
+ *
  *
  ***************************************************************************/
