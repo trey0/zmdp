@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2006-02-13 19:08:49 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2006-02-13 19:53:11 $
    
  @file    RTDPCore.cc
  @brief   No brief
@@ -107,8 +107,6 @@ MDPNode* RTDPCore::getNode(const state_vector& s)
     if (cn.isTerminal) {
       cn.ubVal = 0;
       cn.isSolved = true;
-      printf("getNode: marking s=[%s] as solved\n",
-	     denseRep(cn.s).c_str());
     } else {
       cn.ubVal = initUpperBound->getValue(s);
       cn.isSolved = false;
@@ -252,6 +250,9 @@ ValueInterval RTDPCore::getValueAt(const state_vector& s) const
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2006/02/13 19:08:49  trey
+ * moved numBackups tracking code for better flexibility
+ *
  * Revision 1.1  2006/02/11 22:38:10  trey
  * moved much of the RTDP implementation into RTDPCore, where it can be shared by many RTDP variants
  *
