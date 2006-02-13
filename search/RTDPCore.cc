@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2006-02-13 19:53:11 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2006-02-13 20:20:33 $
    
  @file    RTDPCore.cc
  @brief   No brief
@@ -156,12 +156,46 @@ void RTDPCore::expand(MDPNode& cn)
   numStatesExpanded++;
 }
 
-void RTDPCore::update(MDPNode& cn, int* maxUBActionP)
+// relies on correct Q values!
+int RTDPCore::getMaxUBAction(MDPNode& cn) const
+{
+  double bestVal = -99e+20;
+  int bestAction = -1;
+  FOR (a, cn.getNumActions()) {
+    const MDPQEntry& Qa = cn.Q[a];
+    if (Qa.ubVal > bestVal) {
+      bestVal = Qa.ubVal;
+      bestAction = a;
+    }
+  }
+  return bestAction;
+}
+
+int RTDPCore::getSimulatedOutcome(MDPNode& cn, int a) const
+{
+  double r = unit_rand();
+  int result = 0;
+  MDPQEntry& Qa = cn.Q[a];
+  FOR (o, Qa.getNumOutcomes()) {
+    MDPEdge* e = Qa.outcomes[o];
+    if (NULL != e) {
+      r -= e->obsProb;
+      if (r <= 0) {
+	result = o;
+	break;
+      }
+    }
+  }
+
+  return result;
+}
+
+void RTDPCore::update(MDPNode& cn)
 {
   if (cn.isFringe()) {
     expand(cn);
   }
-  updateInternal(cn, maxUBActionP);
+  updateInternal(cn);
 }
 
 bool RTDPCore::planFixedTime(const state_vector& s,
@@ -250,6 +284,9 @@ ValueInterval RTDPCore::getValueAt(const state_vector& s) const
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2006/02/13 19:53:11  trey
+ * reduced amount of debug output
+ *
  * Revision 1.2  2006/02/13 19:08:49  trey
  * moved numBackups tracking code for better flexibility
  *

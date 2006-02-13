@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2006-02-13 19:52:44 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2006-02-13 20:20:33 $
    
  @file    LRTDP.cc
  @brief   No brief
@@ -99,24 +99,9 @@ void LRTDP::cacheQ(MDPNode& cn)
 }
 
 // assumes correct Q values are already cached (using cacheQ)
-int LRTDP::greedyAction(MDPNode& cn)
-{
-  double bestVal = -99e+20;
-  int bestAction = -1;
-  FOR (a, cn.getNumActions()) {
-    MDPQEntry& Qa = cn.Q[a];
-    if (Qa.ubVal > bestVal) {
-      bestVal = Qa.ubVal;
-      bestAction = a;
-    }
-  }
-  return bestAction;
-}
-
-// assumes correct Q values are already cached (using cacheQ)
 double LRTDP::residual(MDPNode& cn)
 {
-  int maxUBAction = greedyAction(cn);
+  int maxUBAction = getMaxUBAction(cn);
   return fabs(cn.ubVal - cn.Q[maxUBAction].ubVal);
 }
 
@@ -139,7 +124,7 @@ bool LRTDP::checkSolved(MDPNode& cn, double pTarget)
       rv = false;
       continue;
     }
-    a = greedyAction(n);
+    a = getMaxUBAction(n);
     MDPQEntry& Qa = n.Q[a];
     FOR (o, Qa.getNumOutcomes()) {
       MDPEdge* e = Qa.outcomes[o];
@@ -165,8 +150,7 @@ bool LRTDP::checkSolved(MDPNode& cn, double pTarget)
     // update states with residuals and ancestors
     while (!closed.empty()) {
       MDPNode& n = *closed.pop();
-      //n.ubVal = n.Q[greedyAction(n)].ubVal;
-      updateInternal(n, NULL);
+      updateInternal(n);
     }
   }
 
@@ -177,12 +161,11 @@ bool LRTDP::checkSolved(MDPNode& cn, double pTarget)
   return rv;
 }
 
-void LRTDP::updateInternal(MDPNode& cn, int* maxUBActionP)
+void LRTDP::updateInternal(MDPNode& cn)
 {
   cacheQ(cn);
-  int a = greedyAction(cn);
-  cn.ubVal = cn.Q[a].ubVal;
-  if (NULL != maxUBActionP) *maxUBActionP = a;
+  int maxUBAction = getMaxUBAction(cn);
+  cn.ubVal = cn.Q[maxUBAction].ubVal;
 }
 
 bool LRTDP::trialRecurse(MDPNode& cn, double pTarget, int depth)
@@ -196,23 +179,11 @@ bool LRTDP::trialRecurse(MDPNode& cn, double pTarget, int depth)
     return true;
   }
 
-  int maxUBAction;
-  update(cn, &maxUBAction);
+  // cached Q values must be up to date for subsequent calls
+  update(cn);
 
-  // simulate outcome
-  double r = unit_rand();
-  int simulatedOutcome = 0;
-  MDPQEntry& Qbest = cn.Q[maxUBAction];
-  FOR (o, Qbest.getNumOutcomes()) {
-    MDPEdge* e = Qbest.outcomes[o];
-    if (NULL != e) {
-      r -= e->obsProb;
-      if (r <= 0) {
-	simulatedOutcome = o;
-	break;
-      }
-    }
-  }
+  int maxUBAction = getMaxUBAction(cn);
+  int simulatedOutcome = getSimulatedOutcome(cn, maxUBAction);
 
 #if USE_DEBUG_PRINT
   printf("  trialRecurse: depth=%d a=%d o=%d ubVal=%g\n",
@@ -246,6 +217,9 @@ void LRTDP::doTrial(MDPNode& cn, double pTarget)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2006/02/13 19:52:44  trey
+ * corrected a fatal bug in updateInternal()
+ *
  * Revision 1.1  2006/02/13 19:09:24  trey
  * initial check-in
  *

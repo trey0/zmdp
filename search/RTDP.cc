@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.5 $  $Author: trey $  $Date: 2006-02-13 19:08:49 $
+ $Revision: 1.6 $  $Author: trey $  $Date: 2006-02-13 20:20:33 $
    
  @file    RTDP.cc
  @brief   No brief
@@ -52,9 +52,8 @@ RTDP::RTDP(AbstractBound* _initUpperBound) :
   RTDPCore(_initUpperBound)
 {}
 
-void RTDP::updateInternal(MDPNode& cn, int* maxUBActionP)
+void RTDP::updateInternal(MDPNode& cn)
 {
-  int maxUBAction = -1;
   double ubVal;
   double maxUBVal = -99e+20;
   FOR (a, cn.getNumActions()) {
@@ -71,15 +70,10 @@ void RTDP::updateInternal(MDPNode& cn, int* maxUBActionP)
     ubVal = Qa.immediateReward + problem->getDiscount() * ubVal;
     Qa.ubVal = ubVal;
 
-    if (ubVal > maxUBVal) {
-      maxUBVal = ubVal;
-      maxUBAction = a;
-    }
+    maxUBVal = std::max(maxUBVal, ubVal);
   }
   cn.ubVal = std::min(cn.ubVal, maxUBVal);
   numBackups++;
-
-  if (NULL != maxUBActionP) *maxUBActionP = maxUBAction;
 }
 
 void RTDP::trialRecurse(MDPNode& cn, double pTarget, int depth)
@@ -93,24 +87,11 @@ void RTDP::trialRecurse(MDPNode& cn, double pTarget, int depth)
     return;
   }
 
-  // update to ensure cached values in cn.Q are correct
-  int maxUBAction;
-  update(cn, &maxUBAction);
+  // cached Q values must be up to date for subsequent calls
+  update(cn);
 
-  // simulate outcome
-  double r = unit_rand();
-  int simulatedOutcome = 0;
-  MDPQEntry& Qbest = cn.Q[maxUBAction];
-  FOR (o, Qbest.getNumOutcomes()) {
-    MDPEdge* e = Qbest.outcomes[o];
-    if (NULL != e) {
-      r -= e->obsProb;
-      if (r <= 0) {
-	simulatedOutcome = o;
-	break;
-      }
-    }
-  }
+  int maxUBAction = getMaxUBAction(cn);
+  int simulatedOutcome = getSimulatedOutcome(cn, maxUBAction);
 
 #if USE_DEBUG_PRINT
   printf("  trialRecurse: depth=%d a=%d o=%d ubVal=%g\n",
@@ -119,11 +100,10 @@ void RTDP::trialRecurse(MDPNode& cn, double pTarget, int depth)
 #endif
 
   // recurse to successor
-  MDPNode& bestSuccessor = *cn.Q[maxUBAction].outcomes[simulatedOutcome]->nextState;
   double pNextTarget = pTarget / problem->getDiscount();
-  trialRecurse(bestSuccessor, pNextTarget, depth+1);
+  trialRecurse(cn.getNextState(maxUBAction, simulatedOutcome), pNextTarget, depth+1);
 
-  update(cn, NULL);
+  update(cn);
 }
 
 void RTDP::doTrial(MDPNode& cn, double pTarget)
@@ -141,6 +121,9 @@ void RTDP::doTrial(MDPNode& cn, double pTarget)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.5  2006/02/13 19:08:49  trey
+ * moved numBackups tracking code for better flexibility
+ *
  * Revision 1.4  2006/02/11 22:38:10  trey
  * moved much of the RTDP implementation into RTDPCore, where it can be shared by many RTDP variants
  *

@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.4 $  $Author: trey $  $Date: 2006-02-11 22:38:10 $
+ $Revision: 1.5 $  $Author: trey $  $Date: 2006-02-13 20:20:33 $
    
  @file    RTDP.h
  @brief   No brief
@@ -36,7 +36,7 @@ struct RTDP : public RTDPCore {
   RTDP(AbstractBound* _initUpperBound);
 
   bool getUseLowerBound(void) const { return false; }
-  void updateInternal(MDPNode& cn, int* maxUBActionP);
+  void updateInternal(MDPNode& cn);
   void trialRecurse(MDPNode& cn, double pTarget, int depth);
   void doTrial(MDPNode& cn, double pTarget);
 };
@@ -48,6 +48,9 @@ struct RTDP : public RTDPCore {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2006/02/11 22:38:10  trey
+ * moved much of the RTDP implementation into RTDPCore, where it can be shared by many RTDP variants
+ *
  * Revision 1.3  2006/02/10 20:14:33  trey
  * standardized fields in bounds.plot
  *

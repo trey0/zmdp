@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-02-11 22:38:10 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-02-13 20:20:32 $
    
  @file    RTDPCore.h
  @brief   No brief
@@ -56,12 +56,14 @@ struct RTDPCore : public Solver {
   void init(void);
   MDPNode* getNode(const state_vector& s);
   void expand(MDPNode& cn);
-  void update(MDPNode& cn, int* maxUBActionP);
+  int getMaxUBAction(MDPNode& cn) const;
+  int getSimulatedOutcome(MDPNode& cn, int a) const;
+  void update(MDPNode& cn);
 
   // different derived classes (RTDP variants) will implement these
   // in varying ways
   virtual bool getUseLowerBound(void) const = 0;
-  virtual void updateInternal(MDPNode& cn, int* maxUBActionP) = 0;
+  virtual void updateInternal(MDPNode& cn) = 0;
   virtual void doTrial(MDPNode& cn, double pTarget) = 0;
 
   // virtual functions from Solver that constitute the external api
@@ -81,5 +83,8 @@ struct RTDPCore : public Solver {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/02/11 22:38:10  trey
+ * moved much of the RTDP implementation into RTDPCore, where it can be shared by many RTDP variants
+ *
  *
  ***************************************************************************/
