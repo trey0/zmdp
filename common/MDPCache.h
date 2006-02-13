@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-02-08 19:21:44 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-02-13 19:07:22 $
    
  @file    MDPCache.h
  @brief   Data structures for caching the explicit search graph
@@ -60,9 +60,11 @@ struct MDPNode {
   bool isTerminal;
   std::vector<MDPQEntry> Q;
   double lbVal, ubVal;
+  bool isSolved; // used by LRTDP
 
-  bool isFringe(void) { return Q.empty(); }
-  size_t getNumActions(void) { return Q.size(); }
+  bool isFringe(void) const { return Q.empty(); }
+  size_t getNumActions(void) const { return Q.size(); }
+  MDPNode& getNextState(int a, int o) { return *Q[a].outcomes[o]->nextState; }
 };
 
 typedef EXT_NAMESPACE::hash_map<std::string, MDPNode*> MDPHash;
@@ -74,6 +76,9 @@ typedef EXT_NAMESPACE::hash_map<std::string, MDPNode*> MDPHash;
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/02/08 19:21:44  trey
+ * initial check-in
+ *
  *
  ***************************************************************************/
 
