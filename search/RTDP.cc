@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.4 $  $Author: trey $  $Date: 2006-02-11 22:38:10 $
+ $Revision: 1.5 $  $Author: trey $  $Date: 2006-02-13 19:08:49 $
    
  @file    RTDP.cc
  @brief   No brief
@@ -77,6 +77,7 @@ void RTDP::updateInternal(MDPNode& cn, int* maxUBActionP)
     }
   }
   cn.ubVal = std::min(cn.ubVal, maxUBVal);
+  numBackups++;
 
   if (NULL != maxUBActionP) *maxUBActionP = maxUBAction;
 }
@@ -140,6 +141,9 @@ void RTDP::doTrial(MDPNode& cn, double pTarget)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2006/02/11 22:38:10  trey
+ * moved much of the RTDP implementation into RTDPCore, where it can be shared by many RTDP variants
+ *
  * Revision 1.3  2006/02/10 20:14:33  trey
  * standardized fields in bounds.plot
  *
