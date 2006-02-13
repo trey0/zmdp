@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.17 2006-02-09 21:58:29 trey Exp $
+# $Id: Makefile,v 1.18 2006-02-13 19:07:55 trey Exp $
 #
 # Copyright (c) 2002-2005, Trey Smith
 # All rights reserved.
@@ -56,7 +56,13 @@ include $(BUILD_DIR)/buildbin.mak
 BUILDBIN_TARGET := solveRaceTrackRtdp
 BUILDBIN_SRCS := solveRaceTrackRtdp.cc
 BUILDBIN_INDEP_LIBS :=
-BUILDBIN_DEP_LIBS := -lzmdpRTDP -lzmdpRelaxBound -lzmdpRaceTrack -lzmdpCommon
+BUILDBIN_DEP_LIBS := -lzmdpRtdp -lzmdpRelaxBound -lzmdpRaceTrack -lzmdpCommon
+include $(BUILD_DIR)/buildbin.mak
+
+BUILDBIN_TARGET := solveRaceTrackLrtdp
+BUILDBIN_SRCS := solveRaceTrackLrtdp.cc
+BUILDBIN_INDEP_LIBS :=
+BUILDBIN_DEP_LIBS := -lzmdpLrtdp -lzmdpRelaxBound -lzmdpRaceTrack -lzmdpCommon
 include $(BUILD_DIR)/buildbin.mak
 
 BUILDBIN_TARGET := solveRaceTrackPAOStar
@@ -78,6 +84,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.17  2006/02/09 21:58:29  trey
+# added solveRaceTrackRtdp
+#
 # Revision 1.16  2006/02/08 20:29:03  trey
 # now link against RelaxBound library
 #
