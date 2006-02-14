@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2006-02-01 01:09:37 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2006-02-14 19:30:13 $
    
  @file    AbstractBound.h
  @brief   No brief
@@ -42,7 +42,7 @@ struct AbstractBound {
   virtual ~AbstractBound(void) {}
 
   // performs any computation necessary to initialize the bound
-  virtual void initialize(void) = 0;
+  virtual void initialize(double targetPrecision) = 0;
 
   // returns the bound value at state s
   virtual double getValue(const state_vector& s) const = 0;
@@ -55,6 +55,9 @@ struct AbstractBound {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2006/02/01 01:09:37  trey
+ * renamed pomdp namespace -> zmdp
+ *
  * Revision 1.2  2006/01/31 20:08:24  trey
  * changed args to initialize()
  *

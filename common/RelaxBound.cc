@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2006-02-10 19:31:44 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2006-02-14 19:30:28 $
    
  @file    RelaxBound.cc
  @brief   No brief
@@ -44,7 +44,6 @@ using namespace sla;
 using namespace MatrixUtils;
 
 #define OBS_IS_ZERO_EPS (1e-10)
-#define RLRT_PRECISION (1e-3)
 
 namespace zmdp {
 
@@ -53,12 +52,12 @@ RelaxBound::RelaxBound(const MDP* _problem) :
   root(NULL)
 {}
 
-void RelaxBound::setup(void)
+void RelaxBound::setup(double targetPrecision)
 {
   initLowerBound = problem->newLowerBound();
-  initLowerBound->initialize();
+  initLowerBound->initialize(targetPrecision);
   initUpperBound = problem->newUpperBound();
-  initUpperBound->initialize();
+  initUpperBound->initialize(targetPrecision);
 
   lookup = new MDPHash();
   root = getNode(problem->getInitialState());
@@ -195,13 +194,13 @@ void RelaxBound::doTrial(MDPNode& cn, double pTarget)
   trialRecurse(cn, pTarget, 0);
 }
 
-void RelaxBound::initialize(void)
+void RelaxBound::initialize(double targetPrecision)
 {
 #if USE_DEBUG_PRINT
   timeval startTime = getTime();
 #endif
 
-  setup();
+  setup(targetPrecision);
 
   int trialNum = 1;
   double width;
@@ -209,9 +208,15 @@ void RelaxBound::initialize(void)
     width = root->ubVal - root->lbVal;
 #if USE_DEBUG_PRINT
     printf("-*- RB initialize trial=%d width=%g target=%g\n",
-	   trialNum, width, RLRT_PRECISION);
+	   trialNum, width, targetPrecision);
 #endif
-    if (width < RLRT_PRECISION) break;
+    if (width < targetPrecision) {
+#if USE_DEBUG_PRINT
+    printf("RB initialize width=%g target=%g terminating\n",
+	   width, targetPrecision);
+#endif
+      break;
+    }
     doTrial(*root, width * problem->getDiscount());
     trialNum++;
   }
@@ -238,6 +243,9 @@ double RelaxBound::getValue(const state_vector& s) const
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2006/02/10 19:31:44  trey
+ * tweaked debug output
+ *
  * Revision 1.2  2006/02/09 21:56:27  trey
  * added minor efficiency enhancement to calculate maxUBAction during update
  *
