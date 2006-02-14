@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.4 $  $Author: trey $  $Date: 2006-02-08 20:28:35 $
+ $Revision: 1.5 $  $Author: trey $  $Date: 2006-02-14 19:33:07 $
 
  @file    solveProblem.cc
  @brief   No brief
@@ -45,13 +45,13 @@ void usage(const char* cmdName) {
     "  --version              Print version information (CFLAGS used at compilation)\n"
     "  -f or --fast           Use fast (but very picky) alternate problem parser\n"
     "  -i or --iterations     Set number of simulation iterations (default: 1000)\n"
+    "  -p or --precision      Set target precision\n"
     "  --heuristic            Use a non-trivial upper bound heuristic (interpretation\n"
     "                           depends on the problem)\n"
 //    "  -n or --no-console     Do not poll stdin for user quit command (for running in background)\n"
     "\n"
     "These options are experimental, you probably don't want to use them:\n"
     "  --interleave           Test planner in interleaved mode\n"
-    "  -p or --min-precision  Set minimum precision (for interleaving)\n"
     "  -s or --min-safety     Set minimum safety (for interleaving)\n"
     "  -w or --min-wait       Set minimum planning time between actions (for interleaving)\n"
 ;
@@ -64,7 +64,7 @@ void testBatchIncremental(string prob_name,
 			  int num_iterations,
 			  bool use_fast_parser,
 			  double minSafety,
-			  double minPrecision,
+			  double targetPrecision,
 			  double minWait,
 			  bool useInterleave,
 			  bool useHeuristic)
@@ -83,7 +83,7 @@ void testBatchIncremental(string prob_name,
     x.interleave(/* numIterations = */ num_iterations,
 		 sim, *solver,
 		 /* numSteps = */ 251,
-		 /* minPrecision = */ minPrecision,
+		 /* targetPrecision = */ targetPrecision,
 		 /* minWait = */ minWait,
 		 /* outFileName = */ "scatter.plot",
 		 /* boundsFileNameFmt = */ "plots/bounds%04d.plot",
@@ -92,7 +92,7 @@ void testBatchIncremental(string prob_name,
     x.batchTestIncremental(/* numIterations = */ num_iterations,
 			   sim, *solver,
 			   /* numSteps = */ 251,
-			   /* minPrecision = */ minPrecision,
+			   /* targetPrecision = */ targetPrecision,
 			   /* minOrder = */ min_order,
 			   /* maxOrder = */ max_order,
 			   /* ticksPerOrder = */ 3,
@@ -114,7 +114,7 @@ int main(int argc, char **argv) {
   int num_iterations = 1000;
   bool past_options = false;
   double minSafety = -99e+20;
-  double minPrecision = 1e-10;
+  double targetPrecision = 1e-3;
   double minWait = 0;
   bool useInterleave = false;
   bool useHeuristic = false;
@@ -143,12 +143,12 @@ int main(int argc, char **argv) {
 #endif
       } else if (args == "--interleave") {
 	useInterleave = true;
-      } else if (args == "-p" || args == "--min-precision") {
+      } else if (args == "-p" || args == "--precision") {
 	if (++argi == argc) {
 	  cerr << "ERROR: -p flag without argument" << endl << endl;
 	  usage(argv[0]);
 	}
-	minPrecision = atof(argv[argi]);
+	targetPrecision = atof(argv[argi]);
       } else if (args == "-s" || args == "--min-safety") {
 	if (++argi == argc) {
 	  cerr << "ERROR: -s flag without argument" << endl << endl;
@@ -195,7 +195,7 @@ int main(int argc, char **argv) {
   testBatchIncremental((prob_name ? prob_name : ""),
 		       min_order, max_order,
 		       num_iterations, use_fast_parser, minSafety,
-		       minPrecision, minWait, useInterleave,
+		       targetPrecision, minWait, useInterleave,
 		       useHeuristic);
 
   // signal we are done
@@ -209,6 +209,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2006/02/08 20:28:35  trey
+ * added --heuristic command line flag
+ *
  * Revision 1.3  2006/02/01 01:09:38  trey
  * renamed pomdp namespace -> zmdp
  *
