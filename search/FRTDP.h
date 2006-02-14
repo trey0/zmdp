@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-02-13 21:46:46 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-02-14 19:34:34 $
    
  @file    FRTDP.h
  @brief   No brief
@@ -40,7 +40,7 @@ struct FRTDP : public RTDPCore {
   bool getUseLowerBound(void) const { return true; }
   void updateInternal(MDPNode& cn);
   void trialRecurse(MDPNode& cn, double pTarget, int depth);
-  void doTrial(MDPNode& cn, double pTarget);
+  bool doTrial(MDPNode& cn, double pTarget);
 };
 
 }; // namespace zmdp
@@ -50,5 +50,8 @@ struct FRTDP : public RTDPCore {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/02/13 21:46:46  trey
+ * initial check-in
+ *
  *
  ***************************************************************************/

@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2006-02-13 20:20:32 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2006-02-14 19:34:33 $
    
  @file    RTDPCore.h
  @brief   No brief
@@ -33,6 +33,8 @@
 #include "AbstractBound.h"
 #include "MDPCache.h"
 
+#define OBS_IS_ZERO_EPS (1e-10)
+
 namespace zmdp {
 
 struct RTDPCore : public Solver {
@@ -53,7 +55,7 @@ struct RTDPCore : public Solver {
 
   RTDPCore(AbstractBound* _initUpperBound);
 
-  void init(void);
+  void init(double targetPrecision);
   MDPNode* getNode(const state_vector& s);
   void expand(MDPNode& cn);
   int getMaxUBAction(MDPNode& cn) const;
@@ -64,13 +66,13 @@ struct RTDPCore : public Solver {
   // in varying ways
   virtual bool getUseLowerBound(void) const = 0;
   virtual void updateInternal(MDPNode& cn) = 0;
-  virtual void doTrial(MDPNode& cn, double pTarget) = 0;
+  virtual bool doTrial(MDPNode& cn, double pTarget) = 0;
 
   // virtual functions from Solver that constitute the external api
   void planInit(const MDP* pomdp);
   bool planFixedTime(const state_vector& s,
 		     double maxTimeSeconds,
-		     double minPrecision);
+		     double targetPrecision);
   int chooseAction(const state_vector& s);
   void setBoundsFile(std::ostream* boundsFile);
   ValueInterval getValueAt(const state_vector& s) const;
@@ -83,6 +85,9 @@ struct RTDPCore : public Solver {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2006/02/13 20:20:32  trey
+ * refactored some common code from RTDP and LRTDP
+ *
  * Revision 1.1  2006/02/11 22:38:10  trey
  * moved much of the RTDP implementation into RTDPCore, where it can be shared by many RTDP variants
  *

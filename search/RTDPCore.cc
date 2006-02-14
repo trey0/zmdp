@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.5 $  $Author: trey $  $Date: 2006-02-13 21:47:27 $
+ $Revision: 1.6 $  $Author: trey $  $Date: 2006-02-14 19:34:34 $
    
  @file    RTDPCore.cc
  @brief   No brief
@@ -44,8 +44,6 @@ using namespace std;
 using namespace sla;
 using namespace MatrixUtils;
 
-#define OBS_IS_ZERO_EPS (1e-10)
-
 namespace zmdp {
 
 RTDPCore::RTDPCore(AbstractBound* _initUpperBound) :
@@ -55,14 +53,15 @@ RTDPCore::RTDPCore(AbstractBound* _initUpperBound) :
   initialized(false)
 {}
 
-void RTDPCore::init(void)
+void RTDPCore::init(double targetPrecision)
 {
   if (getUseLowerBound()) {
     initLowerBound = problem->newLowerBound();
-    initLowerBound->initialize();
+    initLowerBound->initialize(targetPrecision);
   }
 
-  initUpperBound->initialize();
+  // upper bound created but not initialized in RTDPCore constructor
+  initUpperBound->initialize(targetPrecision);
 
   lookup = new MDPHash();
   root = getNode(problem->getInitialState());
@@ -202,18 +201,18 @@ void RTDPCore::update(MDPNode& cn)
 
 bool RTDPCore::planFixedTime(const state_vector& s,
 			     double maxTimeSeconds,
-			     double minPrecision)
+			     double targetPrecision)
 {
   boundsStartTime = getTime() - previousElapsedTime;
 
   if (!initialized) {
     boundsStartTime = getTime();
-    init();
+    init(targetPrecision);
   }
 
   // disable this termination check for now
-  //if (root->ubVal - root->lbVal < minPrecision) return true;
-  doTrial(*root, minPrecision);
+  //if (root->ubVal - root->lbVal < targetPrecision) return true;
+  bool done = doTrial(*root, targetPrecision);
 
   previousElapsedTime = getTime() - boundsStartTime;
 
@@ -233,7 +232,7 @@ bool RTDPCore::planFixedTime(const state_vector& s,
     }
   }
 
-  return false;
+  return done;
 }
 
 // this implementation is not very efficient, but it is guaranteed not
@@ -286,6 +285,9 @@ ValueInterval RTDPCore::getValueAt(const state_vector& s) const
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.5  2006/02/13 21:47:27  trey
+ * added initialization of prio field
+ *
  * Revision 1.4  2006/02/13 20:20:33  trey
  * refactored some common code from RTDP and LRTDP
  *

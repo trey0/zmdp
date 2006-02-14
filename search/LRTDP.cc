@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2006-02-13 20:20:33 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2006-02-14 19:34:34 $
    
  @file    LRTDP.cc
  @brief   No brief
@@ -43,8 +43,6 @@
 using namespace std;
 using namespace sla;
 using namespace MatrixUtils;
-
-#define OBS_IS_ZERO_EPS (1e-10)
 
 namespace zmdp {
 
@@ -202,7 +200,7 @@ bool LRTDP::trialRecurse(MDPNode& cn, double pTarget, int depth)
   }
 }
 
-void LRTDP::doTrial(MDPNode& cn, double pTarget)
+bool LRTDP::doTrial(MDPNode& cn, double pTarget)
 {
 #if USE_DEBUG_PRINT
   printf("-*- doTrial: trial %d\n", (numTrials+1));
@@ -210,6 +208,8 @@ void LRTDP::doTrial(MDPNode& cn, double pTarget)
 
   trialRecurse(cn, pTarget, 0);
   numTrials++;
+
+  return cn.isSolved;
 }
 
 }; // namespace zmdp
@@ -217,6 +217,9 @@ void LRTDP::doTrial(MDPNode& cn, double pTarget)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2006/02/13 20:20:33  trey
+ * refactored some common code from RTDP and LRTDP
+ *
  * Revision 1.2  2006/02/13 19:52:44  trey
  * corrected a fatal bug in updateInternal()
  *

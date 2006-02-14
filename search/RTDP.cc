@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.6 $  $Author: trey $  $Date: 2006-02-13 20:20:33 $
+ $Revision: 1.7 $  $Author: trey $  $Date: 2006-02-14 19:34:43 $
    
  @file    RTDP.cc
  @brief   No brief
@@ -43,8 +43,6 @@
 using namespace std;
 using namespace sla;
 using namespace MatrixUtils;
-
-#define OBS_IS_ZERO_EPS (1e-10)
 
 namespace zmdp {
 
@@ -106,7 +104,7 @@ void RTDP::trialRecurse(MDPNode& cn, double pTarget, int depth)
   update(cn);
 }
 
-void RTDP::doTrial(MDPNode& cn, double pTarget)
+bool RTDP::doTrial(MDPNode& cn, double pTarget)
 {
 #if USE_DEBUG_PRINT
   printf("-*- doTrial: trial %d\n", (numTrials+1));
@@ -114,6 +112,8 @@ void RTDP::doTrial(MDPNode& cn, double pTarget)
 
   trialRecurse(cn, pTarget, 0);
   numTrials++;
+
+  return false;
 }
 
 }; // namespace zmdp
@@ -121,6 +121,9 @@ void RTDP::doTrial(MDPNode& cn, double pTarget)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.6  2006/02/13 20:20:33  trey
+ * refactored some common code from RTDP and LRTDP
+ *
  * Revision 1.5  2006/02/13 19:08:49  trey
  * moved numBackups tracking code for better flexibility
  *

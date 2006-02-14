@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-02-13 21:46:46 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-02-14 19:34:34 $
    
  @file    FRTDP.cc
  @brief   No brief
@@ -43,8 +43,6 @@
 using namespace std;
 using namespace sla;
 using namespace MatrixUtils;
-
-#define OBS_IS_ZERO_EPS (1e-10)
 
 namespace zmdp {
 
@@ -97,7 +95,8 @@ void FRTDP::updateInternal(MDPNode& cn)
     maxUBVal = std::max(maxUBVal, ubVal);
   }
   cn.lbVal = maxLBVal;
-  cn.ubVal = std::min(cn.ubVal, maxUBVal);
+  cn.ubVal = maxUBVal;
+  //cn.ubVal = std::min(cn.ubVal, maxUBVal);
 
   int maxUBAction = getMaxUBAction(cn);
   int maxPrioOutcome = getMaxPrioOutcome(cn, maxUBAction);
@@ -110,10 +109,14 @@ void FRTDP::updateInternal(MDPNode& cn)
 void FRTDP::trialRecurse(MDPNode& cn, double pTarget, int depth)
 {
   // check for termination
-  if (cn.ubVal - cn.lbVal < pTarget) {
+  // FIX
+  //if (cn.ubVal - cn.lbVal < pTarget)
+  if (cn.isTerminal)
+  {
 #if USE_DEBUG_PRINT
-    printf("trialRecurse: depth=%d ubVal=%g terminal node (terminating)\n",
+    printf("  trialRecurse: depth=%d ubVal=%g terminal node (terminating)\n",
 	   depth, cn.ubVal);
+  printf("  trialRecurse: s=%s\n", sparseRep(cn.s).c_str());
 #endif
     return;
   }
@@ -137,14 +140,17 @@ void FRTDP::trialRecurse(MDPNode& cn, double pTarget, int depth)
   update(cn);
 }
 
-void FRTDP::doTrial(MDPNode& cn, double pTarget)
+bool FRTDP::doTrial(MDPNode& cn, double pTarget)
 {
 #if USE_DEBUG_PRINT
   printf("-*- doTrial: trial %d\n", (numTrials+1));
 #endif
 
+  // FIX
   trialRecurse(cn, pTarget, 0);
   numTrials++;
+
+  return (cn.ubVal - cn.lbVal < pTarget);
 }
 
 }; // namespace zmdp
@@ -152,5 +158,8 @@ void FRTDP::doTrial(MDPNode& cn, double pTarget)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/02/13 21:46:46  trey
+ * initial check-in
+ *
  *
  ***************************************************************************/

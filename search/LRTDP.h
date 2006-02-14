@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2006-02-13 20:20:33 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2006-02-14 19:34:34 $
    
  @file    LRTDP.h
  @brief   Implementation of Bonet and Geffner's LRTDP algorithm
@@ -43,7 +43,7 @@ struct LRTDP : public RTDPCore {
   bool getUseLowerBound(void) const { return false; }
   void updateInternal(MDPNode& cn);
   bool trialRecurse(MDPNode& cn, double pTarget, int depth);
-  void doTrial(MDPNode& cn, double pTarget);
+  bool doTrial(MDPNode& cn, double pTarget);
 };
 
 }; // namespace zmdp
@@ -53,6 +53,9 @@ struct LRTDP : public RTDPCore {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2006/02/13 20:20:33  trey
+ * refactored some common code from RTDP and LRTDP
+ *
  * Revision 1.1  2006/02/13 19:09:24  trey
  * initial check-in
  *
