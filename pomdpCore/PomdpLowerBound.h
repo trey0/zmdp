@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2006-02-01 01:09:38 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2006-02-14 19:33:55 $
    
  @file    PomdpLowerBound.h
  @brief   No brief
@@ -39,11 +39,11 @@ struct PomdpLowerBound : public AbstractBound {
   std::vector<alpha_vector> alphas;
 
   PomdpLowerBound(const MDP* problem);
-  void initialize(void);
+  void initialize(double targetPrecision);
   double getValue(const belief_vector& s) const;
 
 protected:
-  void initBlind(void);
+  void initBlind(double targetPrecision);
   void initBlindWorstCase(void);
 };
 
@@ -54,6 +54,9 @@ protected:
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2006/02/01 01:09:38  trey
+ * renamed pomdp namespace -> zmdp
+ *
  * Revision 1.2  2006/01/31 20:13:45  trey
  * changed when MDP* arguments are passed into bounds initialization
  *

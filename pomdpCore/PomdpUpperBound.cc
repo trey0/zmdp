@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.4 $  $Author: trey $  $Date: 2006-02-06 19:26:09 $
+ $Revision: 1.5 $  $Author: trey $  $Date: 2006-02-14 19:33:55 $
    
  @file    PomdpUpperBound.cc
  @brief   No brief
@@ -47,8 +47,7 @@ using namespace sla;
 using namespace MatrixUtils;
 
 #define PRUNE_EPS (1e-10)
-#define INIT1_RESIDUAL (1e-10)
-#define INIT2_RESIDUAL (1e-3)
+#define MDP_RESIDUAL (1e-10)
 
 namespace zmdp {
 
@@ -57,9 +56,9 @@ PomdpUpperBound::PomdpUpperBound(const MDP* problem)
   pomdp = (const Pomdp*) problem;
 }
 
-void PomdpUpperBound::initialize(void)
+void PomdpUpperBound::initialize(double targetPrecision)
 {
-  initFIB();
+  initFIB(targetPrecision);
 }
 
 double PomdpUpperBound::getValue(const belief_vector& b) const
@@ -74,11 +73,11 @@ double PomdpUpperBound::getValue(const belief_vector& b) const
   return bestVal;
 }
 
-void PomdpUpperBound::initMDP(void)
+void PomdpUpperBound::initMDP(double targetPrecision)
 {
   // set alpha to be the mdp upper bound
   MDPValueFunction m;
-  m.valueIteration(pomdp, INIT1_RESIDUAL);
+  m.valueIteration(pomdp, targetPrecision);
   cvector calpha;
   copy(calpha, m.alpha);
 
@@ -89,7 +88,7 @@ void PomdpUpperBound::initMDP(void)
   cout << "initUpperBoundMDP: val(b)=" << inner_prod(alphas[0], pomdp->initialBelief) << endl;
 }
 
-void PomdpUpperBound::initFIB(void)
+void PomdpUpperBound::initFIB(double targetPrecision)
 {
   typedef sla::dvector dvector;
   // calculates the fast informed bound (Hauskrecht, JAIR 2000)
@@ -99,7 +98,7 @@ void PomdpUpperBound::initFIB(void)
   double maxResidual;
   alpha_vector backup;
 
-  initMDP();
+  initMDP(MDP_RESIDUAL);
 
   // initialize al array with weak MDP upper bound
   MDPValueFunction m;
@@ -152,7 +151,7 @@ void PomdpUpperBound::initFIB(void)
     cout << ".";
     cout.flush();
 
-  } while ( maxResidual > INIT2_RESIDUAL );
+  } while ( maxResidual > targetPrecision );
 
   cout << endl;
 
@@ -172,6 +171,9 @@ void PomdpUpperBound::initFIB(void)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2006/02/06 19:26:09  trey
+ * removed numOutcomes from MDP class because some MDPs have a varying number of outcomes depending on state; replaced with numObservations in Pomdp class
+ *
  * Revision 1.3  2006/02/01 01:09:38  trey
  * renamed pomdp namespace -> zmdp
  *

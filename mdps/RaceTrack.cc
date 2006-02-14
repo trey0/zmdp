@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.6 $  $Author: trey $  $Date: 2006-02-08 20:04:36 $
+ $Revision: 1.7 $  $Author: trey $  $Date: 2006-02-14 19:33:35 $
   
  @file    RaceTrack.cc
  @brief   No brief
@@ -258,7 +258,7 @@ struct RTLowerBound : public AbstractBound {
   const RaceTrack* problem;
 
   RTLowerBound(const RaceTrack* _problem) : problem(_problem) {}
-  void initialize(void) {}
+  void initialize(double targetPrecision) {}
   double getValue(const state_vector& s) const;
 };
 
@@ -286,7 +286,7 @@ double RTLowerBound::getValue(const state_vector& s) const
 
 struct RTUpperBound : public AbstractBound {
   RTUpperBound(const RaceTrack* _problem) {}
-  void initialize(void) {}
+  void initialize(double targetPrecision) {}
   double getValue(const state_vector& s) const { return 0; }
 };
 
@@ -579,6 +579,9 @@ AbstractBound* RaceTrack::newUpperBound(void) const
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.6  2006/02/08 20:04:36  trey
+ * made upper bound calculation trivial -- in the future we will use RelaxBound instead
+ *
  * Revision 1.5  2006/02/07 19:53:43  trey
  * cleaned up heuristic code
  *

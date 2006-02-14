@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2006-02-01 01:09:38 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2006-02-14 19:33:55 $
    
  @file    PomdpLowerBound.cc
  @brief   No brief
@@ -47,8 +47,6 @@ using namespace sla;
 using namespace MatrixUtils;
 
 #define PRUNE_EPS (1e-10)
-#define INIT1_RESIDUAL (1e-10)
-#define INIT2_RESIDUAL (1e-3)
 
 namespace zmdp {
 
@@ -56,9 +54,9 @@ PomdpLowerBound::PomdpLowerBound(const MDP* problem) {
   pomdp = (const Pomdp*) problem;
 }
 
-void PomdpLowerBound::initialize(void)
+void PomdpLowerBound::initialize(double targetPrecision)
 {
-  initBlind();
+  initBlind(targetPrecision);
 }
 
 double PomdpLowerBound::getValue(const belief_vector& b) const
@@ -104,7 +102,7 @@ void PomdpLowerBound::initBlindWorstCase(void)
   cout << "initLowerBoundBlindWorstCase: alpha=" << sparseRep(calpha) << endl;
 }
 
-void PomdpLowerBound::initBlind(void)
+void PomdpLowerBound::initBlind(double targetPrecision)
 {
   alpha_vector al(pomdp->numStates);
   alpha_vector nextAl, tmp, diff;
@@ -134,7 +132,7 @@ void PomdpLowerBound::initBlind(void)
       maxResidual = norm_inf(diff);
 
       al = nextAl;
-    } while (maxResidual > INIT2_RESIDUAL);
+    } while (maxResidual > targetPrecision);
 
 #if 1
     cout << "initLowerBoundBlind: a=" << a << " al=" << sparseRep(al) << endl;
@@ -149,6 +147,9 @@ void PomdpLowerBound::initBlind(void)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2006/02/01 01:09:38  trey
+ * renamed pomdp namespace -> zmdp
+ *
  * Revision 1.2  2006/01/31 20:13:45  trey
  * changed when MDP* arguments are passed into bounds initialization
  *
