@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2006-02-14 19:34:34 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2006-02-15 16:24:27 $
    
  @file    FRTDP.h
  @brief   No brief
@@ -35,11 +35,13 @@ namespace zmdp {
 struct FRTDP : public RTDPCore {
   FRTDP(AbstractBound* _initUpperBound);
 
-  int getMaxPrioOutcome(MDPNode& cn, int a) const;
+  int getMaxPrioOutcome(MDPNode& cn, int a,
+			double* maxPrioP = NULL,
+			double* secondBestPrioP = NULL) const;
 
   bool getUseLowerBound(void) const { return true; }
   void updateInternal(MDPNode& cn);
-  void trialRecurse(MDPNode& cn, double pTarget, int depth);
+  void trialRecurse(MDPNode& cn, double occ, double altPrio, int depth);
   bool doTrial(MDPNode& cn, double pTarget);
 };
 
@@ -50,6 +52,9 @@ struct FRTDP : public RTDPCore {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2006/02/14 19:34:34  trey
+ * now use targetPrecision properly
+ *
  * Revision 1.1  2006/02/13 21:46:46  trey
  * initial check-in
  *
