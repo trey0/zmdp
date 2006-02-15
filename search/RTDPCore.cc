@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.6 $  $Author: trey $  $Date: 2006-02-14 19:34:34 $
+ $Revision: 1.7 $  $Author: trey $  $Date: 2006-02-15 16:26:15 $
    
  @file    RTDPCore.cc
  @brief   No brief
@@ -88,10 +88,15 @@ void RTDPCore::init(double targetPrecision)
   initialized = true;
 }
 
-void RTDPCore::planInit(const MDP* _problem)
+void RTDPCore::planInit(const MDP* _problem,
+			double targetPrecision)
 {
   problem = _problem;
   initialized = false;
+
+#if USE_TIME_WITHOUT_HEURISTIC
+  init(targetPrecision);
+#endif
 }
 
 MDPNode* RTDPCore::getNode(const state_vector& s)
@@ -113,10 +118,10 @@ MDPNode* RTDPCore::getNode(const state_vector& s)
     if (getUseLowerBound()) {
       if (cn.isTerminal) {
 	cn.lbVal = 0;
-	cn.prio = 0;
+	cn.prio = -1000;
       } else {
 	cn.lbVal = initLowerBound->getValue(s);
-	cn.prio = cn.ubVal - cn.lbVal;
+	cn.prio = log(cn.ubVal - cn.lbVal);
       }
     } else {
       cn.lbVal = -1; // n/a
@@ -218,7 +223,7 @@ bool RTDPCore::planFixedTime(const state_vector& s,
 
   if (NULL != boundsFile) {
     double elapsed = timevalToSeconds(getTime() - boundsStartTime);
-    if (elapsed / lastPrintTime >= 1.01) {
+    if (done || elapsed / lastPrintTime >= 1.01) {
       (*boundsFile) << timevalToSeconds(getTime() - boundsStartTime)
 		    << " " << root->lbVal
 		    << " " << root->ubVal
@@ -242,24 +247,56 @@ int RTDPCore::chooseAction(const state_vector& s)
 {
   outcome_prob_vector opv;
   state_vector sp;
-  double bestVal = -99e+20;
   int bestAction = -1;
-  FOR (a, problem->getNumActions()) {
-    problem->getOutcomeProbVector(opv, s, a);
-    double val = 0;
-    FOR (o, opv.size()) {
-      if (opv(o) > OBS_IS_ZERO_EPS) {
-	ValueInterval intv = getValueAt(problem->getNextState(sp, s, a, o));
-	val += opv(o) * (getUseLowerBound() ? intv.l : intv.u);
+
+  // if LB is available, use it to choose the action
+  if (getUseLowerBound()) {
+    double lbVal;
+    double maxVal = -99e+20;
+    double minVal = 99e+20;
+    FOR (a, problem->getNumActions()) {
+      problem->getOutcomeProbVector(opv, s, a);
+      lbVal = 0;
+      FOR (o, opv.size()) {
+	if (opv(o) > OBS_IS_ZERO_EPS) {
+	  ValueInterval intv = getValueAt(problem->getNextState(sp, s, a, o));
+	  lbVal += opv(o) * intv.l;
+	}
+      }
+      lbVal = problem->getReward(s,a) + problem->getDiscount() * lbVal;
+      if (lbVal > maxVal) {
+	maxVal = lbVal;
+	bestAction = a;
+      }
+      if (lbVal < minVal) {
+	minVal = lbVal;
       }
     }
-    val = problem->getReward(s,a) + problem->getDiscount() * val;
-    if (val > bestVal) {
-      bestVal = val;
-      bestAction = a;
+
+    // but only return best LB action if all choices are not tied
+    if (maxVal - minVal > 1e-10) {
+      return bestAction;
     }
   }
 
+  // fall back to UB
+  double ubVal;
+  double maxVal = -99e+20;
+  FOR (a, problem->getNumActions()) {
+    problem->getOutcomeProbVector(opv, s, a);
+    ubVal = 0;
+    FOR (o, opv.size()) {
+      if (opv(o) > OBS_IS_ZERO_EPS) {
+	ValueInterval intv = getValueAt(problem->getNextState(sp, s, a, o));
+	ubVal += opv(o) * intv.u;
+      }
+    }
+    ubVal = problem->getReward(s,a) + problem->getDiscount() * ubVal;
+    if (ubVal > maxVal) {
+      maxVal = ubVal;
+      bestAction = a;
+    }
+  }
   return bestAction;
 }
 
@@ -285,6 +322,9 @@ ValueInterval RTDPCore::getValueAt(const state_vector& s) const
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.6  2006/02/14 19:34:34  trey
+ * now use targetPrecision properly
+ *
  * Revision 1.5  2006/02/13 21:47:27  trey
  * added initialization of prio field
  *

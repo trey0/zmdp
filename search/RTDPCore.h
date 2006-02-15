@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2006-02-14 19:34:33 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2006-02-15 16:26:15 $
    
  @file    RTDPCore.h
  @brief   No brief
@@ -69,7 +69,7 @@ struct RTDPCore : public Solver {
   virtual bool doTrial(MDPNode& cn, double pTarget) = 0;
 
   // virtual functions from Solver that constitute the external api
-  void planInit(const MDP* pomdp);
+  void planInit(const MDP* pomdp, double targetPrecision);
   bool planFixedTime(const state_vector& s,
 		     double maxTimeSeconds,
 		     double targetPrecision);
@@ -85,6 +85,9 @@ struct RTDPCore : public Solver {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2006/02/14 19:34:33  trey
+ * now use targetPrecision properly
+ *
  * Revision 1.2  2006/02/13 20:20:32  trey
  * refactored some common code from RTDP and LRTDP
  *
