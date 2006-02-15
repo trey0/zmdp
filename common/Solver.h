@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.9 $  $Author: trey $  $Date: 2006-02-01 01:09:37 $
+ $Revision: 1.10 $  $Author: trey $  $Date: 2006-02-15 16:21:37 $
    
  @file    Solver.h
  @brief   No brief
@@ -38,15 +38,16 @@ public:
   virtual ~Solver(void) {}
 
   // sets up the problem
-  virtual void planInit(const MDP* problem) = 0;
+  virtual void planInit(const MDP* problem,
+			double targetPrecision) = 0;
 
   // plan for a fixed amount of time.  if maxTimeSeconds < 0,
   //   the amount of time is chosen by the solver to optimize
-  //   time performance.  returns true if minPrecision has been
+  //   time performance.  returns true if targetPrecision has been
   //   reached.
   virtual bool planFixedTime(const state_vector& currentState,
 			     double maxTimeSeconds,
-			     double minPrecision) = 0;
+			     double targetPrecision) = 0;
 
   virtual int chooseAction(const state_vector& currentState) = 0;
 
@@ -65,6 +66,9 @@ public:
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.9  2006/02/01 01:09:37  trey
+ * renamed pomdp namespace -> zmdp
+ *
  * Revision 1.8  2006/01/28 22:01:10  trey
  * switched include PomdpSim.h -> MDP.h
  *
