@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.11 $  $Author: trey $  $Date: 2006-02-06 19:28:55 $
+ $Revision: 1.12 $  $Author: trey $  $Date: 2006-02-15 16:21:16 $
 
  @file    Interleave.cc
  @brief   No brief
@@ -82,7 +82,7 @@ void Interleave::interleave(int numIterations,
     cout << "=-=-=-=-= interleave: trial " << (i+1) << " / " << numIterations << endl;
 
     // reset the planner
-    solver.planInit(sim->getModel());
+    solver.planInit(sim->getModel(), minPrecision);
 
     // set up a new bounds file and sim file for each iteration
     snprintf( boundsFileName, sizeof(boundsFileName), boundsFileNameFmt.c_str(), i );
@@ -162,7 +162,7 @@ void Interleave::batchTestIncremental(int numIterations,
   bool can_reuse_last_action;
 
   sim = _sim;
-  solver.planInit(sim->getModel());
+  solver.planInit(sim->getModel(), minPrecision);
 
   ofstream out( outFileName.c_str() );
   if (! out) {
@@ -203,7 +203,9 @@ void Interleave::batchTestIncremental(int numIterations,
     if ((timeSoFar > pow(10,minOrder)
 	 && log(timeSoFar) - logLastSimTime > ::log(10) / ticksPerOrder)
 	// ensure we do a simulation after the last iteration
-	|| timeSoFar >= pow(10,maxOrder)) {
+	|| timeSoFar >= pow(10,maxOrder)
+	// or when the run ends because we achieved the desired precision
+	|| achieved_precision) {
       logLastSimTime = ::log(timeSoFar);
 
       // repeatedly simulate, reusing the initial solution
@@ -296,6 +298,9 @@ void Interleave::printRewards(void) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.11  2006/02/06 19:28:55  trey
+ * now make a sim trace only for the first simulation run in each batch, saves much time and disk space
+ *
  * Revision 1.10  2006/02/01 01:09:37  trey
  * renamed pomdp namespace -> zmdp
  *
