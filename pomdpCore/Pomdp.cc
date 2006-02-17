@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.4 $  $Author: trey $  $Date: 2006-02-06 19:26:09 $
+ $Revision: 1.5 $  $Author: trey $  $Date: 2006-02-17 18:36:35 $
   
  @file    Pomdp.cc
  @brief   No brief
@@ -43,6 +43,7 @@
 #include "pomdpCassandraWrapper.h"
 #include "Pomdp.h"
 #include "MatrixUtils.h"
+#include "slaMatrixUtils.h"
 #include "PomdpLowerBound.h"
 #include "PomdpUpperBound.h"
 
@@ -151,6 +152,19 @@ AbstractBound* Pomdp::newLowerBound(void) const
 AbstractBound* Pomdp::newUpperBound(void) const
 {
   return new PomdpUpperBound(this);
+}
+
+// NOTE: this only works if terminal states are explicitly marked
+// using the non-standard 'E:' extension to Cassandra's POMDP format
+bool Pomdp::getIsTerminalState(const state_vector& s) const
+{
+  double nonTerminalSum = 0.0;
+  FOR_CV (s) {
+    if (!isPomdpTerminalState[CV_INDEX(s)]) {
+      nonTerminalSum += CV_VAL(s);
+    }
+  }
+  return (nonTerminalSum < 1e-10);
 }
 
 void Pomdp::readFromFileCassandra(const string& fileName) {
@@ -440,6 +454,9 @@ void Pomdp::debugDensity(void) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2006/02/06 19:26:09  trey
+ * removed numOutcomes from MDP class because some MDPs have a varying number of outcomes depending on state; replaced with numObservations in Pomdp class
+ *
  * Revision 1.3  2006/02/01 01:09:38  trey
  * renamed pomdp namespace -> zmdp
  *

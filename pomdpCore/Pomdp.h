@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.4 $  $Author: trey $  $Date: 2006-02-06 19:26:09 $
+ $Revision: 1.5 $  $Author: trey $  $Date: 2006-02-17 18:36:35 $
    
  @file    Pomdp.h
  @brief   No brief
@@ -86,7 +86,7 @@ public:
 
   // POMDP-as-belief-MDP implementations for virtual functions declared in MDP
   const state_vector& getInitialState(void) const { return getInitialBelief(); }
-  bool getIsTerminalState(const state_vector& s) const { return false; }
+  bool getIsTerminalState(const state_vector& s) const;
   outcome_prob_vector& getOutcomeProbVector(outcome_prob_vector& result, const state_vector& b,
 					    int a) const
     { return getObsProbVector(result,b,a); }
@@ -108,6 +108,9 @@ protected:
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2006/02/06 19:26:09  trey
+ * removed numOutcomes from MDP class because some MDPs have a varying number of outcomes depending on state; replaced with numObservations in Pomdp class
+ *
  * Revision 1.3  2006/02/01 01:09:38  trey
  * renamed pomdp namespace -> zmdp
  *
