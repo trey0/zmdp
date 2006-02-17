@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.4 $  $Author: trey $  $Date: 2006-02-06 19:27:24 $
+ $Revision: 1.5 $  $Author: trey $  $Date: 2006-02-17 18:17:35 $
    
  @file    RaceTrack.h
  @brief   No brief
@@ -43,6 +43,8 @@ struct TrackMap;
 class RaceTrack : public MDP {
 public:
   double errorProbability;
+  bool useMaxCost;
+  double maxCost;
   state_vector bogusInitialState, terminalState;
   TrackMap *tmap;
 
@@ -83,6 +85,9 @@ public:
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2006/02/06 19:27:24  trey
+ * fixed several problems
+ *
  * Revision 1.3  2006/02/01 18:03:14  trey
  * fixed compile-time errors, not quite done yet
  *

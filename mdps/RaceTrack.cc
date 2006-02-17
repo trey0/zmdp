@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.7 $  $Author: trey $  $Date: 2006-02-14 19:33:35 $
+ $Revision: 1.8 $  $Author: trey $  $Date: 2006-02-17 18:17:36 $
   
  @file    RaceTrack.cc
  @brief   No brief
@@ -268,7 +268,11 @@ double RTLowerBound::getValue(const state_vector& s) const
   if (IS_TERMINAL_STATE(s)) {
     maxCost = 0;
   } else {
-    maxCost = 1.0 / (1 - problem->discount);
+    if (problem->useMaxCost) {
+      maxCost = problem->maxCost;
+    } else {
+      maxCost = 1.0 / (1 - problem->discount);
+    }
   }
 #if RT_DEBUG_PRINT
   printf("getValue: s=[%s] maxCost=%g\n", denseRep(s).c_str(), maxCost);
@@ -417,6 +421,12 @@ void RaceTrack::readFromFile(const std::string& specFileName)
   plist.readFromFile(specFileName, /* endMarker = */ '-');
   discount = atof(plist.getValue("discount").c_str());
   errorProbability = atof(plist.getValue("errorProbability").c_str());
+  useMaxCost = atoi(plist.getValue("useMaxCost").c_str());
+  if (useMaxCost) {
+    maxCost = atof(plist.getValue("maxCost").c_str());
+  } else {
+    maxCost = -1; // n/a
+  }
 
   tmap = new TrackMap();
   tmap->readFromFile(specFileName, plist.inFile, plist.lnum);
@@ -546,12 +556,12 @@ double RaceTrack::getReward(const state_vector& s, int a) const
     // terminal state: model as self-transition with no cost
     cost = 0;
   }
-#if 0
-  else if (IS_INITIAL_STATE(s)) {
-    // the 'first move' to the starting line is bogus, no cost
+  else if (1.0 == discount && IS_INITIAL_STATE(s)) {
+    // the 'first move' to the starting line is bogus, no cost.
+    // BUT if the problem is discounted, the bogus move should not
+    //  be free -- otherwise there is an incentive to crash.
     cost = 0;
   }
-#endif
   else {
     // uniform cost for all real moves
     cost = 1;
@@ -579,6 +589,9 @@ AbstractBound* RaceTrack::newUpperBound(void) const
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.7  2006/02/14 19:33:35  trey
+ * added targetPrecision argument for bounds initialization
+ *
  * Revision 1.6  2006/02/08 20:04:36  trey
  * made upper bound calculation trivial -- in the future we will use RelaxBound instead
  *
