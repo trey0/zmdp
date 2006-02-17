@@ -1,8 +1,9 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.4 $  $Author: trey $  $Date: 2006-02-14 19:34:34 $
+ $Revision: 1.5 $  $Author: trey $  $Date: 2006-02-17 18:34:34 $
    
  @file    LRTDP.cc
- @brief   No brief
+ @brief   Implementation of Bonet and Geffner's LRTDP algorithm
+          (as presented at AAAI in 2003).
 
  Copyright (c) 2006, Trey Smith. All rights reserved.
 
@@ -46,31 +47,6 @@ using namespace MatrixUtils;
 
 namespace zmdp {
 
-struct LStack {
-  std::stack<MDPNode*> data;
-  EXT_NAMESPACE::hash_map<MDPNode*, bool> lookup;
-  
-  void push(MDPNode* n) {
-    data.push(n);
-    lookup[n] = true;
-  }
-  MDPNode* pop(void) {
-    MDPNode* n = data.top();
-    data.pop();
-    lookup.erase(n);
-    return n;
-  }
-  bool empty(void) const {
-    return data.empty();
-  }
-  size_t size(void) const {
-    return data.size();
-  }
-  bool contains(MDPNode* n) const {
-    return (lookup.end() != lookup.find(n));
-  }
-};
-
 LRTDP::LRTDP(AbstractBound* _initUpperBound) :
   RTDPCore(_initUpperBound)
 {}
@@ -106,7 +82,7 @@ double LRTDP::residual(MDPNode& cn)
 bool LRTDP::checkSolved(MDPNode& cn, double pTarget)
 {
   bool rv = true;
-  LStack open, closed;
+  NodeStack open, closed;
   int a;
   
   if (!cn.isSolved) open.push(&cn);
@@ -217,6 +193,9 @@ bool LRTDP::doTrial(MDPNode& cn, double pTarget)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2006/02/14 19:34:34  trey
+ * now use targetPrecision properly
+ *
  * Revision 1.3  2006/02/13 20:20:33  trey
  * refactored some common code from RTDP and LRTDP
  *
