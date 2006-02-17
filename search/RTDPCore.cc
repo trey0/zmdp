@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.7 $  $Author: trey $  $Date: 2006-02-15 16:26:15 $
+ $Revision: 1.8 $  $Author: trey $  $Date: 2006-02-17 18:20:41 $
    
  @file    RTDPCore.cc
  @brief   No brief
@@ -115,6 +115,7 @@ MDPNode* RTDPCore::getNode(const state_vector& s)
       cn.ubVal = initUpperBound->getValue(s);
       cn.isSolved = false;
     }
+    cn.idx = RT_IDX_PLUS_INFINITY;
     if (getUseLowerBound()) {
       if (cn.isTerminal) {
 	cn.lbVal = 0;
@@ -322,6 +323,9 @@ ValueInterval RTDPCore::getValueAt(const state_vector& s) const
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.7  2006/02/15 16:26:15  trey
+ * added USE_TIME_WITHOUT_HEURISTIC support, switched prio to be logarithmic, added tie-break condition for chooseAction()
+ *
  * Revision 1.6  2006/02/14 19:34:34  trey
  * now use targetPrecision properly
  *

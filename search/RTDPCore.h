@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.4 $  $Author: trey $  $Date: 2006-02-15 16:26:15 $
+ $Revision: 1.5 $  $Author: trey $  $Date: 2006-02-17 18:20:41 $
    
  @file    RTDPCore.h
  @brief   No brief
@@ -28,14 +28,53 @@
 #ifndef INCRTDPCore_h
 #define INCRTDPCore_h
 
+#include <stack>
+
 #include "MatrixUtils.h"
 #include "Solver.h"
 #include "AbstractBound.h"
 #include "MDPCache.h"
 
 #define OBS_IS_ZERO_EPS (1e-10)
+#define RT_CLEAR_STD_STACK(x) while (!(x).empty()) (x).pop();
+#define RT_IDX_PLUS_INFINITY (INT_MAX)
 
 namespace zmdp {
+
+
+// data structure used by LRTDP and HDP: stack with O(1) element existence check
+struct NodeStack {
+  std::stack<MDPNode*> data;
+  EXT_NAMESPACE::hash_map<MDPNode*, bool> lookup;
+  
+  void push(MDPNode* n) {
+    data.push(n);
+    lookup[n] = true;
+  }
+  MDPNode* pop(void) {
+    MDPNode* n = data.top();
+    data.pop();
+    lookup.erase(n);
+    return n;
+  }
+  void clear(void) {
+    RT_CLEAR_STD_STACK(data);
+    lookup.clear();
+  }
+
+  MDPNode* top(void) const {
+    return data.top();
+  }
+  bool empty(void) const {
+    return data.empty();
+  }
+  size_t size(void) const {
+    return data.size();
+  }
+  bool contains(MDPNode* n) const {
+    return (lookup.end() != lookup.find(n));
+  }
+};
 
 struct RTDPCore : public Solver {
   const MDP* problem;
@@ -85,6 +124,9 @@ struct RTDPCore : public Solver {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2006/02/15 16:26:15  trey
+ * added USE_TIME_WITHOUT_HEURISTIC support, switched prio to be logarithmic, added tie-break condition for chooseAction()
+ *
  * Revision 1.3  2006/02/14 19:34:33  trey
  * now use targetPrecision properly
  *
