@@ -1,5 +1,7 @@
-discount 0.99
+discount 1.0
 errorProbability 0.1
+useMaxCostBound 1
+maxCostBound 1000
 ---
 *****
 *s f*
