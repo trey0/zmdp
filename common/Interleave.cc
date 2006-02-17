@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.12 $  $Author: trey $  $Date: 2006-02-15 16:21:16 $
+ $Revision: 1.13 $  $Author: trey $  $Date: 2006-02-17 21:08:00 $
 
  @file    Interleave.cc
  @brief   No brief
@@ -162,7 +162,6 @@ void Interleave::batchTestIncremental(int numIterations,
   bool can_reuse_last_action;
 
   sim = _sim;
-  solver.planInit(sim->getModel(), minPrecision);
 
   ofstream out( outFileName.c_str() );
   if (! out) {
@@ -185,6 +184,8 @@ void Interleave::batchTestIncremental(int numIterations,
 	 << strerror(errno) << endl;
     exit(EXIT_FAILURE);
   }
+
+  solver.planInit(sim->getModel(), minPrecision);
 
   double timeSoFar = 1e-20;
   double logLastSimTime = -99;
@@ -298,6 +299,9 @@ void Interleave::printRewards(void) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.12  2006/02/15 16:21:16  trey
+ * now ensure simulation is performed at the end of the run if it ends because the target precision was achieved
+ *
  * Revision 1.11  2006/02/06 19:28:55  trey
  * now make a sim trace only for the first simulation run in each batch, saves much time and disk space
  *
