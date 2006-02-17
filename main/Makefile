@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.19 2006-02-13 21:49:14 trey Exp $
+# $Id: Makefile,v 1.20 2006-02-17 18:38:46 trey Exp $
 #
 # Copyright (c) 2002-2005, Trey Smith
 # All rights reserved.
@@ -41,17 +41,29 @@ BUILDBIN_INDEP_LIBS :=
 BUILDBIN_DEP_LIBS := -lzmdpHsvi -lzmdpPomdpCore -lzmdpPomdpParser -lzmdpCommon
 include $(BUILD_DIR)/buildbin.mak
 
-BUILDBIN_TARGET := solvePomdpGhsvi
-BUILDBIN_SRCS := solvePomdpGhsvi.cc
+BUILDBIN_TARGET := solvePomdpLrtdp
+BUILDBIN_SRCS := solvePomdpLrtdp.cc
 BUILDBIN_INDEP_LIBS :=
-BUILDBIN_DEP_LIBS := -lzmdpGhsvi -lzmdpPomdpCore -lzmdpPomdpParser -lzmdpCommon
+BUILDBIN_DEP_LIBS := -lzmdpLrtdp -lzmdpPomdpCore -lzmdpPomdpParser -lzmdpCommon
 include $(BUILD_DIR)/buildbin.mak
 
-BUILDBIN_TARGET := solvePomdpPAOStar
-BUILDBIN_SRCS := solvePomdpPAOStar.cc
+BUILDBIN_TARGET := solvePomdpFrtdp
+BUILDBIN_SRCS := solvePomdpFrtdp.cc
 BUILDBIN_INDEP_LIBS :=
-BUILDBIN_DEP_LIBS := -lzmdpPAOStar -lzmdpPomdpCore -lzmdpPomdpParser -lzmdpCommon
+BUILDBIN_DEP_LIBS := -lzmdpFrtdp -lzmdpPomdpCore -lzmdpPomdpParser -lzmdpCommon
 include $(BUILD_DIR)/buildbin.mak
+
+#BUILDBIN_TARGET := solvePomdpGhsvi
+#BUILDBIN_SRCS := solvePomdpGhsvi.cc
+#BUILDBIN_INDEP_LIBS :=
+#BUILDBIN_DEP_LIBS := -lzmdpGhsvi -lzmdpPomdpCore -lzmdpPomdpParser -lzmdpCommon
+#include $(BUILD_DIR)/buildbin.mak
+
+#BUILDBIN_TARGET := solvePomdpPAOStar
+#BUILDBIN_SRCS := solvePomdpPAOStar.cc
+#BUILDBIN_INDEP_LIBS :=
+#BUILDBIN_DEP_LIBS := -lzmdpPAOStar -lzmdpPomdpCore -lzmdpPomdpParser -lzmdpCommon
+#include $(BUILD_DIR)/buildbin.mak
 
 BUILDBIN_TARGET := solveRaceTrackRtdp
 BUILDBIN_SRCS := solveRaceTrackRtdp.cc
@@ -65,23 +77,29 @@ BUILDBIN_INDEP_LIBS :=
 BUILDBIN_DEP_LIBS := -lzmdpLrtdp -lzmdpRelaxBound -lzmdpRaceTrack -lzmdpCommon
 include $(BUILD_DIR)/buildbin.mak
 
+BUILDBIN_TARGET := solveRaceTrackHdp
+BUILDBIN_SRCS := solveRaceTrackHdp.cc
+BUILDBIN_INDEP_LIBS :=
+BUILDBIN_DEP_LIBS := -lzmdpHdp -lzmdpRelaxBound -lzmdpRaceTrack -lzmdpCommon
+include $(BUILD_DIR)/buildbin.mak
+
 BUILDBIN_TARGET := solveRaceTrackFrtdp
 BUILDBIN_SRCS := solveRaceTrackFrtdp.cc
 BUILDBIN_INDEP_LIBS :=
 BUILDBIN_DEP_LIBS := -lzmdpFrtdp -lzmdpRelaxBound -lzmdpRaceTrack -lzmdpCommon
 include $(BUILD_DIR)/buildbin.mak
 
-BUILDBIN_TARGET := solveRaceTrackPAOStar
-BUILDBIN_SRCS := solveRaceTrackPAOStar.cc
-BUILDBIN_INDEP_LIBS :=
-BUILDBIN_DEP_LIBS := -lzmdpPAOStar -lzmdpRelaxBound -lzmdpRaceTrack -lzmdpCommon
-include $(BUILD_DIR)/buildbin.mak
+#BUILDBIN_TARGET := solveRaceTrackPAOStar
+#BUILDBIN_SRCS := solveRaceTrackPAOStar.cc
+#BUILDBIN_INDEP_LIBS :=
+#BUILDBIN_DEP_LIBS := -lzmdpPAOStar -lzmdpRelaxBound -lzmdpRaceTrack -lzmdpCommon
+#include $(BUILD_DIR)/buildbin.mak
 
-BUILDBIN_TARGET := solveRaceTrackGhsvi
-BUILDBIN_SRCS := solveRaceTrackGhsvi.cc
-BUILDBIN_INDEP_LIBS :=
-BUILDBIN_DEP_LIBS := -lzmdpGhsvi -lzmdpRelaxBound -lzmdpRaceTrack -lzmdpCommon
-include $(BUILD_DIR)/buildbin.mak
+#BUILDBIN_TARGET := solveRaceTrackGhsvi
+#BUILDBIN_SRCS := solveRaceTrackGhsvi.cc
+#BUILDBIN_INDEP_LIBS :=
+#BUILDBIN_DEP_LIBS := -lzmdpGhsvi -lzmdpRelaxBound -lzmdpRaceTrack -lzmdpCommon
+#include $(BUILD_DIR)/buildbin.mak
 
 ######################################################################
 # DO NOT MODIFY BELOW THIS POINT
@@ -90,6 +108,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.19  2006/02/13 21:49:14  trey
+# added solveRaceTrackFrtdp
+#
 # Revision 1.18  2006/02/13 19:07:55  trey
 # added solveRaceTrackLrtdp
 #
