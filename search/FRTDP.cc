@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2006-02-15 16:24:28 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2006-02-17 21:09:50 $
    
  @file    FRTDP.cc
  @brief   No brief
@@ -101,9 +101,9 @@ void FRTDP::updateInternal(MDPNode& cn)
     maxLBVal = std::max(maxLBVal, lbVal);
     maxUBVal = std::max(maxUBVal, ubVal);
   }
-  cn.lbVal = maxLBVal;
-  cn.ubVal = maxUBVal;
-  //cn.ubVal = std::min(cn.ubVal, maxUBVal); (might be better if UB not uniformly improvable)
+  // min and max calls here only necessary if bounds are not uniformly improvable
+  cn.lbVal = std::max(cn.lbVal, maxLBVal);
+  cn.ubVal = std::min(cn.ubVal, maxUBVal);
 
   int maxUBAction = getMaxUBAction(cn);
   double maxPrio;
@@ -165,6 +165,9 @@ bool FRTDP::doTrial(MDPNode& cn, double pTarget)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2006/02/15 16:24:28  trey
+ * switched to a better termination criterion
+ *
  * Revision 1.2  2006/02/14 19:34:34  trey
  * now use targetPrecision properly
  *
