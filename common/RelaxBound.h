@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2006-02-14 19:30:28 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2006-02-17 21:09:07 $
    
  @file    RelaxBound.h
  @brief   No brief
@@ -47,9 +47,10 @@ struct RelaxBound : public AbstractBound {
   MDPNode* getNode(const state_vector& s);
   void setup(double targetPrecision);
   void expand(MDPNode& cn);
-  void updateInternal(MDPNode& cn, int* maxUBActionP);
-  void update(MDPNode& cn, int* maxUBActionP);
-  void trialRecurse(MDPNode& cn, double pTarget, int depth);
+  void updateInternal(MDPNode& cn);
+  void update(MDPNode& cn);
+  int getMaxUBAction(MDPNode& cn, double* maxUBValP, double* secondBestUBValP) const;
+  void trialRecurse(MDPNode& cn, double costSoFar, double altActionPrio, int depth);
   void doTrial(MDPNode& cn, double pTarget);
 
   // implementation of AbstractBound interface
@@ -64,6 +65,9 @@ struct RelaxBound : public AbstractBound {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2006/02/14 19:30:28  trey
+ * added targetPrecision argument to initialize()
+ *
  * Revision 1.2  2006/02/09 21:56:27  trey
  * added minor efficiency enhancement to calculate maxUBAction during update
  *

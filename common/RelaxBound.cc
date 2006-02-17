@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.4 $  $Author: trey $  $Date: 2006-02-14 19:30:28 $
+ $Revision: 1.5 $  $Author: trey $  $Date: 2006-02-17 21:09:08 $
    
  @file    RelaxBound.cc
  @brief   No brief
@@ -106,10 +106,8 @@ void RelaxBound::expand(MDPNode& cn)
   }
 }
 
-void RelaxBound::updateInternal(MDPNode& cn, int* maxUBActionP)
+void RelaxBound::updateInternal(MDPNode& cn)
 {
-  int maxUBAction = -1;
-
   cn.lbVal = -99e+20;
   cn.ubVal = -99e+20;
   FOR (a, cn.getNumActions()) {
@@ -128,37 +126,56 @@ void RelaxBound::updateInternal(MDPNode& cn, int* maxUBActionP)
     Qa.ubVal = Qa.immediateReward + problem->getDiscount() * Qa.ubVal;
 
     cn.lbVal = std::max(cn.lbVal, Qa.lbVal);
-    if (Qa.ubVal > cn.ubVal) {
-      cn.ubVal = Qa.ubVal;
-      maxUBAction = a;
-    }
+    cn.ubVal = std::max(cn.ubVal, Qa.ubVal);
   }
-
-  if (NULL != maxUBActionP) *maxUBActionP = maxUBAction;
 }
 
-void RelaxBound::update(MDPNode& cn, int* maxUBActionP)
+void RelaxBound::update(MDPNode& cn)
 {
   if (cn.isFringe()) {
     expand(cn);
   }
-  updateInternal(cn, maxUBActionP);
+  updateInternal(cn);
 }
 
-void RelaxBound::trialRecurse(MDPNode& cn, double pTarget, int depth)
+int RelaxBound::getMaxUBAction(MDPNode& cn, double* maxUBValP,
+			       double* secondBestUBValP) const
 {
+  double maxUBVal = -99e+20;
+  double secondBestUBVal = -99e+20;
+  int maxUBAction = -1;
+
+  FOR (a, cn.getNumActions()) {
+    MDPQEntry& Qa = cn.Q[a];
+
+    if (Qa.ubVal > maxUBVal) {
+      secondBestUBVal = maxUBVal;
+      maxUBVal = Qa.ubVal;
+      maxUBAction = a;
+    }
+  }
+
+  if (NULL != maxUBValP) *maxUBValP = maxUBVal;
+  if (NULL != secondBestUBValP) *secondBestUBValP = secondBestUBVal;
+  return maxUBAction;
+}
+
+void RelaxBound::trialRecurse(MDPNode& cn, double costSoFar, double altActionPrio, int depth)
+{
+  // update to ensure cached values in cn.Q are correct
+  update(cn);
+  double maxUBVal, secondBestUBVal;
+  int maxUBAction = getMaxUBAction(cn, &maxUBVal, &secondBestUBVal);
+
   // check for termination
-  if (cn.ubVal - cn.lbVal < pTarget) {
+  double actionPrio = costSoFar + cn.ubVal;
+  if (altActionPrio > actionPrio) {
 #if USE_DEBUG_PRINT
-    printf("  RB trialRecurse: depth=%d [%g .. %g] width=%g pTarget=%g (terminating)\n",
-	   depth, cn.lbVal, cn.ubVal, (cn.ubVal - cn.lbVal), pTarget);
+    printf("  RB trialRecurse: depth=%d [%g .. %g] costSoFar=%g altActionPrio=%g actionPrio=%g (terminating)\n",
+	   depth, cn.lbVal, cn.ubVal, costSoFar, altActionPrio, actionPrio);
 #endif
     return;
   }
-
-  // update to ensure cached values in cn.Q are correct
-  int maxUBAction;
-  update(cn, &maxUBAction);
 
   // select best possible outcome
   MDPQEntry& Qbest = cn.Q[maxUBAction];
@@ -176,22 +193,26 @@ void RelaxBound::trialRecurse(MDPNode& cn, double pTarget, int depth)
   }
 
 #if USE_DEBUG_PRINT
-  printf("  RB trialRecurse: depth=%d a=%d o=%d [%g .. %g] width=%g pTarget=%g\n",
-	 depth, maxUBAction, bestOutcome, cn.lbVal, cn.ubVal, (cn.ubVal-cn.lbVal), pTarget);
+  printf("  RB trialRecurse: depth=%d a=%d o=%d [%g .. %g] altActionPrio=%g actionPrio=%g \n",
+	 depth, maxUBAction, bestOutcome, cn.lbVal, cn.ubVal, altActionPrio, actionPrio);
   printf("  RB trialRecurse: s=%s\n", sparseRep(cn.s).c_str());
 #endif
 
   // recurse to successor
-  MDPNode& bestSuccessor = *cn.Q[maxUBAction].outcomes[bestOutcome]->nextState;
-  double pNextTarget = pTarget / problem->getDiscount();
-  trialRecurse(bestSuccessor, pNextTarget, depth+1);
+  double nextCostSoFar = costSoFar + cn.Q[maxUBAction].immediateReward;
+  double nextAltActionPrio = std::max(altActionPrio, secondBestUBVal + costSoFar);
+  trialRecurse(cn.getNextState(maxUBAction, bestOutcome),
+	       nextCostSoFar, nextAltActionPrio, depth+1);
 
-  update(cn, NULL);
+  update(cn);
 }
 
 void RelaxBound::doTrial(MDPNode& cn, double pTarget)
 {
-  trialRecurse(cn, pTarget, 0);
+  trialRecurse(cn,
+	       /* costSoFar = */ 0,
+	       /* altActionPrio = */ -99e+20,
+	       /* depth = */ 0);
 }
 
 void RelaxBound::initialize(double targetPrecision)
@@ -243,6 +264,9 @@ double RelaxBound::getValue(const state_vector& s) const
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2006/02/14 19:30:28  trey
+ * added targetPrecision argument to initialize()
+ *
  * Revision 1.3  2006/02/10 19:31:44  trey
  * tweaked debug output
  *
