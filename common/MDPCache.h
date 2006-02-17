@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2006-02-13 21:47:53 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2006-02-17 18:10:05 $
    
  @file    MDPCache.h
  @brief   Data structures for caching the explicit search graph
@@ -60,8 +60,9 @@ struct MDPNode {
   bool isTerminal;
   std::vector<MDPQEntry> Q;
   double lbVal, ubVal;
-  bool isSolved; // used by LRTDP
+  bool isSolved; // used by LRTDP and HDP
   double prio; // used by FRTDP
+  int low, idx; // used by HDP
 
   bool isFringe(void) const { return Q.empty(); }
   size_t getNumActions(void) const { return Q.size(); }
@@ -77,6 +78,9 @@ typedef EXT_NAMESPACE::hash_map<std::string, MDPNode*> MDPHash;
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2006/02/13 21:47:53  trey
+ * added prio field in MDPNode
+ *
  * Revision 1.2  2006/02/13 19:07:22  trey
  * added MDPNode::getNextState() convenience method
  *
