@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.8 $  $Author: trey $  $Date: 2006-02-17 18:20:41 $
+ $Revision: 1.9 $  $Author: trey $  $Date: 2006-02-19 18:34:52 $
    
  @file    RTDPCore.cc
  @brief   No brief
@@ -53,8 +53,10 @@ RTDPCore::RTDPCore(AbstractBound* _initUpperBound) :
   initialized(false)
 {}
 
-void RTDPCore::init(double targetPrecision)
+void RTDPCore::init(double _targetPrecision)
 {
+  targetPrecision = _targetPrecision;
+
   if (getUseLowerBound()) {
     initLowerBound = problem->newLowerBound();
     initLowerBound->initialize(targetPrecision);
@@ -67,6 +69,7 @@ void RTDPCore::init(double targetPrecision)
   root = getNode(problem->getInitialState());
 
   previousElapsedTime = secondsToTimeval(0.0);
+  lastPrintTime = 0;
 
   numStatesTouched = 0;
   numStatesExpanded = 0;
@@ -89,13 +92,13 @@ void RTDPCore::init(double targetPrecision)
 }
 
 void RTDPCore::planInit(const MDP* _problem,
-			double targetPrecision)
+			double _targetPrecision)
 {
   problem = _problem;
   initialized = false;
 
 #if USE_TIME_WITHOUT_HEURISTIC
-  init(targetPrecision);
+  init(_targetPrecision);
 #endif
 }
 
@@ -119,11 +122,11 @@ MDPNode* RTDPCore::getNode(const state_vector& s)
     if (getUseLowerBound()) {
       if (cn.isTerminal) {
 	cn.lbVal = 0;
-	cn.prio = -1000;
       } else {
 	cn.lbVal = initLowerBound->getValue(s);
-	cn.prio = log(cn.ubVal - cn.lbVal);
       }
+      double excessWidth = cn.ubVal - cn.lbVal - RT_PRIO_IMPROVEMENT_CONSTANT * targetPrecision;
+      cn.prio = (excessWidth <= 0) ? RT_PRIO_MINUS_INFINITY : log(excessWidth);
     } else {
       cn.lbVal = -1; // n/a
     }
@@ -207,24 +210,24 @@ void RTDPCore::update(MDPNode& cn)
 
 bool RTDPCore::planFixedTime(const state_vector& s,
 			     double maxTimeSeconds,
-			     double targetPrecision)
+			     double _targetPrecision)
 {
   boundsStartTime = getTime() - previousElapsedTime;
 
   if (!initialized) {
     boundsStartTime = getTime();
-    init(targetPrecision);
+    init(_targetPrecision);
   }
 
   // disable this termination check for now
   //if (root->ubVal - root->lbVal < targetPrecision) return true;
-  bool done = doTrial(*root, targetPrecision);
+  bool done = doTrial(*root);
 
   previousElapsedTime = getTime() - boundsStartTime;
 
   if (NULL != boundsFile) {
     double elapsed = timevalToSeconds(getTime() - boundsStartTime);
-    if (done || elapsed / lastPrintTime >= 1.01) {
+    if (done || (0 == lastPrintTime) || elapsed / lastPrintTime >= 1.01) {
       (*boundsFile) << timevalToSeconds(getTime() - boundsStartTime)
 		    << " " << root->lbVal
 		    << " " << root->ubVal
@@ -323,6 +326,9 @@ ValueInterval RTDPCore::getValueAt(const state_vector& s) const
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.8  2006/02/17 18:20:41  trey
+ * renamed LStack -> NodeStack and moved it from LRTDP to RTDPCore so that it can also be used by HDP; added initialization of idx field of nodes in getNode()
+ *
  * Revision 1.7  2006/02/15 16:26:15  trey
  * added USE_TIME_WITHOUT_HEURISTIC support, switched prio to be logarithmic, added tie-break condition for chooseAction()
  *

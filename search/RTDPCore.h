@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.5 $  $Author: trey $  $Date: 2006-02-17 18:20:41 $
+ $Revision: 1.6 $  $Author: trey $  $Date: 2006-02-19 18:33:06 $
    
  @file    RTDPCore.h
  @brief   No brief
@@ -38,6 +38,8 @@
 #define OBS_IS_ZERO_EPS (1e-10)
 #define RT_CLEAR_STD_STACK(x) while (!(x).empty()) (x).pop();
 #define RT_IDX_PLUS_INFINITY (INT_MAX)
+#define RT_PRIO_MINUS_INFINITY (-99e+20)
+#define RT_PRIO_IMPROVEMENT_CONSTANT (0.5)
 
 namespace zmdp {
 
@@ -91,10 +93,11 @@ struct RTDPCore : public Solver {
   double lastPrintTime;
   std::ostream* boundsFile;
   bool initialized;
+  double targetPrecision;
 
   RTDPCore(AbstractBound* _initUpperBound);
 
-  void init(double targetPrecision);
+  void init(double _targetPrecision);
   MDPNode* getNode(const state_vector& s);
   void expand(MDPNode& cn);
   int getMaxUBAction(MDPNode& cn) const;
@@ -105,13 +108,13 @@ struct RTDPCore : public Solver {
   // in varying ways
   virtual bool getUseLowerBound(void) const = 0;
   virtual void updateInternal(MDPNode& cn) = 0;
-  virtual bool doTrial(MDPNode& cn, double pTarget) = 0;
+  virtual bool doTrial(MDPNode& cn) = 0;
 
   // virtual functions from Solver that constitute the external api
-  void planInit(const MDP* pomdp, double targetPrecision);
+  void planInit(const MDP* pomdp, double _targetPrecision);
   bool planFixedTime(const state_vector& s,
 		     double maxTimeSeconds,
-		     double targetPrecision);
+		     double _targetPrecision);
   int chooseAction(const state_vector& s);
   void setBoundsFile(std::ostream* boundsFile);
   ValueInterval getValueAt(const state_vector& s) const;
@@ -124,6 +127,9 @@ struct RTDPCore : public Solver {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.5  2006/02/17 18:20:41  trey
+ * renamed LStack -> NodeStack and moved it from LRTDP to RTDPCore so that it can also be used by HDP; added initialization of idx field of nodes in getNode()
+ *
  * Revision 1.4  2006/02/15 16:26:15  trey
  * added USE_TIME_WITHOUT_HEURISTIC support, switched prio to be logarithmic, added tie-break condition for chooseAction()
  *
