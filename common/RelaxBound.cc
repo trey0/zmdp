@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.5 $  $Author: trey $  $Date: 2006-02-17 21:09:08 $
+ $Revision: 1.6 $  $Author: trey $  $Date: 2006-02-19 18:30:50 $
    
  @file    RelaxBound.cc
  @brief   No brief
@@ -152,6 +152,8 @@ int RelaxBound::getMaxUBAction(MDPNode& cn, double* maxUBValP,
       secondBestUBVal = maxUBVal;
       maxUBVal = Qa.ubVal;
       maxUBAction = a;
+    } else if (Qa.ubVal > secondBestUBVal) {
+      secondBestUBVal = Qa.ubVal;
     }
   }
 
@@ -264,6 +266,9 @@ double RelaxBound::getValue(const state_vector& s) const
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.5  2006/02/17 21:09:08  trey
+ * fixed stack overflow on undiscounted problems (unfortunately, initialization is slower now)
+ *
  * Revision 1.4  2006/02/14 19:30:28  trey
  * added targetPrecision argument to initialize()
  *
