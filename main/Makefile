@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.20 2006-02-17 18:38:46 trey Exp $
+# $Id: Makefile,v 1.21 2006-02-19 22:20:44 trey Exp $
 #
 # Copyright (c) 2002-2005, Trey Smith
 # All rights reserved.
@@ -45,6 +45,12 @@ BUILDBIN_TARGET := solvePomdpLrtdp
 BUILDBIN_SRCS := solvePomdpLrtdp.cc
 BUILDBIN_INDEP_LIBS :=
 BUILDBIN_DEP_LIBS := -lzmdpLrtdp -lzmdpPomdpCore -lzmdpPomdpParser -lzmdpCommon
+include $(BUILD_DIR)/buildbin.mak
+
+BUILDBIN_TARGET := solvePomdpHdp
+BUILDBIN_SRCS := solvePomdpHdp.cc
+BUILDBIN_INDEP_LIBS :=
+BUILDBIN_DEP_LIBS := -lzmdpHdp -lzmdpPomdpCore -lzmdpPomdpParser -lzmdpCommon
 include $(BUILD_DIR)/buildbin.mak
 
 BUILDBIN_TARGET := solvePomdpFrtdp
@@ -108,6 +114,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.20  2006/02/17 18:38:46  trey
+# added several new binaries
+#
 # Revision 1.19  2006/02/13 21:49:14  trey
 # added solveRaceTrackFrtdp
 #
