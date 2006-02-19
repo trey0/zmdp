@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-02-17 18:20:55 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-02-19 18:33:36 $
    
  @file    HDP.cc
  @brief   Implementation of Bonet and Geffner's HDP algorithm
@@ -86,7 +86,7 @@ void HDP::updateInternal(MDPNode& cn)
   cn.ubVal = cn.Q[maxUBAction].ubVal;
 }
 
-bool HDP::trialRecurse(MDPNode& cn, double pTarget, int depth)
+bool HDP::trialRecurse(MDPNode& cn, int depth)
 {
 #if USE_DEBUG_PRINT
   printf("  trialRecurse: depth=%d ubVal=%g\n",
@@ -106,7 +106,8 @@ bool HDP::trialRecurse(MDPNode& cn, double pTarget, int depth)
   if (cn.isFringe()) expand(cn);
   cacheQ(cn);
   int maxUBAction = getMaxUBAction(cn);
-  if (residual(cn) > pTarget) {
+  // FIX do not recalculate maxUBAction in residual()
+  if (residual(cn) > targetPrecision) {
     cn.ubVal = cn.Q[maxUBAction].ubVal;
 
 #if USE_DEBUG_PRINT
@@ -131,7 +132,7 @@ bool HDP::trialRecurse(MDPNode& cn, double pTarget, int depth)
       MDPNode& sn = *e->nextState;
       //printf("      a=%d o=%d sn=[%s] sn.idx=%d\n", maxUBAction, o, denseRep(sn.s).c_str(), sn.idx);
       if (RT_IDX_PLUS_INFINITY == sn.idx) {
-	if (trialRecurse(sn, pTarget, depth+1)) {
+	if (trialRecurse(sn, depth+1)) {
 	  flag = true;
 	}
 	cn.low = std::min(cn.low, sn.low);
@@ -162,7 +163,7 @@ bool HDP::trialRecurse(MDPNode& cn, double pTarget, int depth)
   return flag;
 }
 
-bool HDP::doTrial(MDPNode& cn, double pTarget)
+bool HDP::doTrial(MDPNode& cn)
 {
   if (cn.isSolved) {
     printf("-*- doTrial: root node is solved, terminating\n");
@@ -174,7 +175,7 @@ bool HDP::doTrial(MDPNode& cn, double pTarget)
 #endif
 
   index = 0;
-  trialRecurse(cn, pTarget, 0);
+  trialRecurse(cn, 0);
   // reset idx to +infinity for visited states
   while (!visited.empty()) {
     visited.top()->idx = RT_IDX_PLUS_INFINITY;
@@ -193,5 +194,8 @@ bool HDP::doTrial(MDPNode& cn, double pTarget)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/02/17 18:20:55  trey
+ * initial check-in
+ *
  *
  ***************************************************************************/

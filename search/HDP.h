@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-02-17 18:20:55 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-02-19 18:33:35 $
    
  @file    HDP.h
  @brief   Implementation of Bonet and Geffner's HDP algorithm
@@ -45,8 +45,8 @@ struct HDP : public RTDPCore {
 
   bool getUseLowerBound(void) const { return false; }
   void updateInternal(MDPNode& cn);
-  bool trialRecurse(MDPNode& cn, double pTarget, int depth);
-  bool doTrial(MDPNode& cn, double pTarget);
+  bool trialRecurse(MDPNode& cn, int depth);
+  bool doTrial(MDPNode& cn);
 };
 
 }; // namespace zmdp
@@ -56,5 +56,8 @@ struct HDP : public RTDPCore {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/02/17 18:20:55  trey
+ * initial check-in
+ *
  *
  ***************************************************************************/

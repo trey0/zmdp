@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.5 $  $Author: trey $  $Date: 2006-02-17 18:34:34 $
+ $Revision: 1.6 $  $Author: trey $  $Date: 2006-02-19 18:35:09 $
    
  @file    LRTDP.cc
  @brief   Implementation of Bonet and Geffner's LRTDP algorithm
@@ -79,7 +79,7 @@ double LRTDP::residual(MDPNode& cn)
   return fabs(cn.ubVal - cn.Q[maxUBAction].ubVal);
 }
 
-bool LRTDP::checkSolved(MDPNode& cn, double pTarget)
+bool LRTDP::checkSolved(MDPNode& cn)
 {
   bool rv = true;
   NodeStack open, closed;
@@ -94,7 +94,7 @@ bool LRTDP::checkSolved(MDPNode& cn, double pTarget)
       expand(n);
     }
     cacheQ(n);
-    if (residual(n) > pTarget) {
+    if (residual(n) > targetPrecision) {
       rv = false;
       continue;
     }
@@ -113,7 +113,9 @@ bool LRTDP::checkSolved(MDPNode& cn, double pTarget)
     }
   }
 
+#if USE_DEBUG_PRINT
   int numClosedStates = closed.size();
+#endif
   if (rv) {
     // label relevant states
     while (!closed.empty()) {
@@ -142,7 +144,7 @@ void LRTDP::updateInternal(MDPNode& cn)
   cn.ubVal = cn.Q[maxUBAction].ubVal;
 }
 
-bool LRTDP::trialRecurse(MDPNode& cn, double pTarget, int depth)
+bool LRTDP::trialRecurse(MDPNode& cn, int depth)
 {
   // check for termination
   if (cn.isSolved) {
@@ -167,22 +169,22 @@ bool LRTDP::trialRecurse(MDPNode& cn, double pTarget, int depth)
 
   // recurse to successor
   bool solvedAtNextDepth =
-    trialRecurse(cn.getNextState(maxUBAction, simulatedOutcome), pTarget, depth+1);
+    trialRecurse(cn.getNextState(maxUBAction, simulatedOutcome), depth+1);
 
   if (solvedAtNextDepth) {
-    return checkSolved(cn, pTarget);
+    return checkSolved(cn);
   } else {
     return false;
   }
 }
 
-bool LRTDP::doTrial(MDPNode& cn, double pTarget)
+bool LRTDP::doTrial(MDPNode& cn)
 {
 #if USE_DEBUG_PRINT
   printf("-*- doTrial: trial %d\n", (numTrials+1));
 #endif
 
-  trialRecurse(cn, pTarget, 0);
+  trialRecurse(cn, 0);
   numTrials++;
 
   return cn.isSolved;
@@ -193,6 +195,9 @@ bool LRTDP::doTrial(MDPNode& cn, double pTarget)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.5  2006/02/17 18:34:34  trey
+ * renamed LStack -> NodeStack and moved it from LRTDP to RTDPCore so it could be shared with HDP
+ *
  * Revision 1.4  2006/02/14 19:34:34  trey
  * now use targetPrecision properly
  *

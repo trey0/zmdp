@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.6 $  $Author: trey $  $Date: 2006-02-14 19:34:43 $
+ $Revision: 1.7 $  $Author: trey $  $Date: 2006-02-19 18:33:47 $
    
  @file    RTDP.h
  @brief   No brief
@@ -37,8 +37,8 @@ struct RTDP : public RTDPCore {
 
   bool getUseLowerBound(void) const { return false; }
   void updateInternal(MDPNode& cn);
-  void trialRecurse(MDPNode& cn, double pTarget, int depth);
-  bool doTrial(MDPNode& cn, double pTarget);
+  void trialRecurse(MDPNode& cn, int depth);
+  bool doTrial(MDPNode& cn);
 };
 
 }; // namespace zmdp
@@ -48,6 +48,9 @@ struct RTDP : public RTDPCore {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.6  2006/02/14 19:34:43  trey
+ * now use targetPrecision properly
+ *
  * Revision 1.5  2006/02/13 20:20:33  trey
  * refactored some common code from RTDP and LRTDP
  *

@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.7 $  $Author: trey $  $Date: 2006-02-14 19:34:43 $
+ $Revision: 1.8 $  $Author: trey $  $Date: 2006-02-19 18:33:47 $
    
  @file    RTDP.cc
  @brief   No brief
@@ -74,7 +74,7 @@ void RTDP::updateInternal(MDPNode& cn)
   numBackups++;
 }
 
-void RTDP::trialRecurse(MDPNode& cn, double pTarget, int depth)
+void RTDP::trialRecurse(MDPNode& cn, int depth)
 {
   // check for termination
   if (cn.isTerminal) {
@@ -98,19 +98,18 @@ void RTDP::trialRecurse(MDPNode& cn, double pTarget, int depth)
 #endif
 
   // recurse to successor
-  double pNextTarget = pTarget / problem->getDiscount();
-  trialRecurse(cn.getNextState(maxUBAction, simulatedOutcome), pNextTarget, depth+1);
+  trialRecurse(cn.getNextState(maxUBAction, simulatedOutcome), depth+1);
 
   update(cn);
 }
 
-bool RTDP::doTrial(MDPNode& cn, double pTarget)
+bool RTDP::doTrial(MDPNode& cn)
 {
 #if USE_DEBUG_PRINT
   printf("-*- doTrial: trial %d\n", (numTrials+1));
 #endif
 
-  trialRecurse(cn, pTarget, 0);
+  trialRecurse(cn, 0);
   numTrials++;
 
   return false;
@@ -121,6 +120,9 @@ bool RTDP::doTrial(MDPNode& cn, double pTarget)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.7  2006/02/14 19:34:43  trey
+ * now use targetPrecision properly
+ *
  * Revision 1.6  2006/02/13 20:20:33  trey
  * refactored some common code from RTDP and LRTDP
  *
