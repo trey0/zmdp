@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.4 $  $Author: trey $  $Date: 2006-02-17 21:09:50 $
+ $Revision: 1.5 $  $Author: trey $  $Date: 2006-02-19 18:34:35 $
    
  @file    FRTDP.cc
  @brief   No brief
@@ -50,38 +50,44 @@ FRTDP::FRTDP(AbstractBound* _initUpperBound) :
   RTDPCore(_initUpperBound)
 {}
 
-int FRTDP::getMaxPrioOutcome(MDPNode& cn, int a,
-			     double* maxPrioP,
-			     double* secondBestPrioP) const
+void FRTDP::getMaxPrioOutcome(MDPNode& cn, int a, FRTDPUpdateResult& r) const
 {
-  double maxPrio = -99e+20;
-  double secondBestPrio = -99e+20;
-  int maxPrioOutcome = -1;
+  r.maxPrio = -99e+20;
+  r.secondBestPrio = -99e+20;
+  r.maxPrioOutcome = -1;
   double prio;
   MDPQEntry& Qa = cn.Q[a];
   FOR (o, Qa.getNumOutcomes()) {
     MDPEdge* e = Qa.outcomes[o];
     if (NULL != e) {
-      prio = log(e->obsProb) + e->nextState->prio;
-      if (prio > maxPrio) {
-	secondBestPrio = maxPrio;
-	maxPrio = prio;
-	maxPrioOutcome = o;
+      prio = log(problem->getDiscount() * e->obsProb) + e->nextState->prio;
+      if (prio > r.maxPrio) {
+	r.secondBestPrio = r.maxPrio;
+	r.maxPrio = prio;
+	r.maxPrioOutcome = o;
+      } else if (prio > r.secondBestPrio) {
+	r.secondBestPrio = prio;
       }
+#if 0
+      printf("    a=%d o=%d obsProb=%g nsprio=%g prio=%g\n",
+	     a, o, e->obsProb, e->nextState->prio, prio);
+      if (e->nextState->prio < -99e+20) {
+	MDPNode& sn = *e->nextState;
+	printf("ns: s=[%s] [%g .. %g] prio=%g\n",
+	       denseRep(sn.s).c_str(), sn.lbVal, sn.ubVal, sn.prio);
+      }
+#endif
     }
   }
-
-  if (NULL != maxPrioP) *maxPrioP = maxPrio;
-  if (NULL != secondBestPrioP) *secondBestPrioP = secondBestPrio;
-
-  return maxPrioOutcome;
 }
 
-void FRTDP::updateInternal(MDPNode& cn)
+void FRTDP::update2(MDPNode& cn, FRTDPUpdateResult& r)
 {
-  double lbVal, ubVal;
   double maxLBVal = -99e+20;
-  double maxUBVal = -99e+20;
+  r.maxUBVal = -99e+20;
+  r.secondBestUBVal = -99e+20;
+  r.maxUBAction = -1;
+  double lbVal, ubVal;
   FOR (a, cn.getNumActions()) {
     MDPQEntry& Qa = cn.Q[a];
     lbVal = 0;
@@ -99,65 +105,99 @@ void FRTDP::updateInternal(MDPNode& cn)
     Qa.ubVal = ubVal = Qa.immediateReward + problem->getDiscount() * ubVal;
 
     maxLBVal = std::max(maxLBVal, lbVal);
-    maxUBVal = std::max(maxUBVal, ubVal);
+    if (ubVal > r.maxUBVal) {
+      r.secondBestUBVal = r.maxUBVal;
+      r.maxUBVal = ubVal;
+      r.maxUBAction = a;
+    } else if (ubVal > r.secondBestUBVal) {
+      r.secondBestUBVal = ubVal;
+    }
   }
-  // min and max calls here only necessary if bounds are not uniformly improvable
-  cn.lbVal = std::max(cn.lbVal, maxLBVal);
-  cn.ubVal = std::min(cn.ubVal, maxUBVal);
 
-  int maxUBAction = getMaxUBAction(cn);
-  double maxPrio;
-  getMaxPrioOutcome(cn, maxUBAction, &maxPrio);
-  cn.prio = maxPrio;
+#if 1
+  // min and max calls here only necessary if bounds are not uniformly improvable
+  maxLBVal = std::max(cn.lbVal, maxLBVal);
+  r.maxUBVal = std::min(cn.ubVal, r.maxUBVal);
+#endif
+
+  r.ubResidual = cn.ubVal - r.maxUBVal;
+
+  cn.lbVal = maxLBVal;
+  cn.ubVal = r.maxUBVal;
+
+  getMaxPrioOutcome(cn, r.maxUBAction, r);
+  cn.prio = r.maxPrio;
 
   numBackups++;
 }
 
-void FRTDP::trialRecurse(MDPNode& cn, double occ, double altPrio, int depth)
+void FRTDP::trialRecurse(MDPNode& cn, double actionDelta, double altPrio, int depth)
 {
-  // cached Q values must be up to date for subsequent calls
-  update(cn);
+  if (cn.isFringe()) {
+    expand(cn);
+  }
 
-  int maxUBAction = getMaxUBAction(cn);
-  double maxPrio, secondBestPrio;
-  int maxPrioOutcome = getMaxPrioOutcome(cn, maxUBAction,
-					 &maxPrio, &secondBestPrio);
+  FRTDPUpdateResult r;
+  update2(cn, r);
 
-  // check for termination
-  if (occ+maxPrio < std::max(altPrio - 1e-10, -1000.0)) {
+  double excessWidth = cn.ubVal - cn.lbVal - RT_PRIO_IMPROVEMENT_CONSTANT * targetPrecision;
+
+  // is there a better way to enforce this?
+  cn.prio = std::min(cn.prio, (excessWidth <= 0) ? RT_PRIO_MINUS_INFINITY : log(excessWidth));
+
 #if USE_DEBUG_PRINT
-    printf("  trialRecurse: depth=%d occ=%g maxPrio=%g altPrio=%g occ*maxPrio=%g (terminating)\n",
-	   depth, occ, maxPrio, altPrio, maxPrio*occ);
+  printf("  trialRecurse: depth=%d [%g .. %g] actionDelta=%g altPrio=%g a=%d o=%d\n",
+	 depth, cn.lbVal, cn.ubVal, actionDelta, altPrio, r.maxUBAction, r.maxPrioOutcome);
+  printf("  trialRecurse: s=%s\n", sparseRep(cn.s).c_str());
+#endif
+
+#if 0
+  printf("  tr: maxUBAction=%d maxUBVal=%g secondBestUBVal=%g ubResidual=%g\n",
+	 r.maxUBAction, r.maxUBVal, r.secondBestUBVal, r.ubResidual);
+  printf("  tr: maxPrioOutcome=%d maxPrio=%g secondBestPrio=%g\n",
+	 r.maxPrioOutcome, r.maxPrio, r.secondBestPrio);
+#endif
+
+  if (excessWidth < 0
+#if USE_FRTDP_ALT_PRIO
+      || (r.maxPrio - altPrio) < -1e-10
+#endif
+      //|| actionDelta < -targetPrecision
+      ) {
+#if USE_DEBUG_PRINT
+    printf("  trialRecurse: depth=%d actionDelta=%g altPrio=%g excessWidth=%g (terminating)\n",
+	   depth, actionDelta, altPrio, excessWidth);
     printf("  trialRecurse: s=%s\n", sparseRep(cn.s).c_str());
 #endif
     return;
   }
 
-#if USE_DEBUG_PRINT
-  printf("  trialRecurse: depth=%d a=%d o=%d ubVal=%g occ=%g altPrio=%g maxPrio=%g\n",
-	 depth, maxUBAction, maxPrioOutcome, cn.ubVal, occ, altPrio, maxPrio);
-  printf("  trialRecurse: s=%s\n", sparseRep(cn.s).c_str());
-#endif
-
   // recurse to successor
-  double obsProb = cn.Q[maxUBAction].outcomes[maxPrioOutcome]->obsProb;
-  double nextOcc = occ + log(obsProb);
-  double nextAltPrio = std::max(altPrio, occ + secondBestPrio);
-  trialRecurse(cn.getNextState(maxUBAction, maxPrioOutcome), nextOcc, nextAltPrio, depth+1);
+  double obsProb = cn.Q[r.maxUBAction].outcomes[r.maxPrioOutcome]->obsProb;
+  double weight = problem->getDiscount() * obsProb;
+  double nextActionDelta = std::min(r.maxUBVal - r.secondBestUBVal,
+				    (actionDelta - r.ubResidual) / weight);
+  double nextAltPrio = std::max(r.secondBestPrio,
+				altPrio - log(weight));
+  trialRecurse(cn.getNextState(r.maxUBAction, r.maxPrioOutcome),
+	       nextActionDelta, nextAltPrio, depth+1);
 
-  update(cn);
+  update2(cn, r);
 }
 
-bool FRTDP::doTrial(MDPNode& cn, double pTarget)
+bool FRTDP::doTrial(MDPNode& cn)
 {
 #if USE_DEBUG_PRINT
   printf("-*- doTrial: trial %d\n", (numTrials+1));
 #endif
 
-  trialRecurse(cn, /* occ = */ 0, /* altPrio = */ -1000, 0);
+  trialRecurse(cn,
+	       /* actionDelta = */ 99e+20,
+	       /* altPrio = */ RT_PRIO_MINUS_INFINITY,
+	       /* depth = */ 0);
   numTrials++;
 
-  return (cn.ubVal - cn.lbVal < pTarget);
+  return (cn.ubVal - cn.lbVal < targetPrecision);
 }
 
 }; // namespace zmdp
@@ -165,6 +205,9 @@ bool FRTDP::doTrial(MDPNode& cn, double pTarget)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2006/02/17 21:09:50  trey
+ * made updates robust to a non-uniformly-improvable lower bound
+ *
  * Revision 1.3  2006/02/15 16:24:28  trey
  * switched to a better termination criterion
  *
