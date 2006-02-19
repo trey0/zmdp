@@ -1,7 +1,7 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-02-17 18:38:33 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-02-19 22:20:34 $
 
- @file    solvePomdpLrtdp.cc
+ @file    solvePomdpHdp.cc
  @brief   No brief
 
  Copyright (c) 2006, Trey Smith. All rights reserved.
@@ -26,12 +26,12 @@
  ***************************************************************************/
 
 #include "PomdpSim.h"
-#include "LRTDP.h"
+#include "HDP.h"
 
 #define SP_EXTRA_ARGS        "<problem.pomdp>"
 #define SP_REQUIRE_PROB_NAME (1)
 #define SP_GENERATE_PROBLEM  Pomdp(prob_name, use_fast_parser)
-#define SP_GENERATE_SOLVER   LRTDP(problem->newUpperBound())
+#define SP_GENERATE_SOLVER   HDP(problem->newUpperBound())
 #define SP_GENERATE_SIM      PomdpSim((Pomdp*) problem)
 
 #include "solveProblem.cc"
