@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.5 $  $Author: trey $  $Date: 2006-02-17 18:17:35 $
+ $Revision: 1.6 $  $Author: trey $  $Date: 2006-02-19 22:19:25 $
    
  @file    RaceTrack.h
  @brief   No brief
@@ -43,6 +43,7 @@ struct TrackMap;
 class RaceTrack : public MDP {
 public:
   double errorProbability;
+  bool useErrorIsWind;
   bool useMaxCost;
   double maxCost;
   state_vector bogusInitialState, terminalState;
@@ -85,6 +86,9 @@ public:
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.5  2006/02/17 18:17:35  trey
+ * added useMaxCost and maxCost fields, allowing RaceTrack to be used as an undiscounted problem
+ *
  * Revision 1.4  2006/02/06 19:27:24  trey
  * fixed several problems
  *

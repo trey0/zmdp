@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.8 $  $Author: trey $  $Date: 2006-02-17 18:17:36 $
+ $Revision: 1.9 $  $Author: trey $  $Date: 2006-02-19 22:19:25 $
   
  @file    RaceTrack.cc
  @brief   No brief
@@ -48,20 +48,25 @@
 using namespace std;
 using namespace MatrixUtils;
 
-namespace zmdp {
-
 #define IS_INITIAL_STATE(s)  (-1 == s(0))
 #define IS_TERMINAL_STATE(s) (-2 == s(0))
 
 #define RT_DEBUG_PRINT (0)
 
+namespace zmdp {
+
 enum RTOutcomeEnum {
   RT_NORMAL = 0,
-  RT_SLIP   = 1,
-  RT_FINISH = 2,
-  RT_CRASH  = 3,
+  RT_FINISH = 1,
+  RT_CRASH  = 2,
+  RT_SLIP   = 3,
   RT_MAX    = 4
 };
+
+// acceleration error induced by 'wind' for different outcomes, when
+//   useErrorIsWind is set
+static int dax[] = { 0, 0, 0, -1, -1, -1,  0,  0,  1,  1,  1 };
+static int day[] = { 0, 0, 0, -1,  0,  1, -1,  1, -1,  0,  1 };
 
 /**********************************************************************
  * PROPERTYLIST DATA STRUCTURE
@@ -427,6 +432,7 @@ void RaceTrack::readFromFile(const std::string& specFileName)
   } else {
     maxCost = -1; // n/a
   }
+  useErrorIsWind = atoi(plist.getValue("useErrorIsWind").c_str());
 
   tmap = new TrackMap();
   tmap->readFromFile(specFileName, plist.inFile, plist.lnum);
@@ -460,11 +466,21 @@ outcome_prob_vector& RaceTrack::getOutcomeProbVector(outcome_prob_vector& result
     result.resize(1);
     result(0) = 1;
   } else {
-    result.resize(RT_MAX);
+    if (useErrorIsWind) {
+      result.resize(RT_MAX+7);
+    } else {
+      result.resize(RT_MAX);
+    }
     result(RT_NORMAL) = 1-errorProbability;
-    result(RT_SLIP)   = errorProbability;
     result(RT_FINISH) = 0;
     result(RT_CRASH)  = 0;
+    if (useErrorIsWind) {
+      FOR (i, 8) {
+	result(RT_SLIP+i) = errorProbability / 8;
+      }
+    } else {
+      result(RT_SLIP)   = errorProbability;
+    }
     
     int oldX =  (int) s(0);
     int oldY =  (int) s(1);
@@ -473,25 +489,25 @@ outcome_prob_vector& RaceTrack::getOutcomeProbVector(outcome_prob_vector& result
     int ax = (a / 3) - 1;
     int ay = (a % 3) - 1;
 
-    // if the commanded acceleration was 0, outcomes RT_NORMAL and
-    // RT_SLIP are the same: combine their probabilities
-    if (0 == ax && 0 == ay) {
-      result(RT_NORMAL) += result(RT_SLIP);
-      result(RT_SLIP) = 0;
-    }
-    
     // the rest of the code determines if either the normal or slip case
     // causes a crash or successful finish... if so, move probability
     // mass from that outcome to outcome RT_FINISH or RT_CRASH.
 #define RT_CHECK_OUTCOME(WHICH_OUTCOME,AX,AY)                      \
-    int lineType = tmap->lineType(oldX, oldY, oldVX+AX, oldVY+AY); \
+    lineType = tmap->lineType(oldX, oldY, oldVX+AX, oldVY+AY);     \
     if (RT_NORMAL != lineType) {                                   \
       result(lineType) += result(WHICH_OUTCOME);                   \
       result(WHICH_OUTCOME) = 0;                                   \
     }
 
-    RT_CHECK_OUTCOME(RT_NORMAL, ax, ay);
-    if (result(RT_SLIP) > 0.0) {
+    int lineType, o;
+    if (useErrorIsWind) {
+      RT_CHECK_OUTCOME(RT_NORMAL, ax, ay);
+      FOR (i, 8) {
+	o = RT_SLIP+i;
+	RT_CHECK_OUTCOME(o, ax+dax[o], ay+day[o]);
+      }
+    } else {
+      RT_CHECK_OUTCOME(RT_NORMAL, ax, ay);
       RT_CHECK_OUTCOME(RT_SLIP, 0, 0);
     }
   }
@@ -525,16 +541,24 @@ state_vector& RaceTrack::getNextState(state_vector& result, const state_vector& 
       result = bogusInitialState;
       break;
     default:
+      // commanded acceleration
       int ax = (a / 3) - 1;
       int ay = (a % 3) - 1;
-      sla::dvector tmp(4);
-      if (RT_NORMAL == o) { // normal case
-	tmp(2) = s(2) + ax;
-	tmp(3) = s(3) + ay;
-      } else {              // 'slip' case (acceleration command failed)
-	tmp(2) = s(2);
-	tmp(3) = s(3);
+      // account for errors
+      if (useErrorIsWind) {
+	ax += dax[o];
+	ay += day[o];
+      } else {
+	if (RT_SLIP == o) {
+	  ax = 0;
+	  ay = 0;
+	}
       }
+      sla::dvector tmp(4);
+      // integrate acceleration into velocity
+      tmp(2) = s(2) + ax;
+      tmp(3) = s(3) + ay;
+      // integrate velocity into position
       tmp(0) = s(0) + tmp(2);
       tmp(1) = s(1) + tmp(3);
       copy(result, tmp);
@@ -589,6 +613,9 @@ AbstractBound* RaceTrack::newUpperBound(void) const
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.8  2006/02/17 18:17:36  trey
+ * added useMaxCost and maxCost fields, allowing RaceTrack to be used as an undiscounted problem
+ *
  * Revision 1.7  2006/02/14 19:33:35  trey
  * added targetPrecision argument for bounds initialization
  *
