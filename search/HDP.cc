@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2006-02-19 18:33:36 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2006-02-20 00:04:49 $
    
  @file    HDP.cc
  @brief   Implementation of Bonet and Geffner's HDP algorithm
@@ -53,21 +53,40 @@ HDP::HDP(AbstractBound* _initUpperBound) :
 
 void HDP::cacheQ(MDPNode& cn)
 {
+#if USE_HDP_LOWER_BOUND
+  double lbVal;
+  double maxLBVal = -99e+20;
+#endif
   double ubVal;
   FOR (a, cn.getNumActions()) {
     MDPQEntry& Qa = cn.Q[a];
+#if USE_HDP_LOWER_BOUND
+    lbVal = 0;
+#endif
     ubVal = 0;
     FOR (o, Qa.getNumOutcomes()) {
       MDPEdge* e = Qa.outcomes[o];
       if (NULL != e) {
 	MDPNode& sn = *e->nextState;
 	double oprob = e->obsProb;
+#if USE_HDP_LOWER_BOUND
+	lbVal += oprob * sn.lbVal;
+#endif
 	ubVal += oprob * sn.ubVal;
       }
     }
+#if USE_HDP_LOWER_BOUND
+    Qa.lbVal = lbVal = Qa.immediateReward + problem->getDiscount() * lbVal;
+    maxLBVal = std::max(maxLBVal, lbVal);
+#endif
+
     ubVal = Qa.immediateReward + problem->getDiscount() * ubVal;
     Qa.ubVal = ubVal;
   }
+
+#if USE_HDP_LOWER_BOUND
+  cn.lbVal = maxLBVal;
+#endif
 
   numBackups++;
 }
@@ -194,6 +213,9 @@ bool HDP::doTrial(MDPNode& cn)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2006/02/19 18:33:36  trey
+ * targetPrecision now stared as a field rather than passed around recursively
+ *
  * Revision 1.1  2006/02/17 18:20:55  trey
  * initial check-in
  *

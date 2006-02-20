@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2006-02-19 18:33:35 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2006-02-20 00:04:49 $
    
  @file    HDP.h
  @brief   Implementation of Bonet and Geffner's HDP algorithm
@@ -43,7 +43,11 @@ struct HDP : public RTDPCore {
   void cacheQ(MDPNode& cn);
   double residual(MDPNode& cn);
 
+#if USE_HDP_LOWER_BOUND
+  bool getUseLowerBound(void) const { return true; }
+#else
   bool getUseLowerBound(void) const { return false; }
+#endif
   void updateInternal(MDPNode& cn);
   bool trialRecurse(MDPNode& cn, int depth);
   bool doTrial(MDPNode& cn);
@@ -56,6 +60,9 @@ struct HDP : public RTDPCore {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2006/02/19 18:33:35  trey
+ * targetPrecision now stared as a field rather than passed around recursively
+ *
  * Revision 1.1  2006/02/17 18:20:55  trey
  * initial check-in
  *
