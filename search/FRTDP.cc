@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.5 $  $Author: trey $  $Date: 2006-02-19 18:34:35 $
+ $Revision: 1.6 $  $Author: trey $  $Date: 2006-02-20 00:05:35 $
    
  @file    FRTDP.cc
  @brief   No brief
@@ -43,6 +43,8 @@
 using namespace std;
 using namespace sla;
 using namespace MatrixUtils;
+
+#define FRTDP_ALT_PRIO_MARGIN (log(100))
 
 namespace zmdp {
 
@@ -160,7 +162,7 @@ void FRTDP::trialRecurse(MDPNode& cn, double actionDelta, double altPrio, int de
 
   if (excessWidth < 0
 #if USE_FRTDP_ALT_PRIO
-      || (r.maxPrio - altPrio) < -1e-10
+      || (altPrio - r.maxPrio) > FRTDP_ALT_PRIO_MARGIN
 #endif
       //|| actionDelta < -targetPrecision
       ) {
@@ -205,6 +207,9 @@ bool FRTDP::doTrial(MDPNode& cn)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.5  2006/02/19 18:34:35  trey
+ * lots of changes, trying out different termination approaches
+ *
  * Revision 1.4  2006/02/17 21:09:50  trey
  * made updates robust to a non-uniformly-improvable lower bound
  *
