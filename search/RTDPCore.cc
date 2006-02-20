@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.9 $  $Author: trey $  $Date: 2006-02-19 18:34:52 $
+ $Revision: 1.10 $  $Author: trey $  $Date: 2006-02-20 00:05:13 $
    
  @file    RTDPCore.cc
  @brief   No brief
@@ -253,6 +253,7 @@ int RTDPCore::chooseAction(const state_vector& s)
   state_vector sp;
   int bestAction = -1;
 
+#if !USE_RTDPCORE_UB_ACTION
   // if LB is available, use it to choose the action
   if (getUseLowerBound()) {
     double lbVal;
@@ -282,6 +283,7 @@ int RTDPCore::chooseAction(const state_vector& s)
       return bestAction;
     }
   }
+#endif
 
   // fall back to UB
   double ubVal;
@@ -326,6 +328,9 @@ ValueInterval RTDPCore::getValueAt(const state_vector& s) const
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.9  2006/02/19 18:34:52  trey
+ * targetPrecision is now stored as a field; modified how prio is initialized in getNode(); lastPrintTime is now initialized properly
+ *
  * Revision 1.8  2006/02/17 18:20:41  trey
  * renamed LStack -> NodeStack and moved it from LRTDP to RTDPCore so that it can also be used by HDP; added initialization of idx field of nodes in getNode()
  *
