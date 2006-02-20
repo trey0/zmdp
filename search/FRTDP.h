@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.4 $  $Author: trey $  $Date: 2006-02-19 18:34:35 $
+ $Revision: 1.5 $  $Author: trey $  $Date: 2006-02-20 02:04:55 $
    
  @file    FRTDP.h
  @brief   No brief
@@ -48,7 +48,7 @@ struct FRTDP : public RTDPCore {
 
   void getMaxPrioOutcome(MDPNode& cn, int a, FRTDPUpdateResult& result) const;
   void update2(MDPNode& cn, FRTDPUpdateResult& result);
-  void trialRecurse(MDPNode& cn, double actionDelta, double altPrio, int depth);
+  void trialRecurse(MDPNode& cn, double actionDelta, double altPrio, double occ, int depth);
   bool doTrial(MDPNode& cn);
 };
 
@@ -59,6 +59,9 @@ struct FRTDP : public RTDPCore {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2006/02/19 18:34:35  trey
+ * lots of changes, trying out different termination approaches
+ *
  * Revision 1.3  2006/02/15 16:24:27  trey
  * switched to a better termination criterion
  *

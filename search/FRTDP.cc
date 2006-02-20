@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.6 $  $Author: trey $  $Date: 2006-02-20 00:05:35 $
+ $Revision: 1.7 $  $Author: trey $  $Date: 2006-02-20 02:04:56 $
    
  @file    FRTDP.cc
  @brief   No brief
@@ -133,7 +133,7 @@ void FRTDP::update2(MDPNode& cn, FRTDPUpdateResult& r)
   numBackups++;
 }
 
-void FRTDP::trialRecurse(MDPNode& cn, double actionDelta, double altPrio, int depth)
+void FRTDP::trialRecurse(MDPNode& cn, double actionDelta, double altPrio, double occ, int depth)
 {
   if (cn.isFringe()) {
     expand(cn);
@@ -162,7 +162,7 @@ void FRTDP::trialRecurse(MDPNode& cn, double actionDelta, double altPrio, int de
 
   if (excessWidth < 0
 #if USE_FRTDP_ALT_PRIO
-      || (altPrio - r.maxPrio) > FRTDP_ALT_PRIO_MARGIN
+      || (altPrio - r.maxPrio) > -0.9 * occ // FRTDP_ALT_PRIO_MARGIN
 #endif
       //|| actionDelta < -targetPrecision
       ) {
@@ -181,8 +181,9 @@ void FRTDP::trialRecurse(MDPNode& cn, double actionDelta, double altPrio, int de
 				    (actionDelta - r.ubResidual) / weight);
   double nextAltPrio = std::max(r.secondBestPrio,
 				altPrio - log(weight));
+  double nextOcc = occ + log(weight);
   trialRecurse(cn.getNextState(r.maxUBAction, r.maxPrioOutcome),
-	       nextActionDelta, nextAltPrio, depth+1);
+	       nextActionDelta, nextAltPrio, nextOcc, depth+1);
 
   update2(cn, r);
 }
@@ -196,6 +197,7 @@ bool FRTDP::doTrial(MDPNode& cn)
   trialRecurse(cn,
 	       /* actionDelta = */ 99e+20,
 	       /* altPrio = */ RT_PRIO_MINUS_INFINITY,
+	       /* occ = */ log(1.0),
 	       /* depth = */ 0);
   numTrials++;
 
@@ -207,6 +209,9 @@ bool FRTDP::doTrial(MDPNode& cn)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.6  2006/02/20 00:05:35  trey
+ * added FRTDP_ALT_PRIO_MARGIN
+ *
  * Revision 1.5  2006/02/19 18:34:35  trey
  * lots of changes, trying out different termination approaches
  *
