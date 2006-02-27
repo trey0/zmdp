@@ -1,9 +1,8 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2006-02-20 00:04:49 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2006-02-27 20:12:36 $
    
  @file    HDP.cc
- @brief   Implementation of Bonet and Geffner's HDP algorithm
-          (as presented at IJCAI in 2003).
+ @brief   Implementation of Bonet and Geffner's HDP algorithm.
 
  Copyright (c) 2006, Trey Smith. All rights reserved.
 
@@ -25,6 +24,29 @@
  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
  ***************************************************************************/
+
+/**********************************************************************
+  This is my implementation of the HDP algorithm, based on the paper
+
+    "Faster heuristic Search Algorithms for Planning with
+       Uncertainty and Full Feedback."
+    B. Bonet and H. Geffner. In Proc. of IJCAI, 2003.
+
+  Inevitably they could not include all the details of the algorithm in
+  their paper, so it is possible that my implementation differs from
+  theirs in important ways.  They have not signed off on this
+  implementation: use at your own risk.  (And please inform me if you
+  find any errors!)
+
+  This code also implements my variant HDP+L algorithm [not yet
+  published] when the compile-time flag '-DUSE_HDP_LOWER_BOUND=1' is
+  set.  In addition to the usual upper bound, HDP+L keeps a lower bound
+  and uses that to generate the output policy.  Empirically, this
+  improves anytime performance when the upper and lower bounds have not
+  yet converged.
+
+  -Trey Smith, Feb. 2006
+ **********************************************************************/
 
 #include <stdlib.h>
 #include <unistd.h>
@@ -213,6 +235,9 @@ bool HDP::doTrial(MDPNode& cn)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2006/02/20 00:04:49  trey
+ * added optional lower bound use
+ *
  * Revision 1.2  2006/02/19 18:33:36  trey
  * targetPrecision now stared as a field rather than passed around recursively
  *

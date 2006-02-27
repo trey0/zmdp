@@ -1,9 +1,8 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.4 $  $Author: trey $  $Date: 2006-02-19 18:35:09 $
+ $Revision: 1.5 $  $Author: trey $  $Date: 2006-02-27 20:12:36 $
    
  @file    LRTDP.h
- @brief   Implementation of Bonet and Geffner's LRTDP algorithm
-          (as presented at AAAI in 2003).
+ @brief   Implementation of Bonet and Geffner's LRTDP algorithm.
 
  Copyright (c) 2006, Trey Smith. All rights reserved.
 
@@ -53,6 +52,9 @@ struct LRTDP : public RTDPCore {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2006/02/19 18:35:09  trey
+ * targetPrecision now stared as a field rather than passed around recursively
+ *
  * Revision 1.3  2006/02/14 19:34:34  trey
  * now use targetPrecision properly
  *

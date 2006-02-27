@@ -1,8 +1,9 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.6 $  $Author: trey $  $Date: 2006-02-19 18:33:06 $
+ $Revision: 1.7 $  $Author: trey $  $Date: 2006-02-27 20:12:37 $
    
  @file    RTDPCore.h
- @brief   No brief
+ @brief   Common code used by multiple RTDP variants found in this
+          directory.
 
  Copyright (c) 2006, Trey Smith. All rights reserved.
 
@@ -127,6 +128,9 @@ struct RTDPCore : public Solver {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.6  2006/02/19 18:33:06  trey
+ * targetPrecision is now stored as a field; modified how prio is initialized in getNode(); lastPrintTime is now initialized properly
+ *
  * Revision 1.5  2006/02/17 18:20:41  trey
  * renamed LStack -> NodeStack and moved it from LRTDP to RTDPCore so that it can also be used by HDP; added initialization of idx field of nodes in getNode()
  *

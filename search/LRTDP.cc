@@ -1,9 +1,8 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.6 $  $Author: trey $  $Date: 2006-02-19 18:35:09 $
+ $Revision: 1.7 $  $Author: trey $  $Date: 2006-02-27 20:12:36 $
    
  @file    LRTDP.cc
- @brief   Implementation of Bonet and Geffner's LRTDP algorithm
-          (as presented at AAAI in 2003).
+ @brief   Implementation of Bonet and Geffner's LRTDP algorithm.
 
  Copyright (c) 2006, Trey Smith. All rights reserved.
 
@@ -25,6 +24,21 @@
  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
  ***************************************************************************/
+
+/**********************************************************************
+  This is my implementation of the LRTDP algorithm, based on the paper
+
+  "Labeled RTDP: Improving the Convergence of Real Time Dynamic Programming."
+    B. Bonet and H. Geffner. In Proc. of ICAPS, 2003.
+
+  Inevitably they could not include all the details of the algorithm in
+  their paper, so it is possible that my implementation differs from
+  theirs in important ways.  They have not signed off on this
+  implementation: use at your own risk.  (And please inform me if you
+  find any errors!)
+
+  -Trey Smith, Feb. 2006
+ **********************************************************************/
 
 #include <stdlib.h>
 #include <unistd.h>
@@ -195,6 +209,9 @@ bool LRTDP::doTrial(MDPNode& cn)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.6  2006/02/19 18:35:09  trey
+ * targetPrecision now stared as a field rather than passed around recursively
+ *
  * Revision 1.5  2006/02/17 18:34:34  trey
  * renamed LStack -> NodeStack and moved it from LRTDP to RTDPCore so it could be shared with HDP
  *

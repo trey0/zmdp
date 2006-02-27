@@ -1,8 +1,9 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.10 $  $Author: trey $  $Date: 2006-02-20 00:05:13 $
+ $Revision: 1.11 $  $Author: trey $  $Date: 2006-02-27 20:12:37 $
    
  @file    RTDPCore.cc
- @brief   No brief
+ @brief   Common code used by multiple RTDP variants found in this
+          directory.
 
  Copyright (c) 2006, Trey Smith. All rights reserved.
 
@@ -328,6 +329,9 @@ ValueInterval RTDPCore::getValueAt(const state_vector& s) const
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.10  2006/02/20 00:05:13  trey
+ * added USE_RTDPCORE_UB_ACTION
+ *
  * Revision 1.9  2006/02/19 18:34:52  trey
  * targetPrecision is now stored as a field; modified how prio is initialized in getNode(); lastPrintTime is now initialized properly
  *

@@ -1,8 +1,8 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.8 $  $Author: trey $  $Date: 2006-02-19 18:33:47 $
+ $Revision: 1.9 $  $Author: trey $  $Date: 2006-02-27 20:12:37 $
    
  @file    RTDP.cc
- @brief   No brief
+ @brief   Implementation of Barto, Bradke, and Singh's RTDP algorithm.
 
  Copyright (c) 2006, Trey Smith. All rights reserved.
 
@@ -24,6 +24,22 @@
  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
  ***************************************************************************/
+
+/**********************************************************************
+  This is my implementation of the HDP algorithm, based on the paper
+
+    "Learning to Act Using Real-Time Dynamic Programming."
+    A. Barto, S. Bradke, and S. Singh.
+    Artificial Intelligence 72(1-2): 81-138. 1995.
+
+  Inevitably they could not include all the details of the algorithm in
+  their paper, so it is possible that my implementation differs from
+  theirs in important ways.  They have not signed off on this
+  implementation: use at your own risk.  (And please inform me if you
+  find any errors!)
+
+  -Trey Smith, Feb. 2006
+ **********************************************************************/
 
 #include <stdlib.h>
 #include <unistd.h>
@@ -120,6 +136,9 @@ bool RTDP::doTrial(MDPNode& cn)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.8  2006/02/19 18:33:47  trey
+ * targetPrecision now stared as a field rather than passed around recursively
+ *
  * Revision 1.7  2006/02/14 19:34:43  trey
  * now use targetPrecision properly
  *
