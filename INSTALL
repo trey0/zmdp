@@ -1,26 +1,26 @@
 INSTALLATION INSTRUCTIONS IN BRIEF:
 
-* Unpack the tarball to generate the zpomdp directory:
+* Unpack the tarball to generate the zmdp directory:
 
-  tar xvfz zpomdp-0.1.tgz
+  tar xvfz zmdp-0.2.tgz
 
 * Build:
 
-  cd zpomdp-0.1/src
+  cd zmdp-0.2/src
   make install
-  (generates zpomdp-0.1/bin/linux2/testPomdp)
+  (generates multiple zmdp-0.2/bin/linux2/solveXXX binaries)
 
 * Do a test run and plot the results:
 
-  mkdir -p zpomdp-0.1/results/
-  cd zpomdp-0.1/results
-  ../bin/linux2/testPomdp -i 100 hsvi ../src/problems/three_state.pomdp -- -1 1
+  mkdir -p zmdp-0.2/results/
+  cd zmdp-0.2/results
+  ../bin/linux2/solvePomdpHsvi -i 100 ../src/problems/three_state.pomdp -- -1 1
   ../src/tools/makeplot .
 
 * If you wish to test with one of the included RockSample problem
   instances, generate it.
 
-  cd zpomdp-0.1/src/problems
+  cd zmdp-0.2/src/problems
   ./gen_RockSample_5_7
   (generates RockSample_5_7.pomdp)
 
@@ -28,14 +28,8 @@ INSTALLATION INSTRUCTIONS IN BRIEF:
 REQUIREMENTS:
 
 Tested operating systems: Linux kernel 2.6.x (Fedora Core 2 and 4)
-Tested compilers:         gcc 3.2.2, 3.2.3
-
-NOTE: Fedora Core users with more recent gcc versions: the easiest way
-to get gcc 3.2.3 is to install the following rpms, which do not conflict
-with an existing gcc 4.0 installation:
-        compat-gcc-32
-        compat-libstdc++-33
-        compat-libstdc++-296
+                          Mac OS X 10.4.4
+Tested compilers:         gcc 3.2.2, 3.2.3, 4.0
 
 Build system tested with:
 * GNU Make 3.80
@@ -48,11 +42,11 @@ Optional scripts in tools directory tested with:
 * GNU gprof 2.15.94.0.2.2
 
 Other dependencies:
-* Depends on some gcc-specific extensions to the C language (although
+* Depends on some gcc-specific extensions to the C++ language (although
   this could be fixed without too much trouble).
 * Uses the C++ standard template library, including some built-in
   algorithms like std::sort().
 * No dependence on external linear algebra packages or linear program solvers.
 
 ==========================================================
-$Id: INSTALL,v 1.2 2005-10-28 22:07:19 trey Exp $
+$Id: INSTALL,v 1.3 2006-02-27 20:13:47 trey Exp $
