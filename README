@@ -1,65 +1,104 @@
-README for zpomdp
+README for zmdp
 
-This C source code implements the HSVI2 approximate value iteration
-algorithm for partially observable Markov decision processes (POMDPs)
-described in [1,2].  The software takes as input a POMDP problem
-specification in Tony Cassandra's POMDP file format [3] and computes an
-approximate solution to it.
+This C++ source code implements several approximate value iterations for
+MDPs and POMDPs, including HSVI2 [6], RTDP [1], LRTDP [3], HDP [2],
+and FRTDP [not yet published].  The software takes a problem specification
+as input.  Currently supported specification formats are Tony Cassandra's
+POMDP file format [4] and a new format for describing problems in the
+racetrack domain from [1].
 
-More information can be found at http://www.cs.cmu.edu/~trey/pomdp
+Special note: my implementations of some of these algorithms are based
+on publications that necessarily left out a lot of detail.  It's quite
+possible that my implementation differs from the original in important
+ways.  The original authors have not signed off on my implementations:
+use at your own risk.  (And please inform me if you find any errors.)
+
+More information can be found at http://www.cs.cmu.edu/~trey/zmdp
 
 Please let me know if you have any comments!
 
 Trey Smith <trey@ri.cmu.edu>
 
-Copyright (c) 2005, Trey Smith.  All rights reserved.
+Copyright (c) 2005-2006, Trey Smith.  All rights reserved.
 More information is in the file named COPYING.
 
 Table of contents of this README
-1. package contents
-2. usage instructions
-3. example sessions
-4. plotting results
-5. acknowledgments
-6. references
+* release notes
+* package contents
+* usage instructions
+* example sessions
+* plotting results
+* acknowledgments
+* references
 
 ========================================================================
-1. PACKAGE CONTENTS
+RELEASE NOTES
 
-src/build     Makefile system
-src/spec      POMDP problem parsing code (thanks to Tony Cassandra!)
-src/common    Utility code, including a sparse linear algebra library
-src/hsvi2     Implementation of HSVI2 algorithm.
-src/main      Testing harness, select 'qmdp' or 'hsvi' algorithm.
-src/problems  Problems from [1] and a trivial example.
-src/tools     Tools for scripting multiple runs and plotting results.
+Changes from zpomdp 0.1 to zmdp 0.2
+
+* zmdp now includes MDP solving as well as POMDP solving
+  capabilities (hence the name change).
+
+* Created uniform MDP/POMDP API so that POMDPs formulated as
+  belief-space MDPs can be passed to MDP heuristic search algorithms.
+
+* Some code has been refactored to reduce code duplication and
+  provide cleaner interfaces.  This involved shuffling directories.
+
+* Implemented racetrack domain and some sample problems from the
+  literature.
+
+* Implemented RTDP, LRTDP, HDP, HDP+L, and FRTDP.
+
+* Separate binaries are now produced for each (problem type, algorithm)
+  pair rather than a single unified binary.
+
+zpomdp 0.1
+
+* Initial release.
 
 ========================================================================
-2. USAGE INSTRUCTIONS
+PACKAGE CONTENTS
+
+src/build        Makefile system
+src/common       Utility code, including a sparse linear algebra library
+src/pomdpParser  POMDP problem parsing code (thanks to Tony Cassandra!)
+src/pomdpCore    Basic POMDP operations and value function heuristics
+src/mdps         Racetrack domain and some example problems
+src/hsvi2        HSVI2 algorithm
+src/rtdp         RTDP, LRTDP, HDP, and FRTDP algorithms
+src/main         Binaries for invoking algorithms from the shell
+src/problems     Problems from [5] and a trivial example.
+src/tools        Tools for scripting multiple runs and plotting results.
+
+========================================================================
+USAGE INSTRUCTIONS
 
 To get started please first follow the instructions in INSTALL.
 
-The binary that allows testing of HSVI is testPomdp.  (Usage instructions
-copied here.)
+There are several binaries produced by the installation process, found
+in the bin/linux2 directory.  They are named as
+solve<problemType><algorithm>, for example: solvePomdpHsvi or
+solveRaceTrackRtdp.  (Usage instructions for solvePomdpHsvi copied
+here.)
 
-usage: testPomdp OPTIONS <algorithm> <probname> [minOrder maxOrder]
+usage: solvePomdpHsvi OPTIONS <problem.pomdp> [minOrder maxOrder]
   -h or --help           Print this help
   --version              Print version information (CFLAGS used at compilation)
   -f or --fast           Use fast (but very picky) alternate problem parser
   -i or --iterations     Set number of simulation iterations (default: 1000)
-  -n or --no-console     Do not poll stdin for user quit command (helps when
-                           running in background)
-
-Available algorithms: hsvi qmdp
+  -p or --precision      Set target precision
+  --heuristic            Use a non-trivial upper bound heuristic (interpretation
+                           depends on the problem)
 
 ========================================================================
-3. EXAMPLE SESSIONS
+EXAMPLE SESSIONS
 
-(Examples assume the testPomdp binary is in your path.)
+(Examples assume the solvePomdpHsvi binary is in your path.)
 
 COMMAND:
 
-  testPomdp -i 100 hsvi problems/three_state.pomdp -- -1 1
+  solvePomdpHsvi -i 100 problems/three_state.pomdp -- -1 1
 
 EXPLANATION:
 
@@ -68,8 +107,6 @@ EXPLANATION:
   the number of iterations decreases the total testing time but provides
   less precision in the solution quality measurement (reflected in wider
   error bars for plots).
-
-  'hsvi' indicates that the HSVI2 algorithm should be used.
 
   'problems/three_state.pomdp' indicates what problem to solve.
 
@@ -89,7 +126,7 @@ EXPLANATION:
 
 COMMAND:
 
-  testPomdp -f hsvi problems/RockSample_5_7.pomdp 0 3
+  solvePomdpHsvi -f problems/RockSample_5_7.pomdp 0 3
 
 EXPLANATION:
 
@@ -100,7 +137,7 @@ EXPLANATION:
   large problem instances!
 
 ========================================================================
-4. PLOTTING RESULTS
+PLOTTING RESULTS
 
 Two of the plotting scripts in the src/tools directory are worth
 mentioning.
@@ -133,25 +170,38 @@ directories.  The plot that comes out is very busy, but still useful
 to look at performance differences between algorithm variants.
 
 ========================================================================
-5. ACKNOWLEDGMENTS
+ACKNOWLEDGMENTS
 
-Thanks to Geoff Gordon for helpful discussions.
-
-Thanks to Tony Cassandra for developing the POMDP problem format and
-distributing his problem reading and solution code.
+Thanks to Geoff Gordon for helpful discussions.  Thanks to Tony
+Cassandra for developing the POMDP problem format and distributing his
+problem reading and solution code.  Thanks to Matthijs Spaan for
+distributing his PERSEUS POMDP-solving code, which provided a template
+for my release of zmdp.
 
 ========================================================================
-6. REFERENCES
+REFERENCES
 
-[1] Heuristic Search Value Iteration for POMDPs.
+[1] Learning to Act Using Real-Time Dynamic Programming.
+    A. Barto, S. Bradke, and S. Singh.
+    Artificial Intelligence 72(1-2): 81-138. 1995.
+
+[2] Faster heuristic Search Algorithms for Planning with
+     Uncertainty and Full Feedback.
+    B. Bonet and H. Geffner. In Proc. of IJCAI, 2003.
+
+[3] Labeled RTDP: Improving the Convergence of Real Time Dynamic Programming.
+    B. Bonet and H. Geffner. In Proc. of ICAPS, 2003.
+
+[4] Tony's POMDP Page. Tony Cassandra.
+    http://www.cs.brown.edu/research/ai/pomdp/
+
+[5] Heuristic Search Value Iteration for POMDPs.
     T. Smith and R. Simmons. In  Proc. of UAI, 2004.
     http://www.cs.cmu.edu/~trey/papers/smith04_hsvi.pdf
 
-[2] Point-based POMDP Algorithms: Improved Analysis and Implementation.
+[6] Point-based POMDP Algorithms: Improved Analysis and Implementation.
     T. Smith and R. Simmons. In Proc. of UAI, 2005.
     http://www.cs.cmu.edu/~trey/papers/smith05_point_based_pomdp.pdf
 
-[3] Tony's POMDP Page. http://www.cs.brown.edu/research/ai/pomdp/
-
 ==========================================================
-$Id: README,v 1.1 2005-10-28 22:04:28 trey Exp $
+$Id: README,v 1.2 2006-02-27 20:14:03 trey Exp $
