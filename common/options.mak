@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: options.mak,v 1.36 2006-02-20 02:03:42 trey Exp $
+# $Id: options.mak,v 1.37 2006-02-27 20:16:29 trey Exp $
 #
 # Copyright (c) 2002-2005, Trey Smith
 # All rights reserved.
@@ -68,7 +68,7 @@ CFLAGS += -DUSE_DF_NON_MYOPIC=1
 #CFLAGS += -DUSE_OLD_ANYTIME=1
 CFLAGS += -DUSE_TIME_WITHOUT_HEURISTIC=1
 CFLAGS += -DUSE_FRTDP_ALT_PRIO=1
-CFLAGS += -DUSE_HDP_LOWER_BOUND=1
+#CFLAGS += -DUSE_HDP_LOWER_BOUND=1
 #CFLAGS += -DUSE_RTDPCORE_UB_ACTION=1
 ifneq (,$(USE_GHSVI))
   CFLAGS += -DUSE_GHSVI=1
@@ -90,6 +90,9 @@ CFLAGS += -DCFLAGS="\"$(XCFLAGS)\""
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.36  2006/02/20 02:03:42  trey
+# added USE_HDP_LOWER_BOUND and RTDPCORE_UB_ACTION
+#
 # Revision 1.35  2006/02/19 18:31:02  trey
 # added USE_FRTDP_ALT_PRIO flag
 #
