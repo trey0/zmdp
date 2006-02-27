@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.21 2006-02-19 22:20:44 trey Exp $
+# $Id: Makefile,v 1.22 2006-02-27 20:16:10 trey Exp $
 #
 # Copyright (c) 2002-2005, Trey Smith
 # All rights reserved.
@@ -59,18 +59,6 @@ BUILDBIN_INDEP_LIBS :=
 BUILDBIN_DEP_LIBS := -lzmdpFrtdp -lzmdpPomdpCore -lzmdpPomdpParser -lzmdpCommon
 include $(BUILD_DIR)/buildbin.mak
 
-#BUILDBIN_TARGET := solvePomdpGhsvi
-#BUILDBIN_SRCS := solvePomdpGhsvi.cc
-#BUILDBIN_INDEP_LIBS :=
-#BUILDBIN_DEP_LIBS := -lzmdpGhsvi -lzmdpPomdpCore -lzmdpPomdpParser -lzmdpCommon
-#include $(BUILD_DIR)/buildbin.mak
-
-#BUILDBIN_TARGET := solvePomdpPAOStar
-#BUILDBIN_SRCS := solvePomdpPAOStar.cc
-#BUILDBIN_INDEP_LIBS :=
-#BUILDBIN_DEP_LIBS := -lzmdpPAOStar -lzmdpPomdpCore -lzmdpPomdpParser -lzmdpCommon
-#include $(BUILD_DIR)/buildbin.mak
-
 BUILDBIN_TARGET := solveRaceTrackRtdp
 BUILDBIN_SRCS := solveRaceTrackRtdp.cc
 BUILDBIN_INDEP_LIBS :=
@@ -95,18 +83,6 @@ BUILDBIN_INDEP_LIBS :=
 BUILDBIN_DEP_LIBS := -lzmdpFrtdp -lzmdpRelaxBound -lzmdpRaceTrack -lzmdpCommon
 include $(BUILD_DIR)/buildbin.mak
 
-#BUILDBIN_TARGET := solveRaceTrackPAOStar
-#BUILDBIN_SRCS := solveRaceTrackPAOStar.cc
-#BUILDBIN_INDEP_LIBS :=
-#BUILDBIN_DEP_LIBS := -lzmdpPAOStar -lzmdpRelaxBound -lzmdpRaceTrack -lzmdpCommon
-#include $(BUILD_DIR)/buildbin.mak
-
-#BUILDBIN_TARGET := solveRaceTrackGhsvi
-#BUILDBIN_SRCS := solveRaceTrackGhsvi.cc
-#BUILDBIN_INDEP_LIBS :=
-#BUILDBIN_DEP_LIBS := -lzmdpGhsvi -lzmdpRelaxBound -lzmdpRaceTrack -lzmdpCommon
-#include $(BUILD_DIR)/buildbin.mak
-
 ######################################################################
 # DO NOT MODIFY BELOW THIS POINT
 
@@ -114,6 +90,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.21  2006/02/19 22:20:44  trey
+# added solvePomdpHdp
+#
 # Revision 1.20  2006/02/17 18:38:46  trey
 # added several new binaries
 #
