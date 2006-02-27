@@ -1,6 +1,6 @@
 # COPYRIGHT 2004, Carnegie Mellon University
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.13 2006-02-10 19:32:34 trey Exp $
+# $Id: Makefile,v 1.14 2006-02-27 20:14:15 trey Exp $
 #
 # Copyright (c) 2002-2005, Trey Smith
 # All rights reserved.
@@ -34,7 +34,7 @@ include $(CHECKOUT_DIR)/src/build/header.mak
 include $(SRC_DIR)/common/options.mak
 
 # ADD ANY SUBDIRS THAT NEED TO BE VISITED DURING A BUILD TO THE SUBDIRS LIST
-SUBDIRS = common pomdpParser pomdpCore mdps ghsvi hsvi2 rtdp main
+SUBDIRS = common pomdpParser pomdpCore mdps hsvi2 rtdp main
 
 include $(BUILD_DIR)/toplevel.mak
 
@@ -45,6 +45,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.13  2006/02/10 19:32:34  trey
+# added rtdp directory
+#
 # Revision 1.12  2006/02/01 18:03:34  trey
 # added mdps directory
 #
