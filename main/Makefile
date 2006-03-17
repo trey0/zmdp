@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.23 2006-03-17 20:07:57 trey Exp $
+# $Id: Makefile,v 1.24 2006-03-17 20:18:16 trey Exp $
 #
 # Copyright (c) 2002-2005, Trey Smith
 # All rights reserved.
@@ -59,6 +59,12 @@ BUILDBIN_INDEP_LIBS :=
 BUILDBIN_DEP_LIBS := -lzmdpFrtdp -lzmdpPomdpCore -lzmdpPomdpParser -lzmdpCommon
 include $(BUILD_DIR)/buildbin.mak
 
+BUILDBIN_TARGET := solvePomdpArtdp
+BUILDBIN_SRCS := solvePomdpArtdp.cc
+BUILDBIN_INDEP_LIBS :=
+BUILDBIN_DEP_LIBS := -lzmdpArtdp -lzmdpPomdpCore -lzmdpPomdpParser -lzmdpCommon
+include $(BUILD_DIR)/buildbin.mak
+
 BUILDBIN_TARGET := solveRaceTrackRtdp
 BUILDBIN_SRCS := solveRaceTrackRtdp.cc
 BUILDBIN_INDEP_LIBS :=
@@ -96,6 +102,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.23  2006/03/17 20:07:57  trey
+# added solveRaceTrackARTDP
+#
 # Revision 1.22  2006/02/27 20:16:10  trey
 # removed references to obsolete experimental algorithms
 #
