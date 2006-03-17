@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.4 $  $Author: trey $  $Date: 2006-02-27 20:12:36 $
+ $Revision: 1.5 $  $Author: trey $  $Date: 2006-03-17 20:06:13 $
    
  @file    HDP.cc
  @brief   Implementation of Bonet and Geffner's HDP algorithm.
@@ -192,7 +192,7 @@ bool HDP::trialRecurse(MDPNode& cn, int depth)
 
   // try to label
   else if (cn.idx == cn.low) {
-    printf("  marking %lu nodes solved\n", nodeStack.size());
+    printf("  marking %u nodes solved\n", nodeStack.size());
     while (nodeStack.top() != &cn) {
       MDPNode& sn = *nodeStack.pop();
       sn.isSolved = true;
@@ -235,6 +235,9 @@ bool HDP::doTrial(MDPNode& cn)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2006/02/27 20:12:36  trey
+ * cleaned up meta-information in header
+ *
  * Revision 1.3  2006/02/20 00:04:49  trey
  * added optional lower bound use
  *
