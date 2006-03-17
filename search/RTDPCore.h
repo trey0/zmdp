@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.7 $  $Author: trey $  $Date: 2006-02-27 20:12:37 $
+ $Revision: 1.8 $  $Author: trey $  $Date: 2006-03-17 20:06:44 $
    
  @file    RTDPCore.h
  @brief   Common code used by multiple RTDP variants found in this
@@ -110,6 +110,7 @@ struct RTDPCore : public Solver {
   virtual bool getUseLowerBound(void) const = 0;
   virtual void updateInternal(MDPNode& cn) = 0;
   virtual bool doTrial(MDPNode& cn) = 0;
+  virtual void derivedClassInit(void) {}
 
   // virtual functions from Solver that constitute the external api
   void planInit(const MDP* pomdp, double _targetPrecision);
@@ -128,6 +129,9 @@ struct RTDPCore : public Solver {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.7  2006/02/27 20:12:37  trey
+ * cleaned up meta-information in header
+ *
  * Revision 1.6  2006/02/19 18:33:06  trey
  * targetPrecision is now stored as a field; modified how prio is initialized in getNode(); lastPrintTime is now initialized properly
  *

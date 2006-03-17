@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.11 $  $Author: trey $  $Date: 2006-02-27 20:12:37 $
+ $Revision: 1.12 $  $Author: trey $  $Date: 2006-03-17 20:06:44 $
    
  @file    RTDPCore.cc
  @brief   Common code used by multiple RTDP variants found in this
@@ -88,6 +88,8 @@ void RTDPCore::init(double _targetPrecision)
 		  << endl;
     boundsFile->flush();
   }
+
+  derivedClassInit();
 
   initialized = true;
 }
@@ -329,6 +331,9 @@ ValueInterval RTDPCore::getValueAt(const state_vector& s) const
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.11  2006/02/27 20:12:37  trey
+ * cleaned up meta-information in header
+ *
  * Revision 1.10  2006/02/20 00:05:13  trey
  * added USE_RTDPCORE_UB_ACTION
  *
