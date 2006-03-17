@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.5 $  $Author: trey $  $Date: 2006-02-14 19:33:07 $
+ $Revision: 1.6 $  $Author: trey $  $Date: 2006-03-17 20:08:41 $
 
  @file    solveProblem.cc
  @brief   No brief
@@ -95,7 +95,7 @@ void testBatchIncremental(string prob_name,
 			   /* targetPrecision = */ targetPrecision,
 			   /* minOrder = */ min_order,
 			   /* maxOrder = */ max_order,
-			   /* ticksPerOrder = */ 3,
+			   /* ticksPerOrder = */ 10,
 			   /* outFileName = */ "inc.plot",
 			   /* boundsFileName = */ "bounds.plot",
 			   /* simFileName = */ "sim.plot");
@@ -209,6 +209,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.5  2006/02/14 19:33:07  trey
+ * renamed minPrecision -> targetPrecision
+ *
  * Revision 1.4  2006/02/08 20:28:35  trey
  * added --heuristic command line flag
  *
