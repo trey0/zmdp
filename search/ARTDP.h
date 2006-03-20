@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-03-17 20:05:57 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-03-20 18:54:36 $
    
  @file    ARTDP.h
  @brief   No brief
@@ -30,20 +30,17 @@
 
 #include "RTDPCore.h"
 
-// number of trials in a 'batch' when considering adjusting a parameter
-#define ARTDP_BATCH_SIZE (1)
-// rate at which batchesUntilNextAdvance grows each time an advance attempt fails
-#define ARTDP_ADVANCE_GROWTH_RATE (1)
 // number of values to remember when calculating an approximate quantile
 //  among termination thresholds. (more values gives a more accurate estimate.)
 #define ARTDP_TERMINATE_THRESHOLD_MAX_VALUES (500)
-#define ARTDP_QUANTILE (0.0)
+#define ARTDP_QUANTILE (0.1)
 
 #define ARTDP_UNDEFINED (-999)
 
 namespace zmdp {
 
 struct ARTDPUpdateResult {
+  double maxLBVal;
   int maxUBAction;
   double maxUBVal, secondBestUBVal;
   double ubResidual;
@@ -54,56 +51,43 @@ struct ARTDPUpdateResult {
 struct ARTDPParamInfo {
   // name: only used in debug print statements
   std::string name;
-  // val: ARTDP bounces between using val[0] and val[1] as the current
-  //   value until there is a batch using val[1] that outperforms the most recent
-  //   batch using val[0].  this is called 'accepting' val[1].  when that happens,
-  //   the array is shifted left (val[0] <- val[1] <- val[2], leaving val[2]
-  //   'undefined').
-  double val[3];
-  // currentValIndex: indicates the index of the currently used value in
-  //   the val array (always either 0 or 1)
-  int currentValIndex;
-  // lastBatchQualityAtVal: for each index i into the val array (i = 0 or 1),
-  //   records the quality of the last batch with value=val[i]
-  double lastBatchQualityAtVal[2];
-  // batchesPerAdvance: after val[1] has been tried and underperformed
-  //   relative to val[0], this is how many batches to execute at val[0] before
-  //   trying again.  increases after each failed attempt.
-  double batchesPerAdvance;
-  int batchesSoFarInAdvance;
-  // batchQualitySum: sum of quality values from all trials so far in this batch.
-  double batchQualitySum;
-  // numTrialsSoFarInBatch: counts the number of trials so far in the batch.
-  //   the batch ends when the number of trials reaches ARTDP_BATCH_SIZE.
-  int trialsSoFarInBatch;
-  // terminateThresholds: used to record a few termination thresholds from
+  double controlVal;
+  double val;
+  // termNodeValues: used to record a few values of terminal nodes from
   //   a trial when estimating a value to advance to.
-  double terminateThresholds[ARTDP_TERMINATE_THRESHOLD_MAX_VALUES];
-  int thresholdsSoFarInTrial;
-  // currentVal = val[currentValIndex]
-  double currentVal;
-  double minTermThreshold;
+  double termNodeValues[ARTDP_TERMINATE_THRESHOLD_MAX_VALUES];
+  double minTermNodeValue;
+  double currNodeQualitySum;
+  int numCurrNodes;
+  double controlNodeQualitySum;
+  int numControlNodes;
+  int numTermNodes;
 
+  ARTDPParamInfo(void) {}
   ARTDPParamInfo(const std::string& _name, double initVal);
-  void init(double initVal);
-  void recordTermination(double termThreshold);
-  void endTrial(double trialQuality);
+  void init(const std::string& _name, double initVal);
+  bool recordNode(double nodeVal, double updateQuality);
+  double calcDelta(void);
 };
 
+#define ARTDP_NUM_PARAMS (2)
+
 struct ARTDP : public RTDPCore {
-  ARTDPParamInfo minF, minLogRelevance;
-  double trialQualitySum;
-  int updatesSoFarInTrial;
+  ARTDPParamInfo params[ARTDP_NUM_PARAMS];
 
   ARTDP(AbstractBound* _initUpperBound);
 
+  ARTDPParamInfo& getMinF(void) { return params[0]; }
+  ARTDPParamInfo& getMinLogRelevance(void) { return params[1]; }
 
   bool getUseLowerBound(void) const { return true; }
   void updateInternal(MDPNode& cn) { assert(0); /* never called */ }
 
+  void endTrial(void);
   void update2(MDPNode& cn, ARTDPUpdateResult& result);
   void trialRecurse(MDPNode& cn, double g, double logOcc, int depth);
   bool doTrial(MDPNode& cn);
+  void derivedClassInit(void);
 };
 
 }; // namespace zmdp
@@ -113,5 +97,8 @@ struct ARTDP : public RTDPCore {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/03/17 20:05:57  trey
+ * initial check-in
+ *
  *
  ***************************************************************************/

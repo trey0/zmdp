@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-03-17 20:05:57 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-03-20 18:54:36 $
    
  @file    ARTDP.cc
  @brief   No brief
@@ -44,149 +44,170 @@ using namespace std;
 using namespace sla;
 using namespace MatrixUtils;
 
-#define ARTDP_ALT_PRIO_MARGIN (log(100))
 #define USE_ARTDP_MIN_TERM (1)
+#define USE_ARTDP_ADVANCE_ALL (0)
+#define USE_ARTDP_APPLY_TERM_UPDATE (1)
 
 namespace zmdp {
 
 ARTDPParamInfo::ARTDPParamInfo(const string& _name, double initVal)
 {
+  init(_name, initVal);
+}
+
+void ARTDPParamInfo::init(const string& _name, double initVal)
+{
   name = _name;
-  init(initVal);
-}
+  controlVal = 99e+20;
+  val = initVal;
 
-void ARTDPParamInfo::init(double initVal)
-{
-  val[0] = ARTDP_UNDEFINED;
-  val[1] = initVal;
-  val[2] = ARTDP_UNDEFINED;
-
-  currentValIndex = 1;
-  lastBatchQualityAtVal[0] = ARTDP_UNDEFINED;
-  lastBatchQualityAtVal[1] = ARTDP_UNDEFINED;
-  batchesPerAdvance = 1;
-  batchesSoFarInAdvance = 0;
-  batchQualitySum = 0;
-  trialsSoFarInBatch = 0;
 #if USE_ARTDP_MIN_TERM
-  minTermThreshold = 99e+20;
-#else
-  thresholdsSoFarInTrial = 0;
+  minTermNodeValue = 99e+20;
 #endif
 
-  currentVal = val[currentValIndex];
+  currNodeQualitySum = 0;
+  numCurrNodes = 0;
+  controlNodeQualitySum = 0;
+  numControlNodes = 0;
+  numTermNodes = 0;
 }
 
-void ARTDPParamInfo::recordTermination(double termThreshold)
+bool ARTDPParamInfo::recordNode(double nodeVal, double updateQuality)
 {
-  // record termThreshold for val[2] calculation if necessary
-  if (1 == currentValIndex && ARTDP_UNDEFINED == val[2]) {
+  printf("recordNode (%s): nodeVal=%g updateQuality=%g\n",
+	 name.c_str(), nodeVal, updateQuality);
+
+  if (nodeVal < controlVal) {
+    currNodeQualitySum += updateQuality;
+    numCurrNodes++;
+  } else {
+    controlNodeQualitySum += updateQuality;
+    numControlNodes++;
+  }
+
+  if (nodeVal < val) {
 #if USE_ARTDP_MIN_TERM
-    minTermThreshold = std::min(minTermThreshold, termThreshold);
+    minTermNodeValue = std::min(minTermNodeValue, nodeVal);
 #else
-    terminateThresholds[thresholdsSoFarInTrial % ARTDP_TERMINATE_THRESHOLD_MAX_VALUES]
-      = termThreshold;
+    termNodeValues[numTermNodes % ARTDP_TERMINATE_THRESHOLD_MAX_VALUES]
+      = nodeVal;
 #endif
-    thresholdsSoFarInTrial++;
+    numTermNodes++;
+    return true;
+  } else {
+    return false;
   }
 }
 
-void ARTDPParamInfo::endTrial(double trialQuality)
+double ARTDPParamInfo::calcDelta(void)
 {
 #if USE_DEBUG_PRINT
-  printf("entering endTrial (%s): trialQuality=%g vals=[%g %g %g] index=%d\n",
-	 name.c_str(), trialQuality, val[0], val[1], val[2], currentValIndex);
+    printf("calcDelta: numCurrNodes=%d numControlNodes=%d numTermNodes=%d\n",
+	   numCurrNodes, numControlNodes, numTermNodes);
 #endif
-
-  // calculate val[2] if necessary
-  if (1 == currentValIndex && ARTDP_UNDEFINED == val[2] && thresholdsSoFarInTrial > 0) {
-#if USE_ARTDP_MIN_TERM
-    val[2] = minTermThreshold;
-    printf("endTrial: thresholdsSoFarInTrial=%d minTermThreshold=%g\n",
-	   thresholdsSoFarInTrial, minTermThreshold);
-
-    thresholdsSoFarInTrial = 0;
-    minTermThreshold = 99e+20;
-#else
-    int numThresholds = std::min(thresholdsSoFarInTrial, ARTDP_TERMINATE_THRESHOLD_MAX_VALUES);
-    std::sort(terminateThresholds, &terminateThresholds[numThresholds]);
-    int selectIndex = (int) (numThresholds * ARTDP_QUANTILE);
-
-    val[2] = terminateThresholds[selectIndex];
-    printf("endTrial: numThresholds=%d selectIndex=%d val2=%g\n",
-	   numThresholds, selectIndex, val[2]);
-
-    thresholdsSoFarInTrial = 0;
-#endif
+  if (0 == numTermNodes) {
+    return -99e+20;
+  } else if (0 == numControlNodes) {
+    return 0;
+  } else {
+    double currNodeQualityMean = currNodeQualitySum / numCurrNodes;
+    double controlNodeQualityMean = controlNodeQualitySum / numControlNodes;
+    return currNodeQualityMean - controlNodeQualityMean;
   }
-
-  // record trial end and quality data
-  batchQualitySum += trialQuality;
-  trialsSoFarInBatch++;
-  
-  // check for the end of the batch
-  if (ARTDP_BATCH_SIZE == trialsSoFarInBatch) {
-    lastBatchQualityAtVal[currentValIndex] = batchQualitySum / ARTDP_BATCH_SIZE;
-    printf("endTrial (%s): batch complete with quality=%g\n",
-	   name.c_str(), lastBatchQualityAtVal[currentValIndex]);
-
-    if (0 == currentValIndex) {
-      batchesSoFarInAdvance++;
-      if (batchesSoFarInAdvance >= batchesPerAdvance) {
-	// advance to next value
-	printf("endTrial: advancing\n");
-	currentValIndex = 1;
-      } else {
-	printf("endTrial: waiting before next advance (%d/%g)\n",
-	       batchesSoFarInAdvance, batchesPerAdvance);
-      }
-    } else {
-      if (ARTDP_UNDEFINED == val[2]) {
-	// no change, wait until val[2] is defined
-	printf("endTrial: no terminations; no change\n");
-      } else if (ARTDP_UNDEFINED == val[0]
-		 || lastBatchQualityAtVal[1] >= lastBatchQualityAtVal[0]) {
-	// accept val[1] and advance to val[2]
-	printf("endTrial (%s): accepting v=%g\n", name.c_str(), val[currentValIndex]);
-	val[0] = val[1];
-	val[1] = val[2];
-	val[2] = ARTDP_UNDEFINED;
-	// keep currentValIndex = 1 -- the new val[1] is the old val[2]
-	lastBatchQualityAtVal[0] = lastBatchQualityAtVal[1];
-	lastBatchQualityAtVal[1] = ARTDP_UNDEFINED;
-	batchesPerAdvance = 1;
-      } else {
-	// revert to val[0]
-	printf("endTrial: reverting (qual0=%g qual1=%g)\n",
-	       lastBatchQualityAtVal[0], lastBatchQualityAtVal[1]);
-	currentValIndex = 0;
-	batchesPerAdvance *= ARTDP_ADVANCE_GROWTH_RATE;
-	batchesSoFarInAdvance = 0;
-      }
-    }
-
-    // clear data for next batch
-    batchQualitySum = 0;
-    trialsSoFarInBatch = 0;
-  }
-
-  currentVal = val[currentValIndex];
-
-#if USE_DEBUG_PRINT
-  printf("exiting endTrial (%s): vals=[%g %g %g] index=%d\n",
-	 name.c_str(), val[0], val[1], val[2], currentValIndex);
-#endif
 }
 
 ARTDP::ARTDP(AbstractBound* _initUpperBound) :
-  RTDPCore(_initUpperBound),
-  minF("minF", 99e+20),
-  minLogRelevance("minLogRelevance", 99e+20)
+  RTDPCore(_initUpperBound)
 {}
+
+void ARTDP::endTrial(void)
+{
+#if USE_ARTDP_ADVANCE_ALL
+
+  double delta;
+  FOR (i, ARTDP_NUM_PARAMS) {
+    ARTDPParamInfo& p = params[i];
+
+    delta = p.calcDelta();
+#if USE_DEBUG_PRINT
+    printf("endTrial: i=%d val=%g controlVal=%g delta=%g\n",
+	   i, p.val, p.controlVal, delta);
+#endif
+
+    if (delta >= 0) {
+#if USE_ARTDP_MIN_TERM
+      double newVal = p.minTermNodeValue;
+#else
+      int numValues = std::min(p.numTermNodes, ARTDP_TERMINATE_THRESHOLD_MAX_VALUES);
+      std::sort(p.termNodeValues, &p.termNodeValues[numValues]);
+      int selectIndex = (int) (numValues * ARTDP_QUANTILE);
+      double newVal = p.termNodeValues[selectIndex];
+#endif
+
+#if USE_DEBUG_PRINT
+      printf("endTrial: update i=%d val=%g newVal=%g diff=%g\n",
+	     i, p.val, newVal, newVal-p.val);
+#endif
+      p.controlVal = p.val;
+      p.val = newVal;
+    }
+  }
+
+#else // if USE_ARTDP_ADVANCE_ALL / else
+
+  double bestDelta = -1e-10;
+  int bestDeltaIndex = -1;
+  double delta;
+  FOR (i, ARTDP_NUM_PARAMS) {
+    delta = params[i].calcDelta();
+#if USE_DEBUG_PRINT
+    printf("endTrial: i=%d val=%g delta=%g\n", i, params[i].val, delta);
+#endif
+    if (delta > bestDelta) {
+      bestDelta = delta;
+      bestDeltaIndex = i;
+    }
+  }
+  if (-1 != bestDeltaIndex) {
+    ARTDPParamInfo& p = params[bestDeltaIndex];
+
+#if USE_ARTDP_MIN_TERM
+    double newVal = p.minTermNodeValue;
+#else
+    int numValues = std::min(p.numTermNodes, ARTDP_TERMINATE_THRESHOLD_MAX_VALUES);
+    std::sort(p.termNodeValues, &p.termNodeValues[numValues]);
+    int selectIndex = (int) (numValues * ARTDP_QUANTILE);
+    double newVal = p.termNodeValues[selectIndex];
+#endif
+
+#if USE_DEBUG_PRINT
+    printf("endTrial: bestDeltaIndex=%d val=%g newVal=%g\n",
+	   bestDeltaIndex, p.val, newVal);
+#endif
+    p.controlVal = p.val;
+    p.val = newVal;
+  }
+
+#endif // if USE_ARTDP_ADVANCE_ALL / else
+
+  // cleanup
+  FOR (i, ARTDP_NUM_PARAMS) {
+    ARTDPParamInfo& p = params[i];
+
+    // FIX may want to add this back in some other way?
+    //p.minTermNodeValue = 99e+20;
+
+    p.currNodeQualitySum = 0;
+    p.numCurrNodes = 0;
+    p.controlNodeQualitySum = 0;
+    p.numControlNodes = 0;
+    p.numTermNodes = 0;
+  }
+}
 
 void ARTDP::update2(MDPNode& cn, ARTDPUpdateResult& r)
 {
-  double maxLBVal = -99e+20;
+  r.maxLBVal = -99e+20;
   r.maxUBVal = -99e+20;
   r.secondBestUBVal = -99e+20;
   r.maxUBAction = -1;
@@ -207,7 +228,7 @@ void ARTDP::update2(MDPNode& cn, ARTDPUpdateResult& r)
     Qa.lbVal = lbVal = Qa.immediateReward + problem->getDiscount() * lbVal;
     Qa.ubVal = ubVal = Qa.immediateReward + problem->getDiscount() * ubVal;
 
-    maxLBVal = std::max(maxLBVal, lbVal);
+    r.maxLBVal = std::max(r.maxLBVal, lbVal);
     if (ubVal > r.maxUBVal) {
       r.secondBestUBVal = r.maxUBVal;
       r.maxUBVal = ubVal;
@@ -219,14 +240,16 @@ void ARTDP::update2(MDPNode& cn, ARTDPUpdateResult& r)
 
 #if 1
   // min and max calls here only necessary if bounds are not uniformly improvable
-  maxLBVal = std::max(cn.lbVal, maxLBVal);
+  r.maxLBVal = std::max(cn.lbVal, r.maxLBVal);
   r.maxUBVal = std::min(cn.ubVal, r.maxUBVal);
 #endif
 
   r.ubResidual = cn.ubVal - r.maxUBVal;
 
-  cn.lbVal = maxLBVal;
+#if USE_ARTDP_APPLY_TERM_UPDATE
+  cn.lbVal = r.maxLBVal;
   cn.ubVal = r.maxUBVal;
+#endif
 
   numBackups++;
 }
@@ -240,18 +263,16 @@ void ARTDP::trialRecurse(MDPNode& cn, double g, double logOcc, int depth)
   ARTDPUpdateResult r;
   update2(cn, r);
 
-  double excessWidth = cn.ubVal - cn.lbVal - RT_PRIO_IMPROVEMENT_CONSTANT * targetPrecision;
+  double excessWidth = r.maxUBVal - r.maxLBVal - RT_PRIO_IMPROVEMENT_CONSTANT * targetPrecision;
   double logRelevance = logOcc + log(excessWidth);
 
   double occ = (logOcc < -50) ? 0 : exp(logOcc);
   double relevance = occ * excessWidth;
   double updateQuality = r.ubResidual * relevance;
-  trialQualitySum += updateQuality;
-  updatesSoFarInTrial++;
 
 #if USE_DEBUG_PRINT
   printf("  trialRecurse: depth=%d [%g .. %g] a=%d o=%d\n",
-	 depth, cn.lbVal, cn.ubVal, r.maxUBAction, r.maxPrioOutcome);
+	 depth, r.maxLBVal, r.maxUBVal, r.maxUBAction, r.maxPrioOutcome);
   printf("  trialRecurse: s=%s\n", sparseRep(cn.s).c_str());
 #endif
 
@@ -262,37 +283,34 @@ void ARTDP::trialRecurse(MDPNode& cn, double g, double logOcc, int depth)
 	 r.maxPrioOutcome, r.maxPrio, r.secondBestPrio);
 #endif
 
-  bool terminateTrial =false;
+  bool terminateTrial = false;
+  bool termTriggered;
 
   if (excessWidth < 0) {
 #if USE_DEBUG_PRINT
-    printf("  trialRecurse: terminating because excessWidth=%g\n",
+    printf("  trialRecurse: width triggers termination excessWidth=%g\n",
 	   excessWidth);
 #endif
     terminateTrial = true;
   }
 
-  if (!terminateTrial) {
-    double f = g + cn.ubVal; // 'f = g + h'
-    if (f < minF.currentVal) {
+  double f = g + r.maxUBVal; // 'f = g + h'
+  termTriggered = getMinF().recordNode(f, updateQuality);
+  if (termTriggered) {
 #if USE_DEBUG_PRINT
-      printf("  trialRecurse: terminating because f=%g minF=%g\n",
-	     f, minF.currentVal);
+    printf("  trialRecurse: f triggers termination f=%g minF=%g\n",
+	   f, getMinF().val);
 #endif
-      minF.recordTermination(f);
-      terminateTrial = true;
-    }
+    terminateTrial = true;
   }
 
-  if (!terminateTrial) {
-    if (logRelevance < minLogRelevance.currentVal) {
+  termTriggered = getMinLogRelevance().recordNode(logRelevance, updateQuality);
+  if (termTriggered) {
 #if USE_DEBUG_PRINT
-      printf("  trialRecurse: terminating because logRel=%g minLogRel=%g\n",
-	     logRelevance, minLogRelevance.currentVal);
+    printf("  trialRecurse: rel triggers termination logRel=%g minLogRel=%g\n",
+	   logRelevance, getMinLogRelevance().val);
 #endif
-      minLogRelevance.recordTermination(logRelevance);
-      terminateTrial = true;
-    }
+    terminateTrial = true;
   }
 
   if (terminateTrial) {
@@ -304,7 +322,12 @@ void ARTDP::trialRecurse(MDPNode& cn, double g, double logOcc, int depth)
     return;
   }
 
-  // recurse to successor
+#if !USE_ARTDP_APPLY_TERM_UPDATE
+  cn.lbVal = r.maxLBVal;
+  cn.ubVal = r.maxUBVal;
+#endif
+
+  // recurse to successors
   MDPQEntry& Qa = cn.Q[r.maxUBAction];
   FOR (o, Qa.getNumOutcomes()) {
     MDPEdge* e = Qa.outcomes[o];
@@ -317,10 +340,10 @@ void ARTDP::trialRecurse(MDPNode& cn, double g, double logOcc, int depth)
   }
 
   update2(cn, r);
-
-  updateQuality = r.ubResidual * relevance;
-  trialQualitySum += updateQuality;
-  updatesSoFarInTrial++;
+#if !USE_ARTDP_APPLY_TERM_UPDATE
+  cn.lbVal = r.maxLBVal;
+  cn.ubVal = r.maxUBVal;
+#endif
 }
 
 bool ARTDP::doTrial(MDPNode& cn)
@@ -329,23 +352,21 @@ bool ARTDP::doTrial(MDPNode& cn)
   printf("-*- doTrial: trial %d\n", (numTrials+1));
 #endif
 
-  trialQualitySum = 0;
-  updatesSoFarInTrial = 0;
-
   trialRecurse(cn,
 	       /* g = */ 0,
 	       /* logOcc = */ log(1.0),
 	       /* depth = */ 0);
-
-  double trialQuality = trialQualitySum / updatesSoFarInTrial;
-  printf("calc trialQuality: trialQualitySum=%g updatesSoFarInTrial=%d\n",
-	 trialQualitySum, updatesSoFarInTrial);
-  minF.endTrial(trialQuality);
-  minLogRelevance.endTrial(trialQuality);
+  endTrial();
 
   numTrials++;
 
   return (cn.ubVal - cn.lbVal < targetPrecision);
+}
+
+void ARTDP::derivedClassInit(void)
+{
+  params[0].init("minF", 99e+20);
+  params[1].init("minLogRelevance", 99e+20);
 }
 
 }; // namespace zmdp
@@ -353,5 +374,8 @@ bool ARTDP::doTrial(MDPNode& cn)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/03/17 20:05:57  trey
+ * initial check-in
+ *
  *
  ***************************************************************************/
