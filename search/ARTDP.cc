@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2006-03-20 18:54:36 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2006-03-20 19:21:01 $
    
  @file    ARTDP.cc
  @brief   No brief
@@ -89,8 +89,15 @@ bool ARTDPParamInfo::recordNode(double nodeVal, double updateQuality)
 #if USE_ARTDP_MIN_TERM
     minTermNodeValue = std::min(minTermNodeValue, nodeVal);
 #else
-    termNodeValues[numTermNodes % ARTDP_TERMINATE_THRESHOLD_MAX_VALUES]
-      = nodeVal;
+    if (numTermNodes < ARTDP_TERM_NODE_ARR_SIZE) {
+      termNodeValues[numTermNodes] = nodeVal;
+    } else {
+      double insertProb = ((double) ARTDP_TERM_NODE_ARR_SIZE) / (numTermNodes+1);
+      if (unit_rand() < insertProb) {
+	int insertIndex = (int) (unit_rand() * ARTDP_TERM_NODE_ARR_SIZE);
+	termNodeValues[insertIndex] = nodeVal;
+      }
+    }
 #endif
     numTermNodes++;
     return true;
@@ -174,7 +181,7 @@ void ARTDP::endTrial(void)
 #if USE_ARTDP_MIN_TERM
     double newVal = p.minTermNodeValue;
 #else
-    int numValues = std::min(p.numTermNodes, ARTDP_TERMINATE_THRESHOLD_MAX_VALUES);
+    int numValues = std::min(p.numTermNodes, ARTDP_TERM_NODE_ARR_SIZE);
     std::sort(p.termNodeValues, &p.termNodeValues[numValues]);
     int selectIndex = (int) (numValues * ARTDP_QUANTILE);
     double newVal = p.termNodeValues[selectIndex];
@@ -374,6 +381,9 @@ void ARTDP::derivedClassInit(void)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2006/03/20 18:54:36  trey
+ * adaptive params no longer advance in lock step
+ *
  * Revision 1.1  2006/03/17 20:05:57  trey
  * initial check-in
  *

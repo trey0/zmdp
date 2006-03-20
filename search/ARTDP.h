@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2006-03-20 18:54:36 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2006-03-20 19:21:01 $
    
  @file    ARTDP.h
  @brief   No brief
@@ -32,7 +32,7 @@
 
 // number of values to remember when calculating an approximate quantile
 //  among termination thresholds. (more values gives a more accurate estimate.)
-#define ARTDP_TERMINATE_THRESHOLD_MAX_VALUES (500)
+#define ARTDP_TERM_NODE_ARR_SIZE (100)
 #define ARTDP_QUANTILE (0.1)
 
 #define ARTDP_UNDEFINED (-999)
@@ -55,7 +55,7 @@ struct ARTDPParamInfo {
   double val;
   // termNodeValues: used to record a few values of terminal nodes from
   //   a trial when estimating a value to advance to.
-  double termNodeValues[ARTDP_TERMINATE_THRESHOLD_MAX_VALUES];
+  double termNodeValues[ARTDP_TERM_NODE_ARR_SIZE];
   double minTermNodeValue;
   double currNodeQualitySum;
   int numCurrNodes;
@@ -97,6 +97,9 @@ struct ARTDP : public RTDPCore {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2006/03/20 18:54:36  trey
+ * adaptive params no longer advance in lock step
+ *
  * Revision 1.1  2006/03/17 20:05:57  trey
  * initial check-in
  *
