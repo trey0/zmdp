@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2006-03-20 19:21:01 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2006-03-21 16:46:21 $
    
  @file    ARTDP.cc
  @brief   No brief
@@ -47,6 +47,9 @@ using namespace MatrixUtils;
 #define USE_ARTDP_MIN_TERM (1)
 #define USE_ARTDP_ADVANCE_ALL (0)
 #define USE_ARTDP_APPLY_TERM_UPDATE (1)
+#define USE_ARTDP_DISCREP_ZERO (1)
+#define USE_ARTDP_WITH_PRIO (1)
+#define ARTDP_MIN_DELTA (1.0)
 
 namespace zmdp {
 
@@ -74,8 +77,10 @@ void ARTDPParamInfo::init(const string& _name, double initVal)
 
 bool ARTDPParamInfo::recordNode(double nodeVal, double updateQuality)
 {
+#if 0
   printf("recordNode (%s): nodeVal=%g updateQuality=%g\n",
 	 name.c_str(), nodeVal, updateQuality);
+#endif
 
   if (nodeVal < controlVal) {
     currNodeQualitySum += updateQuality;
@@ -115,11 +120,15 @@ double ARTDPParamInfo::calcDelta(void)
   if (0 == numTermNodes) {
     return -99e+20;
   } else if (0 == numControlNodes) {
-    return 0;
+    return ARTDP_MIN_DELTA;
   } else {
     double currNodeQualityMean = currNodeQualitySum / numCurrNodes;
     double controlNodeQualityMean = controlNodeQualitySum / numControlNodes;
-    return currNodeQualityMean - controlNodeQualityMean;
+    if (0 == controlNodeQualityMean) {
+      return 1000;
+    } else {
+      return currNodeQualityMean / controlNodeQualityMean;
+    }
   }
 }
 
@@ -141,11 +150,11 @@ void ARTDP::endTrial(void)
 	   i, p.val, p.controlVal, delta);
 #endif
 
-    if (delta >= 0) {
+    if (delta >= ARTDP_MIN_DELTA) {
 #if USE_ARTDP_MIN_TERM
       double newVal = p.minTermNodeValue;
 #else
-      int numValues = std::min(p.numTermNodes, ARTDP_TERMINATE_THRESHOLD_MAX_VALUES);
+      int numValues = std::min(p.numTermNodes, ARTDP_TERM_NODE_ARR_SIZE);
       std::sort(p.termNodeValues, &p.termNodeValues[numValues]);
       int selectIndex = (int) (numValues * ARTDP_QUANTILE);
       double newVal = p.termNodeValues[selectIndex];
@@ -162,7 +171,7 @@ void ARTDP::endTrial(void)
 
 #else // if USE_ARTDP_ADVANCE_ALL / else
 
-  double bestDelta = -1e-10;
+  double bestDelta = ARTDP_MIN_DELTA - 1e-10;
   int bestDeltaIndex = -1;
   double delta;
   FOR (i, ARTDP_NUM_PARAMS) {
@@ -212,6 +221,33 @@ void ARTDP::endTrial(void)
   }
 }
 
+void ARTDP::getMaxPrioOutcome(MDPNode& cn, int a, ARTDPUpdateResult& r) const
+{
+  r.maxPrio = -99e+20;
+  r.maxPrioOutcome = -1;
+  double prio;
+  MDPQEntry& Qa = cn.Q[a];
+  FOR (o, Qa.getNumOutcomes()) {
+    MDPEdge* e = Qa.outcomes[o];
+    if (NULL != e) {
+      prio = log(problem->getDiscount() * e->obsProb) + e->nextState->prio;
+      if (prio > r.maxPrio) {
+	r.maxPrio = prio;
+	r.maxPrioOutcome = o;
+      }
+#if 0
+      printf("    a=%d o=%d obsProb=%g nsprio=%g prio=%g\n",
+	     a, o, e->obsProb, e->nextState->prio, prio);
+      if (e->nextState->prio < -99e+20) {
+	MDPNode& sn = *e->nextState;
+	printf("ns: s=[%s] [%g .. %g] prio=%g\n",
+	       denseRep(sn.s).c_str(), sn.lbVal, sn.ubVal, sn.prio);
+      }
+#endif
+    }
+  }
+}
+
 void ARTDP::update2(MDPNode& cn, ARTDPUpdateResult& r)
 {
   r.maxLBVal = -99e+20;
@@ -258,10 +294,26 @@ void ARTDP::update2(MDPNode& cn, ARTDPUpdateResult& r)
   cn.ubVal = r.maxUBVal;
 #endif
 
+#if USE_ARTDP_WITH_PRIO
+  getMaxPrioOutcome(cn, r.maxUBAction, r);
+  cn.prio = r.maxPrio;
+#endif
+
   numBackups++;
 }
 
-void ARTDP::trialRecurse(MDPNode& cn, double g, double logOcc, int depth)
+double ARTDP::calcOutcomePrio(MDPNode &cn, double obsProb)
+{
+  double excessWidth = cn.ubVal - cn.lbVal - RT_PRIO_IMPROVEMENT_CONSTANT * targetPrecision;
+  double prio0 = excessWidth * obsProb;
+  if (prio0 > 1e-10) {
+    return log(prio0);
+  } else {
+    return -99e+20;
+  }
+}
+
+void ARTDP::trialRecurse(MDPNode& cn, double g, double logOcc, double discrep, int depth)
 {
   if (cn.isFringe()) {
     expand(cn);
@@ -276,6 +328,9 @@ void ARTDP::trialRecurse(MDPNode& cn, double g, double logOcc, int depth)
   double occ = (logOcc < -50) ? 0 : exp(logOcc);
   double relevance = occ * excessWidth;
   double updateQuality = r.ubResidual * relevance;
+
+  // is there a better way to enforce this?
+  cn.prio = std::min(cn.prio, (excessWidth <= 0) ? RT_PRIO_MINUS_INFINITY : log(excessWidth));
 
 #if USE_DEBUG_PRINT
   printf("  trialRecurse: depth=%d [%g .. %g] a=%d o=%d\n",
@@ -301,6 +356,7 @@ void ARTDP::trialRecurse(MDPNode& cn, double g, double logOcc, int depth)
     terminateTrial = true;
   }
 
+#if 1
   double f = g + r.maxUBVal; // 'f = g + h'
   termTriggered = getMinF().recordNode(f, updateQuality);
   if (termTriggered) {
@@ -310,12 +366,35 @@ void ARTDP::trialRecurse(MDPNode& cn, double g, double logOcc, int depth)
 #endif
     terminateTrial = true;
   }
+#endif
 
+#if 0
   termTriggered = getMinLogRelevance().recordNode(logRelevance, updateQuality);
   if (termTriggered) {
 #if USE_DEBUG_PRINT
     printf("  trialRecurse: rel triggers termination logRel=%g minLogRel=%g\n",
 	   logRelevance, getMinLogRelevance().val);
+#endif
+    terminateTrial = true;
+  }
+#endif
+
+#if !USE_ARTDP_DISCREP_ZERO
+  termTriggered = getMinDiscrep().recordNode(discrep, updateQuality);
+  if (termTriggered) {
+#if USE_DEBUG_PRINT
+    printf("  trialRecurse: discrep triggers termination discrep=%g minDiscrep=%g\n",
+	   discrep, getMinDiscrep().val);
+#endif
+    terminateTrial = true;
+  }
+#endif
+
+  termTriggered = getMinNegDepth().recordNode(-depth, updateQuality);
+  if (termTriggered) {
+#if USE_DEBUG_PRINT
+    printf("  trialRecurse: depth triggers termination negDepth=%d minNegDepth=%g\n",
+	   -depth, getMinNegDepth().val);
 #endif
     terminateTrial = true;
   }
@@ -334,17 +413,48 @@ void ARTDP::trialRecurse(MDPNode& cn, double g, double logOcc, int depth)
   cn.ubVal = r.maxUBVal;
 #endif
 
+#if USE_ARTDP_WITH_PRIO
+  MDPQEntry& Qa = cn.Q[r.maxUBAction];
+  MDPEdge* e = Qa.outcomes[r.maxPrioOutcome];
+  MDPNode& sn = *e->nextState;
+  double weight = problem->getDiscount() * e->obsProb;
+  double nextG = g + Qa.immediateReward;
+  double nextLogOcc = logOcc + log(weight);
+  double nextDiscrep = 0;
+  trialRecurse(*e->nextState, nextG, nextLogOcc, nextDiscrep, depth+1);
+#else // if USE_ARTDP_WITH_PRIO / else
   // recurse to successors
   MDPQEntry& Qa = cn.Q[r.maxUBAction];
+  double bestOutcomePrio = -99e+20;
   FOR (o, Qa.getNumOutcomes()) {
     MDPEdge* e = Qa.outcomes[o];
     if (NULL != e) {
-      double weight = problem->getDiscount() * e->obsProb;
-      double nextLogOcc = logOcc + log(weight);
-      double nextG = g + Qa.immediateReward;
-      trialRecurse(*e->nextState, nextG, nextLogOcc, depth+1);
+      MDPNode& sn = *e->nextState;
+      double outcomePrio = calcOutcomePrio(sn, e->obsProb);
+      bestOutcomePrio = std::max(bestOutcomePrio, outcomePrio);
     }
   }
+  FOR (o, Qa.getNumOutcomes()) {
+    MDPEdge* e = Qa.outcomes[o];
+    if (NULL != e) {
+      MDPNode& sn = *e->nextState;
+      double outcomePrio = calcOutcomePrio(sn, e->obsProb);
+      if (outcomePrio > -1000) {
+	double weight = problem->getDiscount() * e->obsProb;
+	double nextG = g + Qa.immediateReward;
+	double nextLogOcc = logOcc + log(weight);
+	double nextDiscrep = discrep + (outcomePrio - bestOutcomePrio);
+#if USE_ARTDP_DISCREP_ZERO
+	if (0 == nextDiscrep) {
+	  trialRecurse(*e->nextState, nextG, nextLogOcc, nextDiscrep, depth+1);
+	}
+#else
+	trialRecurse(*e->nextState, nextG, nextLogOcc, nextDiscrep, depth+1);
+#endif
+      }
+    }
+  }
+#endif // if USE_ARTDP_WITH_PRIO / else
 
   update2(cn, r);
 #if !USE_ARTDP_APPLY_TERM_UPDATE
@@ -362,6 +472,7 @@ bool ARTDP::doTrial(MDPNode& cn)
   trialRecurse(cn,
 	       /* g = */ 0,
 	       /* logOcc = */ log(1.0),
+	       /* discrep = */ 0,
 	       /* depth = */ 0);
   endTrial();
 
@@ -374,6 +485,8 @@ void ARTDP::derivedClassInit(void)
 {
   params[0].init("minF", 99e+20);
   params[1].init("minLogRelevance", 99e+20);
+  params[2].init("minDiscrep", 99e+20);
+  params[3].init("minNegDepth", -10);
 }
 
 }; // namespace zmdp
@@ -381,6 +494,9 @@ void ARTDP::derivedClassInit(void)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2006/03/20 19:21:01  trey
+ * quantile approximation is now stochastic, no longer biased toward values at the end of the trial
+ *
  * Revision 1.2  2006/03/20 18:54:36  trey
  * adaptive params no longer advance in lock step
  *

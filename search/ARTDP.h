@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2006-03-20 19:21:01 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2006-03-21 16:46:21 $
    
  @file    ARTDP.h
  @brief   No brief
@@ -34,6 +34,8 @@
 //  among termination thresholds. (more values gives a more accurate estimate.)
 #define ARTDP_TERM_NODE_ARR_SIZE (100)
 #define ARTDP_QUANTILE (0.1)
+
+#define ARTDP_NUM_PARAMS (4)
 
 #define ARTDP_UNDEFINED (-999)
 
@@ -70,8 +72,6 @@ struct ARTDPParamInfo {
   double calcDelta(void);
 };
 
-#define ARTDP_NUM_PARAMS (2)
-
 struct ARTDP : public RTDPCore {
   ARTDPParamInfo params[ARTDP_NUM_PARAMS];
 
@@ -79,13 +79,17 @@ struct ARTDP : public RTDPCore {
 
   ARTDPParamInfo& getMinF(void) { return params[0]; }
   ARTDPParamInfo& getMinLogRelevance(void) { return params[1]; }
+  ARTDPParamInfo& getMinDiscrep(void) { return params[2]; }
+  ARTDPParamInfo& getMinNegDepth(void) { return params[3]; }
 
   bool getUseLowerBound(void) const { return true; }
   void updateInternal(MDPNode& cn) { assert(0); /* never called */ }
 
   void endTrial(void);
+  void getMaxPrioOutcome(MDPNode& cn, int a, ARTDPUpdateResult& r) const;
   void update2(MDPNode& cn, ARTDPUpdateResult& result);
-  void trialRecurse(MDPNode& cn, double g, double logOcc, int depth);
+  double calcOutcomePrio(MDPNode& cn, double obsProb);
+  void trialRecurse(MDPNode& cn, double g, double logOcc, double discrep, int depth);
   bool doTrial(MDPNode& cn);
   void derivedClassInit(void);
 };
@@ -97,6 +101,9 @@ struct ARTDP : public RTDPCore {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2006/03/20 19:21:01  trey
+ * quantile approximation is now stochastic, no longer biased toward values at the end of the trial
+ *
  * Revision 1.2  2006/03/20 18:54:36  trey
  * adaptive params no longer advance in lock step
  *
