@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.7 $  $Author: trey $  $Date: 2006-02-20 02:04:56 $
+ $Revision: 1.8 $  $Author: trey $  $Date: 2006-03-21 21:09:25 $
    
  @file    FRTDP.cc
  @brief   No brief
@@ -45,12 +45,17 @@ using namespace sla;
 using namespace MatrixUtils;
 
 #define FRTDP_ALT_PRIO_MARGIN (log(100))
+#define FRTDP_UNDEFINED (-999)
+#define FRTDP_INIT_MAX_DEPTH (10)
+#define FRTDP_MAX_DEPTH_ADJUST_RATIO (1.1)
 
 namespace zmdp {
 
 FRTDP::FRTDP(AbstractBound* _initUpperBound) :
   RTDPCore(_initUpperBound)
-{}
+{
+  maxDepth = FRTDP_INIT_MAX_DEPTH;
+}
 
 void FRTDP::getMaxPrioOutcome(MDPNode& cn, int a, FRTDPUpdateResult& r) const
 {
@@ -133,7 +138,7 @@ void FRTDP::update2(MDPNode& cn, FRTDPUpdateResult& r)
   numBackups++;
 }
 
-void FRTDP::trialRecurse(MDPNode& cn, double actionDelta, double altPrio, double occ, int depth)
+void FRTDP::trialRecurse(MDPNode& cn, double actionDelta, double altPrio, double logOcc, int depth)
 {
   if (cn.isFringe()) {
     expand(cn);
@@ -143,6 +148,8 @@ void FRTDP::trialRecurse(MDPNode& cn, double actionDelta, double altPrio, double
   update2(cn, r);
 
   double excessWidth = cn.ubVal - cn.lbVal - RT_PRIO_IMPROVEMENT_CONSTANT * targetPrecision;
+  double occ = (logOcc < -50) ? 0 : exp(logOcc);
+  double updateQuality = r.ubResidual * occ;
 
   // is there a better way to enforce this?
   cn.prio = std::min(cn.prio, (excessWidth <= 0) ? RT_PRIO_MINUS_INFINITY : log(excessWidth));
@@ -160,9 +167,18 @@ void FRTDP::trialRecurse(MDPNode& cn, double actionDelta, double altPrio, double
 	 r.maxPrioOutcome, r.maxPrio, r.secondBestPrio);
 #endif
 
+  if (depth > oldMaxDepth) {
+    oldQualitySum += updateQuality;
+    oldNumUpdates++;
+  } else {
+    newQualitySum += updateQuality;
+    newNumUpdates++;
+  }
+
   if (excessWidth < 0
+      || depth > maxDepth
 #if USE_FRTDP_ALT_PRIO
-      || (altPrio - r.maxPrio) > -0.9 * occ // FRTDP_ALT_PRIO_MARGIN
+      || (altPrio - r.maxPrio) > -0.9 * logOcc // FRTDP_ALT_PRIO_MARGIN
 #endif
       //|| actionDelta < -targetPrecision
       ) {
@@ -171,6 +187,7 @@ void FRTDP::trialRecurse(MDPNode& cn, double actionDelta, double altPrio, double
 	   depth, actionDelta, altPrio, excessWidth);
     printf("  trialRecurse: s=%s\n", sparseRep(cn.s).c_str());
 #endif
+
     return;
   }
 
@@ -181,9 +198,9 @@ void FRTDP::trialRecurse(MDPNode& cn, double actionDelta, double altPrio, double
 				    (actionDelta - r.ubResidual) / weight);
   double nextAltPrio = std::max(r.secondBestPrio,
 				altPrio - log(weight));
-  double nextOcc = occ + log(weight);
+  double nextLogOcc = logOcc + log(weight);
   trialRecurse(cn.getNextState(r.maxUBAction, r.maxPrioOutcome),
-	       nextActionDelta, nextAltPrio, nextOcc, depth+1);
+	       nextActionDelta, nextAltPrio, nextLogOcc, depth+1);
 
   update2(cn, r);
 }
@@ -194,11 +211,42 @@ bool FRTDP::doTrial(MDPNode& cn)
   printf("-*- doTrial: trial %d\n", (numTrials+1));
 #endif
 
+  oldQualitySum = 0;
+  oldNumUpdates = 0;
+  newQualitySum = 0;
+  newNumUpdates = 0;
+
   trialRecurse(cn,
 	       /* actionDelta = */ 99e+20,
 	       /* altPrio = */ RT_PRIO_MINUS_INFINITY,
-	       /* occ = */ log(1.0),
+	       /* logOcc = */ log(1.0),
 	       /* depth = */ 0);
+
+  double updateQualityRatio;
+  if (0 == oldQualitySum) {
+    updateQualityRatio = 1000;
+  } else if (0 == newNumUpdates) {
+    updateQualityRatio = 0;
+  } else {
+    double oldMean = oldQualitySum / oldNumUpdates;
+    double newMean = newQualitySum / newNumUpdates;
+    updateQualityRatio = newMean / oldMean;
+  }
+  
+  if (updateQualityRatio >= 1.0) {
+    oldMaxDepth = maxDepth;
+    maxDepth *= FRTDP_MAX_DEPTH_ADJUST_RATIO;
+#if USE_DEBUG_PRINT
+    printf("endTrial: updateQualityRatio=%g oldMaxDepth=%g maxDepth=%g\n",
+	   updateQualityRatio, oldMaxDepth, maxDepth);
+#endif
+  } else {
+#if USE_DEBUG_PRINT
+  printf("endTrial: updateQualityRatio=%g maxDepth=%g (no change)\n",
+	 updateQualityRatio, maxDepth);
+#endif
+  }
+
   numTrials++;
 
   return (cn.ubVal - cn.lbVal < targetPrecision);
@@ -209,6 +257,9 @@ bool FRTDP::doTrial(MDPNode& cn)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.7  2006/02/20 02:04:56  trey
+ * changed altPrio margin to be based on occupancy
+ *
  * Revision 1.6  2006/02/20 00:05:35  trey
  * added FRTDP_ALT_PRIO_MARGIN
  *
