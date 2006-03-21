@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.4 $  $Author: trey $  $Date: 2006-03-21 16:46:21 $
+ $Revision: 1.5 $  $Author: trey $  $Date: 2006-03-21 18:19:10 $
    
  @file    ARTDP.cc
  @brief   No brief
@@ -50,6 +50,9 @@ using namespace MatrixUtils;
 #define USE_ARTDP_DISCREP_ZERO (1)
 #define USE_ARTDP_WITH_PRIO (1)
 #define ARTDP_MIN_DELTA (1.0)
+
+#define USE_ARTDP_ADVANCE_RATIO (1)
+#define ARTDP_ADVANCE_RATIO (1.1)
 
 namespace zmdp {
 
@@ -187,7 +190,9 @@ void ARTDP::endTrial(void)
   if (-1 != bestDeltaIndex) {
     ARTDPParamInfo& p = params[bestDeltaIndex];
 
-#if USE_ARTDP_MIN_TERM
+#if USE_ARTDP_ADVANCE_RATIO
+    double newVal = p.val * ARTDP_ADVANCE_RATIO;
+#elif USE_ARTDP_MIN_TERM
     double newVal = p.minTermNodeValue;
 #else
     int numValues = std::min(p.numTermNodes, ARTDP_TERM_NODE_ARR_SIZE);
@@ -327,7 +332,11 @@ void ARTDP::trialRecurse(MDPNode& cn, double g, double logOcc, double discrep, i
 
   double occ = (logOcc < -50) ? 0 : exp(logOcc);
   double relevance = occ * excessWidth;
+#if 0
   double updateQuality = r.ubResidual * relevance;
+#else
+  double updateQuality = r.ubResidual * occ;
+#endif
 
   // is there a better way to enforce this?
   cn.prio = std::min(cn.prio, (excessWidth <= 0) ? RT_PRIO_MINUS_INFINITY : log(excessWidth));
@@ -356,7 +365,7 @@ void ARTDP::trialRecurse(MDPNode& cn, double g, double logOcc, double discrep, i
     terminateTrial = true;
   }
 
-#if 1
+#if 0
   double f = g + r.maxUBVal; // 'f = g + h'
   termTriggered = getMinF().recordNode(f, updateQuality);
   if (termTriggered) {
@@ -494,6 +503,9 @@ void ARTDP::derivedClassInit(void)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2006/03/21 16:46:21  trey
+ * added FRTDP-style prio machinery to ARTDP
+ *
  * Revision 1.3  2006/03/20 19:21:01  trey
  * quantile approximation is now stochastic, no longer biased toward values at the end of the trial
  *
