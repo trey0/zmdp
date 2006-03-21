@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.6 $  $Author: trey $  $Date: 2006-03-21 21:09:24 $
+ $Revision: 1.7 $  $Author: trey $  $Date: 2006-03-21 21:24:43 $
    
  @file    FRTDP.h
  @brief   No brief
@@ -34,10 +34,10 @@ namespace zmdp {
 
 struct FRTDPUpdateResult {
   int maxUBAction;
-  double maxUBVal, secondBestUBVal;
+  double maxUBVal;
   double ubResidual;
   int maxPrioOutcome;
-  double maxPrio, secondBestPrio;
+  double maxPrio;
 };
 
 struct FRTDP : public RTDPCore {
@@ -55,7 +55,7 @@ struct FRTDP : public RTDPCore {
 
   void getMaxPrioOutcome(MDPNode& cn, int a, FRTDPUpdateResult& result) const;
   void update2(MDPNode& cn, FRTDPUpdateResult& result);
-  void trialRecurse(MDPNode& cn, double actionDelta, double altPrio, double logOcc, int depth);
+  void trialRecurse(MDPNode& cn, double logOcc, int depth);
   bool doTrial(MDPNode& cn);
 };
 
@@ -66,6 +66,9 @@ struct FRTDP : public RTDPCore {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.6  2006/03/21 21:09:24  trey
+ * added adaptive maxDepth termination criterion
+ *
  * Revision 1.5  2006/02/20 02:04:55  trey
  * changed altPrio margin to be based on occupancy
  *

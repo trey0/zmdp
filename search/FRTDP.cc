@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.8 $  $Author: trey $  $Date: 2006-03-21 21:09:25 $
+ $Revision: 1.9 $  $Author: trey $  $Date: 2006-03-21 21:24:43 $
    
  @file    FRTDP.cc
  @brief   No brief
@@ -60,7 +60,6 @@ FRTDP::FRTDP(AbstractBound* _initUpperBound) :
 void FRTDP::getMaxPrioOutcome(MDPNode& cn, int a, FRTDPUpdateResult& r) const
 {
   r.maxPrio = -99e+20;
-  r.secondBestPrio = -99e+20;
   r.maxPrioOutcome = -1;
   double prio;
   MDPQEntry& Qa = cn.Q[a];
@@ -69,11 +68,8 @@ void FRTDP::getMaxPrioOutcome(MDPNode& cn, int a, FRTDPUpdateResult& r) const
     if (NULL != e) {
       prio = log(problem->getDiscount() * e->obsProb) + e->nextState->prio;
       if (prio > r.maxPrio) {
-	r.secondBestPrio = r.maxPrio;
 	r.maxPrio = prio;
 	r.maxPrioOutcome = o;
-      } else if (prio > r.secondBestPrio) {
-	r.secondBestPrio = prio;
       }
 #if 0
       printf("    a=%d o=%d obsProb=%g nsprio=%g prio=%g\n",
@@ -92,7 +88,6 @@ void FRTDP::update2(MDPNode& cn, FRTDPUpdateResult& r)
 {
   double maxLBVal = -99e+20;
   r.maxUBVal = -99e+20;
-  r.secondBestUBVal = -99e+20;
   r.maxUBAction = -1;
   double lbVal, ubVal;
   FOR (a, cn.getNumActions()) {
@@ -113,11 +108,8 @@ void FRTDP::update2(MDPNode& cn, FRTDPUpdateResult& r)
 
     maxLBVal = std::max(maxLBVal, lbVal);
     if (ubVal > r.maxUBVal) {
-      r.secondBestUBVal = r.maxUBVal;
       r.maxUBVal = ubVal;
       r.maxUBAction = a;
-    } else if (ubVal > r.secondBestUBVal) {
-      r.secondBestUBVal = ubVal;
     }
   }
 
@@ -138,7 +130,7 @@ void FRTDP::update2(MDPNode& cn, FRTDPUpdateResult& r)
   numBackups++;
 }
 
-void FRTDP::trialRecurse(MDPNode& cn, double actionDelta, double altPrio, double logOcc, int depth)
+void FRTDP::trialRecurse(MDPNode& cn, double logOcc, int depth)
 {
   if (cn.isFringe()) {
     expand(cn);
@@ -155,16 +147,16 @@ void FRTDP::trialRecurse(MDPNode& cn, double actionDelta, double altPrio, double
   cn.prio = std::min(cn.prio, (excessWidth <= 0) ? RT_PRIO_MINUS_INFINITY : log(excessWidth));
 
 #if USE_DEBUG_PRINT
-  printf("  trialRecurse: depth=%d [%g .. %g] actionDelta=%g altPrio=%g a=%d o=%d\n",
-	 depth, cn.lbVal, cn.ubVal, actionDelta, altPrio, r.maxUBAction, r.maxPrioOutcome);
+  printf("  trialRecurse: depth=%d [%g .. %g] a=%d o=%d\n",
+	 depth, cn.lbVal, cn.ubVal, r.maxUBAction, r.maxPrioOutcome);
   printf("  trialRecurse: s=%s\n", sparseRep(cn.s).c_str());
 #endif
 
 #if 0
-  printf("  tr: maxUBAction=%d maxUBVal=%g secondBestUBVal=%g ubResidual=%g\n",
-	 r.maxUBAction, r.maxUBVal, r.secondBestUBVal, r.ubResidual);
-  printf("  tr: maxPrioOutcome=%d maxPrio=%g secondBestPrio=%g\n",
-	 r.maxPrioOutcome, r.maxPrio, r.secondBestPrio);
+  printf("  tr: maxUBAction=%d maxUBVal=%g ubResidual=%g\n",
+	 r.maxUBAction, r.maxUBVal, r.ubResidual);
+  printf("  tr: maxPrioOutcome=%d maxPrio=%g\n",
+	 r.maxPrioOutcome, r.maxPrio);
 #endif
 
   if (depth > oldMaxDepth) {
@@ -175,16 +167,10 @@ void FRTDP::trialRecurse(MDPNode& cn, double actionDelta, double altPrio, double
     newNumUpdates++;
   }
 
-  if (excessWidth < 0
-      || depth > maxDepth
-#if USE_FRTDP_ALT_PRIO
-      || (altPrio - r.maxPrio) > -0.9 * logOcc // FRTDP_ALT_PRIO_MARGIN
-#endif
-      //|| actionDelta < -targetPrecision
-      ) {
+  if (excessWidth < 0 || depth > maxDepth) {
 #if USE_DEBUG_PRINT
-    printf("  trialRecurse: depth=%d actionDelta=%g altPrio=%g excessWidth=%g (terminating)\n",
-	   depth, actionDelta, altPrio, excessWidth);
+    printf("  trialRecurse: depth=%d excessWidth=%g (terminating)\n",
+	   depth, excessWidth);
     printf("  trialRecurse: s=%s\n", sparseRep(cn.s).c_str());
 #endif
 
@@ -194,13 +180,9 @@ void FRTDP::trialRecurse(MDPNode& cn, double actionDelta, double altPrio, double
   // recurse to successor
   double obsProb = cn.Q[r.maxUBAction].outcomes[r.maxPrioOutcome]->obsProb;
   double weight = problem->getDiscount() * obsProb;
-  double nextActionDelta = std::min(r.maxUBVal - r.secondBestUBVal,
-				    (actionDelta - r.ubResidual) / weight);
-  double nextAltPrio = std::max(r.secondBestPrio,
-				altPrio - log(weight));
   double nextLogOcc = logOcc + log(weight);
   trialRecurse(cn.getNextState(r.maxUBAction, r.maxPrioOutcome),
-	       nextActionDelta, nextAltPrio, nextLogOcc, depth+1);
+	       nextLogOcc, depth+1);
 
   update2(cn, r);
 }
@@ -217,8 +199,6 @@ bool FRTDP::doTrial(MDPNode& cn)
   newNumUpdates = 0;
 
   trialRecurse(cn,
-	       /* actionDelta = */ 99e+20,
-	       /* altPrio = */ RT_PRIO_MINUS_INFINITY,
 	       /* logOcc = */ log(1.0),
 	       /* depth = */ 0);
 
@@ -257,6 +237,9 @@ bool FRTDP::doTrial(MDPNode& cn)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.8  2006/03/21 21:09:25  trey
+ * added adaptive maxDepth termination criterion
+ *
  * Revision 1.7  2006/02/20 02:04:56  trey
  * changed altPrio margin to be based on occupancy
  *
