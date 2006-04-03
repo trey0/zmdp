@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.9 $  $Author: trey $  $Date: 2006-03-21 21:24:43 $
+ $Revision: 1.10 $  $Author: trey $  $Date: 2006-04-03 21:39:03 $
    
  @file    FRTDP.cc
  @brief   No brief
@@ -57,6 +57,25 @@ FRTDP::FRTDP(AbstractBound* _initUpperBound) :
   maxDepth = FRTDP_INIT_MAX_DEPTH;
 }
 
+void FRTDP::getNodeHandler(MDPNode& cn)
+{
+  FRTDPExtraNodeData* searchData = new FRTDPExtraNodeData;
+  cn.searchData = searchData;
+  double excessWidth = cn.ubVal - cn.lbVal - RT_PRIO_IMPROVEMENT_CONSTANT * targetPrecision;
+  searchData->prio = (excessWidth <= 0) ? RT_PRIO_MINUS_INFINITY : log(excessWidth);
+}
+
+void FRTDP::staticGetNodeHandler(MDPNode& s, void* handlerData)
+{
+  FRTDP* x = (FRTDP *) handlerData;
+  x->getNodeHandler(s);
+}
+
+double& FRTDP::getPrio(const MDPNode& cn) const
+{
+  return ((FRTDPExtraNodeData*) cn.searchData)->prio;
+}
+
 void FRTDP::getMaxPrioOutcome(MDPNode& cn, int a, FRTDPUpdateResult& r) const
 {
   r.maxPrio = -99e+20;
@@ -66,85 +85,47 @@ void FRTDP::getMaxPrioOutcome(MDPNode& cn, int a, FRTDPUpdateResult& r) const
   FOR (o, Qa.getNumOutcomes()) {
     MDPEdge* e = Qa.outcomes[o];
     if (NULL != e) {
-      prio = log(problem->getDiscount() * e->obsProb) + e->nextState->prio;
+      prio = log(problem->getDiscount() * e->obsProb) + getPrio(*e->nextState);
       if (prio > r.maxPrio) {
 	r.maxPrio = prio;
 	r.maxPrioOutcome = o;
       }
 #if 0
       printf("    a=%d o=%d obsProb=%g nsprio=%g prio=%g\n",
-	     a, o, e->obsProb, e->nextState->prio, prio);
-      if (e->nextState->prio < -99e+20) {
+	     a, o, e->obsProb, getPrio(*e->nextState), prio);
+      if (getPrio(*e->nextState) < -99e+20) {
 	MDPNode& sn = *e->nextState;
 	printf("ns: s=[%s] [%g .. %g] prio=%g\n",
-	       denseRep(sn.s).c_str(), sn.lbVal, sn.ubVal, sn.prio);
+	       denseRep(sn.s).c_str(), sn.lbVal, sn.ubVal, getPrio(sn));
       }
 #endif
     }
   }
 }
 
-void FRTDP::update2(MDPNode& cn, FRTDPUpdateResult& r)
+void FRTDP::update(MDPNode& cn, FRTDPUpdateResult& r)
 {
-  double maxLBVal = -99e+20;
-  r.maxUBVal = -99e+20;
-  r.maxUBAction = -1;
-  double lbVal, ubVal;
-  FOR (a, cn.getNumActions()) {
-    MDPQEntry& Qa = cn.Q[a];
-    lbVal = 0;
-    ubVal = 0;
-    FOR (o, Qa.getNumOutcomes()) {
-      MDPEdge* e = Qa.outcomes[o];
-      if (NULL != e) {
-	MDPNode& sn = *e->nextState;
-	double oprob = e->obsProb;
-	lbVal += oprob * sn.lbVal;
-	ubVal += oprob * sn.ubVal;
-      }
-    }
-    Qa.lbVal = lbVal = Qa.immediateReward + problem->getDiscount() * lbVal;
-    Qa.ubVal = ubVal = Qa.immediateReward + problem->getDiscount() * ubVal;
-
-    maxLBVal = std::max(maxLBVal, lbVal);
-    if (ubVal > r.maxUBVal) {
-      r.maxUBVal = ubVal;
-      r.maxUBAction = a;
-    }
-  }
-
-#if 1
-  // min and max calls here only necessary if bounds are not uniformly improvable
-  maxLBVal = std::max(cn.lbVal, maxLBVal);
-  r.maxUBVal = std::min(cn.ubVal, r.maxUBVal);
-#endif
-
-  r.ubResidual = cn.ubVal - r.maxUBVal;
-
-  cn.lbVal = maxLBVal;
-  cn.ubVal = r.maxUBVal;
+  double oldUBVal = cn.ubVal;
+  bounds->update(cn, &r.maxUBAction);
+  
+  r.ubResidual = oldUBVal - r.maxUBVal;
 
   getMaxPrioOutcome(cn, r.maxUBAction, r);
-  cn.prio = r.maxPrio;
-
-  numBackups++;
+  getPrio(cn) = r.maxPrio;
 }
 
 void FRTDP::trialRecurse(MDPNode& cn, double logOcc, int depth)
 {
-  if (cn.isFringe()) {
-    expand(cn);
-  }
-
   FRTDPUpdateResult r;
-  update2(cn, r);
+  update(cn, r);
 
   double excessWidth = cn.ubVal - cn.lbVal - RT_PRIO_IMPROVEMENT_CONSTANT * targetPrecision;
   double occ = (logOcc < -50) ? 0 : exp(logOcc);
   double updateQuality = r.ubResidual * occ;
 
   // is there a better way to enforce this?
-  cn.prio = std::min(cn.prio, (excessWidth <= 0) ? RT_PRIO_MINUS_INFINITY : log(excessWidth));
+  getPrio(cn) = std::min(getPrio(cn), (excessWidth <= 0)
+			 ? RT_PRIO_MINUS_INFINITY : log(excessWidth));
 
 #if USE_DEBUG_PRINT
   printf("  trialRecurse: depth=%d [%g .. %g] a=%d o=%d\n",
@@ -184,7 +165,7 @@ void FRTDP::trialRecurse(MDPNode& cn, double logOcc, int depth)
   trialRecurse(cn.getNextState(r.maxUBAction, r.maxPrioOutcome),
 	       nextLogOcc, depth+1);
 
-  update2(cn, r);
+  update(cn, r);
 }
 
 bool FRTDP::doTrial(MDPNode& cn)
@@ -232,11 +213,19 @@ bool FRTDP::doTrial(MDPNode& cn)
   return (cn.ubVal - cn.lbVal < targetPrecision);
 }
 
+void FRTDP::derivedClassInit(void)
+{
+  bounds->setGetNodeHandler(&FRTDP::staticGetNodeHandler, this);
+}
+
 }; // namespace zmdp
 
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.9  2006/03/21 21:24:43  trey
+ * removed code that was obsoleted by new termination condition
+ *
  * Revision 1.8  2006/03/21 21:09:25  trey
  * added adaptive maxDepth termination criterion
  *

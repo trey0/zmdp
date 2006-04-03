@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.8 $  $Author: trey $  $Date: 2006-03-17 20:06:44 $
+ $Revision: 1.9 $  $Author: trey $  $Date: 2006-04-03 21:39:24 $
    
  @file    RTDPCore.h
  @brief   Common code used by multiple RTDP variants found in this
@@ -33,10 +33,8 @@
 
 #include "MatrixUtils.h"
 #include "Solver.h"
-#include "AbstractBound.h"
-#include "MDPCache.h"
+#include "IncrementalBounds.h"
 
-#define OBS_IS_ZERO_EPS (1e-10)
 #define RT_CLEAR_STD_STACK(x) while (!(x).empty()) (x).pop();
 #define RT_IDX_PLUS_INFINITY (INT_MAX)
 #define RT_PRIO_MINUS_INFINITY (-99e+20)
@@ -81,16 +79,11 @@ struct NodeStack {
 
 struct RTDPCore : public Solver {
   const MDP* problem;
-  MDPNode* root;
-  MDPHash* lookup;
   AbstractBound* initUpperBound;
-  AbstractBound* initLowerBound;
+  IncrementalBounds* bounds;
   timeval boundsStartTime;
   timeval previousElapsedTime;
-  int numStatesTouched;
-  int numStatesExpanded;
   int numTrials;
-  int numBackups;
   double lastPrintTime;
   std::ostream* boundsFile;
   bool initialized;
@@ -99,21 +92,15 @@ struct RTDPCore : public Solver {
   RTDPCore(AbstractBound* _initUpperBound);
 
   void init(double _targetPrecision);
-  MDPNode* getNode(const state_vector& s);
-  void expand(MDPNode& cn);
-  int getMaxUBAction(MDPNode& cn) const;
-  int getSimulatedOutcome(MDPNode& cn, int a) const;
-  void update(MDPNode& cn);
 
   // different derived classes (RTDP variants) will implement these
   // in varying ways
   virtual bool getUseLowerBound(void) const = 0;
-  virtual void updateInternal(MDPNode& cn) = 0;
   virtual bool doTrial(MDPNode& cn) = 0;
   virtual void derivedClassInit(void) {}
 
   // virtual functions from Solver that constitute the external api
-  void planInit(const MDP* pomdp, double _targetPrecision);
+  void planInit(const MDP* problem, double _targetPrecision);
   bool planFixedTime(const state_vector& s,
 		     double maxTimeSeconds,
 		     double _targetPrecision);
@@ -129,6 +116,9 @@ struct RTDPCore : public Solver {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.8  2006/03/17 20:06:44  trey
+ * added derivedClassInit() virtual function for more flexibility
+ *
  * Revision 1.7  2006/02/27 20:12:37  trey
  * cleaned up meta-information in header
  *

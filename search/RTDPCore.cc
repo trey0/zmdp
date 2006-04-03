@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.12 $  $Author: trey $  $Date: 2006-03-17 20:06:44 $
+ $Revision: 1.13 $  $Author: trey $  $Date: 2006-04-03 21:39:24 $
    
  @file    RTDPCore.cc
  @brief   Common code used by multiple RTDP variants found in this
@@ -40,6 +40,7 @@
 #include "MatrixUtils.h"
 #include "Pomdp.h"
 #include "RTDPCore.h"
+#include "PointBounds.h"
 
 using namespace std;
 using namespace sla;
@@ -48,7 +49,6 @@ using namespace MatrixUtils;
 namespace zmdp {
 
 RTDPCore::RTDPCore(AbstractBound* _initUpperBound) :
-  problem(NULL),
   initUpperBound(_initUpperBound),
   boundsFile(NULL),
   initialized(false)
@@ -58,24 +58,18 @@ void RTDPCore::init(double _targetPrecision)
 {
   targetPrecision = _targetPrecision;
 
-  if (getUseLowerBound()) {
-    initLowerBound = problem->newLowerBound();
-    initLowerBound->initialize(targetPrecision);
-  }
+  AbstractBound* initLowerBound = getUseLowerBound() ? problem->newLowerBound() : NULL;
 
-  // upper bound created but not initialized in RTDPCore constructor
-  initUpperBound->initialize(targetPrecision);
-
-  lookup = new MDPHash();
-  root = getNode(problem->getInitialState());
+  bounds = new PointBounds;
+  bounds->initialize(problem,
+		     initLowerBound,
+		     initUpperBound,
+		     targetPrecision);
 
   previousElapsedTime = secondsToTimeval(0.0);
   lastPrintTime = 0;
 
-  numStatesTouched = 0;
-  numStatesExpanded = 0;
   numTrials = 0;
-  numBackups = 0;
 
   if (NULL != boundsFile) {
     (*boundsFile) << "# wallclock time"
@@ -105,112 +99,6 @@ void RTDPCore::planInit(const MDP* _problem,
 #endif
 }
 
-MDPNode* RTDPCore::getNode(const state_vector& s)
-{
-  string hs = hashable(s);
-  MDPHash::iterator pr = lookup->find(hs);
-  if (lookup->end() == pr) {
-    // create a new fringe node
-    MDPNode& cn = *(new MDPNode);
-    cn.s = s;
-    cn.isTerminal = problem->getIsTerminalState(s);
-    if (cn.isTerminal) {
-      cn.ubVal = 0;
-      cn.isSolved = true;
-    } else {
-      cn.ubVal = initUpperBound->getValue(s);
-      cn.isSolved = false;
-    }
-    cn.idx = RT_IDX_PLUS_INFINITY;
-    if (getUseLowerBound()) {
-      if (cn.isTerminal) {
-	cn.lbVal = 0;
-      } else {
-	cn.lbVal = initLowerBound->getValue(s);
-      }
-      double excessWidth = cn.ubVal - cn.lbVal - RT_PRIO_IMPROVEMENT_CONSTANT * targetPrecision;
-      cn.prio = (excessWidth <= 0) ? RT_PRIO_MINUS_INFINITY : log(excessWidth);
-    } else {
-      cn.lbVal = -1; // n/a
-    }
-    (*lookup)[hs] = &cn;
-    numStatesTouched++;
-    return &cn;
-  } else {
-    // return existing node
-    return pr->second;
-  }
-}
-
-void RTDPCore::expand(MDPNode& cn)
-{
-  // set up successors for this fringe node (possibly creating new fringe nodes)
-  outcome_prob_vector opv;
-  state_vector sp;
-  cn.Q.resize(problem->getNumActions());
-  FOR (a, problem->getNumActions()) {
-    MDPQEntry& Qa = cn.Q[a];
-    Qa.immediateReward = problem->getReward(cn.s, a);
-    problem->getOutcomeProbVector(opv, cn.s, a);
-    Qa.outcomes.resize(opv.size());
-    FOR (o, opv.size()) {
-      double oprob = opv(o);
-      if (oprob > OBS_IS_ZERO_EPS) {
-	MDPEdge* e = new MDPEdge();
-        Qa.outcomes[o] = e;
-        e->obsProb = oprob;
-        e->nextState = getNode(problem->getNextState(sp, cn.s, a, o));
-      } else {
-        Qa.outcomes[o] = NULL;
-      }
-    }
-  }
-
-  numStatesExpanded++;
-}
-
-// relies on correct Q values!
-int RTDPCore::getMaxUBAction(MDPNode& cn) const
-{
-  double bestVal = -99e+20;
-  int bestAction = -1;
-  FOR (a, cn.getNumActions()) {
-    const MDPQEntry& Qa = cn.Q[a];
-    if (Qa.ubVal > bestVal) {
-      bestVal = Qa.ubVal;
-      bestAction = a;
-    }
-  }
-  return bestAction;
-}
-
-int RTDPCore::getSimulatedOutcome(MDPNode& cn, int a) const
-{
-  double r = unit_rand();
-  int result = 0;
-  MDPQEntry& Qa = cn.Q[a];
-  FOR (o, Qa.getNumOutcomes()) {
-    MDPEdge* e = Qa.outcomes[o];
-    if (NULL != e) {
-      r -= e->obsProb;
-      if (r <= 0) {
-	result = o;
-	break;
-      }
-    }
-  }
-
-  return result;
-}
-
-void RTDPCore::update(MDPNode& cn)
-{
-  if (cn.isFringe()) {
-    expand(cn);
-  }
-  updateInternal(cn);
-}
-
 bool RTDPCore::planFixedTime(const state_vector& s,
 			     double maxTimeSeconds,
 			     double _targetPrecision)
@@ -224,7 +112,7 @@ bool RTDPCore::planFixedTime(const state_vector& s,
 
   // disable this termination check for now
   //if (root->ubVal - root->lbVal < targetPrecision) return true;
-  bool done = doTrial(*root);
+  bool done = doTrial(*bounds->getRootNode());
 
   previousElapsedTime = getTime() - boundsStartTime;
 
@@ -232,12 +120,12 @@ bool RTDPCore::planFixedTime(const state_vector& s,
     double elapsed = timevalToSeconds(getTime() - boundsStartTime);
     if (done || (0 == lastPrintTime) || elapsed / lastPrintTime >= 1.01) {
       (*boundsFile) << timevalToSeconds(getTime() - boundsStartTime)
-		    << " " << root->lbVal
-		    << " " << root->ubVal
-		    << " " << numStatesTouched
-		    << " " << numStatesExpanded
+		    << " " << bounds->getRootNode()->lbVal
+		    << " " << bounds->getRootNode()->ubVal
+		    << " " << bounds->numStatesTouched
+		    << " " << bounds->numStatesExpanded
 		    << " " << numTrials
-		    << " " << numBackups
+		    << " " << bounds->numBackups
 		    << endl;
       boundsFile->flush();
       lastPrintTime = elapsed;
@@ -316,14 +204,7 @@ void RTDPCore::setBoundsFile(std::ostream* _boundsFile)
 
 ValueInterval RTDPCore::getValueAt(const state_vector& s) const
 {
-  typeof(lookup->begin()) pr = lookup->find(hashable(s));
-  if (lookup->end() == pr) {
-    return ValueInterval(getUseLowerBound() ? initLowerBound->getValue(s) : -1,
-			 initUpperBound->getValue(s));
-  } else {
-    const MDPNode& cn = *pr->second;
-    return ValueInterval(cn.lbVal, cn.ubVal);
-  }
+  return bounds->getValueAt(s);
 }
 
 }; // namespace zmdp
@@ -331,6 +212,9 @@ ValueInterval RTDPCore::getValueAt(const state_vector& s) const
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.12  2006/03/17 20:06:44  trey
+ * added derivedClassInit() virtual function for more flexibility
+ *
  * Revision 1.11  2006/02/27 20:12:37  trey
  * cleaned up meta-information in header
  *

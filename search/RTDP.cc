@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.9 $  $Author: trey $  $Date: 2006-02-27 20:12:37 $
+ $Revision: 1.10 $  $Author: trey $  $Date: 2006-04-03 21:39:24 $
    
  @file    RTDP.cc
  @brief   Implementation of Barto, Bradke, and Singh's RTDP algorithm.
@@ -26,7 +26,7 @@
  ***************************************************************************/
 
 /**********************************************************************
-  This is my implementation of the HDP algorithm, based on the paper
+  This is my implementation of the RTDP algorithm, based on the paper
 
     "Learning to Act Using Real-Time Dynamic Programming."
     A. Barto, S. Bradke, and S. Singh.
@@ -66,30 +66,6 @@ RTDP::RTDP(AbstractBound* _initUpperBound) :
   RTDPCore(_initUpperBound)
 {}
 
-void RTDP::updateInternal(MDPNode& cn)
-{
-  double ubVal;
-  double maxUBVal = -99e+20;
-  FOR (a, cn.getNumActions()) {
-    MDPQEntry& Qa = cn.Q[a];
-    ubVal = 0;
-    FOR (o, Qa.getNumOutcomes()) {
-      MDPEdge* e = Qa.outcomes[o];
-      if (NULL != e) {
-	MDPNode& sn = *e->nextState;
-	double oprob = e->obsProb;
-	ubVal += oprob * sn.ubVal;
-      }
-    }
-    ubVal = Qa.immediateReward + problem->getDiscount() * ubVal;
-    Qa.ubVal = ubVal;
-
-    maxUBVal = std::max(maxUBVal, ubVal);
-  }
-  cn.ubVal = std::min(cn.ubVal, maxUBVal);
-  numBackups++;
-}
-
 void RTDP::trialRecurse(MDPNode& cn, int depth)
 {
   // check for termination
@@ -102,10 +78,10 @@ void RTDP::trialRecurse(MDPNode& cn, int depth)
   }
 
   // cached Q values must be up to date for subsequent calls
-  update(cn);
+  int maxUBAction;
+  bounds->update(cn, &maxUBAction);
 
-  int maxUBAction = getMaxUBAction(cn);
-  int simulatedOutcome = getSimulatedOutcome(cn, maxUBAction);
+  int simulatedOutcome = bounds->getSimulatedOutcome(cn, maxUBAction);
 
 #if USE_DEBUG_PRINT
   printf("  trialRecurse: depth=%d a=%d o=%d ubVal=%g\n",
@@ -116,7 +92,7 @@ void RTDP::trialRecurse(MDPNode& cn, int depth)
   // recurse to successor
   trialRecurse(cn.getNextState(maxUBAction, simulatedOutcome), depth+1);
 
-  update(cn);
+  bounds->update(cn, NULL);
 }
 
 bool RTDP::doTrial(MDPNode& cn)
@@ -136,6 +112,9 @@ bool RTDP::doTrial(MDPNode& cn)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.9  2006/02/27 20:12:37  trey
+ * cleaned up meta-information in header
+ *
  * Revision 1.8  2006/02/19 18:33:47  trey
  * targetPrecision now stared as a field rather than passed around recursively
  *

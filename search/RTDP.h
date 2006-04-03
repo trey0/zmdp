@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.7 $  $Author: trey $  $Date: 2006-02-19 18:33:47 $
+ $Revision: 1.8 $  $Author: trey $  $Date: 2006-04-03 21:39:24 $
    
  @file    RTDP.h
  @brief   No brief
@@ -36,7 +36,6 @@ struct RTDP : public RTDPCore {
   RTDP(AbstractBound* _initUpperBound);
 
   bool getUseLowerBound(void) const { return false; }
-  void updateInternal(MDPNode& cn);
   void trialRecurse(MDPNode& cn, int depth);
   bool doTrial(MDPNode& cn);
 };
@@ -48,6 +47,9 @@ struct RTDP : public RTDPCore {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.7  2006/02/19 18:33:47  trey
+ * targetPrecision now stared as a field rather than passed around recursively
+ *
  * Revision 1.6  2006/02/14 19:34:43  trey
  * now use targetPrecision properly
  *
