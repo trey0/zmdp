@@ -1,0 +1,76 @@
+/********** tell emacs we use -*- c++ -*- style comments *******************
+ $Revision: 1.1 $  $Author: trey $  $Date: 2006-04-04 17:22:51 $
+   
+ @file    IncrementalBounds.h
+ @brief   No brief
+
+ Copyright (c) 2006, Trey Smith. All rights reserved.
+
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions are
+ met:
+
+ * The software may not be sold or incorporated into a commercial
+   product without specific prior written permission.
+ * The above copyright notice and this permission notice shall be
+   included in all copies or substantial portions of the software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+ ***************************************************************************/
+
+#ifndef INCIncrementalBounds_h
+#define INCIncrementalBounds_h
+
+#include <iostream>
+#include <string>
+#include <vector>
+
+#include "MDPCache.h"
+
+using namespace sla;
+
+namespace zmdp {
+
+typedef void (*GetNodeHandler)(MDPNode& cn, void* callbackData);
+
+struct IncrementalBounds {
+  int numStatesTouched;
+  int numStatesExpanded;
+  int numBackups;
+
+  virtual ~IncrementalBounds(void) {}
+
+  virtual void initialize(const MDP* _problem,
+			  AbstractBound* _initLowerBound,
+			  AbstractBound* _initUpperBound,
+			  double _targetPrecision) = 0;
+
+  virtual MDPNode* getRootNode(void) = 0;
+  virtual MDPNode* getNode(const state_vector& s) = 0;
+  virtual void expand(MDPNode& cn) = 0;
+  virtual void update(MDPNode& cn, int* maxUBActionP) = 0;
+  virtual int chooseAction(const state_vector& s) const = 0;
+  virtual ValueInterval getValueAt(const state_vector& s) const = 0;
+  virtual void setGetNodeHandler(GetNodeHandler getNodeHandler, void* handlerData) = 0;
+
+  int getMaxUBAction(MDPNode& cn) const;
+  int getSimulatedOutcome(MDPNode& cn, int a) const;
+};
+
+}; // namespace zmdp
+
+#endif // INCIncrementalBounds_h
+
+/***************************************************************************
+ * REVISION HISTORY:
+ * $Log: not supported by cvs2svn $
+ *
+ ***************************************************************************/
+
