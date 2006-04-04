@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.4 $  $Author: trey $  $Date: 2006-02-06 19:29:23 $
+ $Revision: 1.5 $  $Author: trey $  $Date: 2006-04-04 17:26:29 $
    
  @file    MDP.h
  @brief   No brief
@@ -36,6 +36,8 @@
 #include "zmdpCommonTypes.h"
 
 using namespace sla;
+
+#define OBS_IS_ZERO_EPS (1e-10)
 
 namespace zmdp {
 
@@ -93,6 +95,9 @@ struct MDP {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2006/02/06 19:29:23  trey
+ * removed numOutcomes field; some MDPs have a varying number of outcomes depending on state
+ *
  * Revision 1.3  2006/02/01 01:09:37  trey
  * renamed pomdp namespace -> zmdp
  *
