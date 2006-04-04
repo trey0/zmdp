@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.6 2006-03-17 20:06:57 trey Exp $
+# $Id: Makefile,v 1.7 2006-04-04 17:25:50 trey Exp $
 #
 # Copyright (c) 2006, Trey Smith. All rights reserved.
 #
@@ -62,9 +62,9 @@ BUILDLIB_TARGET := libzmdpFrtdp.a
 BUILDLIB_SRCS := FRTDP.cc RTDPCore.cc
 include $(BUILD_DIR)/buildlib.mak
 
-BUILDLIB_TARGET := libzmdpArtdp.a
-BUILDLIB_SRCS := ARTDP.cc RTDPCore.cc
-include $(BUILD_DIR)/buildlib.mak
+#BUILDLIB_TARGET := libzmdpArtdp.a
+#BUILDLIB_SRCS := ARTDP.cc RTDPCore.cc
+#include $(BUILD_DIR)/buildlib.mak
 
 ifneq (,$(TEST))
 
@@ -77,6 +77,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.6  2006/03/17 20:06:57  trey
+# added ARTDP
+#
 # Revision 1.5  2006/02/17 18:35:31  trey
 # added HDP
 #
