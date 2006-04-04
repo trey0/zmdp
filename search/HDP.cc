@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.5 $  $Author: trey $  $Date: 2006-03-17 20:06:13 $
+ $Revision: 1.6 $  $Author: trey $  $Date: 2006-04-04 17:23:58 $
    
  @file    HDP.cc
  @brief   Implementation of Bonet and Geffner's HDP algorithm.
@@ -73,57 +73,55 @@ HDP::HDP(AbstractBound* _initUpperBound) :
   RTDPCore(_initUpperBound)
 {}
 
+void HDP::getNodeHandler(MDPNode& cn)
+{
+  HDPExtraNodeData* searchData = new HDPExtraNodeData;
+  cn.searchData = searchData;
+  searchData->isSolved = cn.isTerminal;
+  searchData->idx = RT_IDX_PLUS_INFINITY;
+}
+
+void HDP::staticGetNodeHandler(MDPNode& s, void* handlerData)
+{
+  HDP* x = (HDP *) handlerData;
+  x->getNodeHandler(s);
+}
+
+bool& HDP::getIsSolved(const MDPNode& cn)
+{
+  return ((HDPExtraNodeData *) cn.searchData)->isSolved;
+}
+
+int& HDP::getLow(const MDPNode& cn)
+{
+  return ((HDPExtraNodeData *) cn.searchData)->low;
+}
+
+int& HDP::getIdx(const MDPNode& cn)
+{
+  return ((HDPExtraNodeData *) cn.searchData)->idx;
+}
+
 void HDP::cacheQ(MDPNode& cn)
 {
-#if USE_HDP_LOWER_BOUND
-  double lbVal;
-  double maxLBVal = -99e+20;
-#endif
-  double ubVal;
-  FOR (a, cn.getNumActions()) {
-    MDPQEntry& Qa = cn.Q[a];
-#if USE_HDP_LOWER_BOUND
-    lbVal = 0;
-#endif
-    ubVal = 0;
-    FOR (o, Qa.getNumOutcomes()) {
-      MDPEdge* e = Qa.outcomes[o];
-      if (NULL != e) {
-	MDPNode& sn = *e->nextState;
-	double oprob = e->obsProb;
-#if USE_HDP_LOWER_BOUND
-	lbVal += oprob * sn.lbVal;
-#endif
-	ubVal += oprob * sn.ubVal;
-      }
-    }
-#if USE_HDP_LOWER_BOUND
-    Qa.lbVal = lbVal = Qa.immediateReward + problem->getDiscount() * lbVal;
-    maxLBVal = std::max(maxLBVal, lbVal);
-#endif
-
-    ubVal = Qa.immediateReward + problem->getDiscount() * ubVal;
-    Qa.ubVal = ubVal;
-  }
-
-#if USE_HDP_LOWER_BOUND
-  cn.lbVal = maxLBVal;
-#endif
-
-  numBackups++;
+  double oldUBVal = cn.ubVal;
+  // bounds->update() changes both Q values and cn.ubVal
+  bounds->update(cn, NULL);
+  // keep the changes to Q but undo the change to cn.ubVal
+  cn.ubVal = oldUBVal;
 }
 
 // assumes correct Q values are already cached (using cacheQ)
 double HDP::residual(MDPNode& cn)
 {
-  int maxUBAction = getMaxUBAction(cn);
+  int maxUBAction = bounds->getMaxUBAction(cn);
   return fabs(cn.ubVal - cn.Q[maxUBAction].ubVal);
 }
 
 void HDP::updateInternal(MDPNode& cn)
 {
   cacheQ(cn);
-  int maxUBAction = getMaxUBAction(cn);
+  int maxUBAction = bounds->getMaxUBAction(cn);
   cn.ubVal = cn.Q[maxUBAction].ubVal;
 }
 
@@ -136,7 +134,7 @@ bool HDP::trialRecurse(MDPNode& cn, int depth)
 #endif
 
   // base case
-  if (cn.isSolved) {
+  if (getIsSolved(cn)) {
 #if USE_DEBUG_PRINT
     printf("  trialRecurse: solved node (terminating)\n");
 #endif
@@ -144,9 +142,8 @@ bool HDP::trialRecurse(MDPNode& cn, int depth)
   }
 
   // check residual
-  if (cn.isFringe()) expand(cn);
   cacheQ(cn);
-  int maxUBAction = getMaxUBAction(cn);
+  int maxUBAction = bounds->getMaxUBAction(cn);
   // FIX do not recalculate maxUBAction in residual()
   if (residual(cn) > targetPrecision) {
     cn.ubVal = cn.Q[maxUBAction].ubVal;
@@ -160,45 +157,45 @@ bool HDP::trialRecurse(MDPNode& cn, int depth)
   // mark state as active
   visited.push(&cn);
   nodeStack.push(&cn);
-  cn.idx = cn.low = index;
+  getIdx(cn) = getLow(cn) = index;
   index++;
 
   // recursive call
   bool flag = false;
   MDPQEntry& Qa = cn.Q[maxUBAction];
-  //printf("    pre low=%d idx=%d\n", cn.low, cn.idx);
+  //printf("    pre low=%d idx=%d\n", getLow(cn), getIdx(cn));
   FOR (o, Qa.getNumOutcomes()) {
     MDPEdge* e = Qa.outcomes[o];
     if (NULL != e) {
       MDPNode& sn = *e->nextState;
-      //printf("      a=%d o=%d sn=[%s] sn.idx=%d\n", maxUBAction, o, denseRep(sn.s).c_str(), sn.idx);
-      if (RT_IDX_PLUS_INFINITY == sn.idx) {
+      //printf("      a=%d o=%d sn=[%s] sn.idx=%d\n", maxUBAction, o, denseRep(sn.s).c_str(), getIdx(sn));
+      if (RT_IDX_PLUS_INFINITY == getIdx(sn)) {
 	if (trialRecurse(sn, depth+1)) {
 	  flag = true;
 	}
-	cn.low = std::min(cn.low, sn.low);
+	getLow(cn) = std::min(getLow(cn), getLow(sn));
       } else if (nodeStack.contains(&sn)) {
-	cn.low = std::min(cn.low, sn.low);
+	getLow(cn) = std::min(getLow(cn), getLow(sn));
       }
     }
   }
-  //printf("    post low=%d idx=%d\n", cn.low, cn.idx);
+  //printf("    post low=%d idx=%d\n", getLow(cn), getIdx(cn));
 
   // update if necessary
   if (flag) {
-    update(cn);
+    bounds->update(cn, NULL);
     return true;
   }
 
   // try to label
-  else if (cn.idx == cn.low) {
+  else if (getIdx(cn) == getLow(cn)) {
     printf("  marking %u nodes solved\n", nodeStack.size());
     while (nodeStack.top() != &cn) {
       MDPNode& sn = *nodeStack.pop();
-      sn.isSolved = true;
+      getIsSolved(sn) = true;
     }
     nodeStack.pop();
-    cn.isSolved = true;
+    getIsSolved(cn) = true;
   }
 
   return flag;
@@ -206,7 +203,7 @@ bool HDP::trialRecurse(MDPNode& cn, int depth)
 
 bool HDP::doTrial(MDPNode& cn)
 {
-  if (cn.isSolved) {
+  if (getIsSolved(cn)) {
     printf("-*- doTrial: root node is solved, terminating\n");
     return true;
   }
@@ -219,7 +216,7 @@ bool HDP::doTrial(MDPNode& cn)
   trialRecurse(cn, 0);
   // reset idx to +infinity for visited states
   while (!visited.empty()) {
-    visited.top()->idx = RT_IDX_PLUS_INFINITY;
+    getIdx(*visited.top()) = RT_IDX_PLUS_INFINITY;
     visited.pop();
   }
   nodeStack.clear();
@@ -230,11 +227,19 @@ bool HDP::doTrial(MDPNode& cn)
   return false;
 }
 
+void HDP::derivedClassInit(void)
+{
+  bounds->setGetNodeHandler(&HDP::staticGetNodeHandler, this);
+}
+
 }; // namespace zmdp
 
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.5  2006/03/17 20:06:13  trey
+ * fixed compile warning
+ *
  * Revision 1.4  2006/02/27 20:12:36  trey
  * cleaned up meta-information in header
  *

@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2006-02-20 00:04:49 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2006-04-04 17:23:58 $
    
  @file    HDP.h
  @brief   Implementation of Bonet and Geffner's HDP algorithm
@@ -33,12 +33,23 @@
 
 namespace zmdp {
 
+struct HDPExtraNodeData {
+  bool isSolved;
+  int low, idx;
+};
+
 struct HDP : public RTDPCore {
   int index;
   NodeStack nodeStack;
   std::stack<MDPNode*> visited;
 
   HDP(AbstractBound* _initUpperBound);
+
+  void getNodeHandler(MDPNode& cn);
+  static void staticGetNodeHandler(MDPNode& cn, void* handlerData);
+  static bool& getIsSolved(const MDPNode& cn);
+  static int& getLow(const MDPNode& cn);
+  static int& getIdx(const MDPNode& cn);
 
   void cacheQ(MDPNode& cn);
   double residual(MDPNode& cn);
@@ -51,6 +62,7 @@ struct HDP : public RTDPCore {
   void updateInternal(MDPNode& cn);
   bool trialRecurse(MDPNode& cn, int depth);
   bool doTrial(MDPNode& cn);
+  void derivedClassInit(void);
 };
 
 }; // namespace zmdp
@@ -60,6 +72,9 @@ struct HDP : public RTDPCore {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2006/02/20 00:04:49  trey
+ * added optional lower bound use
+ *
  * Revision 1.2  2006/02/19 18:33:35  trey
  * targetPrecision now stared as a field rather than passed around recursively
  *

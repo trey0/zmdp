@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.7 $  $Author: trey $  $Date: 2006-02-27 20:12:36 $
+ $Revision: 1.8 $  $Author: trey $  $Date: 2006-04-04 17:24:52 $
    
  @file    LRTDP.cc
  @brief   Implementation of Bonet and Geffner's LRTDP algorithm.
@@ -65,31 +65,37 @@ LRTDP::LRTDP(AbstractBound* _initUpperBound) :
   RTDPCore(_initUpperBound)
 {}
 
+void LRTDP::getNodeHandler(MDPNode& cn)
+{
+  LRTDPExtraNodeData* searchData = new LRTDPExtraNodeData;
+  cn.searchData = searchData;
+  searchData->isSolved = cn.isTerminal;
+}
+
+void LRTDP::staticGetNodeHandler(MDPNode& s, void* handlerData)
+{
+  LRTDP* x = (LRTDP *) handlerData;
+  x->getNodeHandler(s);
+}
+
+bool& LRTDP::getIsSolved(const MDPNode& cn)
+{
+  return ((LRTDPExtraNodeData *) cn.searchData)->isSolved;
+}
+
 void LRTDP::cacheQ(MDPNode& cn)
 {
-  double ubVal;
-  FOR (a, cn.getNumActions()) {
-    MDPQEntry& Qa = cn.Q[a];
-    ubVal = 0;
-    FOR (o, Qa.getNumOutcomes()) {
-      MDPEdge* e = Qa.outcomes[o];
-      if (NULL != e) {
-	MDPNode& sn = *e->nextState;
-	double oprob = e->obsProb;
-	ubVal += oprob * sn.ubVal;
-      }
-    }
-    ubVal = Qa.immediateReward + problem->getDiscount() * ubVal;
-    Qa.ubVal = ubVal;
-  }
-
-  numBackups++;
+  double oldUBVal = cn.ubVal;
+  // bounds->update() changes both Q values and cn.ubVal
+  bounds->update(cn, NULL);
+  // keep the changes to Q but undo the change to cn.ubVal
+  cn.ubVal = oldUBVal;
 }
 
 // assumes correct Q values are already cached (using cacheQ)
 double LRTDP::residual(MDPNode& cn)
 {
-  int maxUBAction = getMaxUBAction(cn);
+  int maxUBAction = bounds->getMaxUBAction(cn);
   return fabs(cn.ubVal - cn.Q[maxUBAction].ubVal);
 }
 
@@ -99,26 +105,23 @@ bool LRTDP::checkSolved(MDPNode& cn)
   NodeStack open, closed;
   int a;
   
-  if (!cn.isSolved) open.push(&cn);
+  if (!getIsSolved(cn)) open.push(&cn);
   while (!open.empty()) {
     MDPNode& n = *open.pop();
     closed.push(&n);
 
-    if (n.isFringe()) {
-      expand(n);
-    }
     cacheQ(n);
     if (residual(n) > targetPrecision) {
       rv = false;
       continue;
     }
-    a = getMaxUBAction(n);
+    a = bounds->getMaxUBAction(n);
     MDPQEntry& Qa = n.Q[a];
     FOR (o, Qa.getNumOutcomes()) {
       MDPEdge* e = Qa.outcomes[o];
       if (NULL != e) {
 	MDPNode& sn = *e->nextState;
-	if (!sn.isSolved
+	if (!getIsSolved(sn)
 	    && !open.contains(&sn)
 	    && !closed.contains(&sn)) {
 	  open.push(&sn);
@@ -134,7 +137,7 @@ bool LRTDP::checkSolved(MDPNode& cn)
     // label relevant states
     while (!closed.empty()) {
       MDPNode& n = *closed.pop();
-      n.isSolved = true;
+      getIsSolved(n) = true;
     }
   } else {
     // update states with residuals and ancestors
@@ -154,14 +157,14 @@ bool LRTDP::checkSolved(MDPNode& cn)
 void LRTDP::updateInternal(MDPNode& cn)
 {
   cacheQ(cn);
-  int maxUBAction = getMaxUBAction(cn);
+  int maxUBAction = bounds->getMaxUBAction(cn);
   cn.ubVal = cn.Q[maxUBAction].ubVal;
 }
 
 bool LRTDP::trialRecurse(MDPNode& cn, int depth)
 {
   // check for termination
-  if (cn.isSolved) {
+  if (getIsSolved(cn)) {
 #if USE_DEBUG_PRINT
     printf("  trialRecurse: depth=%d ubVal=%g solved node (terminating)\n",
 	   depth, cn.ubVal);
@@ -170,10 +173,10 @@ bool LRTDP::trialRecurse(MDPNode& cn, int depth)
   }
 
   // cached Q values must be up to date for subsequent calls
-  update(cn);
+  int maxUBAction;
+  bounds->update(cn, &maxUBAction);
 
-  int maxUBAction = getMaxUBAction(cn);
-  int simulatedOutcome = getSimulatedOutcome(cn, maxUBAction);
+  int simulatedOutcome = bounds->getSimulatedOutcome(cn, maxUBAction);
 
 #if USE_DEBUG_PRINT
   printf("  trialRecurse: depth=%d a=%d o=%d ubVal=%g\n",
@@ -201,7 +204,12 @@ bool LRTDP::doTrial(MDPNode& cn)
   trialRecurse(cn, 0);
   numTrials++;
 
-  return cn.isSolved;
+  return getIsSolved(cn);
+}
+
+void LRTDP::derivedClassInit(void)
+{
+  bounds->setGetNodeHandler(&LRTDP::staticGetNodeHandler, this);
 }
 
 }; // namespace zmdp
@@ -209,6 +217,9 @@ bool LRTDP::doTrial(MDPNode& cn)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.7  2006/02/27 20:12:36  trey
+ * cleaned up meta-information in header
+ *
  * Revision 1.6  2006/02/19 18:35:09  trey
  * targetPrecision now stared as a field rather than passed around recursively
  *

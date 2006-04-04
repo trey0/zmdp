@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.5 $  $Author: trey $  $Date: 2006-02-27 20:12:36 $
+ $Revision: 1.6 $  $Author: trey $  $Date: 2006-04-04 17:24:52 $
    
  @file    LRTDP.h
  @brief   Implementation of Bonet and Geffner's LRTDP algorithm.
@@ -32,9 +32,16 @@
 
 namespace zmdp {
 
+struct LRTDPExtraNodeData {
+  bool isSolved;
+};
+
 struct LRTDP : public RTDPCore {
   LRTDP(AbstractBound* _initUpperBound);
 
+  void getNodeHandler(MDPNode& cn);
+  static void staticGetNodeHandler(MDPNode& cn, void* handlerData);
+  static bool& getIsSolved(const MDPNode& cn);
   void cacheQ(MDPNode& cn);
   double residual(MDPNode& cn);
   bool checkSolved(MDPNode& cn);
@@ -43,6 +50,7 @@ struct LRTDP : public RTDPCore {
   void updateInternal(MDPNode& cn);
   bool trialRecurse(MDPNode& cn, int depth);
   bool doTrial(MDPNode& cn);
+  void derivedClassInit(void);
 };
 
 }; // namespace zmdp
@@ -52,6 +60,9 @@ struct LRTDP : public RTDPCore {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.5  2006/02/27 20:12:36  trey
+ * cleaned up meta-information in header
+ *
  * Revision 1.4  2006/02/19 18:35:09  trey
  * targetPrecision now stared as a field rather than passed around recursively
  *
