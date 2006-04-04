@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.8 $  $Author: trey $  $Date: 2006-04-03 21:39:03 $
+ $Revision: 1.9 $  $Author: trey $  $Date: 2006-04-04 17:23:34 $
    
  @file    FRTDP.h
  @brief   No brief
@@ -58,7 +58,7 @@ struct FRTDP : public RTDPCore {
 
   void getNodeHandler(MDPNode& cn);
   static void staticGetNodeHandler(MDPNode& cn, void* handlerData);
-  double& getPrio(const MDPNode& cn) const;
+  static double& getPrio(const MDPNode& cn);
   void getMaxPrioOutcome(MDPNode& cn, int a, FRTDPUpdateResult& result) const;
   void update(MDPNode& cn, FRTDPUpdateResult& result);
   void trialRecurse(MDPNode& cn, double logOcc, int depth);
@@ -73,6 +73,9 @@ struct FRTDP : public RTDPCore {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.8  2006/04/03 21:39:03  trey
+ * updated to use IncrementalBounds
+ *
  * Revision 1.7  2006/03/21 21:24:43  trey
  * removed code that was obsoleted by new termination condition
  *

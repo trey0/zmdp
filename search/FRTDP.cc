@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.10 $  $Author: trey $  $Date: 2006-04-03 21:39:03 $
+ $Revision: 1.11 $  $Author: trey $  $Date: 2006-04-04 17:23:28 $
    
  @file    FRTDP.cc
  @brief   No brief
@@ -71,7 +71,7 @@ void FRTDP::staticGetNodeHandler(MDPNode& s, void* handlerData)
   x->getNodeHandler(s);
 }
 
-double& FRTDP::getPrio(const MDPNode& cn) const
+double& FRTDP::getPrio(const MDPNode& cn)
 {
   return ((FRTDPExtraNodeData*) cn.searchData)->prio;
 }
@@ -223,6 +223,9 @@ void FRTDP::derivedClassInit(void)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.10  2006/04/03 21:39:03  trey
+ * updated to use IncrementalBounds
+ *
  * Revision 1.9  2006/03/21 21:24:43  trey
  * removed code that was obsoleted by new termination condition
  *
