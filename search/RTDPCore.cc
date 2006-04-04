@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.13 $  $Author: trey $  $Date: 2006-04-03 21:39:24 $
+ $Revision: 1.14 $  $Author: trey $  $Date: 2006-04-04 17:25:22 $
    
  @file    RTDPCore.cc
  @brief   Common code used by multiple RTDP variants found in this
@@ -140,61 +140,7 @@ bool RTDPCore::planFixedTime(const state_vector& s,
 // simulation testing in the middle of a run.
 int RTDPCore::chooseAction(const state_vector& s)
 {
-  outcome_prob_vector opv;
-  state_vector sp;
-  int bestAction = -1;
-
-#if !USE_RTDPCORE_UB_ACTION
-  // if LB is available, use it to choose the action
-  if (getUseLowerBound()) {
-    double lbVal;
-    double maxVal = -99e+20;
-    double minVal = 99e+20;
-    FOR (a, problem->getNumActions()) {
-      problem->getOutcomeProbVector(opv, s, a);
-      lbVal = 0;
-      FOR (o, opv.size()) {
-	if (opv(o) > OBS_IS_ZERO_EPS) {
-	  ValueInterval intv = getValueAt(problem->getNextState(sp, s, a, o));
-	  lbVal += opv(o) * intv.l;
-	}
-      }
-      lbVal = problem->getReward(s,a) + problem->getDiscount() * lbVal;
-      if (lbVal > maxVal) {
-	maxVal = lbVal;
-	bestAction = a;
-      }
-      if (lbVal < minVal) {
-	minVal = lbVal;
-      }
-    }
-
-    // but only return best LB action if all choices are not tied
-    if (maxVal - minVal > 1e-10) {
-      return bestAction;
-    }
-  }
-#endif
-
-  // fall back to UB
-  double ubVal;
-  double maxVal = -99e+20;
-  FOR (a, problem->getNumActions()) {
-    problem->getOutcomeProbVector(opv, s, a);
-    ubVal = 0;
-    FOR (o, opv.size()) {
-      if (opv(o) > OBS_IS_ZERO_EPS) {
-	ValueInterval intv = getValueAt(problem->getNextState(sp, s, a, o));
-	ubVal += opv(o) * intv.u;
-      }
-    }
-    ubVal = problem->getReward(s,a) + problem->getDiscount() * ubVal;
-    if (ubVal > maxVal) {
-      maxVal = ubVal;
-      bestAction = a;
-    }
-  }
-  return bestAction;
+  return bounds->chooseAction(s);
 }
 
 void RTDPCore::setBoundsFile(std::ostream* _boundsFile)
@@ -212,6 +158,9 @@ ValueInterval RTDPCore::getValueAt(const state_vector& s) const
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.13  2006/04/03 21:39:24  trey
+ * updated to use IncrementalBounds
+ *
  * Revision 1.12  2006/03/17 20:06:44  trey
  * added derivedClassInit() virtual function for more flexibility
  *
