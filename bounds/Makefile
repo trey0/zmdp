@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.1 2006-04-04 17:22:51 trey Exp $
+# $Id: Makefile,v 1.2 2006-04-05 21:35:43 trey Exp $
 #
 # Copyright (c) 2006, Trey Smith. All rights reserved.
 #
@@ -41,26 +41,17 @@ CFLAGS += -I$(CHECKOUT_DIR)/external/boost
 
 INSTALLHEADERS_HEADERS := \
 	AbstractBound.h \
-	IncrementalBounds.h \
-	ValueFunction.h \
 	MDPCache.h \
-	RelaxBound.h \
+	IncrementalBounds.h \
+	RelaxUBInitializer.h \
 	PointBounds.h
 include $(BUILD_DIR)/installheaders.mak
 
 BUILDLIB_TARGET := libzmdpBounds.a
 BUILDLIB_SRCS := \
 	IncrementalBounds.cc \
+	RelaxUBInitializer.cc \
 	PointBounds.cc
-include $(BUILD_DIR)/buildlib.mak
-
-BUILDLIB_TARGET := libzmdpRelaxBound.a
-BUILDLIB_SRCS := RelaxBound.cc
-include $(BUILD_DIR)/buildlib.mak
-
-BUILDLIB_TARGET := libzmdpPomdpBounds.a
-BUILDLIB_SRC := \
-	ValueFunction.cc
 include $(BUILD_DIR)/buildlib.mak
 
 ######################################################################
@@ -70,4 +61,7 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.1  2006/04/04 17:22:51  trey
+# initial check-in
+#
 #
