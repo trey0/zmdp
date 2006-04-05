@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.25 2006-04-04 17:28:38 trey Exp $
+# $Id: Makefile,v 1.26 2006-04-05 21:38:27 trey Exp $
 #
 # Copyright (c) 2002-2005, Trey Smith
 # All rights reserved.
@@ -37,11 +37,11 @@ maininstall: install
 # ADD ANY SUBDIRS THAT NEED TO BE VISITED DURING A BUILD TO THE SUBDIRS LIST
 SUBDIRS :=
 
-BUILDBIN_TARGET := solvePomdpHsvi
-BUILDBIN_SRCS := solvePomdpHsvi.cc
-BUILDBIN_INDEP_LIBS :=
-BUILDBIN_DEP_LIBS := -lzmdpHsvi -lzmdpPomdpCore -lzmdpPomdpParser -lzmdpCommon
-include $(BUILD_DIR)/buildbin.mak
+#BUILDBIN_TARGET := solvePomdpHsvi
+#BUILDBIN_SRCS := solvePomdpHsvi.cc
+#BUILDBIN_INDEP_LIBS :=
+#BUILDBIN_DEP_LIBS := -lzmdpHsvi -lzmdpPomdpCore -lzmdpPomdpParser -lzmdpCommon
+#include $(BUILD_DIR)/buildbin.mak
 
 BUILDBIN_TARGET := solvePomdpLrtdp
 BUILDBIN_SRCS := solvePomdpLrtdp.cc
@@ -104,6 +104,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.25  2006/04/04 17:28:38  trey
+# added dependency on -lzmdpBounds; no longer maintaining ARTDP
+#
 # Revision 1.24  2006/03/17 20:18:16  trey
 # added solvePomdpARTDP
 #
