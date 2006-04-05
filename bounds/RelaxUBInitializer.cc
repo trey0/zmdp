@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-04-04 17:22:43 $
+ $Revision: 1.1 $  $Author: trey $  $Date: 2006-04-05 21:33:58 $
    
  @file    RelaxBound.cc
  @brief   No brief
@@ -37,7 +37,7 @@
 #include "zmdpCommonTime.h"
 #include "MatrixUtils.h"
 #include "MDP.h"
-#include "RelaxBound.h"
+#include "RelaxUBInitializer.h"
 
 using namespace std;
 using namespace sla;
@@ -266,6 +266,9 @@ double RelaxBound::getValue(const state_vector& s) const
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/04/04 17:22:43  trey
+ * moved RelaxBound from common to bounds
+ *
  * Revision 1.6  2006/02/19 18:30:50  trey
  * fixed logic error in calculating secondBestUBVal, odd that old version worked ok
  *

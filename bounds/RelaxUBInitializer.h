@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-04-04 17:22:43 $
+ $Revision: 1.1 $  $Author: trey $  $Date: 2006-04-05 21:33:58 $
    
  @file    RelaxBound.h
  @brief   No brief
@@ -65,6 +65,9 @@ struct RelaxBound : public AbstractBound {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/04/04 17:22:43  trey
+ * moved RelaxBound from common to bounds
+ *
  * Revision 1.4  2006/02/17 21:09:07  trey
  * fixed stack overflow on undiscounted problems (unfortunately, initialization is slower now)
  *
