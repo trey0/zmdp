@@ -1,9 +1,8 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-04-04 17:22:51 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-04-05 21:34:40 $
    
  @file    PointBounds.cc
- @brief   Common code used by multiple RTDP variants found in this
-          directory.
+ @brief   No brief
 
  Copyright (c) 2006, Trey Smith. All rights reserved.
 
@@ -127,14 +126,17 @@ void PointBounds::updateValuesBoth(MDPNode& cn, int* maxUBActionP)
   if (NULL != maxUBActionP) *maxUBActionP = maxUBAction;
 }
 
+void PointBounds::setBounds(AbstractBound* _initLowerBound,
+			    AbstractBound* _initUpperBound)
+{
+  initLowerBound = _initLowerBound;
+  initUpperBound = _initUpperBound;
+}
+
 void PointBounds::initialize(const MDP* _problem,
-			     AbstractBound* _initLowerBound,
-			     AbstractBound* _initUpperBound,
 			     double _targetPrecision)
 {
   problem = _problem;
-  initLowerBound = _initLowerBound;
-  initUpperBound = _initUpperBound;
   targetPrecision = _targetPrecision;
 
   if (NULL != initLowerBound) {
@@ -325,5 +327,8 @@ void PointBounds::setGetNodeHandler(GetNodeHandler _getNodeHandler, void* _handl
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/04/04 17:22:51  trey
+ * initial check-in
+ *
  *
  ***************************************************************************/

@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-04-04 17:22:51 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-04-05 21:34:40 $
    
  @file    PointBounds.h
  @brief   No brief
@@ -54,11 +54,14 @@ struct PointBounds : public IncrementalBounds {
   void updateValuesUB(MDPNode& cn, int* maxUBActionP);
   void updateValuesBoth(MDPNode& cn, int* maxUBActionP);
 
+  // must be called before initialize()
+  void setBounds(AbstractBound* _initLowerBound,
+		 AbstractBound* _initUpperBound);
+
   // implementations of virtual functions declared in IncrementalBounds
   void initialize(const MDP* _problem,
-		  AbstractBound* _initLowerBound,
-		  AbstractBound* _initUpperBound,
 		  double _targetPrecision);
+
   MDPNode* getRootNode(void);
   MDPNode* getNode(const state_vector& s);
   void expand(MDPNode& cn);
@@ -75,6 +78,9 @@ struct PointBounds : public IncrementalBounds {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/04/04 17:22:51  trey
+ * initial check-in
+ *
  *
  ***************************************************************************/
 
