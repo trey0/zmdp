@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-02-01 01:09:37 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-04-05 21:36:47 $
    
  @file    zmdpCommonDefs.h
  @brief   No brief
@@ -43,6 +43,8 @@ namespace zmdp {
   for (unsigned int i=0, __n = (n); i<__n; i++)
 
 #define SPARSE_EPS (1e-10)
+#define OBS_IS_ZERO_EPS (1e-10)
+#define ZMDP_BOUNDS_PRUNE_EPS (1e-10)
 
 // argmax(start, end, f) returns the element x between start and end
 //   that has the highest f(x) value.
