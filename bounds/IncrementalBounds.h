@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-04-04 17:22:51 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-04-05 21:33:07 $
    
  @file    IncrementalBounds.h
  @brief   No brief
@@ -48,8 +48,6 @@ struct IncrementalBounds {
   virtual ~IncrementalBounds(void) {}
 
   virtual void initialize(const MDP* _problem,
-			  AbstractBound* _initLowerBound,
-			  AbstractBound* _initUpperBound,
 			  double _targetPrecision) = 0;
 
   virtual MDPNode* getRootNode(void) = 0;
@@ -60,8 +58,10 @@ struct IncrementalBounds {
   virtual ValueInterval getValueAt(const state_vector& s) const = 0;
   virtual void setGetNodeHandler(GetNodeHandler getNodeHandler, void* handlerData) = 0;
 
-  int getMaxUBAction(MDPNode& cn) const;
-  int getSimulatedOutcome(MDPNode& cn, int a) const;
+  // relies on correct cached Q values!
+  static int getMaxUBAction(MDPNode& cn);
+
+  static int getSimulatedOutcome(MDPNode& cn, int a);
 };
 
 }; // namespace zmdp
@@ -71,6 +71,9 @@ struct IncrementalBounds {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/04/04 17:22:51  trey
+ * initial check-in
+ *
  *
  ***************************************************************************/
 
