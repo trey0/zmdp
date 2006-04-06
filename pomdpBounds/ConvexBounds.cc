@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-04-05 21:43:20 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-04-06 20:34:47 $
    
  @file    ConvexBounds.cc
  @brief   No brief
@@ -47,97 +47,163 @@ using namespace MatrixUtils;
 
 namespace zmdp {
 
-ConvexBounds::ConvexBounds(void)
+ConvexBounds::ConvexBounds(bool _useLowerBound) :
+  useLowerBound(_useLowerBound)
 {}
 
-void ConvexBounds::updateValuesUB(MDPNode& cn, int* maxUBActionP)
+// lower bound on long-term reward for taking action a (alpha vector)
+void ConvexBounds::getNewLBPlaneQ(LBPlane& result, const MDPNode& cn, int a)
 {
-  double ubVal;
-  double maxUBVal = -99e+20;
-  int maxUBAction = -1;
+  alpha_vector betaA, betaAO;
+  alpha_vector tmp, tmp2;
+  obs_prob_vector opv;
+#if USE_MASKED_ALPHA
+  alpha_vector tmp3;
+#endif
 
-  FOR (a, cn.getNumActions()) {
-    MDPQEntry& Qa = cn.Q[a];
-    ubVal = 0;
-    FOR (o, Qa.getNumOutcomes()) {
-      MDPEdge* e = Qa.outcomes[o];
-      if (NULL != e) {
-	MDPNode& sn = *e->nextState;
-	double oprob = e->obsProb;
-	ubVal += oprob * sn.ubVal;
+  set_to_zero(betaA);
+  
+  bool defaultIsSet = false;
+  alpha_vector defaultBetaAO;
+  const MDPQEntry& Qa = cn.Q[a];
+  FOR (o, Qa.getNumOutcomes()) {
+    MDPEdge* e = Qa.outcomes[o];
+    if (NULL != e) {
+      betaAO = lowerBound->getBestLBPlane(e->nextState->s).alpha;
+    } else {
+      // impossible to see this observation, so it doesn't make sense to
+      // pick the alpha that optimizes for the next belief.  plug in a
+      // default alpha (arbitrarily chosen to optimize for cn.b).
+      if (!defaultIsSet) {
+	defaultBetaAO = lowerBound->getBestLBPlane(cn.s).alpha;
+	defaultIsSet = true;
       }
+      betaAO = defaultBetaAO;
     }
-    ubVal = Qa.immediateReward + problem->getDiscount() * ubVal;
-    Qa.ubVal = ubVal;
 
-    if (ubVal > maxUBVal) {
-      maxUBVal = ubVal;
+    emult_column( tmp, pomdp->O[a], o, betaAO );
+#if USE_MASKED_ALPHA
+    mult( tmp3, pomdp->T[a], tmp );
+    mask_copy( tmp2, tmp3, b );
+#else
+    mult( tmp2, tmp, pomdp->Ttr[a] );
+#endif
+    betaA += tmp2;
+  }
+
+  alpha_vector Rxa;
+#if USE_MASKED_ALPHA
+  copy_from_column( tmp, pomdp->R, a );
+  mask_copy( Rxa, tmp, b );
+#else
+  copy_from_column( Rxa, pomdp->R, a );
+#endif
+  betaA *= pomdp->discount;
+  betaA += Rxa;
+  
+#if USE_MASKED_ALPHA
+  result.copyFrom(betaA, a, b);
+#else
+  result.copyFrom(betaA, a);
+#endif
+}
+
+void ConvexBounds::getNewLBPlane(LBPlane& result, MDPNode& cn)
+{
+#if USE_DEBUG_PRINT
+  timeval startTime = getTime();
+#endif
+
+  double val, maxVal = -99e+20;
+  LBPlane betaA;
+ 
+  FOR (a, cn.getNumActions()) {
+    getNewLBPlaneQ(betaA, cn, a);
+    val = inner_prod(betaA.alpha, cn.s);
+    cn.Q[a].lbVal = val;
+    if (val > maxVal) {
+      maxVal = val;
+      result = betaA;
+    }
+  }
+#if USE_DEBUG_PRINT
+  cout << "** newLowerBound: elapsed time = "
+       << timevalToSeconds(getTime() - startTime)
+       << endl;
+#endif
+}
+
+void ConvexBounds::updateLowerBound(MDPNode& cn)
+{
+  LBPlane newPlane;
+  getNewLBPlane(newPlane, cn);
+  lowerBound->addLBPlane(cn.s, newPlane);
+}
+
+// upper bound on long-term reward for taking action a
+double ConvexBounds::getNewUBValueQ(MDPNode& cn, int a)
+{
+  double val = 0;
+
+  MDPQEntry& Qa = cn.Q[a];
+  FOR (o, Qa.getNumOutcomes()) {
+    MDPEdge* e = Qa.outcomes[o];
+    if (NULL != e) {
+      val += e->obsProb * upperBound->getValue(e->nextState->s);
+    }
+  }
+  val = Qa.immediateReward + pomdp->getDiscount() * val;
+  Qa.ubVal = val;
+
+  return val;
+}
+
+double ConvexBounds::getNewUBValue(MDPNode& cn, int* maxUBActionP)
+{
+#if USE_DEBUG_PRINT
+  timeval startTime = getTime();
+#endif
+
+  double val, maxVal = -99e+20;
+  int maxUBAction = -1;
+  FOR (a, pomdp->getNumActions()) {
+    val = getNewUBValueQ(cn,a);
+    if (val > maxVal) {
+      maxVal = val;
       maxUBAction = a;
     }
   }
-#if 1
-  cn.ubVal = std::min(cn.ubVal, maxUBVal);
-#else
-  cn.ubVal = maxUBVal;
-#endif
 
   if (NULL != maxUBActionP) *maxUBActionP = maxUBAction;
+
+#if USE_DEBUG_PRINT
+  cout << "** newUpperBound: elapsed time = "
+       << timevalToSeconds(getTime() - startTime)
+       << " (lpopt_time = " << lpopt_time << ")"
+       << endl;
+#endif
+
+  return maxVal;
 }
 
-void ConvexBounds::updateValuesBoth(MDPNode& cn, int* maxUBActionP)
+void ConvexBounds::updateUpperBound(MDPNode& cn, int* maxUBActionP)
 {
-  double lbVal, ubVal;
-  double maxLBVal = -99e+20;
-  double maxUBVal = -99e+20;
-  int maxUBAction = -1;
-
-  FOR (a, cn.getNumActions()) {
-    MDPQEntry& Qa = cn.Q[a];
-    lbVal = 0;
-    ubVal = 0;
-    FOR (o, Qa.getNumOutcomes()) {
-      MDPEdge* e = Qa.outcomes[o];
-      if (NULL != e) {
-	MDPNode& sn = *e->nextState;
-	double oprob = e->obsProb;
-	lbVal += oprob * sn.lbVal;
-	ubVal += oprob * sn.ubVal;
-      }
-    }
-    lbVal = Qa.immediateReward + problem->getDiscount() * lbVal;
-    ubVal = Qa.immediateReward + problem->getDiscount() * ubVal;
-    Qa.lbVal = lbVal;
-    Qa.ubVal = ubVal;
-
-    maxLBVal = std::max(maxLBVal, lbVal);
-    if (ubVal > maxUBVal) {
-      maxUBVal = ubVal;
-      maxUBAction = a;
-    }
-  }
-#if 1
-  cn.lbVal = std::max(cn.lbVal, maxLBVal);
-  cn.ubVal = std::min(cn.ubVal, maxUBVal);
-#else
-  cn.lbVal = maxLBVal;
-  cn.ubVal = maxUBVal;
-#endif
-
-  if (NULL != maxUBActionP) *maxUBActionP = maxUBAction;
+  double newUBVal = getNewUBValue(cn, maxUBActionP);
+  upperBound->addPoint(cn.s, newUBVal);
 }
 
-void ConvexBounds::initialize(const MDP* _problem,
+void ConvexBounds::initialize(const MDP* _pomdp,
 			      double _targetPrecision)
 {
-  problem = _problem;
+  pomdp = (const Pomdp*) _pomdp;
   targetPrecision = _targetPrecision;
 
-  lowerBound = new MaxPlanesLowerBound(problem);
-  upperBound = new SawtoothUpperBound(problem);
-
-  if (NULL != initLowerBound) {
+  if (useLowerBound) {
+    lowerBound = new MaxPlanesLowerBound(pomdp);
     lowerBound->initialize(targetPrecision);
   }
+
+  upperBound = new SawtoothUpperBound(pomdp);
   upperBound->initialize(targetPrecision);
 
   lookup = new MDPHash();
@@ -154,7 +220,7 @@ void ConvexBounds::initialize(const MDP* _problem,
 MDPNode* ConvexBounds::getRootNode(void)
 {
   if (NULL == root) {
-    root = getNode(problem->getInitialState());
+    root = getNode(pomdp->getInitialState());
   }
   return root;
 }
@@ -167,20 +233,20 @@ MDPNode* ConvexBounds::getNode(const state_vector& s)
     // create a new fringe node
     MDPNode& cn = *(new MDPNode);
     cn.s = s;
-    cn.isTerminal = problem->getIsTerminalState(s);
+    cn.isTerminal = pomdp->getIsTerminalState(s);
     if (cn.isTerminal) {
       cn.ubVal = 0;
     } else {
-      cn.ubVal = initUpperBound->getValue(s);
+      cn.ubVal = upperBound->getValue(s);
     }
-    if (NULL == initLowerBound) {
-      cn.lbVal = -1; // n/a
-    } else {
+    if (useLowerBound) {
       if (cn.isTerminal) {
 	cn.lbVal = 0;
       } else {
-	cn.lbVal = initLowerBound->getValue(s);
+	cn.lbVal = lowerBound->getValue(s);
       }
+    } else {
+      cn.lbVal = -1; // n/a
     }
     cn.searchData = NULL;
     cn.boundsData = NULL;
@@ -203,11 +269,11 @@ void ConvexBounds::expand(MDPNode& cn)
   // set up successors for this fringe node (possibly creating new fringe nodes)
   outcome_prob_vector opv;
   state_vector sp;
-  cn.Q.resize(problem->getNumActions());
-  FOR (a, problem->getNumActions()) {
+  cn.Q.resize(pomdp->getNumActions());
+  FOR (a, pomdp->getNumActions()) {
     MDPQEntry& Qa = cn.Q[a];
-    Qa.immediateReward = problem->getReward(cn.s, a);
-    problem->getOutcomeProbVector(opv, cn.s, a);
+    Qa.immediateReward = pomdp->getReward(cn.s, a);
+    pomdp->getOutcomeProbVector(opv, cn.s, a);
     Qa.outcomes.resize(opv.size());
     FOR (o, opv.size()) {
       double oprob = opv(o);
@@ -215,7 +281,7 @@ void ConvexBounds::expand(MDPNode& cn)
 	MDPEdge* e = new MDPEdge();
         Qa.outcomes[o] = e;
         e->obsProb = oprob;
-        e->nextState = getNode(problem->getNextState(sp, cn.s, a, o));
+        e->nextState = getNode(pomdp->getNextState(sp, cn.s, a, o));
       } else {
         Qa.outcomes[o] = NULL;
       }
@@ -229,11 +295,10 @@ void ConvexBounds::update(MDPNode& cn, int* maxUBActionP)
   if (cn.isFringe()) {
     expand(cn);
   }
-  if (NULL == initLowerBound) {
-    updateValuesUB(cn, maxUBActionP);
-  } else {
-    updateValuesBoth(cn, maxUBActionP);
+  if (useLowerBound) {
+    updateLowerBound(cn);
   }
+  updateUpperBound(cn, maxUBActionP);
 
   numBackups++;
 }
@@ -243,55 +308,29 @@ void ConvexBounds::update(MDPNode& cn, int* maxUBActionP)
 // simulation testing in the middle of a run.
 int ConvexBounds::chooseAction(const state_vector& s) const
 {
+  if (useLowerBound) {
+    // 'direct' policy as opposed to 'lookahead' policy
+    return lowerBound->getBestLBPlane(s).action;
+  }
+
+  // if not maintaining LB, fall back to UB
+
   outcome_prob_vector opv;
   state_vector sp;
   int bestAction = -1;
 
-#if !USE_RTDPCORE_UB_ACTION
-  // if LB is available, use it to choose the action
-  if (NULL != initLowerBound) {
-    double lbVal;
-    double maxVal = -99e+20;
-    double minVal = 99e+20;
-    FOR (a, problem->getNumActions()) {
-      problem->getOutcomeProbVector(opv, s, a);
-      lbVal = 0;
-      FOR (o, opv.size()) {
-	if (opv(o) > OBS_IS_ZERO_EPS) {
-	  ValueInterval intv = getValueAt(problem->getNextState(sp, s, a, o));
-	  lbVal += opv(o) * intv.l;
-	}
-      }
-      lbVal = problem->getReward(s,a) + problem->getDiscount() * lbVal;
-      if (lbVal > maxVal) {
-	maxVal = lbVal;
-	bestAction = a;
-      }
-      if (lbVal < minVal) {
-	minVal = lbVal;
-      }
-    }
-
-    // but only return best LB action if all choices are not tied
-    if (maxVal - minVal > 1e-10) {
-      return bestAction;
-    }
-  }
-#endif
-
-  // fall back to UB
-  double ubVal;
+  double ubVal, ubValO;
   double maxVal = -99e+20;
-  FOR (a, problem->getNumActions()) {
-    problem->getOutcomeProbVector(opv, s, a);
+  FOR (a, pomdp->getNumActions()) {
+    pomdp->getOutcomeProbVector(opv, s, a);
     ubVal = 0;
     FOR (o, opv.size()) {
       if (opv(o) > OBS_IS_ZERO_EPS) {
-	ValueInterval intv = getValueAt(problem->getNextState(sp, s, a, o));
-	ubVal += opv(o) * intv.u;
+	ubValO = upperBound->getValue(pomdp->getNextState(sp, s, a, o));
+	ubVal += opv(o) * ubValO;
       }
     }
-    ubVal = problem->getReward(s,a) + problem->getDiscount() * ubVal;
+    ubVal = pomdp->getReward(s,a) + pomdp->getDiscount() * ubVal;
     if (ubVal > maxVal) {
       maxVal = ubVal;
       bestAction = a;
@@ -302,20 +341,8 @@ int ConvexBounds::chooseAction(const state_vector& s) const
 
 ValueInterval ConvexBounds::getValueAt(const state_vector& s) const
 {
-  typeof(lookup->begin()) pr = lookup->find(hashable(s));
-  if (lookup->end() == pr) {
-    return ValueInterval((NULL == initLowerBound) ? -1 : initLowerBound->getValue(s),
-			 initUpperBound->getValue(s));
-  } else {
-    const MDPNode& cn = *pr->second;
-    return ValueInterval(cn.lbVal, cn.ubVal);
-  }
-}
-
-void ConvexBounds::setGetNodeHandler(GetNodeHandler _getNodeHandler, void* _handlerData)
-{
-  getNodeHandler = _getNodeHandler;
-  handlerData = _handlerData;
+  return ValueInterval(useLowerBound ? lowerBound->getValue(s) : -1,
+		       upperBound->getValue(s));
 }
 
 }; // namespace zmdp
@@ -323,5 +350,8 @@ void ConvexBounds::setGetNodeHandler(GetNodeHandler _getNodeHandler, void* _hand
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/04/05 21:43:20  trey
+ * collected and renamed several classes into pomdpBounds
+ *
  *
  ***************************************************************************/

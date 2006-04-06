@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-04-05 21:43:20 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-04-06 20:34:47 $
    
  @file    ConvexBounds.h
  @brief   No brief
@@ -41,23 +41,26 @@ using namespace sla;
 namespace zmdp {
 
 struct ConvexBounds : public IncrementalBounds {
-  const MDP* problem;
+  const Pomdp* pomdp;
   MaxPlanesLowerBound* lowerBound;
   SawtoothUpperBound* upperBound;
+  bool useLowerBound;
   double targetPrecision;
   MDPNode* root;
   MDPHash* lookup;
-  GetNodeHandler getNodeHandler;
-  void* handlerData;
 
-  ConvexBounds(void);
+  ConvexBounds(bool _useLowerBound);
 
   // helper functions
-  void updateValuesUB(MDPNode& cn, int* maxUBActionP);
-  void updateValuesBoth(MDPNode& cn, int* maxUBActionP);
+  void getNewLBPlaneQ(LBPlane& result, const MDPNode& cn, int a);
+  void getNewLBPlane(LBPlane& result, MDPNode& cn);
+  void updateLowerBound(MDPNode& cn);
+  double getNewUBValueQ(MDPNode& cn, int a);
+  double getNewUBValue(MDPNode& cn, int* maxUBActionP);
+  void updateUpperBound(MDPNode& cn, int* maxUBActionP);
 
   // implementations of virtual functions declared in IncrementalBounds
-  void initialize(const MDP* _problem,
+  void initialize(const MDP* _pomdp,
 		  double _targetPrecision);
   MDPNode* getRootNode(void);
   MDPNode* getNode(const state_vector& s);
@@ -65,7 +68,6 @@ struct ConvexBounds : public IncrementalBounds {
   void update(MDPNode& cn, int* maxUBActionP);
   int chooseAction(const state_vector& s) const;
   ValueInterval getValueAt(const state_vector& s) const;
-  void setGetNodeHandler(GetNodeHandler _getNodeHandler, void* handlerData);
 };
 
 }; // namespace zmdp
@@ -75,6 +77,9 @@ struct ConvexBounds : public IncrementalBounds {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/04/05 21:43:20  trey
+ * collected and renamed several classes into pomdpBounds
+ *
  *
  ***************************************************************************/
 
