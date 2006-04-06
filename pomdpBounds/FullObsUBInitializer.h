@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-04-05 21:43:20 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-04-06 04:10:14 $
    
  @file    FullObsUBInitializer.h
  @brief   No brief
@@ -45,9 +45,6 @@ public:
   void valueIteration(const Pomdp* _pomdp, double eps);
 };
 
-
-void testMDP(void);
-
 }; // namespace zmdp
 
 #endif // INCFullObsUBInitializer_h
@@ -55,6 +52,9 @@ void testMDP(void);
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/04/05 21:43:20  trey
+ * collected and renamed several classes into pomdpBounds
+ *
  * Revision 1.2  2006/02/01 01:09:38  trey
  * renamed pomdp namespace -> zmdp
  *

@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2006-02-01 01:09:38 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2006-04-06 04:12:23 $
    
  @file    QMDP.h
  @brief   No brief
@@ -134,9 +134,6 @@ struct QMDP : public MDPValueFunction, public Solver {
   }
 };
 
-
-void testMDP(void);
-
 }; // namespace zmdp
 
 #endif // INCQMDP_h
@@ -144,6 +141,9 @@ void testMDP(void);
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2006/02/01 01:09:38  trey
+ * renamed pomdp namespace -> zmdp
+ *
  * Revision 1.1  2006/01/31 18:31:51  trey
  * moved many files from common to pomdpCore
  *
