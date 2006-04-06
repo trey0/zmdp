@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.14 $  $Author: trey $  $Date: 2006-04-04 17:25:22 $
+ $Revision: 1.15 $  $Author: trey $  $Date: 2006-04-06 04:14:11 $
    
  @file    RTDPCore.cc
  @brief   Common code used by multiple RTDP variants found in this
@@ -48,7 +48,9 @@ using namespace MatrixUtils;
 
 namespace zmdp {
 
-RTDPCore::RTDPCore(AbstractBound* _initUpperBound) :
+RTDPCore::RTDPCore(AbstractBound* _initLowerBound,
+		   AbstractBound* _initUpperBound) :
+  initLowerBound(_initLowerBound),
   initUpperBound(_initUpperBound),
   boundsFile(NULL),
   initialized(false)
@@ -58,13 +60,12 @@ void RTDPCore::init(double _targetPrecision)
 {
   targetPrecision = _targetPrecision;
 
-  AbstractBound* initLowerBound = getUseLowerBound() ? problem->newLowerBound() : NULL;
-
-  bounds = new PointBounds;
-  bounds->initialize(problem,
-		     initLowerBound,
-		     initUpperBound,
-		     targetPrecision);
+  PointBounds* pb = new PointBounds;
+  pb->setBounds(initLowerBound,
+		initUpperBound);
+  pb->initialize(problem,
+		 targetPrecision);
+  bounds = pb;
 
   previousElapsedTime = secondsToTimeval(0.0);
   lastPrintTime = 0;
@@ -158,6 +159,9 @@ ValueInterval RTDPCore::getValueAt(const state_vector& s) const
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.14  2006/04/04 17:25:22  trey
+ * moved chooseAction() implementation to IncrementalBounds
+ *
  * Revision 1.13  2006/04/03 21:39:24  trey
  * updated to use IncrementalBounds
  *

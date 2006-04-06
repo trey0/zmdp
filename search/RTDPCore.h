@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.9 $  $Author: trey $  $Date: 2006-04-03 21:39:24 $
+ $Revision: 1.10 $  $Author: trey $  $Date: 2006-04-06 04:14:11 $
    
  @file    RTDPCore.h
  @brief   Common code used by multiple RTDP variants found in this
@@ -79,6 +79,7 @@ struct NodeStack {
 
 struct RTDPCore : public Solver {
   const MDP* problem;
+  AbstractBound* initLowerBound;
   AbstractBound* initUpperBound;
   IncrementalBounds* bounds;
   timeval boundsStartTime;
@@ -89,7 +90,7 @@ struct RTDPCore : public Solver {
   bool initialized;
   double targetPrecision;
 
-  RTDPCore(AbstractBound* _initUpperBound);
+  RTDPCore(AbstractBound* _initLowerBound, AbstractBound* _initUpperBound);
 
   void init(double _targetPrecision);
 
@@ -116,6 +117,9 @@ struct RTDPCore : public Solver {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.9  2006/04/03 21:39:24  trey
+ * updated to use IncrementalBounds
+ *
  * Revision 1.8  2006/03/17 20:06:44  trey
  * added derivedClassInit() virtual function for more flexibility
  *

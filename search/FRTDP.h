@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.9 $  $Author: trey $  $Date: 2006-04-04 17:23:34 $
+ $Revision: 1.10 $  $Author: trey $  $Date: 2006-04-06 04:14:50 $
    
  @file    FRTDP.h
  @brief   No brief
@@ -52,7 +52,7 @@ struct FRTDP : public RTDPCore {
   double newQualitySum;
   int newNumUpdates;
 
-  FRTDP(AbstractBound* _initUpperBound);
+  FRTDP(AbstractBound* _initLowerBound, AbstractBound* _initUpperBound);
 
   bool getUseLowerBound(void) const { return true; }
 
@@ -73,6 +73,9 @@ struct FRTDP : public RTDPCore {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.9  2006/04/04 17:23:34  trey
+ * made getPrio() static
+ *
  * Revision 1.8  2006/04/03 21:39:03  trey
  * updated to use IncrementalBounds
  *

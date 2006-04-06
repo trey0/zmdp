@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.10 $  $Author: trey $  $Date: 2006-04-03 21:39:24 $
+ $Revision: 1.11 $  $Author: trey $  $Date: 2006-04-06 04:14:11 $
    
  @file    RTDP.cc
  @brief   Implementation of Barto, Bradke, and Singh's RTDP algorithm.
@@ -63,7 +63,7 @@ using namespace MatrixUtils;
 namespace zmdp {
 
 RTDP::RTDP(AbstractBound* _initUpperBound) :
-  RTDPCore(_initUpperBound)
+  RTDPCore(NULL, _initUpperBound)
 {}
 
 void RTDP::trialRecurse(MDPNode& cn, int depth)
@@ -112,6 +112,9 @@ bool RTDP::doTrial(MDPNode& cn)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.10  2006/04/03 21:39:24  trey
+ * updated to use IncrementalBounds
+ *
  * Revision 1.9  2006/02/27 20:12:37  trey
  * cleaned up meta-information in header
  *
