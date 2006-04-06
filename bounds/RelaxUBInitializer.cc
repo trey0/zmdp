@@ -1,7 +1,7 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-04-05 21:33:58 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-04-06 04:09:45 $
    
- @file    RelaxBound.cc
+ @file    RelaxUBInitializer.cc
  @brief   No brief
 
  Copyright (c) 2005, Trey Smith. All rights reserved.
@@ -47,12 +47,12 @@ using namespace MatrixUtils;
 
 namespace zmdp {
 
-RelaxBound::RelaxBound(const MDP* _problem) :
+RelaxUBInitializer::RelaxUBInitializer(const MDP* _problem) :
   problem(_problem),
   root(NULL)
 {}
 
-void RelaxBound::setup(double targetPrecision)
+void RelaxUBInitializer::setup(double targetPrecision)
 {
   initLowerBound = problem->newLowerBound();
   initLowerBound->initialize(targetPrecision);
@@ -63,7 +63,7 @@ void RelaxBound::setup(double targetPrecision)
   root = getNode(problem->getInitialState());
 }
 
-MDPNode* RelaxBound::getNode(const state_vector& s)
+MDPNode* RelaxUBInitializer::getNode(const state_vector& s)
 {
   string hs = hashable(s);
   MDPHash::iterator pr = lookup->find(hs);
@@ -81,7 +81,7 @@ MDPNode* RelaxBound::getNode(const state_vector& s)
   }
 }
 
-void RelaxBound::expand(MDPNode& cn)
+void RelaxUBInitializer::expand(MDPNode& cn)
 {
   // set up successors for this fringe node (possibly creating new fringe nodes)
   outcome_prob_vector opv;
@@ -106,7 +106,7 @@ void RelaxBound::expand(MDPNode& cn)
   }
 }
 
-void RelaxBound::updateInternal(MDPNode& cn)
+void RelaxUBInitializer::updateInternal(MDPNode& cn)
 {
   cn.lbVal = -99e+20;
   cn.ubVal = -99e+20;
@@ -130,7 +130,7 @@ void RelaxBound::updateInternal(MDPNode& cn)
   }
 }
 
-void RelaxBound::update(MDPNode& cn)
+void RelaxUBInitializer::update(MDPNode& cn)
 {
   if (cn.isFringe()) {
     expand(cn);
@@ -138,7 +138,7 @@ void RelaxBound::update(MDPNode& cn)
   updateInternal(cn);
 }
 
-int RelaxBound::getMaxUBAction(MDPNode& cn, double* maxUBValP,
+int RelaxUBInitializer::getMaxUBAction(MDPNode& cn, double* maxUBValP,
 			       double* secondBestUBValP) const
 {
   double maxUBVal = -99e+20;
@@ -162,7 +162,7 @@ int RelaxBound::getMaxUBAction(MDPNode& cn, double* maxUBValP,
   return maxUBAction;
 }
 
-void RelaxBound::trialRecurse(MDPNode& cn, double costSoFar, double altActionPrio, int depth)
+void RelaxUBInitializer::trialRecurse(MDPNode& cn, double costSoFar, double altActionPrio, int depth)
 {
   // update to ensure cached values in cn.Q are correct
   update(cn);
@@ -209,7 +209,7 @@ void RelaxBound::trialRecurse(MDPNode& cn, double costSoFar, double altActionPri
   update(cn);
 }
 
-void RelaxBound::doTrial(MDPNode& cn, double pTarget)
+void RelaxUBInitializer::doTrial(MDPNode& cn, double pTarget)
 {
   trialRecurse(cn,
 	       /* costSoFar = */ 0,
@@ -217,7 +217,7 @@ void RelaxBound::doTrial(MDPNode& cn, double pTarget)
 	       /* depth = */ 0);
 }
 
-void RelaxBound::initialize(double targetPrecision)
+void RelaxUBInitializer::initialize(double targetPrecision)
 {
 #if USE_DEBUG_PRINT
   timeval startTime = getTime();
@@ -251,7 +251,7 @@ void RelaxBound::initialize(double targetPrecision)
 #endif
 }
 
-double RelaxBound::getValue(const state_vector& s) const
+double RelaxUBInitializer::getValue(const state_vector& s) const
 {
   MDPHash::iterator pr = lookup->find(hashable(s));
   if (lookup->end() == pr) {
@@ -266,6 +266,9 @@ double RelaxBound::getValue(const state_vector& s) const
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/04/05 21:33:58  trey
+ * renamed RelaxBound -> RelaxUBInitializer
+ *
  * Revision 1.1  2006/04/04 17:22:43  trey
  * moved RelaxBound from common to bounds
  *

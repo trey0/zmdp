@@ -1,7 +1,7 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-04-05 21:33:58 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-04-06 04:09:45 $
    
- @file    RelaxBound.h
+ @file    RelaxUBInitializer.h
  @brief   No brief
 
  Copyright (c) 2006, Trey Smith. All rights reserved.
@@ -25,8 +25,8 @@
 
  ***************************************************************************/
 
-#ifndef INCRelaxBound_h
-#define INCRelaxBound_h
+#ifndef INCRelaxUBInitializer_h
+#define INCRelaxUBInitializer_h
 
 #include "MatrixUtils.h"
 #include "AbstractBound.h"
@@ -34,15 +34,15 @@
 
 namespace zmdp {
 
-struct RelaxBound : public AbstractBound {
+struct RelaxUBInitializer : public AbstractBound {
   const MDP* problem;
   MDPNode* root;
   MDPHash* lookup;
   AbstractBound* initLowerBound;
   AbstractBound* initUpperBound;
 
-  RelaxBound(const MDP* _problem);
-  virtual ~RelaxBound(void) {}
+  RelaxUBInitializer(const MDP* _problem);
+  virtual ~RelaxUBInitializer(void) {}
 
   MDPNode* getNode(const state_vector& s);
   void setup(double targetPrecision);
@@ -60,11 +60,14 @@ struct RelaxBound : public AbstractBound {
 
 }; // namespace zmdp
 
-#endif /* INCRelaxBound_h */
+#endif /* INCRelaxUBInitializer_h */
 
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/04/05 21:33:58  trey
+ * renamed RelaxBound -> RelaxUBInitializer
+ *
  * Revision 1.1  2006/04/04 17:22:43  trey
  * moved RelaxBound from common to bounds
  *
