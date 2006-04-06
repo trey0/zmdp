@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2006-04-05 21:34:40 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2006-04-06 20:33:51 $
    
  @file    PointBounds.h
  @brief   No brief
@@ -68,7 +68,6 @@ struct PointBounds : public IncrementalBounds {
   void update(MDPNode& cn, int* maxUBActionP);
   int chooseAction(const state_vector& s) const;
   ValueInterval getValueAt(const state_vector& s) const;
-  void setGetNodeHandler(GetNodeHandler _getNodeHandler, void* handlerData);
 };
 
 }; // namespace zmdp
@@ -78,6 +77,9 @@ struct PointBounds : public IncrementalBounds {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2006/04/05 21:34:40  trey
+ * changed initialization to match new IncrementalBounds API
+ *
  * Revision 1.1  2006/04/04 17:22:51  trey
  * initial check-in
  *

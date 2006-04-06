@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2006-04-05 21:33:07 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2006-04-06 20:33:51 $
    
  @file    IncrementalBounds.h
  @brief   No brief
@@ -44,6 +44,8 @@ struct IncrementalBounds {
   int numStatesTouched;
   int numStatesExpanded;
   int numBackups;
+  GetNodeHandler getNodeHandler;
+  void* handlerData;
 
   virtual ~IncrementalBounds(void) {}
 
@@ -56,7 +58,8 @@ struct IncrementalBounds {
   virtual void update(MDPNode& cn, int* maxUBActionP) = 0;
   virtual int chooseAction(const state_vector& s) const = 0;
   virtual ValueInterval getValueAt(const state_vector& s) const = 0;
-  virtual void setGetNodeHandler(GetNodeHandler getNodeHandler, void* handlerData) = 0;
+
+  void setGetNodeHandler(GetNodeHandler getNodeHandler, void* handlerData);
 
   // relies on correct cached Q values!
   static int getMaxUBAction(MDPNode& cn);
@@ -71,6 +74,9 @@ struct IncrementalBounds {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2006/04/05 21:33:07  trey
+ * made some functions static
+ *
  * Revision 1.1  2006/04/04 17:22:51  trey
  * initial check-in
  *

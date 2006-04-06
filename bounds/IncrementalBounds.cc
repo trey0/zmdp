@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2006-04-05 21:33:07 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2006-04-06 20:33:51 $
    
  @file    IncrementalBounds.cc
  @brief   Common code used by multiple RTDP variants found in this
@@ -47,6 +47,12 @@ using namespace MatrixUtils;
 
 namespace zmdp {
 
+void IncrementalBounds::setGetNodeHandler(GetNodeHandler _getNodeHandler, void* _handlerData)
+{
+  getNodeHandler = _getNodeHandler;
+  handlerData = _handlerData;
+}
+
 // relies on correct cached Q values!
 int IncrementalBounds::getMaxUBAction(MDPNode& cn)
 {
@@ -86,6 +92,9 @@ int IncrementalBounds::getSimulatedOutcome(MDPNode& cn, int a)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2006/04/05 21:33:07  trey
+ * made some functions static
+ *
  * Revision 1.1  2006/04/04 17:22:51  trey
  * initial check-in
  *
