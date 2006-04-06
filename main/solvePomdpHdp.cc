@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2006-02-19 22:20:34 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2006-04-06 04:11:50 $
 
  @file    solvePomdpHdp.cc
  @brief   No brief
@@ -27,11 +27,14 @@
 
 #include "PomdpSim.h"
 #include "HDP.h"
+#include "MaxPlanesLowerBound.h"
+#include "SawtoothUpperBound.h"
+
 
 #define SP_EXTRA_ARGS        "<problem.pomdp>"
 #define SP_REQUIRE_PROB_NAME (1)
 #define SP_GENERATE_PROBLEM  Pomdp(prob_name, use_fast_parser)
-#define SP_GENERATE_SOLVER   HDP(problem->newUpperBound())
+#define SP_GENERATE_SOLVER   HDP(new MaxPlanesLowerBound(problem), new SawtoothUpperBound(problem))
 #define SP_GENERATE_SIM      PomdpSim((Pomdp*) problem)
 
 #include "solveProblem.cc"

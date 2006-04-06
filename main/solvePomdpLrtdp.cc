@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-02-17 18:38:33 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-04-06 04:11:50 $
 
  @file    solvePomdpLrtdp.cc
  @brief   No brief
@@ -27,11 +27,12 @@
 
 #include "PomdpSim.h"
 #include "LRTDP.h"
+#include "SawtoothUpperBound.h"
 
 #define SP_EXTRA_ARGS        "<problem.pomdp>"
 #define SP_REQUIRE_PROB_NAME (1)
 #define SP_GENERATE_PROBLEM  Pomdp(prob_name, use_fast_parser)
-#define SP_GENERATE_SOLVER   LRTDP(problem->newUpperBound())
+#define SP_GENERATE_SOLVER   LRTDP(new SawtoothUpperBound(problem))
 #define SP_GENERATE_SIM      PomdpSim((Pomdp*) problem)
 
 #include "solveProblem.cc"

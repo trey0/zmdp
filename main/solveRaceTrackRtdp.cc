@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-02-09 21:58:37 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-04-06 04:11:50 $
 
  @file    solveRaceTrackRtdp.cc
  @brief   No brief
@@ -29,12 +29,12 @@
 #include "MDPSim.h"
 #include "RaceTrack.h"
 #include "RTDP.h"
-#include "RelaxBound.h"
+#include "RelaxUBInitializer.h"
 
 #define SP_EXTRA_ARGS        "<x.racetrack>"
 #define SP_REQUIRE_PROB_NAME (1)
 #define SP_GENERATE_PROBLEM  RaceTrack(prob_name)
-#define SP_GENERATE_SOLVER   RTDP(useHeuristic ? new RelaxBound(problem) : problem->newUpperBound())
+#define SP_GENERATE_SOLVER   RTDP(useHeuristic ? new RelaxUBInitializer(problem) : problem->newUpperBound())
 #define SP_GENERATE_SIM      MDPSim(problem)
 
 #include "solveProblem.cc"
