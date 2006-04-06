@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.5 $  $Author: trey $  $Date: 2006-02-17 18:36:35 $
+ $Revision: 1.6 $  $Author: trey $  $Date: 2006-04-06 04:12:54 $
   
  @file    Pomdp.cc
  @brief   No brief
@@ -44,8 +44,6 @@
 #include "Pomdp.h"
 #include "MatrixUtils.h"
 #include "slaMatrixUtils.h"
-#include "PomdpLowerBound.h"
-#include "PomdpUpperBound.h"
 
 using namespace std;
 using namespace MatrixUtils;
@@ -146,12 +144,16 @@ double Pomdp::getReward(const belief_vector& b, int a) const
 
 AbstractBound* Pomdp::newLowerBound(void) const
 {
-  return new PomdpLowerBound(this);
+  // no default bounds are provided
+  assert(0);
+  return NULL;
 }
 
 AbstractBound* Pomdp::newUpperBound(void) const
 {
-  return new PomdpUpperBound(this);
+  // no default bounds are provided
+  assert(0);
+  return NULL;
 }
 
 // NOTE: this only works if terminal states are explicitly marked
@@ -454,6 +456,9 @@ void Pomdp::debugDensity(void) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.5  2006/02/17 18:36:35  trey
+ * fixed getIsTerminalState() function so RTDP can be used
+ *
  * Revision 1.4  2006/02/06 19:26:09  trey
  * removed numOutcomes from MDP class because some MDPs have a varying number of outcomes depending on state; replaced with numObservations in Pomdp class
  *
