@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.7 2006-04-04 17:25:50 trey Exp $
+# $Id: Makefile,v 1.8 2006-04-06 04:15:27 trey Exp $
 #
 # Copyright (c) 2006, Trey Smith. All rights reserved.
 #
@@ -42,29 +42,19 @@ INSTALLHEADERS_HEADERS := \
 	RTDP.h \
 	LRTDP.h \
 	HDP.h \
-	FRTDP.h \
-	ARTDP.h
+	FRTDP.h
+#	ARTDP.h
 include $(BUILD_DIR)/installheaders.mak
 
 BUILDLIB_TARGET := libzmdpRtdp.a
-BUILDLIB_SRCS := RTDP.cc RTDPCore.cc
+BUILDLIB_SRCS := \
+	RTDPCore.cc \
+	RTDP.cc \
+	LRTDP.cc \
+	HDP.cc \
+	FRTDP.cc
+#	ARTDP.cc
 include $(BUILD_DIR)/buildlib.mak
-
-BUILDLIB_TARGET := libzmdpLrtdp.a
-BUILDLIB_SRCS := LRTDP.cc RTDPCore.cc
-include $(BUILD_DIR)/buildlib.mak
-
-BUILDLIB_TARGET := libzmdpHdp.a
-BUILDLIB_SRCS := HDP.cc RTDPCore.cc
-include $(BUILD_DIR)/buildlib.mak
-
-BUILDLIB_TARGET := libzmdpFrtdp.a
-BUILDLIB_SRCS := FRTDP.cc RTDPCore.cc
-include $(BUILD_DIR)/buildlib.mak
-
-#BUILDLIB_TARGET := libzmdpArtdp.a
-#BUILDLIB_SRCS := ARTDP.cc RTDPCore.cc
-#include $(BUILD_DIR)/buildlib.mak
 
 ifneq (,$(TEST))
 
@@ -77,6 +67,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.7  2006/04/04 17:25:50  trey
+# no longer maintaining ARTDP
+#
 # Revision 1.6  2006/03/17 20:06:57  trey
 # added ARTDP
 #
