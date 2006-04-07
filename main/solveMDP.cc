@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-04-07 19:40:41 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-04-07 20:15:40 $
 
  @file    solveMDP.cc
  @brief   No brief
@@ -258,14 +258,17 @@ void usage(const char* cmdName) {
     "  -h or --help           Print this help\n"
     "  --version              Print version information (CFLAGS used at compilation)\n"
     "  -f or --fast           Use fast (but very picky) alternate POMDP parser\n"
-    "  -i or --iterations     Set number of simulation iterations [default: 100]\n"
-    "  -p or --precision      Set target precision [default: 1e-3]\n"
-    "  --heuristic            Use a non-trivial upper bound heuristic (interpretation\n"
-    "                           depends on the problem)\n"
+    "  -i or --iterations     Set number of simulation iterations at each policy\n"
+    "                           evaluation epoch [default: 100]\n"
+    "  -p or --precision      Set target precision in solution quality; run ends when\n"
+    "                           target is reached [default: 1e-3]\n"
+    "  --weak-heuristic       Avoid spending time generating a good upper bound heuristic\n"
+    "                           (only valid for some problems, interpretation depends on\n"
+    "                            the problem; e.g. sets h_U = 0 for racetrack)\n"
     "  --min-eval             If minEval=k, start logging policy evaluation epochs\n"
-    "                           at 10^k seconds of policy improvement [default: 0].\n"
-    "  --max-eval             If maxEval=k, end run after 10^k seconds of policy\n"
-    "                           improvement [default: 3].\n"
+    "                           after 10^k seconds of policy improvement [default: 0]\n"
+    "  --max-eval             If maxEval=k, run ends after at most 10^k seconds of policy\n"
+    "                           improvement [default: 3]\n"
     "\n"
     "Experimental flags (you probably don't want to use these):\n"
     "  --interleave           Test planner in interleaved mode\n"
@@ -287,19 +290,19 @@ int main(int argc, char **argv) {
 
   static char shortOptions[] = "hs:t:v:fi:p:w:";
   static struct option longOptions[]={
-    {"help",      0,NULL,'h'},
-    {"search",    1,NULL,'s'},
-    {"type",      1,NULL,'t'},
-    {"value",     1,NULL,'v'},
-    {"version",   0,NULL,'V'},
-    {"fast",      0,NULL,'f'},
-    {"iterations",1,NULL,'i'},
-    {"precision", 1,NULL,'p'},
-    {"heuristic", 0,NULL,'H'},
-    {"min-eval",  1,NULL,'X'},
-    {"max-eval",  1,NULL,'Y'},
-    {"interleave",1,NULL,'I'},
-    {"min-wait",  1,NULL,'w'},
+    {"help",          0,NULL,'h'},
+    {"search",        1,NULL,'s'},
+    {"type",          1,NULL,'t'},
+    {"value",         1,NULL,'v'},
+    {"version",       0,NULL,'V'},
+    {"fast",          0,NULL,'f'},
+    {"iterations",    1,NULL,'i'},
+    {"precision",     1,NULL,'p'},
+    {"weak-heuristic",0,NULL,'W'},
+    {"min-eval",      1,NULL,'X'},
+    {"max-eval",      1,NULL,'Y'},
+    {"interleave",    1,NULL,'I'},
+    {"min-wait",      1,NULL,'w'},
     {NULL,0,0,0}
   };
 
@@ -315,7 +318,7 @@ int main(int argc, char **argv) {
   p.targetPrecision = 1e-3;
   p.minWait = 0;
   p.useInterleave = false;
-  p.useHeuristic = false;
+  p.useHeuristic = true;
 
   while (1) {
     char optchar = getopt_long(argc,argv,shortOptions,longOptions,NULL);
@@ -347,8 +350,8 @@ int main(int argc, char **argv) {
     case 'p': // precision
       p.targetPrecision = atof(optarg);
       break;
-    case 'H': // heuristic
-      p.useHeuristic = true;
+    case 'W': // weak-heuristic
+      p.useHeuristic = false;
       break;
     case 'X': // min-eval
       p.minOrder = atoi(optarg);
@@ -422,5 +425,8 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/04/07 19:40:41  trey
+ * switched back to a unified binary for all algorithms, turns out it cuts down on code maintenance
+ *
  *
  ***************************************************************************/
