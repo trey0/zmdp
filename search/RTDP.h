@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.8 $  $Author: trey $  $Date: 2006-04-03 21:39:24 $
+ $Revision: 1.9 $  $Author: trey $  $Date: 2006-04-07 19:42:42 $
    
  @file    RTDP.h
  @brief   No brief
@@ -33,7 +33,7 @@
 namespace zmdp {
 
 struct RTDP : public RTDPCore {
-  RTDP(AbstractBound* _initUpperBound);
+  RTDP(void);
 
   bool getUseLowerBound(void) const { return false; }
   void trialRecurse(MDPNode& cn, int depth);
@@ -47,6 +47,9 @@ struct RTDP : public RTDPCore {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.8  2006/04/03 21:39:24  trey
+ * updated to use IncrementalBounds
+ *
  * Revision 1.7  2006/02/19 18:33:47  trey
  * targetPrecision now stared as a field rather than passed around recursively
  *
