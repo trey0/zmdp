@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.9 $  $Author: trey $  $Date: 2006-04-06 04:14:50 $
+ $Revision: 1.10 $  $Author: trey $  $Date: 2006-04-07 19:41:45 $
    
  @file    LRTDP.cc
  @brief   Implementation of Bonet and Geffner's LRTDP algorithm.
@@ -61,8 +61,7 @@ using namespace MatrixUtils;
 
 namespace zmdp {
 
-LRTDP::LRTDP(AbstractBound* _initUpperBound) :
-  RTDPCore(NULL, _initUpperBound)
+LRTDP::LRTDP(void)
 {}
 
 void LRTDP::getNodeHandler(MDPNode& cn)
@@ -217,6 +216,9 @@ void LRTDP::derivedClassInit(void)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.9  2006/04/06 04:14:50  trey
+ * changed how bounds are initialized
+ *
  * Revision 1.8  2006/04/04 17:24:52  trey
  * modified to use IncrementalBounds methods
  *

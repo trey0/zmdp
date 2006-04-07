@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.12 $  $Author: trey $  $Date: 2006-04-06 04:14:11 $
+ $Revision: 1.13 $  $Author: trey $  $Date: 2006-04-07 19:41:17 $
    
  @file    FRTDP.cc
  @brief   No brief
@@ -51,9 +51,7 @@ using namespace MatrixUtils;
 
 namespace zmdp {
 
-FRTDP::FRTDP(AbstractBound* _initLowerBound,
-	     AbstractBound* _initUpperBound) :
-  RTDPCore(_initLowerBound, _initUpperBound)
+FRTDP::FRTDP(void)
 {
   maxDepth = FRTDP_INIT_MAX_DEPTH;
 }
@@ -224,6 +222,9 @@ void FRTDP::derivedClassInit(void)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.12  2006/04/06 04:14:11  trey
+ * changed how bounds are initialized
+ *
  * Revision 1.11  2006/04/04 17:23:28  trey
  * made getPrio() static
  *

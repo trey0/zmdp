@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.7 $  $Author: trey $  $Date: 2006-04-06 04:14:50 $
+ $Revision: 1.8 $  $Author: trey $  $Date: 2006-04-07 19:41:30 $
    
  @file    HDP.cc
  @brief   Implementation of Bonet and Geffner's HDP algorithm.
@@ -69,8 +69,7 @@ using namespace MatrixUtils;
 
 namespace zmdp {
 
-HDP::HDP(AbstractBound* _initLowerBound, AbstractBound* _initUpperBound) :
-  RTDPCore(_initLowerBound, _initUpperBound)
+HDP::HDP(void)
 {}
 
 void HDP::getNodeHandler(MDPNode& cn)
@@ -237,6 +236,9 @@ void HDP::derivedClassInit(void)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.7  2006/04/06 04:14:50  trey
+ * changed how bounds are initialized
+ *
  * Revision 1.6  2006/04/04 17:23:58  trey
  * modified to use IncrementalBounds methods
  *

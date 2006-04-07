@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.6 $  $Author: trey $  $Date: 2006-04-04 17:24:52 $
+ $Revision: 1.7 $  $Author: trey $  $Date: 2006-04-07 19:41:45 $
    
  @file    LRTDP.h
  @brief   Implementation of Bonet and Geffner's LRTDP algorithm.
@@ -37,7 +37,7 @@ struct LRTDPExtraNodeData {
 };
 
 struct LRTDP : public RTDPCore {
-  LRTDP(AbstractBound* _initUpperBound);
+  LRTDP(void);
 
   void getNodeHandler(MDPNode& cn);
   static void staticGetNodeHandler(MDPNode& cn, void* handlerData);
@@ -60,6 +60,9 @@ struct LRTDP : public RTDPCore {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.6  2006/04/04 17:24:52  trey
+ * modified to use IncrementalBounds methods
+ *
  * Revision 1.5  2006/02/27 20:12:36  trey
  * cleaned up meta-information in header
  *

@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.10 $  $Author: trey $  $Date: 2006-04-06 04:14:50 $
+ $Revision: 1.11 $  $Author: trey $  $Date: 2006-04-07 19:41:17 $
    
  @file    FRTDP.h
  @brief   No brief
@@ -52,7 +52,7 @@ struct FRTDP : public RTDPCore {
   double newQualitySum;
   int newNumUpdates;
 
-  FRTDP(AbstractBound* _initLowerBound, AbstractBound* _initUpperBound);
+  FRTDP(void);
 
   bool getUseLowerBound(void) const { return true; }
 
@@ -73,6 +73,9 @@ struct FRTDP : public RTDPCore {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.10  2006/04/06 04:14:50  trey
+ * changed how bounds are initialized
+ *
  * Revision 1.9  2006/04/04 17:23:34  trey
  * made getPrio() static
  *

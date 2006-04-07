@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.5 $  $Author: trey $  $Date: 2006-04-06 04:14:50 $
+ $Revision: 1.6 $  $Author: trey $  $Date: 2006-04-07 19:41:30 $
    
  @file    HDP.h
  @brief   Implementation of Bonet and Geffner's HDP algorithm
@@ -43,7 +43,7 @@ struct HDP : public RTDPCore {
   NodeStack nodeStack;
   std::stack<MDPNode*> visited;
 
-  HDP(AbstractBound* _initLowerBound, AbstractBound* _initUpperBound);
+  HDP(void);
 
   void getNodeHandler(MDPNode& cn);
   static void staticGetNodeHandler(MDPNode& cn, void* handlerData);
@@ -72,6 +72,9 @@ struct HDP : public RTDPCore {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.5  2006/04/06 04:14:50  trey
+ * changed how bounds are initialized
+ *
  * Revision 1.4  2006/04/04 17:23:58  trey
  * modified to use IncrementalBounds methods
  *
