@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2006-04-06 20:34:47 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2006-04-08 22:21:25 $
    
  @file    ConvexBounds.h
  @brief   No brief
@@ -56,6 +56,8 @@ struct ConvexBounds : public IncrementalBounds {
   void getNewLBPlane(LBPlane& result, MDPNode& cn);
   void updateLowerBound(MDPNode& cn);
   double getNewUBValueQ(MDPNode& cn, int a);
+  double getNewUBValueSimple(MDPNode& cn, int* maxUBActionP);
+  double getNewUBValueUseCache(MDPNode& cn, int* maxUBActionP);
   double getNewUBValue(MDPNode& cn, int* maxUBActionP);
   void updateUpperBound(MDPNode& cn, int* maxUBActionP);
 
@@ -77,6 +79,9 @@ struct ConvexBounds : public IncrementalBounds {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2006/04/06 20:34:47  trey
+ * filled out most of ConvexBounds implementation
+ *
  * Revision 1.1  2006/04/05 21:43:20  trey
  * collected and renamed several classes into pomdpBounds
  *

@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2006-04-06 20:34:47 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2006-04-08 22:21:25 $
    
  @file    ConvexBounds.cc
  @brief   No brief
@@ -45,6 +45,8 @@ using namespace std;
 using namespace sla;
 using namespace MatrixUtils;
 
+#define CB_QVAL_UNDEFINED (-99e+20)
+
 namespace zmdp {
 
 ConvexBounds::ConvexBounds(bool _useLowerBound) :
@@ -54,7 +56,7 @@ ConvexBounds::ConvexBounds(bool _useLowerBound) :
 // lower bound on long-term reward for taking action a (alpha vector)
 void ConvexBounds::getNewLBPlaneQ(LBPlane& result, const MDPNode& cn, int a)
 {
-  alpha_vector betaA, betaAO;
+  alpha_vector betaA(pomdp->getBeliefSize()), betaAO(pomdp->getBeliefSize());
   alpha_vector tmp, tmp2;
   obs_prob_vector opv;
 #if USE_MASKED_ALPHA
@@ -98,7 +100,7 @@ void ConvexBounds::getNewLBPlaneQ(LBPlane& result, const MDPNode& cn, int a)
 #else
   copy_from_column( Rxa, pomdp->R, a );
 #endif
-  betaA *= pomdp->discount;
+  betaA *= pomdp->getDiscount();
   betaA += Rxa;
   
 #if USE_MASKED_ALPHA
@@ -138,6 +140,7 @@ void ConvexBounds::updateLowerBound(MDPNode& cn)
   LBPlane newPlane;
   getNewLBPlane(newPlane, cn);
   lowerBound->addLBPlane(cn.s, newPlane);
+  cn.lbVal = inner_prod(cn.s, newPlane.alpha);
 }
 
 // upper bound on long-term reward for taking action a
@@ -158,7 +161,7 @@ double ConvexBounds::getNewUBValueQ(MDPNode& cn, int a)
   return val;
 }
 
-double ConvexBounds::getNewUBValue(MDPNode& cn, int* maxUBActionP)
+double ConvexBounds::getNewUBValueSimple(MDPNode& cn, int* maxUBActionP)
 {
 #if USE_DEBUG_PRINT
   timeval startTime = getTime();
@@ -175,21 +178,77 @@ double ConvexBounds::getNewUBValue(MDPNode& cn, int* maxUBActionP)
   }
 
   if (NULL != maxUBActionP) *maxUBActionP = maxUBAction;
+  
+#if USE_DEBUG_PRINT
+  cout << "** newUpperBound: elapsed time = "
+       << timevalToSeconds(getTime() - startTime)
+       << endl;
+#endif
+  
+  return maxVal;
+}
+
+double ConvexBounds::getNewUBValueUseCache(MDPNode& cn, int* maxUBActionP)
+{
+#if USE_DEBUG_PRINT
+  timeval startTime = getTime();
+#endif
+
+  // cache upper bound for each action
+  dvector cachedUpperBound(pomdp->getNumActions());
+  FOR (a, pomdp->numActions) {
+    cachedUpperBound(a) = cn.Q[a].ubVal;
+  }
+
+  // remember which Q functions we have updated on this call
+  std::vector<bool> updatedAction(pomdp->getNumActions());
+  FOR (a, pomdp->getNumActions()) {
+    updatedAction[a] = false;
+  }
+
+  double val;
+  int maxUBAction = argmax_elt(cachedUpperBound);
+  while (1) {
+    // do the backup for the best Q
+    val = getNewUBValueQ(cn,maxUBAction);
+    cachedUpperBound(maxUBAction) = val;
+    updatedAction[maxUBAction] = true;
+      
+    // the best action may have changed after updating Q
+    maxUBAction = argmax_elt(cachedUpperBound);
+
+    // if the best action after the update is one that we have already
+    //    updated, we're done
+    if (updatedAction[maxUBAction]) break;
+  }
+
+  double maxVal = cachedUpperBound(maxUBAction);
+  
+  if (NULL != maxUBActionP) *maxUBActionP = maxUBAction;
 
 #if USE_DEBUG_PRINT
   cout << "** newUpperBound: elapsed time = "
        << timevalToSeconds(getTime() - startTime)
-       << " (lpopt_time = " << lpopt_time << ")"
        << endl;
 #endif
 
   return maxVal;
 }
 
+double ConvexBounds::getNewUBValue(MDPNode& cn, int* maxUBActionP)
+{
+  if (CB_QVAL_UNDEFINED == cn.Q[0].ubVal) {
+    return getNewUBValueSimple(cn, maxUBActionP);
+  } else {
+    return getNewUBValueUseCache(cn, maxUBActionP);
+  }
+}
+
 void ConvexBounds::updateUpperBound(MDPNode& cn, int* maxUBActionP)
 {
   double newUBVal = getNewUBValue(cn, maxUBActionP);
   upperBound->addPoint(cn.s, newUBVal);
+  cn.ubVal = newUBVal;
 }
 
 void ConvexBounds::initialize(const MDP* _pomdp,
@@ -286,6 +345,7 @@ void ConvexBounds::expand(MDPNode& cn)
         Qa.outcomes[o] = NULL;
       }
     }
+    Qa.ubVal = CB_QVAL_UNDEFINED;
   }
   numStatesExpanded++;
 }
@@ -350,6 +410,9 @@ ValueInterval ConvexBounds::getValueAt(const state_vector& s) const
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2006/04/06 20:34:47  trey
+ * filled out most of ConvexBounds implementation
+ *
  * Revision 1.1  2006/04/05 21:43:20  trey
  * collected and renamed several classes into pomdpBounds
  *
