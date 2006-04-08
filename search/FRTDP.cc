@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.13 $  $Author: trey $  $Date: 2006-04-07 19:41:17 $
+ $Revision: 1.14 $  $Author: trey $  $Date: 2006-04-08 22:23:12 $
    
  @file    FRTDP.cc
  @brief   No brief
@@ -90,8 +90,9 @@ void FRTDP::getMaxPrioOutcome(MDPNode& cn, int a, FRTDPUpdateResult& r) const
 	r.maxPrioOutcome = o;
       }
 #if 0
-      printf("    a=%d o=%d obsProb=%g nsprio=%g prio=%g\n",
-	     a, o, e->obsProb, getPrio(*e->nextState), prio);
+      MDPNode& sn = *e->nextState;
+      printf("    a=%d o=%d obsProb=%g nslb=%g nsub=%g nsprio=%g prio=%g\n",
+	     a, o, e->obsProb, sn.lbVal, sn.ubVal, getPrio(sn), prio);
       if (getPrio(*e->nextState) < -99e+20) {
 	MDPNode& sn = *e->nextState;
 	printf("ns: s=[%s] [%g .. %g] prio=%g\n",
@@ -147,7 +148,7 @@ void FRTDP::trialRecurse(MDPNode& cn, double logOcc, int depth)
     newNumUpdates++;
   }
 
-  if (excessWidth < 0 || depth > maxDepth) {
+  if (excessWidth <= 0 || depth > maxDepth) {
 #if USE_DEBUG_PRINT
     printf("  trialRecurse: depth=%d excessWidth=%g (terminating)\n",
 	   depth, excessWidth);
@@ -158,6 +159,7 @@ void FRTDP::trialRecurse(MDPNode& cn, double logOcc, int depth)
   }
 
   // recurse to successor
+  assert(-1 != r.maxPrioOutcome);
   double obsProb = cn.Q[r.maxUBAction].outcomes[r.maxPrioOutcome]->obsProb;
   double weight = problem->getDiscount() * obsProb;
   double nextLogOcc = logOcc + log(weight);
@@ -222,6 +224,9 @@ void FRTDP::derivedClassInit(void)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.13  2006/04/07 19:41:17  trey
+ * removed initLowerBound, initUpperBound arguments to constructor
+ *
  * Revision 1.12  2006/04/06 04:14:11  trey
  * changed how bounds are initialized
  *
