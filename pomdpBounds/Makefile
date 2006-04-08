@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.1 2006-04-05 21:43:20 trey Exp $
+# $Id: Makefile,v 1.2 2006-04-08 22:21:46 trey Exp $
 #
 # Copyright (c) 2006, Trey Smith. All rights reserved.
 #
@@ -32,7 +32,7 @@ include $(CHECKOUT_DIR)/src/build/header.mak
 include $(SRC_DIR)/common/options.mak
 
 maininstall:
-	$(MAKE) $(MFLAGS) -C .. -fMakefile SUBDIRS='bounds main' install
+	$(MAKE) $(MFLAGS) -C .. -fMakefile SUBDIRS='pomdpBounds main' install
 
 # ADD ANY SUBDIRS THAT NEED TO BE VISITED DURING A BUILD TO THE SUBDIRS LIST
 SUBDIRS := 
@@ -65,6 +65,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.1  2006/04/05 21:43:20  trey
+# collected and renamed several classes into pomdpBounds
+#
 # Revision 1.1  2006/04/04 17:22:51  trey
 # initial check-in
 #
