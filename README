@@ -34,7 +34,7 @@ Table of contents of this README
 ========================================================================
 RELEASE NOTES
 
-Changes from zpomdp 0.1 to zmdp 0.2
+Changes from zpomdp 0.1 to zmdp 0.2 (27 Feb 2006)
 
 * zmdp now includes MDP solving as well as POMDP solving
   capabilities (hence the name change).
@@ -53,7 +53,7 @@ Changes from zpomdp 0.1 to zmdp 0.2
 * Separate binaries are now produced for each (problem type, algorithm)
   pair rather than a single unified binary.
 
-zpomdp 0.1
+zpomdp 0.1 (28 Oct 2005)
 
 * Initial release.
 
@@ -62,12 +62,14 @@ PACKAGE CONTENTS
 
 src/build        Makefile system
 src/common       Utility code, including a sparse linear algebra library
-src/pomdpParser  POMDP problem parsing code (thanks to Tony Cassandra!)
-src/pomdpCore    Basic POMDP operations and value function heuristics
 src/mdps         Racetrack domain and some example problems
+src/bounds       Interfaces for representing value function bounds
+src/rtdp         Search strategies: RTDP, LRTDP, HDP, FRTDP, etc.
+src/pomdpParser  POMDP problem parsing code (thanks to Tony Cassandra!)
+src/pomdpCore    Basic POMDP operations and simulation
+src/pomdpBounds  Value function bounds representations specific to POMDPs
 src/hsvi2        HSVI2 algorithm
-src/rtdp         RTDP, LRTDP, HDP, and FRTDP algorithms
-src/main         Binaries for invoking algorithms from the shell
+src/main         Glue code for invoking algorithms from the shell
 src/problems     Problems from [5] and a trivial example.
 src/tools        Tools for scripting multiple runs and plotting results.
 
@@ -76,70 +78,68 @@ USAGE INSTRUCTIONS
 
 To get started please first follow the instructions in INSTALL.
 
-There are several binaries produced by the installation process, found
-in the bin/linux2 directory.  They are named as
-solve<problemType><algorithm>, for example: solvePomdpHsvi or
-solveRaceTrackRtdp.  (Usage instructions for solvePomdpHsvi copied
-here.)
+The binary produced by the installation process is named
+bin/linux2/solveMDP.  (It solves both MDPs and POMDPs.)  Use
+'solveMDP -h' to get the full usage instructions.  Part of the
+instructions are copied here:
 
-usage: solvePomdpHsvi OPTIONS <problem.pomdp> [minOrder maxOrder]
-  -h or --help           Print this help
-  --version              Print version information (CFLAGS used at compilation)
-  -f or --fast           Use fast (but very picky) alternate problem parser
-  -i or --iterations     Set number of simulation iterations (default: 1000)
-  -p or --precision      Set target precision
-  --heuristic            Use a non-trivial upper bound heuristic (interpretation
-                           depends on the problem)
+usage: solveMDP OPTIONS <model>
+
+Main flags:
+  -s or --search         Specifies search strategy. Valid choices:
+                           rtdp, lrtdp, hdp, frtdp [default: frtdp]
+  -t or --type           Specifies problem type. Valid choices:
+                           racetrack, pomdp [default: infer from model filename]
+  -v or --value          Specifies value function representation. Valid choices
+                         depend on problem type. With -t pomdp, choices are:
+                           point, convex [default: convex]
+                         For other problem types, choices are:
+                           point [default: point]
 
 ========================================================================
 EXAMPLE SESSIONS
 
-(Examples assume the solvePomdpHsvi binary is in your path.)
-
 COMMAND:
 
-  solvePomdpHsvi -i 100 problems/three_state.pomdp -- -1 1
+  solveMDP -i 100 --min-eval -1 problems/three_state.pomdp 
 
 EXPLANATION:
 
-  The '-i 100' flag sets the number of iterations that should be used
-  when evaluating solution quality at each simulation epoch.  Reducing
-  the number of iterations decreases the total testing time but provides
-  less precision in the solution quality measurement (reflected in wider
-  error bars for plots).
+  The '-i 1000' flag sets the number of iterations that should be used
+  when evaluating solution quality at each simulation epoch.  The
+  default number is 100.  Adjusting the number of iterations trades
+  total testing time against precision in the solution quality
+  measurement (which is reflected in the error bars of plots if you use
+  the provided plotting tools).
+
+  '--min-eval -1' specifies when to insert the first simulation epoch
+  for testing solution quality.  If minEval=k, the first epoch comes
+  after 10^k seconds.  Subsequent epochs are spaced logarithmically with
+  three epochs per order of magnitude of running time.  This is nice for
+  semi-log plots.  NOTE: to be more accurate, testing epochs can only be
+  inserted when the solution algorithm yields control to the testing
+  harness, so the logarithmic spacing rule is only approximate.
 
   'problems/three_state.pomdp' indicates what problem to solve.
-
-  '--' is a special marker to prevent later arguments that begin
-  with '-' from being interpreted as flags.  If this is not used
-  the '-1' argument later will cause an error.
-
-  '-1 1' are the minOrder and maxOrder, specifying when to insert
-  simulation epochs for testing solution quality.  The first epoch comes
-  after the solution algorithm has run for 10^minOrder seconds.
-  Subsequent epochs are spaced logarithmically with three epochs per
-  order of magnitude of running time.  This is nice for semi-log plots.
-  After 10^maxOrder seconds the test run ends.  NOTE: to be more
-  accurate, testing epochs can only be inserted when the solution
-  algorithm yields control to the testing harness, so the logarithmic
-  spacing rule is only approximate.
+  solveMDP infers the problem type (and associated model parser) as
+  'pomdp' from the filename suffix.  Alternately, you can manually
+  specify the problem type with e.g. '-t pomdp'.
 
 COMMAND:
 
-  solvePomdpHsvi -f problems/RockSample_5_7.pomdp 0 3
+  solveMDP -f problems/RockSample_5_7.pomdp
 
 EXPLANATION:
 
-  Mostly the same as the previous explanation.  Note maxOrder=3 for a
-  longer run.  The '-f' flag tells testPomdp to use a faster problem
-  parser that is also very picky.  The fast parser will probably only
-  accept RockSample problems, but you will really want to use it on
-  large problem instances!
+  The '-f' flag tells solveMDP to use a faster problem parser that is
+  also very picky.  The fast parser will probably only accept RockSample
+  problems, but you will really want to use it on large problem
+  instances!
 
 ========================================================================
 PLOTTING RESULTS
 
-Two of the plotting scripts in the src/tools directory are worth
+Some of the plotting scripts in the src/tools directory are worth
 mentioning.
 
 === MAKEPLOT
@@ -149,10 +149,10 @@ usage: makeplot OPTIONS <results_directory>
    -i    Plot bounds vs. number of top-level iterations
    -p    Generate postscript output
 
-makeplot plots the HSVI2 upper bound, lower bound, and measured solution
+makeplot plots the upper bound, lower bound, and measured solution
 quality at testing epochs in a single graph with a logarithmic x axis.
 It looks in <results_directory> for the files bounds.plot and inc.plot,
-output by testPomdp.  By default the plot is displayed in an X window.
+output by solveMDP.  By default the plot is displayed in an X window.
 Using the -p option drops it into a PostScript file instead, e.g. for
 inclusion in a paper.
 
@@ -165,18 +165,27 @@ usage: compareplots OPTIONS <dir1> <dir2>
    -s    Plot speed (iterations v. time)
    -p    Generate postscript output
   
-compareplots is similar to makeplot but pulls in results from two
-directories.  The plot that comes out is very busy, but still useful
-to look at performance differences between algorithm variants.
+compareplots shows solution quality vs. wallclock time for two
+directories in a single plot.  Anytime solution quality bounds are not
+shown with the default options.
+
+=== SPEEDPLOT
+
+Speedplot is similar to compareplots, but uses number of updates on the
+x axis rather than wallclock time.  You may prefer this so that results
+are less dependent on the platform used.  A downside is that the amount
+of time required for each update varies widely depending on the search
+strategy and especially on the bounds representation.
 
 ========================================================================
 ACKNOWLEDGMENTS
 
-Thanks to Geoff Gordon for helpful discussions.  Thanks to Tony
-Cassandra for developing the POMDP problem format and distributing his
-problem reading and solution code.  Thanks to Matthijs Spaan for
-distributing his PERSEUS POMDP-solving code, which provided a template
-for my release of zmdp.
+The theory behind the novel algorithms in this codebase was joint work
+with Reid Simmons.  Thanks to Geoff Gordon for helpful discussions.
+Thanks to Tony Cassandra for developing the POMDP problem format and
+distributing his problem reading and solution code.  Thanks to Matthijs
+Spaan for distributing his PERSEUS POMDP-solving code, which provided a
+template for my release of zmdp.
 
 ========================================================================
 REFERENCES
@@ -204,4 +213,4 @@ REFERENCES
     http://www.cs.cmu.edu/~trey/papers/smith05_point_based_pomdp.pdf
 
 ==========================================================
-$Id: README,v 1.2 2006-02-27 20:14:03 trey Exp $
+$Id: README,v 1.3 2006-04-10 20:59:28 trey Exp $
