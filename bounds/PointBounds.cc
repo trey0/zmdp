@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2006-04-06 20:33:51 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2006-04-10 20:25:08 $
    
  @file    PointBounds.cc
  @brief   No brief
@@ -127,10 +127,12 @@ void PointBounds::updateValuesBoth(MDPNode& cn, int* maxUBActionP)
 }
 
 void PointBounds::setBounds(AbstractBound* _initLowerBound,
-			    AbstractBound* _initUpperBound)
+			    AbstractBound* _initUpperBound,
+			    bool _forceUpperBoundActionSelection)
 {
   initLowerBound = _initLowerBound;
   initUpperBound = _initUpperBound;
+  forceUpperBoundActionSelection = _forceUpperBoundActionSelection;
 }
 
 void PointBounds::initialize(const MDP* _problem,
@@ -251,9 +253,8 @@ int PointBounds::chooseAction(const state_vector& s) const
   state_vector sp;
   int bestAction = -1;
 
-#if !USE_RTDPCORE_UB_ACTION
   // if LB is available, use it to choose the action
-  if (NULL != initLowerBound) {
+  if (!forceUpperBoundActionSelection && NULL != initLowerBound) {
     double lbVal;
     double maxVal = -99e+20;
     double minVal = 99e+20;
@@ -281,7 +282,6 @@ int PointBounds::chooseAction(const state_vector& s) const
       return bestAction;
     }
   }
-#endif
 
   // fall back to UB
   double ubVal;
@@ -321,6 +321,9 @@ ValueInterval PointBounds::getValueAt(const state_vector& s) const
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2006/04/06 20:33:51  trey
+ * moved setGetNodeHandler() implementation from PointBounds -> IncrementalBounds
+ *
  * Revision 1.2  2006/04/05 21:34:40  trey
  * changed initialization to match new IncrementalBounds API
  *

@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.4 $  $Author: trey $  $Date: 2006-04-07 19:38:49 $
+ $Revision: 1.5 $  $Author: trey $  $Date: 2006-04-10 20:25:08 $
    
  @file    PointBounds.h
  @brief   No brief
@@ -45,6 +45,7 @@ struct PointBounds : public IncrementalBounds {
   double targetPrecision;
   MDPNode* root;
   MDPHash* lookup;
+  bool forceUpperBoundActionSelection;
 
   PointBounds(void);
 
@@ -54,7 +55,8 @@ struct PointBounds : public IncrementalBounds {
 
   // must be called before initialize()
   void setBounds(AbstractBound* _initLowerBound,
-		 AbstractBound* _initUpperBound);
+		 AbstractBound* _initUpperBound,
+		 bool _forceUpperBoundActionSelection);
 
   // implementations of virtual functions declared in IncrementalBounds
   void initialize(const MDP* _problem,
@@ -75,6 +77,9 @@ struct PointBounds : public IncrementalBounds {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2006/04/07 19:38:49  trey
+ * moved getNodeHandler, handlerData from IncrementalBounds derived classes into parent class
+ *
  * Revision 1.3  2006/04/06 20:33:51  trey
  * moved setGetNodeHandler() implementation from PointBounds -> IncrementalBounds
  *

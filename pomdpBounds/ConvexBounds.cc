@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2006-04-08 22:21:25 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2006-04-10 20:26:38 $
    
  @file    ConvexBounds.cc
  @brief   No brief
@@ -49,8 +49,10 @@ using namespace MatrixUtils;
 
 namespace zmdp {
 
-ConvexBounds::ConvexBounds(bool _useLowerBound) :
-  useLowerBound(_useLowerBound)
+ConvexBounds::ConvexBounds(bool _keepLowerBound,
+			   bool _forceUpperBoundActionSelection) :
+  keepLowerBound(_keepLowerBound),
+  forceUpperBoundActionSelection(_forceUpperBoundActionSelection)
 {}
 
 // lower bound on long-term reward for taking action a (alpha vector)
@@ -257,7 +259,7 @@ void ConvexBounds::initialize(const MDP* _pomdp,
   pomdp = (const Pomdp*) _pomdp;
   targetPrecision = _targetPrecision;
 
-  if (useLowerBound) {
+  if (keepLowerBound) {
     lowerBound = new MaxPlanesLowerBound(pomdp);
     lowerBound->initialize(targetPrecision);
   }
@@ -298,7 +300,7 @@ MDPNode* ConvexBounds::getNode(const state_vector& s)
     } else {
       cn.ubVal = upperBound->getValue(s);
     }
-    if (useLowerBound) {
+    if (keepLowerBound) {
       if (cn.isTerminal) {
 	cn.lbVal = 0;
       } else {
@@ -355,7 +357,7 @@ void ConvexBounds::update(MDPNode& cn, int* maxUBActionP)
   if (cn.isFringe()) {
     expand(cn);
   }
-  if (useLowerBound) {
+  if (keepLowerBound) {
     updateLowerBound(cn);
   }
   updateUpperBound(cn, maxUBActionP);
@@ -368,13 +370,12 @@ void ConvexBounds::update(MDPNode& cn, int* maxUBActionP)
 // simulation testing in the middle of a run.
 int ConvexBounds::chooseAction(const state_vector& s) const
 {
-  if (useLowerBound) {
+  if (!forceUpperBoundActionSelection && keepLowerBound) {
     // 'direct' policy as opposed to 'lookahead' policy
     return lowerBound->getBestLBPlane(s).action;
   }
 
   // if not maintaining LB, fall back to UB
-
   outcome_prob_vector opv;
   state_vector sp;
   int bestAction = -1;
@@ -401,7 +402,7 @@ int ConvexBounds::chooseAction(const state_vector& s) const
 
 ValueInterval ConvexBounds::getValueAt(const state_vector& s) const
 {
-  return ValueInterval(useLowerBound ? lowerBound->getValue(s) : -1,
+  return ValueInterval(keepLowerBound ? lowerBound->getValue(s) : -1,
 		       upperBound->getValue(s));
 }
 
@@ -410,6 +411,9 @@ ValueInterval ConvexBounds::getValueAt(const state_vector& s) const
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2006/04/08 22:21:25  trey
+ * fixed some bugs and added getNewUBValueUseCache()
+ *
  * Revision 1.2  2006/04/06 20:34:47  trey
  * filled out most of ConvexBounds implementation
  *

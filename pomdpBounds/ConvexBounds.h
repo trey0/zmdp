@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2006-04-08 22:21:25 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2006-04-10 20:26:38 $
    
  @file    ConvexBounds.h
  @brief   No brief
@@ -44,12 +44,14 @@ struct ConvexBounds : public IncrementalBounds {
   const Pomdp* pomdp;
   MaxPlanesLowerBound* lowerBound;
   SawtoothUpperBound* upperBound;
-  bool useLowerBound;
+  bool keepLowerBound;
   double targetPrecision;
   MDPNode* root;
   MDPHash* lookup;
+  bool forceUpperBoundActionSelection;
 
-  ConvexBounds(bool _useLowerBound);
+  ConvexBounds(bool _keepLowerBound,
+	       bool _forceUpperBoundActionSelection);
 
   // helper functions
   void getNewLBPlaneQ(LBPlane& result, const MDPNode& cn, int a);
@@ -79,6 +81,9 @@ struct ConvexBounds : public IncrementalBounds {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2006/04/08 22:21:25  trey
+ * fixed some bugs and added getNewUBValueUseCache()
+ *
  * Revision 1.2  2006/04/06 20:34:47  trey
  * filled out most of ConvexBounds implementation
  *
