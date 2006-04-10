@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: options.mak,v 1.39 2006-04-04 17:27:10 trey Exp $
+# $Id: options.mak,v 1.40 2006-04-10 20:25:35 trey Exp $
 #
 # Copyright (c) 2002-2005, Trey Smith
 # All rights reserved.
@@ -68,8 +68,6 @@ CFLAGS += -DUSE_DF_NON_MYOPIC=1
 #CFLAGS += -DUSE_OLD_ANYTIME=1
 CFLAGS += -DUSE_TIME_WITHOUT_HEURISTIC=1
 #CFLAGS += -DUSE_FRTDP_ALT_PRIO=1
-#CFLAGS += -DUSE_HDP_LOWER_BOUND=1
-#CFLAGS += -DUSE_RTDPCORE_UB_ACTION=1
 ifneq (,$(USE_GHSVI))
   CFLAGS += -DUSE_GHSVI=1
 endif
@@ -90,6 +88,9 @@ CFLAGS += -DCFLAGS="\"$(XCFLAGS)\""
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.39  2006/04/04 17:27:10  trey
+# no longer using obsolete USE_FRTDP_ALT_PRIO flag
+#
 # Revision 1.38  2006/03/17 20:09:05  trey
 # bumped up ZMDP_VERSION to correct level
 #
