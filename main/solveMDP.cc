@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2006-04-07 20:15:40 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2006-04-10 20:27:05 $
 
  @file    solveMDP.cc
  @brief   No brief
@@ -72,6 +72,8 @@ struct SolveMDPParams {
   double minWait;
   bool useInterleave;
   bool useHeuristic;
+  bool forceLowerBound;
+  bool forceUpperBoundActionSelection;
 };
 
 struct EnumEntry {
@@ -140,8 +142,7 @@ bool endsWith(const std::string& s,
 
 void testBatchIncremental(const SolveMDPParams& p)
 {
-
-  cout << "CFLAGS = " << CFLAGS << endl;
+  init_matrix_utils();
 
   MDP* problem;
   AbstractSim* sim;
@@ -158,42 +159,6 @@ void testBatchIncremental(const SolveMDPParams& p)
     assert(0); // never reach this point
   }
 
-  // this is a bit of a hack...
-  bool useLowerBound;
-  switch (p.strategy) {
-  case S_RTDP:
-  case S_LRTDP:
-    useLowerBound = false;
-    break;
-  case S_HDP:
-  case S_FRTDP:
-    useLowerBound = true;
-    break;
-  default:
-    assert(0); // never reach this point
-  };
-
-  IncrementalBounds* bounds;
-  PointBounds* pb;
-  switch (p.valueRepr) {
-  case V_POINT:
-    pb = new PointBounds();
-    AbstractBound* initUpperBound;
-    if (p.useHeuristic && T_POMDP != p.probType) {
-      initUpperBound = new RelaxUBInitializer(problem);
-    } else {
-      initUpperBound = problem->newUpperBound();
-    }
-    pb->setBounds(problem->newLowerBound(), initUpperBound);
-    bounds = pb;
-    break;
-  case V_CONVEX:
-    bounds = new ConvexBounds(useLowerBound);
-    break;
-  default:
-    assert(0); // never reach this point
-  };
-
   Solver* solver;
   switch (p.strategy) {
   case S_RTDP:
@@ -207,6 +172,31 @@ void testBatchIncremental(const SolveMDPParams& p)
     break;
   case S_FRTDP:
     solver = new FRTDP();
+    break;
+  default:
+    assert(0); // never reach this point
+  };
+
+  bool keepLowerBound = p.forceLowerBound
+    || ((RTDPCore *) solver)->getUseLowerBound();
+  IncrementalBounds* bounds;
+  switch (p.valueRepr) {
+  case V_POINT:
+    PointBounds* pb;
+    AbstractBound *initLowerBound, *initUpperBound;
+
+    pb = new PointBounds();
+    initLowerBound = keepLowerBound ? problem->newLowerBound() : NULL;
+    if (p.useHeuristic && T_POMDP != p.probType) {
+      initUpperBound = new RelaxUBInitializer(problem);
+    } else {
+      initUpperBound = problem->newUpperBound();
+    }
+    pb->setBounds(initLowerBound, initUpperBound, p.forceUpperBoundActionSelection);
+    bounds = pb;
+    break;
+  case V_CONVEX:
+    bounds = new ConvexBounds(keepLowerBound, p.forceUpperBoundActionSelection);
     break;
   default:
     assert(0); // never reach this point
@@ -265,6 +255,10 @@ void usage(const char* cmdName) {
     "  --weak-heuristic       Avoid spending time generating a good upper bound heuristic\n"
     "                           (only valid for some problems, interpretation depends on\n"
     "                            the problem; e.g. sets h_U = 0 for racetrack)\n"
+    "  --lower-bound          Forces solveMDP to maintain a lower bound and use it for\n"
+    "                           action selection, even if it is not used during search.\n"
+    "  --upper-bound          Forces solveMDP to use the upper bound for action selection\n"
+    "                           (normally the lower bound is used if it is available).\n"
     "  --min-eval             If minEval=k, start logging policy evaluation epochs\n"
     "                           after 10^k seconds of policy improvement [default: 0]\n"
     "  --max-eval             If maxEval=k, run ends after at most 10^k seconds of policy\n"
@@ -286,8 +280,6 @@ void usage(const char* cmdName) {
 }
 
 int main(int argc, char **argv) {
-  init_matrix_utils();
-
   static char shortOptions[] = "hs:t:v:fi:p:w:";
   static struct option longOptions[]={
     {"help",          0,NULL,'h'},
@@ -299,6 +291,8 @@ int main(int argc, char **argv) {
     {"iterations",    1,NULL,'i'},
     {"precision",     1,NULL,'p'},
     {"weak-heuristic",0,NULL,'W'},
+    {"lower-bound",   0,NULL,'L'},
+    {"upper-bound",   0,NULL,'U'},
     {"min-eval",      1,NULL,'X'},
     {"max-eval",      1,NULL,'Y'},
     {"interleave",    1,NULL,'I'},
@@ -319,6 +313,13 @@ int main(int argc, char **argv) {
   p.minWait = 0;
   p.useInterleave = false;
   p.useHeuristic = true;
+  p.forceLowerBound = false;
+  p.forceUpperBoundActionSelection = false;
+
+  ostringstream outs;
+  for (int i=1; i < argc; i++) {
+    outs << argv[i] << " ";
+  }
 
   while (1) {
     char optchar = getopt_long(argc,argv,shortOptions,longOptions,NULL);
@@ -352,6 +353,12 @@ int main(int argc, char **argv) {
       break;
     case 'W': // weak-heuristic
       p.useHeuristic = false;
+      break;
+    case 'L': // lower-bound
+      p.forceLowerBound = true;
+      break;
+    case 'U': // upper-bound
+      p.forceUpperBoundActionSelection = true;
       break;
     case 'X': // min-eval
       p.minOrder = atoi(optarg);
@@ -390,7 +397,7 @@ int main(int argc, char **argv) {
     } else if (endsWith(p.probName, ".pomdp")) {
       p.probType = T_POMDP;
     } else {
-      fprintf(stderr, "ERROR: couldn't infer problem type from problem filename %s\n\n",
+      fprintf(stderr, "ERROR: couldn't infer problem type from problem filename %s (use -t option)\n\n",
 	      p.probName);
       usage(argv[0]);
       exit(EXIT_FAILURE);
@@ -410,7 +417,9 @@ int main(int argc, char **argv) {
     p.maxOrder = 3; // default
   }
 
-  cerr << "done arg parsing" << endl;
+  printf("CFLAGS = %s\n", CFLAGS);
+  printf("ARGS = %s\n", outs.str().c_str());
+  fflush(stdout);
 
   testBatchIncremental(p);
 
@@ -425,6 +434,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2006/04/07 20:15:40  trey
+ * solveMDP now uses a strong heuristic by default; improved usage() help
+ *
  * Revision 1.1  2006/04/07 19:40:41  trey
  * switched back to a unified binary for all algorithms, turns out it cuts down on code maintenance
  *
