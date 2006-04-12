@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.14 $  $Author: trey $  $Date: 2006-04-08 22:23:12 $
+ $Revision: 1.15 $  $Author: trey $  $Date: 2006-04-12 19:22:22 $
    
  @file    FRTDP.cc
  @brief   No brief
@@ -44,8 +44,6 @@ using namespace std;
 using namespace sla;
 using namespace MatrixUtils;
 
-#define FRTDP_ALT_PRIO_MARGIN (log(100))
-#define FRTDP_UNDEFINED (-999)
 #define FRTDP_INIT_MAX_DEPTH (10)
 #define FRTDP_MAX_DEPTH_ADJUST_RATIO (1.1)
 
@@ -224,6 +222,9 @@ void FRTDP::derivedClassInit(void)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.14  2006/04/08 22:23:12  trey
+ * added some debug code
+ *
  * Revision 1.13  2006/04/07 19:41:17  trey
  * removed initLowerBound, initUpperBound arguments to constructor
  *
