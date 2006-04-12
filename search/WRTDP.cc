@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-04-12 19:22:41 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-04-12 19:48:47 $
    
  @file    WRTDP.cc
  @brief   No brief
@@ -52,7 +52,9 @@ namespace zmdp {
 
 WRTDP::WRTDP(void)
 {
+#if USE_WRTDP_ADAPTIVE_DEPTH
   maxDepth = WRTDP_INIT_MAX_DEPTH;
+#endif
 }
 
 void WRTDP::getMaxExcessUncOutcome(MDPNode& cn, int depth, WRTDPUpdateResult& r) const
@@ -66,7 +68,7 @@ void WRTDP::getMaxExcessUncOutcome(MDPNode& cn, int depth, WRTDPUpdateResult& r)
     if (NULL != e) {
       MDPNode& sn = *e->nextState;
       width = e->obsProb *
-	(sn.ubVal - sn.lbVal - trialTargetPrecision * pow(problem->getDiscount(), depth+1));
+	(sn.ubVal - sn.lbVal - trialTargetPrecision * pow(problem->getDiscount(), -(depth+1)));
       if (width > r.maxExcessUnc) {
 	r.maxExcessUnc = width;
 	r.maxExcessUncOutcome = o;
@@ -92,7 +94,7 @@ void WRTDP::update(MDPNode& cn, int depth, WRTDPUpdateResult& r)
 void WRTDP::trialRecurse(MDPNode& cn, double logOcc, int depth)
 {
   double excessUnc = cn.ubVal - cn.lbVal - trialTargetPrecision
-    * pow(problem->getDiscount(), depth);
+    * pow(problem->getDiscount(), -depth);
 
   if (excessUnc <= 0
 #if USE_WRTDP_ADAPTIVE_DEPTH      
@@ -196,5 +198,8 @@ bool WRTDP::doTrial(MDPNode& cn)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/04/12 19:22:41  trey
+ * initial check-in
+ *
  *
  ***************************************************************************/
