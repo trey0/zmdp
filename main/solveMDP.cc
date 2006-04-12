@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2006-04-10 20:27:05 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2006-04-12 19:23:22 $
 
  @file    solveMDP.cc
  @brief   No brief
@@ -40,6 +40,7 @@
 #include "LRTDP.h"
 #include "HDP.h"
 #include "FRTDP.h"
+#include "WRTDP.h"
 
 // problem types
 #include "RaceTrack.h"
@@ -85,7 +86,8 @@ enum StrategiesEnum {
   S_RTDP,
   S_LRTDP,
   S_HDP,
-  S_FRTDP
+  S_FRTDP,
+  S_WRTDP
 };
 
 EnumEntry strategiesG[] = {
@@ -93,6 +95,7 @@ EnumEntry strategiesG[] = {
   {"lrtdp", S_LRTDP},
   {"hdp",   S_HDP},
   {"frtdp", S_FRTDP},
+  {"wrtdp", S_WRTDP},
   {NULL, -1}
 };
 
@@ -173,6 +176,9 @@ void testBatchIncremental(const SolveMDPParams& p)
   case S_FRTDP:
     solver = new FRTDP();
     break;
+  case S_WRTDP:
+    solver = new WRTDP();
+    break;
   default:
     assert(0); // never reach this point
   };
@@ -235,7 +241,7 @@ void usage(const char* cmdName) {
     "\n"
     "Main flags:\n"
     "  -s or --search         Specifies search strategy. Valid choices:\n"
-    "                           rtdp, lrtdp, hdp, frtdp [default: frtdp]\n"
+    "                           rtdp, lrtdp, hdp, frtdp, wrtdp [default: frtdp]\n"
     "  -t or --type           Specifies problem type. Valid choices:\n"
     "                           racetrack, pomdp [default: infer from model filename]\n"
     "  -v or --value          Specifies value function representation. Valid choices\n"
@@ -417,13 +423,22 @@ int main(int argc, char **argv) {
     p.maxOrder = 3; // default
   }
 
+  // error check
+  if (V_CONVEX == p.valueRepr && T_POMDP != p.probType) {
+    fprintf(stderr, "ERROR: '-v convex' can only be used with '-t pomdp'\n\n");
+    usage(argv[0]);
+  }
+
   printf("CFLAGS = %s\n", CFLAGS);
   printf("ARGS = %s\n", outs.str().c_str());
   fflush(stdout);
 
   testBatchIncremental(p);
 
-  // signal we are done
+  // signal we are done -- an external batch process that runs solveMDP
+  // can check for completion by polling for existence of this file
+  // (which may be easier that using fork()/wait(), depending on the
+  // implementation)
   FILE *fp = fopen("/tmp/solveMDP_done", "w");
   fprintf(fp, "success\n");
   fclose(fp);
@@ -434,6 +449,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2006/04/10 20:27:05  trey
+ * added --lower-bound and --upper-bound args
+ *
  * Revision 1.2  2006/04/07 20:15:40  trey
  * solveMDP now uses a strong heuristic by default; improved usage() help
  *
