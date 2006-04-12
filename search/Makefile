@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.9 2006-04-07 19:44:45 trey Exp $
+# $Id: Makefile,v 1.10 2006-04-12 19:22:51 trey Exp $
 #
 # Copyright (c) 2006, Trey Smith. All rights reserved.
 #
@@ -42,7 +42,8 @@ INSTALLHEADERS_HEADERS := \
 	RTDP.h \
 	LRTDP.h \
 	HDP.h \
-	FRTDP.h
+	FRTDP.h \
+	WRTDP.h
 include $(BUILD_DIR)/installheaders.mak
 
 BUILDLIB_TARGET := libzmdpRtdp.a
@@ -51,7 +52,8 @@ BUILDLIB_SRCS := \
 	RTDP.cc \
 	LRTDP.cc \
 	HDP.cc \
-	FRTDP.cc
+	FRTDP.cc \
+	WRTDP.cc
 include $(BUILD_DIR)/buildlib.mak
 
 ifneq (,$(TEST))
@@ -65,6 +67,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.9  2006/04/07 19:44:45  trey
+# permanently removed ARTDP
+#
 # Revision 1.8  2006/04/06 04:15:27  trey
 # combined separate libraries into single library for easier use
 #
