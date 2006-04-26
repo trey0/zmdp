@@ -3,19 +3,22 @@
 sub usage {
     die  "usage: speedplot OPTIONS <dir1> <dir2>\n"
 	."   -h    Print this help\n"
-        ."   -p    Generate postscript output\n";
+        ."   -p    Generate postscript output\n"
+	."   -l    Plot lower bound instead of simulation measurement\n";
 }
 
 my $dir1;
 my $dir2;
 my $postscript_output = 0;
-my @plot_types = ();
+my $plot_type = "simulation";
 for (@ARGV) {
     if (/^-/) {
 	if ($_ eq "-h" or $_ eq "--help") {
 	    &usage;
 	} elsif ($_ eq "-p") {
 	    $postscript_output = 1;
+	} elsif ($_ eq "-l") {
+	    $plot_type = "lower bound";
 	} else {
 	    print STDERR "ERROR: unknown option $_\n\n";
 	    &usage;
@@ -116,14 +119,17 @@ sub doPlot {
 
     my @dirs = ($dir1, $dir2);
     my @tmps = ("/tmp/speedplot1","/tmp/speedplot2");
-    for my $i (0..1) {
-	my $dir = $dirs[$i];
-	my $plot = &join("$dir/inc.plot", 0,
-			 "$dir/bounds.plot", 0,
-			 [[1,6], [0,1], [0,2]]);
-	&writeData($tmps[$i], $plot,
-		   "$dir data: # backups, solution quality, solution quality error");
+    if ($plot_type eq "simulation") {
+	for my $i (0..1) {
+	    my $dir = $dirs[$i];
+	    my $plot = &join("$dir/inc.plot", 0,
+			     "$dir/bounds.plot", 0,
+			     [[1,6], [0,1], [0,2]]);
+	    &writeData($tmps[$i], $plot,
+		       "$dir data: # backups, solution quality, solution quality error");
+	}
     }
+    my ($tmp1, $tmp2) = @tmps;
 
     my $options = "";
     if ($postscriptOutput) {
@@ -141,8 +147,7 @@ sub doPlot {
 	print GP "set terminal postscript\n";
     }
 
-    my ($tmp1, $tmp2) = @tmps;
-
+    if ($plot_type eq "simulation") {
 print GP <<"EOF";
 
 ######################################################################
@@ -150,13 +155,28 @@ set logscale x
 set xlabel "# backups"
 set ylabel "solution quality"
 set title "$dir1 vs. $dir2"
-plot "$tmp1"    using 1:2    title "simulation $dir1"  with lines,     \\\
+plot "$tmp1"    using 1:2    title "$plot_type $dir1"  with lines,     \\\
      "$tmp1"    using 1:2:3  notitle                   with errorbars, \\\
-     "$tmp2"    using 1:2    title "simulation $dir2"  with lines,     \\\
+     "$tmp2"    using 1:2    title "$plot_type $dir2"  with lines,     \\\
      "$tmp2"    using 1:2:3  notitle                   with errorbars
 ######################################################################
 
 EOF
+
+     } else {
+print GP <<"EOF";
+
+######################################################################
+set logscale x
+set xlabel "# backups"
+set ylabel "solution quality"
+set title "$dir1 vs. $dir2"
+plot "$dir1/bounds.plot"    using 7:2    title "lower bound $dir1"  with lines,     \\\
+     "$dir2/bounds.plot"    using 7:2    title "lower bound $dir2"  with lines
+######################################################################
+
+EOF
+     }
 
 } # end sub
 
