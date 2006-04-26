@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.11 $  $Author: trey $  $Date: 2006-04-07 19:41:17 $
+ $Revision: 1.12 $  $Author: trey $  $Date: 2006-04-26 18:44:00 $
    
  @file    FRTDP.h
  @brief   No brief
@@ -34,7 +34,6 @@ namespace zmdp {
 
 struct FRTDPUpdateResult {
   int maxUBAction;
-  double maxUBVal;
   double ubResidual;
   int maxPrioOutcome;
   double maxPrio;
@@ -73,6 +72,9 @@ struct FRTDP : public RTDPCore {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.11  2006/04/07 19:41:17  trey
+ * removed initLowerBound, initUpperBound arguments to constructor
+ *
  * Revision 1.10  2006/04/06 04:14:50  trey
  * changed how bounds are initialized
  *
