@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.15 $  $Author: trey $  $Date: 2006-04-12 19:22:22 $
+ $Revision: 1.16 $  $Author: trey $  $Date: 2006-04-26 18:45:28 $
    
  @file    FRTDP.cc
  @brief   No brief
@@ -51,6 +51,7 @@ namespace zmdp {
 
 FRTDP::FRTDP(void)
 {
+  oldMaxDepth = 0;
   maxDepth = FRTDP_INIT_MAX_DEPTH;
 }
 
@@ -106,10 +107,15 @@ void FRTDP::update(MDPNode& cn, FRTDPUpdateResult& r)
   double oldUBVal = cn.ubVal;
   bounds->update(cn, &r.maxUBAction);
   
-  r.ubResidual = oldUBVal - r.maxUBVal;
+  r.ubResidual = oldUBVal - cn.ubVal;
 
   getMaxPrioOutcome(cn, r.maxUBAction, r);
-  getPrio(cn) = r.maxPrio;
+
+  double excessWidth = cn.ubVal - cn.lbVal - RT_PRIO_IMPROVEMENT_CONSTANT * targetPrecision;
+  getPrio(cn) = std::min(r.maxPrio, (excessWidth <= 0)
+			 ? RT_PRIO_MINUS_INFINITY : log(excessWidth));
+
+  //getPrio(cn) = r.maxPrio;
 }
 
 void FRTDP::trialRecurse(MDPNode& cn, double logOcc, int depth)
@@ -121,9 +127,11 @@ void FRTDP::trialRecurse(MDPNode& cn, double logOcc, int depth)
   double occ = (logOcc < -50) ? 0 : exp(logOcc);
   double updateQuality = r.ubResidual * occ;
 
-  // is there a better way to enforce this?
+#if 0
+  // now done in update() itself
   getPrio(cn) = std::min(getPrio(cn), (excessWidth <= 0)
 			 ? RT_PRIO_MINUS_INFINITY : log(excessWidth));
+#endif
 
 #if USE_DEBUG_PRINT
   printf("  trialRecurse: depth=%d [%g .. %g] a=%d o=%d\n",
@@ -132,18 +140,18 @@ void FRTDP::trialRecurse(MDPNode& cn, double logOcc, int depth)
 #endif
 
 #if 0
-  printf("  tr: maxUBAction=%d maxUBVal=%g ubResidual=%g\n",
-	 r.maxUBAction, r.maxUBVal, r.ubResidual);
+  printf("  tr: maxUBAction=%d ubResidual=%g\n",
+	 r.maxUBAction, r.ubResidual);
   printf("  tr: maxPrioOutcome=%d maxPrio=%g\n",
 	 r.maxPrioOutcome, r.maxPrio);
 #endif
 
   if (depth > oldMaxDepth) {
-    oldQualitySum += updateQuality;
-    oldNumUpdates++;
-  } else {
     newQualitySum += updateQuality;
     newNumUpdates++;
+  } else {
+    oldQualitySum += updateQuality;
+    oldNumUpdates++;
   }
 
   if (excessWidth <= 0 || depth > maxDepth) {
@@ -207,6 +215,11 @@ bool FRTDP::doTrial(MDPNode& cn)
 #endif
   }
 
+#if 0 && USE_DEBUG_PRINT
+  printf("endTrial: oldQualitySum=%g oldNumUpdates=%d newQualitySum=%g newNumUpdates=%d\n",
+	 oldQualitySum, oldNumUpdates, newQualitySum, newNumUpdates);
+#endif
+
   numTrials++;
 
   return (cn.ubVal - cn.lbVal < targetPrecision);
@@ -222,6 +235,9 @@ void FRTDP::derivedClassInit(void)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.15  2006/04/12 19:22:22  trey
+ * removed #define of no longer used macros
+ *
  * Revision 1.14  2006/04/08 22:23:12  trey
  * added some debug code
  *
