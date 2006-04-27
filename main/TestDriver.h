@@ -1,7 +1,7 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.8 $  $Author: trey $  $Date: 2006-02-01 01:09:37 $
+ $Revision: 1.1 $  $Author: trey $  $Date: 2006-04-27 23:16:45 $
    
- @file    Interleave.h
+ @file    TestDriver.h
  @brief   No brief
 
  Copyright (c) 2002-2005, Trey Smith
@@ -26,8 +26,8 @@
 
  ***************************************************************************/
 
-#ifndef INCInterleave_h
-#define INCInterleave_h
+#ifndef INCTestDriver_h
+#define INCTestDriver_h
 
 #include <vector>
 
@@ -36,13 +36,13 @@
 
 namespace zmdp {
 
-class Interleave {
+class TestDriver {
 public:
   AbstractSim* sim;
   std::vector<double> rewardRecord;
   
-  Interleave(void) : sim(NULL) {}
-  ~Interleave(void) {
+  TestDriver(void) : sim(NULL) {}
+  ~TestDriver(void) {
     if (NULL != sim) {
       delete sim;
       sim = NULL;
@@ -73,11 +73,14 @@ public:
 
 }; // namespace zmdp
 
-#endif // INCInterleave_h
+#endif // INCTestDriver_h
 
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.8  2006/02/01 01:09:37  trey
+ * renamed pomdp namespace -> zmdp
+ *
  * Revision 1.7  2006/01/28 03:02:14  trey
  * increased flexibiilty for use with mdps
  *

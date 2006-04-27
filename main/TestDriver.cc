@@ -1,7 +1,7 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.13 $  $Author: trey $  $Date: 2006-02-17 21:08:00 $
+ $Revision: 1.1 $  $Author: trey $  $Date: 2006-04-27 23:16:45 $
 
- @file    Interleave.cc
+ @file    TestDriver.cc
  @brief   No brief
 
  Copyright (c) 2002-2005, Trey Smith
@@ -39,7 +39,7 @@
 #include <fstream>
 
 #include "zmdpCommonTime.h"
-#include "Interleave.h"
+#include "TestDriver.h"
 #include "zmdpCommonDefs.h"
 #include "MatrixUtils.h"
 
@@ -50,7 +50,7 @@ namespace zmdp {
 
 #define NUM_SIM_ITERATIONS_TO_LOG (1)
 
-void Interleave::interleave(int numIterations,
+void TestDriver::interleave(int numIterations,
 			    AbstractSim* _sim,
 			    Solver& solver,
 			    int numSteps,
@@ -146,7 +146,7 @@ void Interleave::interleave(int numIterations,
   scatterFile.close();
 }
 
-void Interleave::batchTestIncremental(int numIterations,
+void TestDriver::batchTestIncremental(int numIterations,
 				      AbstractSim* _sim,
 				      Solver& solver,
 				      int numSteps,
@@ -283,7 +283,7 @@ void Interleave::batchTestIncremental(int numIterations,
   simOutFile.close();
 }
   
-void Interleave::printRewards(void) {
+void TestDriver::printRewards(void) {
   cout << "rewards: ";
   FOR_EACH( reward, rewardRecord ) {
     cout << (*reward) << " ";
@@ -299,6 +299,9 @@ void Interleave::printRewards(void) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.13  2006/02/17 21:08:00  trey
+ * moved planInit() call after log files are opened, avoids some header lines getting lost
+ *
  * Revision 1.12  2006/02/15 16:21:16  trey
  * now ensure simulation is performed at the end of the run if it ends because the target precision was achieved
  *
