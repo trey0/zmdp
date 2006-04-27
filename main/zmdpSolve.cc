@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2006-04-27 23:19:14 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2006-04-27 23:42:54 $
 
  @file    zmdpSolve.cc
  @brief   No brief
@@ -65,10 +65,10 @@ void doSolve(const SolverParams& p, const OutputParams& op)
 
   if (!so.bounds->getSupportsPolicyOutput()) {
     cerr << "ERROR: with selected options, policy output is not supported:" << endl;
-    cerr << "  try adding '-v convex' and '--lower-bound' options" << endl;
+    cerr << "  in order to enable policy output, problem must be a POMDP; if" << endl;
+    cout << "  it is, try adding the '-v convex' and '--lower-bound' options" << endl;
     exit(EXIT_FAILURE);
   }
-
 
   // initialize the solver
   printf("%05d calculating initial heuristics\n",
@@ -272,6 +272,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2006/04/27 23:19:14  trey
+ * removed unnecessary #include of Interleave.h
+ *
  * Revision 1.1  2006/04/27 23:07:24  trey
  * initial check-in
  *
