@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: options.mak,v 1.41 2006-04-12 19:26:56 trey Exp $
+# $Id: options.mak,v 1.42 2006-04-27 20:18:43 trey Exp $
 #
 # Copyright (c) 2002-2005, Trey Smith
 # All rights reserved.
@@ -68,7 +68,7 @@ CFLAGS += -DUSE_DF_NON_MYOPIC=1
 #CFLAGS += -DUSE_OLD_ANYTIME=1
 CFLAGS += -DUSE_TIME_WITHOUT_HEURISTIC=1
 #CFLAGS += -DUSE_FRTDP_ALT_PRIO=1
-#CFLAGS += -DUSE_WRTDP_ADAPTIVE_DEPTH=1
+#CFLAGS += -DUSE_HSVI_ADAPTIVE_DEPTH=1
 ifneq (,$(USE_GHSVI))
   CFLAGS += -DUSE_GHSVI=1
 endif
@@ -89,6 +89,9 @@ CFLAGS += -DCFLAGS="\"$(XCFLAGS)\""
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.41  2006/04/12 19:26:56  trey
+# added USE_WRTDP_ADAPTIVE_DEPTH flag
+#
 # Revision 1.40  2006/04/10 20:25:35  trey
 # removed obsolete flags USE_HDP_LOWER_BOUND and USE_RTDPCORE_UB_ACTION
 #
