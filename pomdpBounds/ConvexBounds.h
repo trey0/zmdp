@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.4 $  $Author: trey $  $Date: 2006-04-10 20:26:38 $
+ $Revision: 1.5 $  $Author: trey $  $Date: 2006-04-27 23:10:31 $
    
  @file    ConvexBounds.h
  @brief   No brief
@@ -72,6 +72,9 @@ struct ConvexBounds : public IncrementalBounds {
   void update(MDPNode& cn, int* maxUBActionP);
   int chooseAction(const state_vector& s) const;
   ValueInterval getValueAt(const state_vector& s) const;
+
+  bool getSupportsPolicyOutput(void) const;
+  void writePolicy(const std::string& outFileName);
 };
 
 }; // namespace zmdp
@@ -81,6 +84,9 @@ struct ConvexBounds : public IncrementalBounds {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2006/04/10 20:26:38  trey
+ * added forceUpperBoundActionSelection
+ *
  * Revision 1.3  2006/04/08 22:21:25  trey
  * fixed some bugs and added getNewUBValueUseCache()
  *

@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.4 $  $Author: trey $  $Date: 2006-04-10 20:26:38 $
+ $Revision: 1.5 $  $Author: trey $  $Date: 2006-04-27 23:10:31 $
    
  @file    ConvexBounds.cc
  @brief   No brief
@@ -88,7 +88,7 @@ void ConvexBounds::getNewLBPlaneQ(LBPlane& result, const MDPNode& cn, int a)
     emult_column( tmp, pomdp->O[a], o, betaAO );
 #if USE_MASKED_ALPHA
     mult( tmp3, pomdp->T[a], tmp );
-    mask_copy( tmp2, tmp3, b );
+    mask_copy( tmp2, tmp3, cn.s );
 #else
     mult( tmp2, tmp, pomdp->Ttr[a] );
 #endif
@@ -98,7 +98,7 @@ void ConvexBounds::getNewLBPlaneQ(LBPlane& result, const MDPNode& cn, int a)
   alpha_vector Rxa;
 #if USE_MASKED_ALPHA
   copy_from_column( tmp, pomdp->R, a );
-  mask_copy( Rxa, tmp, b );
+  mask_copy( Rxa, tmp, cn.s );
 #else
   copy_from_column( Rxa, pomdp->R, a );
 #endif
@@ -106,7 +106,7 @@ void ConvexBounds::getNewLBPlaneQ(LBPlane& result, const MDPNode& cn, int a)
   betaA += Rxa;
   
 #if USE_MASKED_ALPHA
-  result.copyFrom(betaA, a, b);
+  result.copyFrom(betaA, a, cn.s);
 #else
   result.copyFrom(betaA, a);
 #endif
@@ -142,6 +142,7 @@ void ConvexBounds::updateLowerBound(MDPNode& cn)
   LBPlane newPlane;
   getNewLBPlane(newPlane, cn);
   lowerBound->addLBPlane(cn.s, newPlane);
+  lowerBound->maybePrune();
   cn.lbVal = inner_prod(cn.s, newPlane.alpha);
 }
 
@@ -250,6 +251,7 @@ void ConvexBounds::updateUpperBound(MDPNode& cn, int* maxUBActionP)
 {
   double newUBVal = getNewUBValue(cn, maxUBActionP);
   upperBound->addPoint(cn.s, newUBVal);
+  upperBound->maybePrune();
   cn.ubVal = newUBVal;
 }
 
@@ -406,11 +408,26 @@ ValueInterval ConvexBounds::getValueAt(const state_vector& s) const
 		       upperBound->getValue(s));
 }
 
+bool ConvexBounds::getSupportsPolicyOutput(void) const
+{
+  return NULL != lowerBound;
+}
+
+void ConvexBounds::writePolicy(const std::string& outFileName)
+{
+  assert(NULL != lowerBound);
+  lowerBound->prunePlanes();
+  lowerBound->writeToFile(outFileName);
+}
+
 }; // namespace zmdp
 
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2006/04/10 20:26:38  trey
+ * added forceUpperBoundActionSelection
+ *
  * Revision 1.3  2006/04/08 22:21:25  trey
  * fixed some bugs and added getNewUBValueUseCache()
  *

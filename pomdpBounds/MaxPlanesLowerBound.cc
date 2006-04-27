@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-04-05 21:43:20 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-04-27 23:10:31 $
    
  @file    MaxPlanesLowerBound.cc
  @brief   No brief
@@ -85,6 +85,42 @@ void LBPlane::copyFrom(const alpha_vector& _alpha, int _action
 #if USE_MASKED_ALPHA
   mask = _mask;
 #endif
+}
+
+void LBPlane::write(std::ostream& out) const
+{
+  out << "    {" << endl;
+  out << "      action => " << action << "," << endl;
+  
+#if USE_MASKED_ALPHA
+  out << "      numEntries => " << mask.filled() << "," << endl;
+#else
+  out << "      numEntries => " << alpha.size() << "," << endl;
+#endif
+
+  out << "      entries => [" << endl;
+
+#if USE_MASKED_ALPHA
+  bool firstEntry = true;
+  FOR_CV (mask) {
+    if (!firstEntry) {
+      out << "," << endl;
+    }
+    int i = CV_INDEX(mask);
+    out << "        " << i << ", " << alpha(i) << "";
+    firstEntry = false;
+  }
+  out << endl;
+#else
+  int n = alpha.size();
+  FOR (i, n-1) {
+    out << "        " << i << ", " << alpha(i) << "," << endl;
+  }
+  out << "        " << (n-1) << ", " << alpha(n-1) << endl;
+#endif
+
+  out << "      ]" << endl;
+  out << "    }";
 }
 
 /**********************************************************************
@@ -238,8 +274,10 @@ void MaxPlanesLowerBound::prunePlanes(void)
     next_planes.push_back( try_alpha );
   next_try_pair: ;
   }
+#if USE_DEBUG_PRINT
   cout << "... pruned # planes from " << planes.size()
        << " down to " << next_planes.size() << endl;
+#endif
 
   planes = next_planes;
 
@@ -257,11 +295,47 @@ void MaxPlanesLowerBound::maybePrune(void)
   }
 }
 
+/**********************************************************************
+ * WRITE POLICY
+ **********************************************************************/
+
+void MaxPlanesLowerBound::writeToFile(const std::string& outFileName) const
+{
+  ofstream out(outFileName.c_str());
+  if (!out) {
+    cerr << "ERROR: MaxPlanesLowerBound::writeToFile: couldn't open " << outFileName
+	 << " for writing: " << strerror(errno) << endl;
+    exit(EXIT_FAILURE);
+  }
+
+  out << "{" << endl;
+  out << "  policyType => \"MaxPlanesLowerBound\"," << endl;
+  out << "  numPlanes => " << planes.size() << "," << endl;
+  out << "  planes => [" << endl;
+
+  PlaneSet::const_iterator pi = planes.begin();
+  FOR (i, planes.size()-1) {
+    pi->write(out);
+    out << "," << endl;
+    pi++;
+  }
+  pi->write(out);
+  out << endl;
+
+  out << "  ]" << endl;
+  out << "}" << endl;
+
+  out.close();
+}
+
 }; // namespace zmdp
 
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/04/05 21:43:20  trey
+ * collected and renamed several classes into pomdpBounds
+ *
  * Revision 1.13  2006/02/01 01:09:38  trey
  * renamed pomdp namespace -> zmdp
  *

@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-04-05 21:43:20 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-04-27 23:10:31 $
    
  @file    MaxPlanesLowerBound.h
  @brief   No brief
@@ -72,6 +72,7 @@ public:
 #else
   void copyFrom(const alpha_vector& _alpha, int _action);
 #endif
+  void write(std::ostream& out) const;
 };
 
 typedef std::list< LBPlane > PlaneSet;
@@ -103,6 +104,7 @@ public:
   void prunePlanes(void);
   void maybePrune(void);
 
+  void writeToFile(const std::string& outFileName) const;
 };
 std::ostream& operator<<(std::ostream& out, const MaxPlanesLowerBound& al);
 
@@ -113,6 +115,9 @@ std::ostream& operator<<(std::ostream& out, const MaxPlanesLowerBound& al);
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/04/05 21:43:20  trey
+ * collected and renamed several classes into pomdpBounds
+ *
  * Revision 1.13  2006/02/01 01:09:38  trey
  * renamed pomdp namespace -> zmdp
  *
