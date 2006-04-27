@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.28 2006-04-27 20:20:51 trey Exp $
+# $Id: Makefile,v 1.29 2006-04-27 23:07:12 trey Exp $
 #
 # Copyright (c) 2002-2005, Trey Smith
 # All rights reserved.
@@ -37,10 +37,7 @@ maininstall: install
 # ADD ANY SUBDIRS THAT NEED TO BE VISITED DURING A BUILD TO THE SUBDIRS LIST
 SUBDIRS :=
 
-BUILDBIN_TARGET := zmdpBenchmark
-BUILDBIN_SRCS := zmdpBenchmark.cc solverUtils.cc
-BUILDBIN_INDEP_LIBS :=
-BUILDBIN_DEP_LIBS := \
+ALL_LIBS := \
 	-lzmdpRtdp \
 	-lzmdpPomdpBounds \
 	-lzmdpPomdpCore \
@@ -48,6 +45,17 @@ BUILDBIN_DEP_LIBS := \
 	-lzmdpBounds \
 	-lzmdpRaceTrack \
 	-lzmdpCommon
+
+BUILDBIN_TARGET := zmdpBenchmark
+BUILDBIN_SRCS := zmdpBenchmark.cc solverUtils.cc
+BUILDBIN_INDEP_LIBS :=
+BUILDBIN_DEP_LIBS := $(ALL_LIBS)
+include $(BUILD_DIR)/buildbin.mak
+
+BUILDBIN_TARGET := zmdpSolve
+BUILDBIN_SRCS := zmdpSolve.cc solverUtils.cc
+BUILDBIN_INDEP_LIBS :=
+BUILDBIN_DEP_LIBS := $(ALL_LIBS)
 include $(BUILD_DIR)/buildbin.mak
 
 ######################################################################
@@ -57,6 +65,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.28  2006/04/27 20:20:51  trey
+# renamed solveMDP to zmdpBenchmark; moved some code to solverUtils.cc
+#
 # Revision 1.27  2006/04/07 19:40:41  trey
 # switched back to a unified binary for all algorithms, turns out it cuts down on code maintenance
 #
