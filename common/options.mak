@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: options.mak,v 1.42 2006-04-27 20:18:43 trey Exp $
+# $Id: options.mak,v 1.43 2006-04-27 23:06:47 trey Exp $
 #
 # Copyright (c) 2002-2005, Trey Smith
 # All rights reserved.
@@ -39,7 +39,7 @@ CFLAGS += -DDO_UB_CACHED_Q=1
 #CFLAGS += -DNO_FIB_UPPER_BOUND=1
 #CFLAGS += -DUSE_UNIFORM_RANDOM_OBS=1
 CFLAGS += -DUSE_COMPRESSED_ALPHA=1
-#CFLAGS += -DUSE_MASKED_ALPHA=1
+CFLAGS += -DUSE_MASKED_ALPHA=1
 CFLAGS += -DUSE_UB_HASH=0
 #CFLAGS += -DUSE_SAFE_HSVI=1
 #CFLAGS += -DUSE_EXEC_HEURISTIC=1
@@ -89,6 +89,9 @@ CFLAGS += -DCFLAGS="\"$(XCFLAGS)\""
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.42  2006/04/27 20:18:43  trey
+# renamed WRTDP flags to HSVI
+#
 # Revision 1.41  2006/04/12 19:26:56  trey
 # added USE_WRTDP_ADAPTIVE_DEPTH flag
 #
