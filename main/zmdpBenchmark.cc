@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2006-04-27 23:08:18 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2006-04-27 23:19:03 $
 
  @file    zmdpBenchmark.cc
  @brief   No brief
@@ -32,10 +32,8 @@
 #include <iostream>
 #include <fstream>
 
-#include "Interleave.h"
-#include "stdinInterface.h"
-
 #include "solverUtils.h"
+#include "TestDriver.h"
 
 using namespace std;
 using namespace MatrixUtils;
@@ -62,7 +60,7 @@ void doBenchmark(const SolverParams& p, const BenchmarkParams& bp)
   SolverObjects so;
   constructSolverObjects(so, p);
 
-  Interleave x;
+  TestDriver x;
   x.batchTestIncremental(/* numIterations = */ bp.numIterations,
 			 so.sim, *so.solver,
 			 /* numSteps = */ 251,
@@ -235,6 +233,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2006/04/27 23:08:18  trey
+ * reordered getopt data structure to match usage()
+ *
  * Revision 1.1  2006/04/27 20:19:22  trey
  * refactored command-line interface code, renamed solveMDP to zmdpBenchmark
  *
