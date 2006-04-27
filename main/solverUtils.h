@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2006-04-27 23:07:54 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2006-04-27 23:18:48 $
    
  @file    solverUtils.h
  @brief   No brief
@@ -29,8 +29,6 @@
 #define INCsolverUtils_h
 
 #include <iostream>
-
-#include "Interleave.h"
 
 // search strategies
 #include "RTDP.h"
@@ -112,6 +110,9 @@ void constructSolverObjects(SolverObjects& obj, const SolverParams& p);
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2006/04/27 23:07:54  trey
+ * added bounds to SolverObjects data structure
+ *
  * Revision 1.1  2006/04/27 20:20:21  trey
  * factored some interface code out of zmdpBenchmark.cc (moved to solverUtils) so it could be easily shared with zmdpSolve.cc
  *
