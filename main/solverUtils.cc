@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-04-27 20:20:21 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-04-27 23:07:54 $
 
  @file    solverUtils.cc
  @brief   No brief
@@ -194,7 +194,6 @@ void constructSolverObjects(SolverObjects& obj, const SolverParams& p)
 
   bool keepLowerBound = p.forceLowerBound
     || ((RTDPCore *) obj.solver)->getUseLowerBound();
-  IncrementalBounds* bounds;
   switch (p.valueRepr) {
   case V_POINT:
     PointBounds* pb;
@@ -208,15 +207,15 @@ void constructSolverObjects(SolverObjects& obj, const SolverParams& p)
       initUpperBound = obj.problem->newUpperBound();
     }
     pb->setBounds(initLowerBound, initUpperBound, p.forceUpperBoundActionSelection);
-    bounds = pb;
+    obj.bounds = pb;
     break;
   case V_CONVEX:
-    bounds = new ConvexBounds(keepLowerBound, p.forceUpperBoundActionSelection);
+    obj.bounds = new ConvexBounds(keepLowerBound, p.forceUpperBoundActionSelection);
     break;
   default:
     assert(0); // never reach this point
   };
-  ((RTDPCore*) obj.solver)->setBounds(bounds);
+  ((RTDPCore*) obj.solver)->setBounds(obj.bounds);
 }
 
 }; // namespace zmdp
@@ -224,5 +223,8 @@ void constructSolverObjects(SolverObjects& obj, const SolverParams& p)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/04/27 20:20:21  trey
+ * factored some interface code out of zmdpBenchmark.cc (moved to solverUtils) so it could be easily shared with zmdpSolve.cc
+ *
  *
  ***************************************************************************/

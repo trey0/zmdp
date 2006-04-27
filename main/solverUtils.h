@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-04-27 20:20:21 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-04-27 23:07:54 $
    
  @file    solverUtils.h
  @brief   No brief
@@ -98,6 +98,7 @@ struct SolverParams {
 
 struct SolverObjects {
   Solver* solver;
+  IncrementalBounds* bounds;
   MDP* problem;
   AbstractSim* sim;
 };
@@ -111,5 +112,8 @@ void constructSolverObjects(SolverObjects& obj, const SolverParams& p);
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/04/27 20:20:21  trey
+ * factored some interface code out of zmdpBenchmark.cc (moved to solverUtils) so it could be easily shared with zmdpSolve.cc
+ *
  *
  ***************************************************************************/
