@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.29 2006-04-27 23:07:12 trey Exp $
+# $Id: Makefile,v 1.30 2006-04-27 23:19:30 trey Exp $
 #
 # Copyright (c) 2002-2005, Trey Smith
 # All rights reserved.
@@ -47,7 +47,7 @@ ALL_LIBS := \
 	-lzmdpCommon
 
 BUILDBIN_TARGET := zmdpBenchmark
-BUILDBIN_SRCS := zmdpBenchmark.cc solverUtils.cc
+BUILDBIN_SRCS := zmdpBenchmark.cc TestDriver.cc solverUtils.cc
 BUILDBIN_INDEP_LIBS :=
 BUILDBIN_DEP_LIBS := $(ALL_LIBS)
 include $(BUILD_DIR)/buildbin.mak
@@ -65,6 +65,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.29  2006/04/27 23:07:12  trey
+# added zmdpSolve
+#
 # Revision 1.28  2006/04/27 20:20:51  trey
 # renamed solveMDP to zmdpBenchmark; moved some code to solverUtils.cc
 #
