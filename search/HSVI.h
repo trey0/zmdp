@@ -1,7 +1,7 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-04-12 19:22:41 $
+ $Revision: 1.1 $  $Author: trey $  $Date: 2006-04-27 20:18:08 $
    
- @file    WRTDP.h
+ @file    HSVI.h
  @brief   No brief
 
  Copyright (c) 2006, Trey Smith. All rights reserved.
@@ -25,14 +25,14 @@
 
  ***************************************************************************/
 
-#ifndef INCWRTDP_h
-#define INCWRTDP_h
+#ifndef INCHSVI_h
+#define INCHSVI_h
 
 #include "RTDPCore.h"
 
 namespace zmdp {
 
-struct WRTDPUpdateResult {
+struct HSVIUpdateResult {
   int maxUBAction;
   double maxUBVal;
   double ubResidual;
@@ -40,9 +40,9 @@ struct WRTDPUpdateResult {
   double maxExcessUnc;
 };
 
-struct WRTDP : public RTDPCore {
+struct HSVI : public RTDPCore {
   double trialTargetPrecision;
-#if USE_WRTDP_ADAPTIVE_DEPTH
+#if USE_HSVI_ADAPTIVE_DEPTH
   double oldMaxDepth;
   double maxDepth;
   double oldQualitySum;
@@ -51,21 +51,24 @@ struct WRTDP : public RTDPCore {
   int newNumUpdates;
 #endif
 
-  WRTDP(void);
+  HSVI(void);
 
   bool getUseLowerBound(void) const { return true; }
-  void getMaxExcessUncOutcome(MDPNode& cn, int depth, WRTDPUpdateResult& r) const;
-  void update(MDPNode& cn, int depth, WRTDPUpdateResult& result);
+  void getMaxExcessUncOutcome(MDPNode& cn, int depth, HSVIUpdateResult& r) const;
+  void update(MDPNode& cn, int depth, HSVIUpdateResult& result);
   void trialRecurse(MDPNode& cn, double logOcc, int depth);
   bool doTrial(MDPNode& cn);
 };
 
 }; // namespace zmdp
 
-#endif /* INCWRTDP_h */
+#endif /* INCHSVI_h */
 
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/04/12 19:22:41  trey
+ * initial check-in
+ *
  *
  ***************************************************************************/

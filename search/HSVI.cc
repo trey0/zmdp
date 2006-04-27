@@ -1,7 +1,7 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2006-04-12 19:48:47 $
+ $Revision: 1.1 $  $Author: trey $  $Date: 2006-04-27 20:18:08 $
    
- @file    WRTDP.cc
+ @file    HSVI.cc
  @brief   No brief
 
  Copyright (c) 2006, Trey Smith. All rights reserved.
@@ -38,26 +38,26 @@
 #include "zmdpCommonTime.h"
 #include "MatrixUtils.h"
 #include "Pomdp.h"
-#include "WRTDP.h"
+#include "HSVI.h"
 
 using namespace std;
 using namespace sla;
 using namespace MatrixUtils;
 
-#define WRTDP_INIT_MAX_DEPTH (10)
-#define WRTDP_MAX_DEPTH_ADJUST_RATIO (1.1)
-#define WRTDP_IMPROVEMENT_CONSTANT (0.95)
+#define HSVI_INIT_MAX_DEPTH (10)
+#define HSVI_MAX_DEPTH_ADJUST_RATIO (1.1)
+#define HSVI_IMPROVEMENT_CONSTANT (0.95)
 
 namespace zmdp {
 
-WRTDP::WRTDP(void)
+HSVI::HSVI(void)
 {
-#if USE_WRTDP_ADAPTIVE_DEPTH
-  maxDepth = WRTDP_INIT_MAX_DEPTH;
+#if USE_HSVI_ADAPTIVE_DEPTH
+  maxDepth = HSVI_INIT_MAX_DEPTH;
 #endif
 }
 
-void WRTDP::getMaxExcessUncOutcome(MDPNode& cn, int depth, WRTDPUpdateResult& r) const
+void HSVI::getMaxExcessUncOutcome(MDPNode& cn, int depth, HSVIUpdateResult& r) const
 {
   r.maxExcessUnc = -99e+20;
   r.maxExcessUncOutcome = -1;
@@ -81,7 +81,7 @@ void WRTDP::getMaxExcessUncOutcome(MDPNode& cn, int depth, WRTDPUpdateResult& r)
   }
 }
 
-void WRTDP::update(MDPNode& cn, int depth, WRTDPUpdateResult& r)
+void HSVI::update(MDPNode& cn, int depth, HSVIUpdateResult& r)
 {
   double oldUBVal = cn.ubVal;
   bounds->update(cn, &r.maxUBAction);
@@ -91,13 +91,13 @@ void WRTDP::update(MDPNode& cn, int depth, WRTDPUpdateResult& r)
   getMaxExcessUncOutcome(cn, depth, r);
 }
 
-void WRTDP::trialRecurse(MDPNode& cn, double logOcc, int depth)
+void HSVI::trialRecurse(MDPNode& cn, double logOcc, int depth)
 {
   double excessUnc = cn.ubVal - cn.lbVal - trialTargetPrecision
     * pow(problem->getDiscount(), -depth);
 
   if (excessUnc <= 0
-#if USE_WRTDP_ADAPTIVE_DEPTH      
+#if USE_HSVI_ADAPTIVE_DEPTH      
       || depth > maxDepth
 #endif
       ) {
@@ -110,10 +110,10 @@ void WRTDP::trialRecurse(MDPNode& cn, double logOcc, int depth)
     return;
   }
 
-  WRTDPUpdateResult r;
+  HSVIUpdateResult r;
   update(cn, depth, r);
 
-#if USE_WRTDP_ADAPTIVE_DEPTH
+#if USE_HSVI_ADAPTIVE_DEPTH
   double occ = (logOcc < -50) ? 0 : exp(logOcc);
   double updateQuality = r.ubResidual * occ;
   if (depth > oldMaxDepth) {
@@ -142,26 +142,26 @@ void WRTDP::trialRecurse(MDPNode& cn, double logOcc, int depth)
   update(cn, depth, r);
 }
 
-bool WRTDP::doTrial(MDPNode& cn)
+bool HSVI::doTrial(MDPNode& cn)
 {
 #if USE_DEBUG_PRINT
   printf("-*- doTrial: trial %d\n", (numTrials+1));
 #endif
 
-#if USE_WRTDP_ADAPTIVE_DEPTH
+#if USE_HSVI_ADAPTIVE_DEPTH
   oldQualitySum = 0;
   oldNumUpdates = 0;
   newQualitySum = 0;
   newNumUpdates = 0;
 #endif
 
-  trialTargetPrecision = (cn.ubVal - cn.lbVal) * WRTDP_IMPROVEMENT_CONSTANT;
+  trialTargetPrecision = (cn.ubVal - cn.lbVal) * HSVI_IMPROVEMENT_CONSTANT;
 
   trialRecurse(cn,
 	       /* logOcc = */ log(1.0),
 	       /* depth = */ 0);
 
-#if USE_WRTDP_ADAPTIVE_DEPTH
+#if USE_HSVI_ADAPTIVE_DEPTH
   double updateQualityRatio;
   if (0 == oldQualitySum) {
     updateQualityRatio = 1000;
@@ -175,7 +175,7 @@ bool WRTDP::doTrial(MDPNode& cn)
   
   if (updateQualityRatio >= 1.0) {
     oldMaxDepth = maxDepth;
-    maxDepth *= WRTDP_MAX_DEPTH_ADJUST_RATIO;
+    maxDepth *= HSVI_MAX_DEPTH_ADJUST_RATIO;
 #if USE_DEBUG_PRINT
     printf("endTrial: updateQualityRatio=%g oldMaxDepth=%g maxDepth=%g\n",
 	   updateQualityRatio, oldMaxDepth, maxDepth);
@@ -186,7 +186,7 @@ bool WRTDP::doTrial(MDPNode& cn)
 	 updateQualityRatio, maxDepth);
 #endif
   }
-#endif // if USE_WRTDP_ADAPTIVE_DEPTH
+#endif // if USE_HSVI_ADAPTIVE_DEPTH
 
   numTrials++;
 
@@ -198,6 +198,9 @@ bool WRTDP::doTrial(MDPNode& cn)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2006/04/12 19:48:47  trey
+ * fixed sign error in excess uncertainty calculation; fixed some code to properly be inside a #if USE_HSVI_ADAPTIVE_DEPTH block
+ *
  * Revision 1.1  2006/04/12 19:22:41  trey
  * initial check-in
  *
