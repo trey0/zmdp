@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-04-05 21:43:20 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-04-27 23:08:40 $
    
  @file    BlindLBInitializer.cc
  @brief   No brief
@@ -84,7 +84,9 @@ void BlindLBInitializer::initBlindWorstCase(alpha_vector& weakAlpha)
   cvector calpha;
 
   copy(weakAlpha, worstCaseDVector);
+#if USE_DEBUG_PRINT
   cout << "initLowerBoundBlindWorstCase: alpha=" << sparseRep(weakAlpha) << endl;
+#endif
 }
 
 void BlindLBInitializer::initBlind(double targetPrecision)
@@ -122,7 +124,7 @@ void BlindLBInitializer::initBlind(double targetPrecision)
       al = nextAl;
     } while (maxResidual > targetPrecision);
 
-#if 1
+#if USE_DEBUG_PRINT
     cout << "initLowerBoundBlind: a=" << a << " al=" << sparseRep(al) << endl;
 #endif
 
@@ -139,6 +141,9 @@ void BlindLBInitializer::initBlind(double targetPrecision)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/04/05 21:43:20  trey
+ * collected and renamed several classes into pomdpBounds
+ *
  * Revision 1.4  2006/02/14 19:33:55  trey
  * added targetPrecision argument for bounds initialization
  *

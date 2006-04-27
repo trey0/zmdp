@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-04-05 21:43:20 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-04-27 23:08:50 $
    
  @file    FastInfUBInitializer.cc
  @brief   No brief
@@ -70,8 +70,10 @@ void FastInfUBInitializer::initMDP(double targetPrecision)
   alphas.clear();
   alphas.push_back(calpha);
 
+#if USE_DEBUG_PRINT
   cout << "initUpperBoundMDP: alpha=" << sparseRep(alphas[0]).c_str() << endl;
   cout << "initUpperBoundMDP: val(b)=" << inner_prod(alphas[0], pomdp->initialBelief) << endl;
+#endif
 }
 
 void FastInfUBInitializer::initFIB(double targetPrecision)
@@ -97,8 +99,10 @@ void FastInfUBInitializer::initFIB(double targetPrecision)
     m.nextAlphaAction(al[a], a);
   }
 
-  cout << "upper bound FIB iteration";
+#if USE_DEBUG_PRINT
+  cout << "starting upper bound FIB iteration";
   cout.flush();
+#endif
 
   // iterate FIB update rule to approximate convergence
   do {
@@ -134,12 +138,16 @@ void FastInfUBInitializer::initFIB(double targetPrecision)
       al[a] = nextAl[a];
     }
 
+#if USE_DEBUG_PRINT
     cout << ".";
     cout.flush();
+#endif
 
   } while ( maxResidual > targetPrecision );
 
+#if USE_DEBUG_PRINT
   cout << endl;
+#endif
 
   dvector dalpha;
   FOR (a, pomdp->numActions) {
@@ -160,6 +168,9 @@ void FastInfUBInitializer::initFIB(double targetPrecision)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/04/05 21:43:20  trey
+ * collected and renamed several classes into pomdpBounds
+ *
  * Revision 1.5  2006/02/14 19:33:55  trey
  * added targetPrecision argument for bounds initialization
  *

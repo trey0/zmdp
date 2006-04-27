@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.6 $  $Author: trey $  $Date: 2006-04-06 04:12:54 $
+ $Revision: 1.7 $  $Author: trey $  $Date: 2006-04-27 23:10:48 $
   
  @file    Pomdp.cc
  @brief   No brief
@@ -175,10 +175,12 @@ void Pomdp::readFromFileCassandra(const string& fileName) {
   kmatrix Rx;
   std::vector<kmatrix> Tx, Ox;
 
+#if USE_DEBUG_PRINT
   timeval startTime, endTime;
-
   cout << "reading problem from " << fileName << endl;
   gettimeofday(&startTime,0);
+#endif
+
   PomdpCassandraWrapper p;
   p.readFromFile(fileName);
   
@@ -229,13 +231,14 @@ void Pomdp::readFromFileCassandra(const string& fileName) {
     copy( O[a], Ox[a] );
   }
 
+#if USE_DEBUG_PRINT
   gettimeofday(&endTime,0);
-
   double numSeconds = (endTime.tv_sec - startTime.tv_sec)
     + 1e-6 * (endTime.tv_usec - startTime.tv_usec);
   cout << "[file reading took " << numSeconds << " seconds]" << endl;
 
   debugDensity();
+#endif
 }
 
 // this is functionally similar to readFromFile() but much faster.
@@ -249,10 +252,12 @@ void Pomdp::readFromFileFast(const std::string& fileName)
   int numSizesSet = 0;
   bool inPreamble = true;
   char *data;
-  timeval startTime, endTime;
 
+#if USE_DEBUG_PRINT
+  timeval startTime, endTime;
   cout << "reading problem (in fast mode) from " << fileName << endl;
   gettimeofday(&startTime,0);
+#endif
 
   in.open(fileName.c_str());
   if (!in) {
@@ -422,11 +427,12 @@ void Pomdp::readFromFileFast(const std::string& fileName)
     copy( O[a], Ox[a] );
   }
 
+#if USE_DEBUG_PRINT
   gettimeofday(&endTime,0);
-
   double numSeconds = (endTime.tv_sec - startTime.tv_sec)
     + 1e-6 * (endTime.tv_usec - startTime.tv_usec);
   cout << "[file reading took " << numSeconds << " seconds]" << endl;
+#endif
 
   debugDensity();
 }
@@ -456,6 +462,9 @@ void Pomdp::debugDensity(void) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.6  2006/04/06 04:12:54  trey
+ * removed default bounds (newLowerBound() and newUpperBound())
+ *
  * Revision 1.5  2006/02/17 18:36:35  trey
  * fixed getIsTerminalState() function so RTDP can be used
  *

@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2006-04-06 04:10:14 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2006-04-27 23:10:17 $
    
  @file    FullObsUBInitializer.cc
  @brief   No brief
@@ -116,15 +116,21 @@ void FullObsUBInitializer::valueIteration(const Pomdp* _pomdp, double eps) {
   set_to_zero(alpha);
 
   double residual;
+#if USE_DEBUG_PRINT
   cout << "using mdp value iteration to generate initial upper bound" << endl
        << "mdp";
   cout.flush();
+#endif
   FOR (i, MDP_MAX_ITERS) {
     residual = valueIterationOneStep();
+#if USE_DEBUG_PRINT
     cout << ".";
     cout.flush();
+#endif
     if (residual < eps) {
+#if USE_DEBUG_PRINT
       cout << endl;
+#endif
       return;
     }
   }
@@ -139,6 +145,9 @@ void FullObsUBInitializer::valueIteration(const Pomdp* _pomdp, double eps) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2006/04/06 04:10:14  trey
+ * removed obsolete testMDP() function
+ *
  * Revision 1.1  2006/04/05 21:43:20  trey
  * collected and renamed several classes into pomdpBounds
  *
