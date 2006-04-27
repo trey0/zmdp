@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-04-27 20:19:22 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-04-27 23:08:18 $
 
  @file    zmdpBenchmark.cc
  @brief   No brief
@@ -126,10 +126,10 @@ int main(int argc, char **argv) {
   static char shortOptions[] = "hs:t:v:fi:";
   static struct option longOptions[]={
     {"help",          0,NULL,'h'},
+    {"version",       0,NULL,'V'},
     {"search",        1,NULL,'s'},
     {"type",          1,NULL,'t'},
     {"value",         1,NULL,'v'},
-    {"version",       0,NULL,'V'},
     {"fast",          0,NULL,'f'},
     {"precision",     1,NULL,'p'},
     {"weak-heuristic",0,NULL,'W'},
@@ -235,6 +235,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/04/27 20:19:22  trey
+ * refactored command-line interface code, renamed solveMDP to zmdpBenchmark
+ *
  * Revision 1.4  2006/04/12 19:23:22  trey
  * added wrtdp support and extra error checking for parameters
  *
