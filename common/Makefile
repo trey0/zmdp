@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.25 2006-04-28 20:33:11 trey Exp $
+# $Id: Makefile,v 1.26 2006-04-28 21:11:15 trey Exp $
 #
 # Copyright (c) 2002-2005, Trey Smith. All rights reserved.
 #
@@ -42,8 +42,7 @@ INSTALLHEADERS_HEADERS := \
 	MDP.h \
 	AbstractSim.h \
 	MDPSim.h \
-	Solver.h \
-	PQueue.h
+	Solver.h
 include $(BUILD_DIR)/installheaders.mak
 
 BUILDLIB_TARGET := libzmdpCommon.a
@@ -61,12 +60,6 @@ BUILDBIN_INDEP_LIBS :=
 BUILDBIN_DEP_LIBS :=
 include $(BUILD_DIR)/buildbin.mak
 
-BUILDBIN_TARGET := testPQueue
-BUILDBIN_SRCS := testPQueue.cc
-BUILDBIN_INDEP_LIBS :=
-BUILDBIN_DEP_LIBS := -lpomdpUtils -lpomdp_spec
-include $(BUILD_DIR)/buildbin.mak
-
 endif
 
 ######################################################################
@@ -76,6 +69,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.25  2006/04/28 20:33:11  trey
+# moved common/Interleave -> main/TestDriver
+#
 # Revision 1.24  2006/04/28 17:57:41  trey
 # changed to use apache license
 #
