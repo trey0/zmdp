@@ -1,26 +1,26 @@
-INSTALLATION INSTRUCTIONS IN BRIEF:
+INSTALLATION INSTRUCTIONS:
 
 * Unpack the tarball to generate the zmdp directory:
 
-  tar xvfz zmdp-0.2.tgz
+  tar xvfz zmdp-0.3.tgz
 
 * Build:
 
-  cd zmdp-0.2/src
+  cd zmdp-0.3/src
   make install
-  (generates multiple zmdp-0.2/bin/linux2/solveXXX binaries)
+  (generates binaries in zmdp-0.3/bin/<os_name>/, <os_name> = linux2 or darwin8)
 
-* Do a test run and plot the results:
+* Do a test run:
 
-  mkdir -p zmdp-0.2/results/
-  cd zmdp-0.2/results
-  ../bin/linux2/solvePomdpHsvi -i 100 ../src/problems/three_state.pomdp -- -1 1
-  ../src/tools/makeplot .
+  mkdir -p zmdp-0.3/results/
+  cd zmdp-0.3/results
+  ../bin/linux2/zmdpSolve ../src/problems/three_state.pomdp
+  (look at results in 'out.policy')
 
 * If you wish to test with one of the included RockSample problem
   instances, generate it.
 
-  cd zmdp-0.2/src/problems
+  cd zmdp-0.3/src/problems
   ./gen_RockSample_5_7
   (generates RockSample_5_7.pomdp)
 
@@ -37,16 +37,9 @@ Build system tested with:
 * GNU Bison 2.0
 * Perl 5.8.6
 
-Optional scripts in tools directory tested with:
+Performance plotting scripts in tools directory tested with:
 * gnuplot 4.0
 * GNU gprof 2.15.94.0.2.2
 
-Other dependencies:
-* Depends on some gcc-specific extensions to the C++ language (although
-  this could be fixed without too much trouble).
-* Uses the C++ standard template library, including some built-in
-  algorithms like std::sort().
-* No dependence on external linear algebra packages or linear program solvers.
-
 ==========================================================
-$Id: INSTALL,v 1.3 2006-02-27 20:13:47 trey Exp $
+$Id: INSTALL,v 1.4 2006-04-28 20:33:36 trey Exp $
