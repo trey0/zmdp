@@ -14,7 +14,7 @@ INSTALLATION INSTRUCTIONS:
 
   mkdir -p zmdp-0.3.0/results/
   cd zmdp-0.3.0/results
-  ../bin/linux2/zmdpSolve ../src/problems/three_state.pomdp
+  ../bin/linux2/zmdpSolve ../src/pomdpModels/three_state.pomdp
   (look at results in 'out.policy')
 
 * If you wish to test with one of the included RockSample problem
@@ -42,4 +42,4 @@ Performance plotting scripts in tools directory tested with:
 * GNU gprof 2.15.94.0.2.2
 
 ==========================================================
-$Id: INSTALL,v 1.5 2006-04-28 21:10:43 trey Exp $
+$Id: INSTALL,v 1.6 2006-04-28 21:23:14 trey Exp $
