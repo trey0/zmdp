@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2006-04-28 17:57:41 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2006-04-28 21:14:20 $
    
  @file    MaxPlanesLowerBound.cc
  @brief   No brief
@@ -302,6 +302,29 @@ void MaxPlanesLowerBound::writeToFile(const std::string& outFileName) const
     exit(EXIT_FAILURE);
   }
 
+  out <<
+"# This file is a POMDP policy, represented as a set of \"lower bound\n"
+"# planes\", each of which consists of an alpha vector and a corresponding\n"
+"# action.  Given a particular belief b, this information can be used to\n"
+"# answer two queries of interest:\n"
+"#\n"
+"#   1. What is a lower bound on the expected long-term reward starting\n"
+"#        from belief b?\n"
+"#   2. What is an action that achieves that expected reward lower bound?\n"
+"#\n"
+"# Each lower bound plane is only defined over a subset of the belief\n"
+"# simplex--it is defined for those beliefs b such that the non-zero\n"
+"# entries of b are a subset of the entries present in the plane's alpha\n"
+"# vector.  We call these the planes that are 'applicable' to b.\n"
+"#\n"
+"# Given a belief b, both of the queries above can be answered by the\n"
+"# following process: first, throw out all the planes that are not\n"
+"# applicable to b.  Then, for each of the remaining planes, take the inner\n"
+"# product of the plane's alpha vector with b.  The highest inner product\n"
+"# value is the expected long-term reward lower bound, and the action label\n"
+"# for that plane is the action that achieves the bound.\n"
+"\n"
+    ;
   out << "{" << endl;
   out << "  policyType => \"MaxPlanesLowerBound\"," << endl;
   out << "  numPlanes => " << planes.size() << "," << endl;
@@ -327,6 +350,9 @@ void MaxPlanesLowerBound::writeToFile(const std::string& outFileName) const
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2006/04/28 17:57:41  trey
+ * changed to use apache license
+ *
  * Revision 1.2  2006/04/27 23:10:31  trey
  * added support for writing policies
  *
