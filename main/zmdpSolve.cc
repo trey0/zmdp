@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.4 $  $Author: trey $  $Date: 2006-04-28 17:57:41 $
+ $Revision: 1.5 $  $Author: trey $  $Date: 2006-04-28 20:33:54 $
 
  @file    zmdpSolve.cc
  @brief   No brief
@@ -23,6 +23,7 @@
 #include <assert.h>
 #include <sys/time.h>
 #include <getopt.h>
+#include <signal.h>
 
 #include <iostream>
 #include <fstream>
@@ -48,9 +49,31 @@ OutputParams::OutputParams(void) {
 
 bool userTerminatedG = false;
 
+void sigIntHandler(int sig) {
+  userTerminatedG = true;
+
+  printf("*** received SIGINT, user pressed control-C ***\n"
+	 "terminating run and writing output policy as soon as the solver returns control\n");
+  fflush(stdout);
+}
+
+void setSignalHandler(int sig, void (*handler)(int)) {
+  struct sigaction act;
+  memset (&act, 0, sizeof(act));
+  act.sa_handler = handler;
+  act.sa_flags = SA_RESTART;
+  if (-1 == sigaction (sig, &act, NULL)) {
+    cerr << "ERROR: unable to set handler for signal "
+         << sig << endl;
+    exit(EXIT_FAILURE);
+  }
+}
+
 void doSolve(const SolverParams& p, const OutputParams& op)
 {
   StopWatch run;
+
+  setSignalHandler(SIGINT, &sigIntHandler);
   init_matrix_utils();
 
   printf("%05d reading model file and allocating data structures\n",
@@ -267,6 +290,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2006/04/28 17:57:41  trey
+ * changed to use apache license
+ *
  * Revision 1.3  2006/04/27 23:42:54  trey
  * improved error diagnostic for policy output
  *
