@@ -20,7 +20,7 @@ INSTALLATION INSTRUCTIONS:
 * If you wish to test with one of the included RockSample problem
   instances, generate it.
 
-  cd zmdp-0.3.0/src/problems
+  cd zmdp-0.3.0/src/pomdpModels
   ./gen_RockSample_5_7
   (generates RockSample_5_7.pomdp)
 
@@ -42,4 +42,4 @@ Performance plotting scripts in tools directory tested with:
 * GNU gprof 2.15.94.0.2.2
 
 ==========================================================
-$Id: INSTALL,v 1.6 2006-04-28 21:23:14 trey Exp $
+$Id: INSTALL,v 1.7 2006-04-28 22:29:40 trey Exp $
