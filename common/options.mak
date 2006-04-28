@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: options.mak,v 1.44 2006-04-28 17:57:41 trey Exp $
+# $Id: options.mak,v 1.45 2006-04-28 18:53:01 trey Exp $
 #
 # Copyright (c) 2002-2006, Trey Smith. All rights reserved.
 #
@@ -14,75 +14,30 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
 # implied. See the License for the specific language governing
 # permissions and limitations under the License.
+######################################################################
+
+CFLAGS += -DZMDP_VERSION=0.3
 
 # algorithm configuration options
 
-USE_GHSVI := 1
-
-CFLAGS += -DZMDP_VERSION=0.2
-#CFLAGS += -DUSE_DEBUG_PRINT=1
-#CFLAGS += -DDO_LB_SELF_UPDATE=1
-CFLAGS += -DDO_UB_CACHED_Q=1
-#CFLAGS += -DDO_UB_SELF_UPDATE=1
-#CFLAGS += -DNO_COMPRESSED_MATRICES=1
-#CFLAGS += -DDO_AGGRESSIVE_LB_PRUNE=1
-#CFLAGS += -DUSE_UBLAS=1
-#CFLAGS += -DUSE_EMPOMDP=1
-#CFLAGS += -DUSE_MORE_UB_BACKUPS=1
-#CFLAGS += -DUSE_RANDOM_OBS=1
-#CFLAGS += -DNO_FIB_UPPER_BOUND=1
-#CFLAGS += -DUSE_UNIFORM_RANDOM_OBS=1
-CFLAGS += -DUSE_COMPRESSED_ALPHA=1
 CFLAGS += -DUSE_MASKED_ALPHA=1
-CFLAGS += -DUSE_UB_HASH=0
-#CFLAGS += -DUSE_SAFE_HSVI=1
-#CFLAGS += -DUSE_EXEC_HEURISTIC=1
-#CFLAGS += -DUSE_FIXED_DEPTH=1
-#CFLAGS += -DUSE_EXP_GAUGE=1
-#CFLAGS += -DUSE_RS_NATIVE=1
-CFLAGS += -DUSE_BOUNDS_TERMINATION=1
-CFLAGS += -DUSE_NO_GENERALIZATION=1
-#CFLAGS += -DUSE_KD_BOUNDS=1
-#CFLAGS += -DUSE_KD_NORMAL=1
-#CFLAGS += -DUSE_ALT_ACTION_SELECTION=1
-#CFLAGS += -DUSE_EXPLORE_LOWER=1
-CFLAGS += -DUSE_RELEVANCE_IE_MAX=1
-#CFLAGS += -DUSE_RELEVANCE_BOTH=1
-#CFLAGS += -DUSE_RELEVANCE_BOLTZ=1
-CFLAGS += -DUSE_PROPAGATE_WEIGHT=1
-CFLAGS += -DUSE_DEPTH_FIRST=1
-CFLAGS += -DUSE_ACCUM_SUM=1
-#CFLAGS += -DUSE_MORE_MAX=1
-#CFLAGS += -DUSE_LESS_REPETITION=1
-#CFLAGS += -DUSE_PERSISTENCE=1
-#CFLAGS += -DUSE_NO_INTERNAL_PRIORITY=1
-CFLAGS += -DUSE_DF_NON_MYOPIC=1
-#CFLAGS += -DUSE_DF_DEPTH_TERMINATION=1
-#CFLAGS += -DUSE_DF_IGNORE_UNC=1
-#CFLAGS += -DUSE_OLD_ANYTIME=1
 CFLAGS += -DUSE_TIME_WITHOUT_HEURISTIC=1
-#CFLAGS += -DUSE_FRTDP_ALT_PRIO=1
 #CFLAGS += -DUSE_HSVI_ADAPTIVE_DEPTH=1
-ifneq (,$(USE_GHSVI))
-  CFLAGS += -DUSE_GHSVI=1
-endif
 
-# turns on optimization in boost matrix library (see commonTypes.h)
-CFLAGS += -DVEC_OPTIM=1
+# debug/optimization options
 
+#CFLAGS += -DUSE_DEBUG_PRINT=1
 USER_CFLAGS := -O3
 #USER_CFLAGS := -g
-#USE_CPLEX := 1
-
-ifneq (,$(USE_CPLEX))
-  CFLAGS += -DUSE_CPLEX=1
-endif
 
 XCFLAGS := $(CFLAGS)
 CFLAGS += -DCFLAGS="\"$(XCFLAGS)\""
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.44  2006/04/28 17:57:41  trey
+# changed to use apache license
+#
 # Revision 1.43  2006/04/27 23:06:47  trey
 # turned on USE_MASKED_ALPHA
 #
