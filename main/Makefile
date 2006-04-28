@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.31 2006-04-28 17:57:41 trey Exp $
+# $Id: Makefile,v 1.32 2006-04-28 22:33:36 trey Exp $
 #
 # Copyright (c) 2002-2005, Trey Smith. All rights reserved.
 #
@@ -32,7 +32,7 @@ maininstall: install
 SUBDIRS :=
 
 ALL_LIBS := \
-	-lzmdpRtdp \
+	-lzmdpSearch \
 	-lzmdpPomdpBounds \
 	-lzmdpPomdpCore \
 	-lzmdpPomdpParser \
@@ -59,6 +59,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.31  2006/04/28 17:57:41  trey
+# changed to use apache license
+#
 # Revision 1.30  2006/04/27 23:19:30  trey
 # added TestDriver.cc to zmdpBenchmark sources
 #

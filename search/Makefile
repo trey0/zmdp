@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.12 2006-04-28 17:57:41 trey Exp $
+# $Id: Makefile,v 1.13 2006-04-28 22:33:41 trey Exp $
 #
 # Copyright (c) 2006, Trey Smith. All rights reserved.
 #
@@ -41,7 +41,7 @@ INSTALLHEADERS_HEADERS := \
 	FRTDP.h
 include $(BUILD_DIR)/installheaders.mak
 
-BUILDLIB_TARGET := libzmdpRtdp.a
+BUILDLIB_TARGET := libzmdpSearch.a
 BUILDLIB_SRCS := \
 	RTDPCore.cc \
 	RTDP.cc \
@@ -62,6 +62,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.12  2006/04/28 17:57:41  trey
+# changed to use apache license
+#
 # Revision 1.11  2006/04/27 20:18:27  trey
 # renamed WRTDP to HSVI, maybe less confusing this way
 #
