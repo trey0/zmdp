@@ -1,17 +1,19 @@
 README for zmdp
 
-This C++ source code implements several approximate value iterations for
-MDPs and POMDPs, including HSVI2 [6], RTDP [1], LRTDP [3], HDP [2],
-and FRTDP [not yet published].  The software takes a problem specification
-as input.  Currently supported specification formats are Tony Cassandra's
-POMDP file format [4] and a new format for describing problems in the
-racetrack domain from [1].
+This C++ source code implements several approximate value iteration
+algorithms for MDPs and POMDPs, including both algorithms I developed
+(FRTDP [7], HSVI2 [6]) and some earlier algorithms that work on the same
+problems (RTDP [1], LRTDP [3], and HDP [2]).  The software takes a
+problem model file as input.  Currently supported model formats are Tony
+Cassandra's POMDP file format [4] and a new format I developed for
+describing problems in the racetrack domain from [1].
 
-Special note: my implementations of some of these algorithms are based
-on publications that necessarily left out a lot of detail.  It's quite
-possible that my implementation differs from the original in important
-ways.  The original authors have not signed off on my implementations:
-use at your own risk.  (And please inform me if you find any errors.)
+Special note: my implementations of some of the earlier algorithms are
+based on publications that necessarily left out a lot of detail.  It's
+quite possible that my implementation differs from the original in
+important ways.  The original authors have not signed off on my
+implementations: use at your own risk.  (And please inform me if you
+find any errors.)
 
 More information can be found at http://www.cs.cmu.edu/~trey/zmdp
 
@@ -36,14 +38,14 @@ PACKAGE CONTENTS
 src/build        Makefile system
 src/common       Utility code, including a sparse linear algebra library
 src/mdps         Racetrack domain and some example problems
-src/bounds       Interfaces for representing value function bounds
+src/bounds       Value function bounds representations
 src/search       Search strategies: FRTDP, HSVI, etc.
 src/pomdpParser  POMDP problem parsing code (thanks to Tony Cassandra!)
 src/pomdpCore    Basic POMDP operations and simulation
 src/pomdpBounds  Value function bounds representations specific to POMDPs
+src/pomdpModels  Some example POMDP problems
 src/main         Glue code for invoking algorithms from the shell
-src/problems     Problems from [5] and a trivial example.
-src/tools        Tools for scripting multiple runs and plotting results.
+src/tools        Tools for scripting multiple runs and plotting performance.
 
 ========================================================================
 USAGE INSTRUCTIONS
@@ -100,7 +102,7 @@ usage: makeplot OPTIONS <results_directory>
 makeplot plots the upper bound, lower bound, and measured solution
 quality at testing epochs in a single graph with a logarithmic x axis.
 It looks in <results_directory> for the files bounds.plot and inc.plot,
-output by solveMDP.  By default the plot is displayed in an X window.
+output by zmdpBenchmark.  By default the plot is displayed in an X window.
 Using the -p option drops it into a PostScript file instead, e.g. for
 inclusion in a paper.
 
@@ -154,11 +156,12 @@ REFERENCES
 
 [5] Heuristic Search Value Iteration for POMDPs.
     T. Smith and R. Simmons. In  Proc. of UAI, 2004.
-    http://www.cs.cmu.edu/~trey/papers/smith04_hsvi.pdf
 
 [6] Point-based POMDP Algorithms: Improved Analysis and Implementation.
     T. Smith and R. Simmons. In Proc. of UAI, 2005.
-    http://www.cs.cmu.edu/~trey/papers/smith05_point_based_pomdp.pdf
+
+[7] Focused Real-Time Dynamic Programming for MDPs.
+    T. Smith and R. Simmons. In Proc. of AAAI, 2006.
 
 ========================================================================
 RELEASE NOTES
@@ -184,7 +187,7 @@ Changes from 0.2.0 to 0.2.1 (14 Apr 2006)
   output in the bounds.plot file in the same format as for other
   algorithms, suitable for plotting using the speedplot utility.
 
-Changes from zpomdp 0.1 to zmdp 0.2 (27 Feb 2006)
+Changes from zpomdp 0.1 to zmdp 0.2.0 (27 Feb 2006)
 
 * zmdp now includes MDP solving as well as POMDP solving
   capabilities (hence the name change).
@@ -208,4 +211,4 @@ zpomdp 0.1.0 (28 Oct 2005)
 * Initial release.
 
 ==========================================================
-$Id: README,v 1.7 2006-04-28 21:11:01 trey Exp $
+$Id: README,v 1.8 2006-04-28 22:29:19 trey Exp $
