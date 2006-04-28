@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2006-04-28 17:57:41 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2006-04-28 18:53:23 $
    
  @file    SawtoothUpperBound.h
  @brief   No brief
@@ -79,13 +79,6 @@ public:
   void printToStream(std::ostream& out) const;
 };
 
-struct SawtoothWithQBound {
-  SawtoothUpperBound V;
-#if DO_UB_CACHED_Q
-  std::vector<SawtoothUpperBound> Q;
-#endif
-};
-
 }; // namespace zmdp
 
 #endif // INCBoundFunction_h
@@ -93,6 +86,9 @@ struct SawtoothWithQBound {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2006/04/28 17:57:41  trey
+ * changed to use apache license
+ *
  * Revision 1.1  2006/04/05 21:43:20  trey
  * collected and renamed several classes into pomdpBounds
  *
