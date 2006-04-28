@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.8 $  $Author: trey $  $Date: 2006-04-28 17:57:41 $
+ $Revision: 1.9 $  $Author: trey $  $Date: 2006-04-28 18:53:57 $
   
  @file    Pomdp.cc
  @brief   No brief
@@ -439,16 +439,12 @@ void Pomdp::debugDensity(void) {
   FOR (a, numActions) {
     Ttr_size += Ttr[a].size1() * Ttr[a].size2();
     O_size += O[a].size1() * O[a].size2();
-#if !NO_COMPRESSED_MATRICES
     Ttr_filled += Ttr[a].filled();
     O_filled += O[a].filled();
-#endif
   }
-#if !NO_COMPRESSED_MATRICES
   cout << "T density = " << (((double) Ttr_filled) / Ttr_size)
        << ", O density = " << (((double) O_filled) / O_size)
        << endl;
-#endif
 }
 
 }; // namespace zmdp
@@ -456,6 +452,9 @@ void Pomdp::debugDensity(void) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.8  2006/04/28 17:57:41  trey
+ * changed to use apache license
+ *
  * Revision 1.7  2006/04/27 23:10:48  trey
  * put some output in USE_DEBUG_PRINT
  *
