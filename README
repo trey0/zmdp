@@ -23,48 +23,12 @@ Copyright (c) 2005-2006, Trey Smith.  All rights reserved.
 More information is in the file named COPYING.
 
 Table of contents of this README
-* release notes
 * package contents
 * usage instructions
-* example sessions
-* plotting results
+* plotting performance
 * acknowledgments
 * references
-
-========================================================================
-RELEASE NOTES
-
-Changes from 0.2 to 0.2.1 (14 Apr 2006)
-
-* Fixed problem with directory structure in tarball that broke
-  compilation.
-
-* Performance vs. number of updates for the HSVI algorithm is now
-  output in the bounds.plot file in the same format as for other
-  algorithms, suitable for plotting using the speedplot utility.
-
-Changes from zpomdp 0.1 to zmdp 0.2 (27 Feb 2006)
-
-* zmdp now includes MDP solving as well as POMDP solving
-  capabilities (hence the name change).
-
-* Created uniform MDP/POMDP API so that POMDPs formulated as
-  belief-space MDPs can be passed to MDP heuristic search algorithms.
-
-* Some code has been refactored to reduce code duplication and
-  provide cleaner interfaces.  This involved shuffling directories.
-
-* Implemented racetrack domain and some sample problems from the
-  literature.
-
-* Implemented RTDP, LRTDP, HDP, HDP+L, and FRTDP.
-
-* Separate binaries are now produced for each (problem type, algorithm)
-  pair rather than a single unified binary.
-
-zpomdp 0.1 (28 Oct 2005)
-
-* Initial release.
+* release notes
 
 ========================================================================
 PACKAGE CONTENTS
@@ -86,69 +50,45 @@ USAGE INSTRUCTIONS
 
 To get started please first follow the instructions in INSTALL.
 
-The binary produced by the installation process is named
-bin/linux2/solveMDP.  (It solves both MDPs and POMDPs.)  Use
-'solveMDP -h' to get the full usage instructions.  Part of the
-instructions are copied here:
+The build process creates binaries in the bin/<os_name>/ directory:
 
-usage: solveMDP OPTIONS <model>
+zmdpSolve
+  zmdpSolve generates an output policy for a solution algorithm and
+  problem you select.  It runs the solution algorithm in an anytime
+  fashion, periodically printing bounds on the value of the initial
+  state to console so that you can monitor progress.  When the run ends,
+  the final policy is output to the file you specify.  There are several
+  options for how to end the run: you can specify a desired regret bound
+  ('precision') for the output solution, specify a fixed timeout, or
+  just use ctrl-C to interrupt the algorithm when you are satisfied (it
+  will output the final policy before exiting).
 
-Main flags:
-  -s or --search         Specifies search strategy. Valid choices:
-                           rtdp, lrtdp, hdp, frtdp [default: frtdp]
-  -t or --type           Specifies problem type. Valid choices:
-                           racetrack, pomdp [default: infer from model filename]
-  -v or --value          Specifies value function representation. Valid choices
-                         depend on problem type. With -t pomdp, choices are:
-                           point, convex [default: convex]
-                         For other problem types, choices are:
-                           point [default: point]
+  Run 'zmdpSolve -h' for a summary of the options and some examples.
 
-========================================================================
-EXAMPLE SESSIONS
+zmdpBenchmark
+  zmdpBenchmark tests performance for a solution algorithm and problem
+  you select.  As the solution algorithm progresses, various statistics
+  are logged, such as the algorithm's bounds on the value of the initial
+  state, the number of backups so far, and periodic measurements of the
+  solution quality in simulation.  The plotting tools in the src/tools
+  directory can be used to plot performance based on the logs.
 
-COMMAND:
+  Logged data includes:
+  * bounds.plot: bounds on initial state, internal algorithm state such as
+                   number of trials, number of backups, etc.
+  * inc.plot:    logs periodic measurements of solution quality in simulation
+  * sim.plot:    logs some of the simulation traces so you can get a
+                   qualitative sense of how the policy changes
 
-  solveMDP -i 100 --min-eval -1 problems/three_state.pomdp 
-
-EXPLANATION:
-
-  The '-i 1000' flag sets the number of iterations that should be used
-  when evaluating solution quality at each simulation epoch.  The
-  default number is 100.  Adjusting the number of iterations trades
-  total testing time against precision in the solution quality
-  measurement (which is reflected in the error bars of plots if you use
-  the provided plotting tools).
-
-  '--min-eval -1' specifies when to insert the first simulation epoch
-  for testing solution quality.  If minEval=k, the first epoch comes
-  after 10^k seconds.  Subsequent epochs are spaced logarithmically with
-  three epochs per order of magnitude of running time.  This is nice for
-  semi-log plots.  NOTE: to be more accurate, testing epochs can only be
-  inserted when the solution algorithm yields control to the testing
-  harness, so the logarithmic spacing rule is only approximate.
-
-  'problems/three_state.pomdp' indicates what problem to solve.
-  solveMDP infers the problem type (and associated model parser) as
-  'pomdp' from the filename suffix.  Alternately, you can manually
-  specify the problem type with e.g. '-t pomdp'.
-
-COMMAND:
-
-  solveMDP -f problems/RockSample_5_7.pomdp
-
-EXPLANATION:
-
-  The '-f' flag tells solveMDP to use a faster problem parser that is
-  also very picky.  The fast parser will probably only accept RockSample
-  problems, but you will really want to use it on large problem
-  instances!
+  Run 'zmdpBenchmark -h' for a summary of the options and some examples.
 
 ========================================================================
-PLOTTING RESULTS
+PLOTTING PERFORMANCE
 
-Some of the plotting scripts in the src/tools directory are worth
-mentioning.
+There are several scripts in the src/tools directory, a few of which
+are described here.  They are intended to produce performance plots
+based on the logs output by zmdpBenchmark.  Sorry, these tools are
+somewhat messier / less documented than the solver itself.
 
 === MAKEPLOT
 
@@ -188,7 +128,7 @@ strategy and especially on the bounds representation.
 ========================================================================
 ACKNOWLEDGMENTS
 
-The theory behind the novel algorithms in this codebase was joint work
+The ideas behind the novel algorithms in this codebase were joint work
 with Reid Simmons.  Thanks to Geoff Gordon for helpful discussions.
 Thanks to Tony Cassandra for developing the POMDP problem format and
 distributing his problem reading and solution code.  Thanks to Matthijs
@@ -220,5 +160,52 @@ REFERENCES
     T. Smith and R. Simmons. In Proc. of UAI, 2005.
     http://www.cs.cmu.edu/~trey/papers/smith05_point_based_pomdp.pdf
 
+========================================================================
+RELEASE NOTES
+
+Changes from 0.2.1 to 0.3 (28 Apr 2006)
+
+* Refactored code so that different problem types, search strategies,
+  and value function representations can be mixed and matched.
+
+* There are now separate binaries for benchmarking algorithms
+  (with incremental policy evaluation) and just solving particular
+  POMDPs (with policy output at the end).
+
+* No longer split binaries for each solution algorithm -- there are too
+  many combinations to have a different binary for each.
+
+Changes from 0.2 to 0.2.1 (14 Apr 2006)
+
+* Fixed problem with directory structure in tarball that broke
+  compilation.
+
+* Performance vs. number of updates for the HSVI algorithm is now
+  output in the bounds.plot file in the same format as for other
+  algorithms, suitable for plotting using the speedplot utility.
+
+Changes from zpomdp 0.1 to zmdp 0.2 (27 Feb 2006)
+
+* zmdp now includes MDP solving as well as POMDP solving
+  capabilities (hence the name change).
+
+* Created uniform MDP/POMDP API so that POMDPs formulated as
+  belief-space MDPs can be passed to MDP heuristic search algorithms.
+
+* Some code has been refactored to reduce code duplication and
+  provide cleaner interfaces.  This involved shuffling directories.
+
+* Implemented racetrack domain and some sample problems from the
+  literature.
+
+* Implemented RTDP, LRTDP, HDP, HDP+L, and FRTDP.
+
+* Separate binaries are now produced for each (problem type, algorithm)
+  pair rather than a single unified binary.
+
+zpomdp 0.1 (28 Oct 2005)
+
+* Initial release.
+
 ==========================================================
-$Id: README,v 1.5 2006-04-28 17:57:41 trey Exp $
+$Id: README,v 1.6 2006-04-28 18:54:19 trey Exp $
