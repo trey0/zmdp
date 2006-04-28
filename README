@@ -34,7 +34,7 @@ Table of contents of this README
 ========================================================================
 RELEASE NOTES
 
-Changes from 0.2 to 0.21 (14 Apr 2006)
+Changes from 0.2 to 0.2.1 (14 Apr 2006)
 
 * Fixed problem with directory structure in tarball that broke
   compilation.
@@ -73,11 +73,10 @@ src/build        Makefile system
 src/common       Utility code, including a sparse linear algebra library
 src/mdps         Racetrack domain and some example problems
 src/bounds       Interfaces for representing value function bounds
-src/rtdp         Search strategies: RTDP, LRTDP, HDP, FRTDP, etc.
+src/search       Search strategies: FRTDP, HSVI, etc.
 src/pomdpParser  POMDP problem parsing code (thanks to Tony Cassandra!)
 src/pomdpCore    Basic POMDP operations and simulation
 src/pomdpBounds  Value function bounds representations specific to POMDPs
-src/hsvi2        HSVI2 algorithm
 src/main         Glue code for invoking algorithms from the shell
 src/problems     Problems from [5] and a trivial example.
 src/tools        Tools for scripting multiple runs and plotting results.
@@ -222,4 +221,4 @@ REFERENCES
     http://www.cs.cmu.edu/~trey/papers/smith05_point_based_pomdp.pdf
 
 ==========================================================
-$Id: README,v 1.4 2006-04-26 18:43:27 trey Exp $
+$Id: README,v 1.5 2006-04-28 17:57:41 trey Exp $

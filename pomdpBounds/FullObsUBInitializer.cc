@@ -1,28 +1,22 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2006-04-27 23:10:17 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2006-04-28 17:57:41 $
    
  @file    FullObsUBInitializer.cc
  @brief   No brief
 
- Copyright (c) 2002-2005, Trey Smith
- All rights reserved.
+ Copyright (c) 2002-2005, Trey Smith. All rights reserved.
 
- Redistribution and use in source and binary forms, with or without
- modification, are permitted provided that the following conditions are
- met:
+ Licensed under the Apache License, Version 2.0 (the "License"); you may
+ not use this file except in compliance with the License.  You may
+ obtain a copy of the License at
 
- * The software may not be sold or incorporated into a commercial
-   product without specific prior written permission.
- * The above copyright notice and this permission notice shall be
-   included in all copies or substantial portions of the software.
+   http://www.apache.org/licenses/LICENSE-2.0
 
- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
- EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
- MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
- LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
- OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
- WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+ implied.  See the License for the specific language governing
+ permissions and limitations under the License.
 
  ***************************************************************************/
 
@@ -145,6 +139,9 @@ void FullObsUBInitializer::valueIteration(const Pomdp* _pomdp, double eps) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2006/04/27 23:10:17  trey
+ * put some output in USE_DEBUG_PRINT
+ *
  * Revision 1.2  2006/04/06 04:10:14  trey
  * removed obsolete testMDP() function
  *
