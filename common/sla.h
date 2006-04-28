@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.17 $  $Author: trey $  $Date: 2006-04-28 17:57:41 $
+ $Revision: 1.18 $  $Author: trey $  $Date: 2006-04-28 18:52:41 $
    
  @file    sla.h
  @brief   No brief
@@ -1248,11 +1248,7 @@ namespace sla {
 // select storage types of the data structures we use
 typedef sla::cvector state_vector;
 typedef sla::cvector belief_vector;
-#if USE_COMPRESSED_ALPHA
 typedef sla::cvector alpha_vector;
-#else
-typedef sla::dvector alpha_vector;
-#endif
 typedef sla::dvector outcome_prob_vector;
 typedef sla::dvector obs_prob_vector;
 
@@ -1261,6 +1257,9 @@ typedef sla::dvector obs_prob_vector;
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.17  2006/04/28 17:57:41  trey
+ * changed to use apache license
+ *
  * Revision 1.16  2006/02/01 01:09:37  trey
  * renamed pomdp namespace -> zmdp
  *
