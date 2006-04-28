@@ -163,7 +163,7 @@ REFERENCES
 ========================================================================
 RELEASE NOTES
 
-Changes from 0.2.1 to 0.3 (28 Apr 2006)
+Changes from 0.2.1 to 0.3.0 (28 Apr 2006)
 
 * Refactored code so that different problem types, search strategies,
   and value function representations can be mixed and matched.
@@ -175,7 +175,7 @@ Changes from 0.2.1 to 0.3 (28 Apr 2006)
 * No longer split binaries for each solution algorithm -- there are too
   many combinations to have a different binary for each.
 
-Changes from 0.2 to 0.2.1 (14 Apr 2006)
+Changes from 0.2.0 to 0.2.1 (14 Apr 2006)
 
 * Fixed problem with directory structure in tarball that broke
   compilation.
@@ -203,9 +203,9 @@ Changes from zpomdp 0.1 to zmdp 0.2 (27 Feb 2006)
 * Separate binaries are now produced for each (problem type, algorithm)
   pair rather than a single unified binary.
 
-zpomdp 0.1 (28 Oct 2005)
+zpomdp 0.1.0 (28 Oct 2005)
 
 * Initial release.
 
 ==========================================================
-$Id: README,v 1.6 2006-04-28 18:54:19 trey Exp $
+$Id: README,v 1.7 2006-04-28 21:11:01 trey Exp $
