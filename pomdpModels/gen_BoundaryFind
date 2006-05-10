@@ -1,0 +1,285 @@
+#!/usr/bin/perl -w
+
+# generates the BoundaryFind POMDP
+
+# state:
+# - char 1: x position, 0-4
+# - char 2: y position, 0-4
+# - char 3: direction of boundary 0-3 NESW
+# - char 4: offset of boundary from center, 0-3 indicates -1.5, -0.5, 0.5, 1.5
+
+# actions:
+# - char 1: motion direction 0-3 NESW
+# - char 2: direction of boundary 0-3 NESW
+# - char 3: offset of boundary from center, 0-3 indicates -1.5, -0.5, 0.5, 1.5
+
+# observations:
+# - char 1: discriminant bin of old cell 0-4
+# - char 2: discriminant bin of new cell 0-4
+
+# reward:
+# - penalty for error in hypothesis vote: error is the sum of the differences
+#   in the two fields of the hypothesis (direction and offset).
+
+my $AS_STRINGS = 1;
+
+our @BIN_PROBS = (
+		  [ 0.5, 0.2, 0.1, 0.1, 0.1 ],
+		  [ 0.1, 0.1, 0.1, 0.2, 0.5 ]
+		 );
+our @O_MAP =
+(
+ "1111111111111111111100000",
+ "1111111111111110000000000",
+ "1111111111000000000000000",
+ "1111100000000000000000000",
+
+ "0111101111011110111101111",
+ "0011100111001110011100111",
+ "0001100011000110001100011",
+ "0000100001000010000100001",
+
+ "0000000000000000000011111",
+ "0000000000000001111111111",
+ "0000000000111111111111111",
+ "0000011111111111111111111",
+ 
+ "1000010000100001000010000",
+ "1100011000110001100011000",
+ "1110011100111001110011100",
+ "1111011110111101111011110",
+);
+
+$prob_name = "BoundaryFind";
+if ($AS_STRINGS) {
+    $prob_file = "${prob_name}_full.pomdp";
+} else {
+    $prob_file = "${prob_name}.pomdp";
+}
+
+&main();
+
+######################################################################
+
+sub obsProb {
+    my $s = shift;
+    my $o = shift;
+
+    my $sx = substr($s,1,1);
+    my $sy = substr($s,2,1);
+    my $sd = substr($s,3,1);
+    my $sq = substr($s,4,1);
+
+    my $posIndex = $sy*5 + $sx;
+    my $hypIndex = $sd*4 + $sq;
+
+    my $type = substr($O_MAP[$hypIndex], $posIndex, 1);
+    return $BIN_PROBS[$type][$o];
+}
+
+######################################################################
+
+sub actionResult {
+    my $s = shift;
+    my $a = shift;
+
+    my $sx = substr($s,1,1);
+    my $sy = substr($s,2,1);
+    my $sd = substr($s,3,1);
+    my $sq = substr($s,4,1);
+
+    my $am = substr($a,1,1);
+    my $ad = substr($a,2,1);
+    my $aq = substr($a,3,1);
+
+    my $spx = $sx;
+    my $spy = $sy;
+    my $illegal = 0;
+    if ($am == 0) {
+	if ($spy < 4) {
+	    $spy++;
+	} else {
+	    $illegal = 1;
+	}
+    } elsif ($am == 1) {
+	if ($spx < 4) {
+	    $spx++;
+	} else {
+	    $illegal = 1;
+	}
+    } elsif ($am == 2) {
+	if ($spy > 0) {
+	    $spy--;
+	} else {
+	    $illegal = 1;
+	}
+    } elsif ($am == 3) {
+	if ($spx > 0) {
+	    $spx--;
+	} else {
+	    $illegal = 1;
+	}
+    }
+
+    my $sp = sprintf("s%d%d%d%d", $spx, $spy, $sd, $sq);
+    my $penalty = abs($sd - $ad) + abs($sq - $aq);
+
+    # print STDERR "s=$s a=$a sp=$sp\n";
+
+    my @obsVector = ();
+    if ($illegal == 1) {
+	@obsVector = ([1,"o00"]);
+	$penalty = $penalty + 100;
+    } else {
+	for my $oo (0..4) {
+	    my $ooProb = &obsProb($s,$oo);
+	    for my $on (0..4) {
+		my $onProb = &obsProb($sp,$on);
+		my $o = sprintf("o%d%d", $oo, $on);
+		push @obsVector, [$ooProb*$onProb, $o];
+	    }
+	}
+    }
+
+    return [-$penalty, [[1,$sp]], [@obsVector]];
+}
+
+######################################################################
+
+sub initStateProb {
+    my $s = shift;
+
+    my $x = substr($s,1,1);
+    my $y = substr($s,2,1);
+    my $d = substr($s,3,1);
+    my $q = substr($s,4,1);
+
+    if ($x == 2 and $y == 2) {
+	return 1.0/16;
+    } else {
+	return 0.0;
+    }
+}
+
+######################################################################
+
+sub stateIndex {
+    my $s = shift;
+
+    if ($AS_STRINGS) { return $s; }
+
+    # print STDERR "s=$s\n";
+
+    my $sx = substr($s,1,1);
+    my $sy = substr($s,2,1);
+    my $sd = substr($s,3,1);
+    my $sq = substr($s,4,1);
+
+    # print STDERR "si: $sx $sy $sd $sq\n";
+
+    return 4 * (4 * (5 * $sy + $sx) + $sd) + $sq;
+}
+
+######################################################################
+
+sub actionIndex {
+    my $a = shift;
+
+    if ($AS_STRINGS) { return $a; }
+
+    my $am = substr($a,1,1);
+    my $ad = substr($a,2,1);
+    my $aq = substr($a,3,1);
+
+    return 4 * (4 * $am + $ad) + $aq;
+}
+
+######################################################################
+
+sub observationIndex {
+    my $o = shift;
+
+    if ($AS_STRINGS) { return $o; }
+
+    my $oo = substr($o,1,1);
+    my $on = substr($o,2,1);
+
+    return 5 * $oo + $on;
+}
+
+######################################################################
+
+sub main {
+    open(OUT, ">$prob_file") or die "couldn't open $prob_file for writing: $!\n";
+    select OUT;
+    
+    print "discount: 0.9\n";
+    print "values: reward\n";
+
+    my @states = ();
+    for $x (0..4) {
+	for $y (0..4) {
+	    for $d (0..3) {
+		for $q (0..3) {
+		    push @states, sprintf("s%d%d%d%d", $x, $y, $d, $q);
+		}
+	    }
+	}
+    }
+    # print STDERR "s -- ", join(" ", @states), "\n";
+
+    my @actions = ();
+    for $am (0..3) {
+	for $ad (0..3) {
+	    for $aq (0..3) {
+		push @actions, sprintf("a%d%d%d", $am, $ad, $aq);
+	    }
+	}
+    }
+    # print STDERR "a -- ", join(" ", @actions), "\n";
+
+    my @observations = ();
+    for $oo (0..4) {
+	for $on (0..4) {
+	    push @observations, sprintf("o%d%d", $oo, $on);
+	}
+    }
+    
+    if ($AS_STRINGS) {
+	print "states: ", join(" ", @states), "\n";
+	print "actions: ", join(" ", @actions), "\n";
+	print "observations: ", join(" ", @observations), "\n";
+    } else {
+	print "states: 400\n";
+	print "actions: 64\n";
+	print "observations: 25\n";
+    }
+
+    my @initBelief = map { &initStateProb($_) } @states;
+    print "start: ", join(" ", @initBelief), "\n\n";
+
+    for my $s (@states) {
+	my $ss = &stateIndex($s);
+	for my $a (@actions) {
+	    my $as = &actionIndex($a);
+	    my ($R,$T,$O) = @{&actionResult($s,$a)};
+	    printf("R: %-3s : %-10s : * : * %f\n",
+		   $as, $ss, $R);
+	    for (@{$T}) {
+		my ($prob, $sp) = @{$_};
+		printf("T: %-3s : %-10s : %-10s %f\n",
+		       $as, $ss, &stateIndex($sp), $prob);
+	    }
+	    for (@{$O}) {
+		my ($prob, $o) = @{$_};
+		my $os = &observationIndex($o);
+		printf("O: %-3s : %-10s : %-10s %f\n",
+		       $as, $ss, $os, $prob);
+	    }
+	    print "\n";
+	}
+    }
+    
+    close(OUT);
+}
+
