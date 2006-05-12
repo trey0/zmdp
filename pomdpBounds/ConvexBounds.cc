@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.6 $  $Author: trey $  $Date: 2006-04-28 17:57:41 $
+ $Revision: 1.7 $  $Author: trey $  $Date: 2006-05-12 16:04:30 $
    
  @file    ConvexBounds.cc
  @brief   No brief
@@ -46,6 +46,8 @@ namespace zmdp {
 
 ConvexBounds::ConvexBounds(bool _keepLowerBound,
 			   bool _forceUpperBoundActionSelection) :
+  lowerBound(NULL),
+  upperBound(NULL),
   keepLowerBound(_keepLowerBound),
   forceUpperBoundActionSelection(_forceUpperBoundActionSelection)
 {}
@@ -405,7 +407,7 @@ ValueInterval ConvexBounds::getValueAt(const state_vector& s) const
 
 bool ConvexBounds::getSupportsPolicyOutput(void) const
 {
-  return NULL != lowerBound;
+  return keepLowerBound;
 }
 
 void ConvexBounds::writePolicy(const std::string& outFileName)
@@ -420,6 +422,9 @@ void ConvexBounds::writePolicy(const std::string& outFileName)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.6  2006/04/28 17:57:41  trey
+ * changed to use apache license
+ *
  * Revision 1.5  2006/04/27 23:10:31  trey
  * added support for writing policies
  *
