@@ -1,0 +1,13 @@
+#!/bin/sh
+$VERSION = $1
+if [ -z $VERSION ]; then
+  echo 'ERROR: specify version'
+  exit 1
+fi
+mkdir zmdp-$VERSION
+cd zmdp-$VERSION
+zmdp
+cvs checkout src
+mv src/{README,COPYING} .
+cd ..
+tar cfz zmdp-${VERSION}.tgz zmdp-$VERSION
