@@ -26,6 +26,8 @@ More information is in the file named COPYING.
 
 Table of contents of this README
 * package contents
+* requirements
+* installation instructions
 * usage instructions
 * plotting performance
 * acknowledgments
@@ -35,6 +37,8 @@ Table of contents of this README
 ========================================================================
 PACKAGE CONTENTS
 
+README           This file
+COPYING          Copyright information
 src/build        Makefile system
 src/common       Utility code, including a sparse linear algebra library
 src/mdps         Racetrack domain and some example problems
@@ -46,6 +50,50 @@ src/pomdpBounds  Value function bounds representations specific to POMDPs
 src/pomdpModels  Some example POMDP problems
 src/main         Glue code for invoking algorithms from the shell
 src/tools        Tools for scripting multiple runs and plotting performance.
+
+==========================================================
+REQUIREMENTS
+
+Tested operating systems: Linux kernel 2.6.x (Fedora Core 2 and 4)
+                          Mac OS X 10.4.4
+Tested compilers:         gcc 3.2.2, 3.2.3, 4.0
+
+Build system tested with:
+* GNU Make 3.80
+* GNU Flex 2.5.4
+* GNU Bison 2.0
+* Perl 5.8.6
+
+Performance plotting scripts in tools directory tested with:
+* gnuplot 4.0
+* GNU gprof 2.15.94.0.2.2
+
+========================================================================
+INSTALLATION INSTRUCTIONS
+
+* Unpack the tarball to generate the zmdp directory:
+
+  tar xvfz zmdp-0.3.1.tgz
+
+* Build:
+
+  cd zmdp-0.3.1/src
+  make install
+  (generates binaries in zmdp-0.3.1/bin/<os_name>/, <os_name> = linux2 or darwin8)
+
+* Do a test run:
+
+  mkdir zmdp-0.3.1/results/
+  cd zmdp-0.3.1/results
+  ../bin/<os_name>/zmdpSolve ../src/pomdpModels/three_state.pomdp
+  (look at results in 'out.policy')
+
+* If you wish to test with one of the included RockSample problem
+  instances, generate it.
+
+  cd zmdp-0.3.1/src/pomdpModels
+  ./gen_RockSample_5_7
+  (generates RockSample_5_7.pomdp)
 
 ========================================================================
 USAGE INSTRUCTIONS
@@ -166,6 +214,10 @@ REFERENCES
 ========================================================================
 RELEASE NOTES
 
+Changes from 0.3.0 to 0.3.1 (12 May 2006)
+
+* Fixed a spurious error about policy output not being supported.
+
 Changes from 0.2.1 to 0.3.0 (28 Apr 2006)
 
 * Refactored code so that different problem types, search strategies,
@@ -211,4 +263,4 @@ zpomdp 0.1.0 (28 Oct 2005)
 * Initial release.
 
 ==========================================================
-$Id: README,v 1.8 2006-04-28 22:29:19 trey Exp $
+$Id: README,v 1.9 2006-05-12 16:10:29 trey Exp $
