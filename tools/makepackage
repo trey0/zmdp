@@ -1,4 +1,14 @@
 #!/bin/sh
+
+# steps:
+#  README: update release notes (use 'cvs diff -r zmdp-old-version -D now')
+#  README: update installation instructions to show correct version
+#  repository: 'cvs rtag zmdp-x-x-x src'
+#  make version directory and tarball using this script
+#  test build and functionality in version directory
+#  copy tarball and README to www directory
+#  update www/zmdp/index.html
+
 VERSION=$1
 if [ -z $VERSION ]; then
   echo 'ERROR: specify version'
@@ -10,4 +20,6 @@ zmdp
 cvs checkout src
 mv src/{README,COPYING} .
 cd ..
+echo 'building tarball'
 tar cfz zmdp-${VERSION}.tgz zmdp-$VERSION
+echo 'done'
