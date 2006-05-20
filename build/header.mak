@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: header.mak,v 1.8 2006-04-28 17:57:41 trey Exp $
+# $Id: header.mak,v 1.9 2006-05-20 03:53:22 trey Exp $
 #
 # Copyright (c) 1996-2005, Carnegie Mellon University. All rights reserved.
 #
@@ -23,7 +23,7 @@
 # USER HELP
 
 .PHONY: defaultbuildrule
-defaultbuildrule: all
+defaultbuildrule: install
 
 # avoid using multiple @echo lines (it keeps invoking the shell. slow...)
 .PHONY: help advanced
@@ -181,6 +181,9 @@ $(OBJ_DIR)/%.d: %.cpp
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.8  2006/04/28 17:57:41  trey
+# changed to use apache license
+#
 # Revision 1.7  2005/11/28 20:55:26  trey
 # replaced "gmake" with "make" in help text, now infer operating system instead of always using linux2
 #
