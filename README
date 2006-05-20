@@ -98,9 +98,7 @@ INSTALLATION INSTRUCTIONS
 ========================================================================
 USAGE INSTRUCTIONS
 
-To get started please first follow the instructions in INSTALL.
-
-The build process creates binaries in the bin/<os_name>/ directory:
+The installation process creates binaries in the bin/<os_name>/ directory:
 
 zmdpSolve
   zmdpSolve generates an output policy for a solution algorithm and
@@ -263,4 +261,4 @@ zpomdp 0.1.0 (28 Oct 2005)
 * Initial release.
 
 ==========================================================
-$Id: README,v 1.9 2006-05-12 16:10:29 trey Exp $
+$Id: README,v 1.10 2006-05-20 03:52:46 trey Exp $
