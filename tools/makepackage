@@ -1,6 +1,7 @@
 #!/bin/sh
 
 # steps:
+#  options.mak: update ZMDP_VERSION
 #  README: update release notes (use 'cvs diff -r zmdp-old-version -D now')
 #  README: update installation instructions to show correct version
 #  repository: 'cvs rtag zmdp-x-x-x src'
