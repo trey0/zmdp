@@ -199,6 +199,8 @@ IntLiteral {Digit}+
 
 \t				; /* Tab delimiter: No action */
 
+\r				; /* Carriage return: No action */
+
 \n				{  
                                     currentLineNumber++; /* Newline delimiter */
                                 }
