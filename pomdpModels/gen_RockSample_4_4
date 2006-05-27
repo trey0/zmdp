@@ -280,8 +280,10 @@ EOF
 	my $ss = &state_to_string($s);
 	for my $a (@action_list) {
 	    my ($R,$T,$O) = @{&action_result($s,$a)};
-	    printf("R: %-3s : %-10s : * : * %f\n",
-		   $a, $ss, $R);
+	    if ($R != 0.0) {
+		printf("R: %-3s : %-10s : * : * %f\n",
+		       $a, $ss, $R);
+	    }
 	    for (@{$T}) {
 		my ($prob, $sp) = @{$_};
 		printf("T: %-3s : %-10s : %-10s %f\n",

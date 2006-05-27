@@ -349,8 +349,10 @@ EOF
 	for my $a (@action_list) {
 	    my $as = &action_to_string($a);
 	    my ($R,$T,$O) = @{&action_result($s,$a)};
-	    printf("R: %-3s : %-10s : * : * %f\n",
-		   $as, $ss, $R);
+	    if ($R != 0.0) {
+		printf("R: %-3s : %-10s : * : * %f\n",
+		       $as, $ss, $R);
+	    }
 	    for (@{$T}) {
 		my ($prob, $sp) = @{$_};
 		printf("T: %-3s : %-10s : %-10s %f\n",
