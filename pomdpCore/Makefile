@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.5 2006-04-28 21:14:33 trey Exp $
+# $Id: Makefile,v 1.6 2006-05-27 19:01:43 trey Exp $
 #
 # Copyright (c) 2002-2005, Trey Smith. All rights reserved.
 #
@@ -46,6 +46,12 @@ ifneq (,$(TEST))
 
 # add targets here to be built with 'make TEST=1 install'
 
+BUILDBIN_TARGET := testPomdpRead
+BUILDBIN_SRCS := testPomdpRead.cc
+BUILDBIN_INDEP_LIBS := 
+BUILDBIN_DEP_LIBS := -lzmdpPomdpCore -lzmdpPomdpParser -lzmdpCommon
+include $(BUILD_DIR)/buildbin.mak
+
 endif
 
 ######################################################################
@@ -55,6 +61,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.5  2006/04/28 21:14:33  trey
+# removed QMDP
+#
 # Revision 1.4  2006/04/28 17:57:41  trey
 # changed to use apache license
 #
