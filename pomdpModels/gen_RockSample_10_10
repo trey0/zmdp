@@ -341,7 +341,7 @@ EOF
     #print "T: * : * : * 0.0\n";
     #print "O: * : * : * 0.0\n";
 
-    print "E: ", &state_to_string("st"), "\n";
+    print "# E: ", &state_to_string("st"), "\n";
     print "\n";
 
     for my $s (@state_list) {
