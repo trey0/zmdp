@@ -67,7 +67,6 @@ static char *reserved_str[] = {
    "start",
    "include",
    "exclude",
-   "E",
    "reset"
 };
 static int reserved_token[] = {
@@ -86,7 +85,6 @@ static int reserved_token[] = {
    STARTTOK,
    INCLUDETOK,
    EXCLUDETOK,
-   ETOK,
    RESETTOK
 };
 

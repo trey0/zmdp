@@ -124,7 +124,7 @@ int gTooManyEntries = 0;
  DISCOUNTTOK 8 VALUESTOK 9 STATETOK 10 ACTIONTOK 11 
  OBSTOK 12 TTOK 13 OTOK 14 RTOK 15 UNIFORMTOK 16
  IDENTITYTOK 17 REWARDTOK 18 COSTTOK 19 RESETTOK 20
- STARTTOK 21 INCLUDETOK 22 EXCLUDETOK 23 ETOK 24
+ STARTTOK 21 INCLUDETOK 22 EXCLUDETOK 23
  EOFTOK 258
 
 %union {
@@ -468,7 +468,6 @@ param_spec	: trans_prob_spec
 
 		      observationSpecDefined = 1;
 		  }
-		| term_prob_spec
 		| reward_spec
 ;
 trans_prob_spec	: TTOK COLONTOK trans_spec_tail
@@ -491,22 +490,6 @@ trans_spec_tail	:action COLONTOK state COLONTOK state
 		{
 		   YACCtrace("trans_spec_tail -> action ui_matrix\n");
 		}
-;
-term_prob_spec  : ETOK COLONTOK term_spec_tail
-                {
-	           YACCtrace("term_prob_spec -> ETOK COLONTOK term_spec_tail\n");
-                }
-;
-term_spec_tail  : term_spec_tail state
-                {
-	 	   YACCtrace("term_spec_tail -> INTTOK term_spec_tail");
-		   gTerminalStates[$2] = 1;
-                }
-                | state
-                {
-		   YACCtrace("term_spec_tail -> INTTOK");
-		   gTerminalStates[$1] = 1;
-                }
 ;
 obs_prob_spec	: OTOK COLONTOK  obs_spec_tail
 		{
@@ -1576,7 +1559,7 @@ int readMDPFile( FILE *file ) {
       Unfortunately, I do not know how to do this yet.
       */
    if (returnValue != 0) {
-      printf("\nERROR: Parameter file contains syntax errors!\n");
+      printf("\nERROR: POMDP model file contains syntax errors!\n");
     }
 
    if (ERR_dump() || returnValue ) 
