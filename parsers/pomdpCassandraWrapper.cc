@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.6 $  $Author: trey $  $Date: 2006-05-26 00:59:30 $
+ $Revision: 1.7 $  $Author: trey $  $Date: 2006-05-27 19:05:27 $
   
  @file    pomdpCassandraWrapper.cc
  @brief   A wrapper that provides access to the pomdp read in by
@@ -39,6 +39,11 @@ using namespace std;
 #include "pomdpCassandraWrapper.h"
 #include "mdp.h"
 
+PomdpCassandraWrapper::~PomdpCassandraWrapper(void)
+{
+  deallocateMDP();
+}
+
 int PomdpCassandraWrapper::getNumStates(void) const {
   return gNumStates;
 }
@@ -59,20 +64,16 @@ ValueType PomdpCassandraWrapper::getInitialBelief(StateType s) const {
   return gInitialBelief[s];
 }
 
-bool PomdpCassandraWrapper::isTerminalState(StateType s) const {
-  return gTerminalStates[s];
+CassandraMatrix PomdpCassandraWrapper::getRTranspose(void) const {
+  return Q;
 }
 
-ValueType PomdpCassandraWrapper::R(StateType s, ActionType a) const {
-  return getEntryMatrix( Q, a, s );
+CassandraMatrix PomdpCassandraWrapper::getT(ActionType a) const {
+  return P[a];
 }
 
-ProbType PomdpCassandraWrapper::T(StateType s, ActionType a, StateType sp) const {
-  return getEntryMatrix( P[a], s, sp );
-}
-
-ProbType PomdpCassandraWrapper::O(StateType sp, ActionType a, ObsType o) const {
-  return getEntryMatrix( ::R[a], sp, o );
+CassandraMatrix PomdpCassandraWrapper::getO(ActionType a) const {
+  return ::R[a];
 }
 
 void PomdpCassandraWrapper::readFromFile(const string& fileName) {
@@ -85,6 +86,9 @@ void PomdpCassandraWrapper::readFromFile(const string& fileName) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.6  2006/05/26 00:59:30  trey
+ * changed error behavior from throwing an exception to exiting
+ *
  * Revision 1.5  2006/04/28 17:57:41  trey
  * changed to use apache license
  *

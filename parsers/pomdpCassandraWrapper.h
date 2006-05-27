@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.4 $  $Author: trey $  $Date: 2006-04-28 17:57:41 $
+ $Revision: 1.5 $  $Author: trey $  $Date: 2006-05-27 19:05:27 $
    
  @file    pomdpCassandraWrapper.h
  @brief   A wrapper that provides access to the pomdp read in by
@@ -30,6 +30,7 @@
 using namespace std;
 
 #include <string>
+#include "sparse-matrix.h"
 
 // Exception class
 class InputError { };
@@ -40,24 +41,25 @@ typedef int ObsType;
 typedef double ProbType;
 typedef double ValueType;
 
+typedef Matrix CassandraMatrix;
+
 struct PomdpCassandraWrapper {
-  PomdpCassandraWrapper(void) {}
+  ~PomdpCassandraWrapper(void);
 
   int getNumStates(void) const;
   int getNumActions(void) const;
   int getNumObservations(void) const;
   ValueType getDiscount(void) const;
   ValueType getInitialBelief(StateType s) const;
-  bool isTerminalState(StateType s) const;
 
   // rewards
-  ValueType R(StateType s, ActionType a) const;
+  CassandraMatrix getRTranspose(void) const;
 
   // transition probabilities
-  ProbType T(StateType s, ActionType a, StateType sp) const;
+  CassandraMatrix getT(ActionType a) const;
 
   // observation probabilities
-  ProbType O(StateType sp, ActionType a, ObsType o) const;
+  CassandraMatrix getO(ActionType a) const;
 
   void readFromFile(const string& fileName);
 };
@@ -68,6 +70,9 @@ struct PomdpCassandraWrapper {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2006/04/28 17:57:41  trey
+ * changed to use apache license
+ *
  * Revision 1.3  2005/10/28 03:54:39  trey
  * simplified license
  *
