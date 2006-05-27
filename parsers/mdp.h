@@ -81,9 +81,6 @@ extern Matrix Q;  /* Immediate values for state action pairs.  These
 extern double *gInitialBelief;   /* For POMDPs */
 extern int gInitialState;        /* For MDPs   */
 
-/* bool: is state terminal or not */
-extern char *gTerminalStates;
-
 #ifdef __cplusplus
 extern "C" {
 #endif

@@ -90,8 +90,6 @@ Matrix Q;  /* Immediate values for state action pairs.  These are
 double *gInitialBelief; 
 int gInitialState = INVALID_STATE;
 
-char *gTerminalStates = 0;
-
 /***************************************************************************/
 double *newBeliefState(  ) {
 
@@ -206,7 +204,7 @@ void allocateIntermediateMDP() {
    the latter for POMDPs only.
 */
 
-  int a, s;
+  int a;
 
   /* We need an intermediate matrix for transition probs. for each
      action.  */
@@ -214,11 +212,6 @@ void allocateIntermediateMDP() {
   
   for( a = 0; a < gNumActions; a++ )
     IP[a] = newIMatrix( gNumStates );
-
-  gTerminalStates = (char *) malloc( gNumStates * sizeof(char) );
-  for ( s = 0; s < gNumStates; s++) {
-    gTerminalStates[s] = 0;
-  }
 
   /* Only need observation probabilities if it is a POMDP */
   if( gProblemType == POMDP_problem_type ) {
