@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.9 $  $Author: trey $  $Date: 2006-04-28 18:53:57 $
+ $Revision: 1.10 $  $Author: trey $  $Date: 2006-05-27 19:02:18 $
   
  @file    Pomdp.cc
  @brief   No brief
@@ -38,6 +38,7 @@
 #include "Pomdp.h"
 #include "MatrixUtils.h"
 #include "slaMatrixUtils.h"
+#include "sla_cassandra.h"
 
 using namespace std;
 using namespace MatrixUtils;
@@ -164,11 +165,6 @@ bool Pomdp::getIsTerminalState(const state_vector& s) const
 }
 
 void Pomdp::readFromFileCassandra(const string& fileName) {
-  dvector initialBeliefx;
-  std::vector<bool> isPomdpTerminalStatex;
-  kmatrix Rx;
-  std::vector<kmatrix> Tx, Ox;
-
 #if USE_DEBUG_PRINT
   timeval startTime, endTime;
   cout << "reading problem from " << fileName << endl;
@@ -183,6 +179,43 @@ void Pomdp::readFromFileCassandra(const string& fileName) {
   numActions = p.getNumActions();
   numObservations = p.getNumObservations();
   discount = p.getDiscount();
+
+  // convert R to sla format
+  kmatrix Rk;
+  copy(Rk, p.getRTranspose(), numStates);
+  kmatrix_transpose_in_place(Rk);
+  copy(R, Rk);
+
+  // convert T, Tr, and O to sla format
+  kmatrix Tk;
+  T.resize(numActions);
+  Ttr.resize(numActions);
+  O.resize(numActions);
+  FOR (a, numActions) {
+    copy(Tk, p.getT(a), numStates);
+    copy(T[a], Tk);
+    kmatrix_transpose_in_place(Tk);
+    copy(Ttr[a], Tk);
+    copy(O[a], p.getO(a), numObservations);
+  }
+
+  // convert initialBelief to sla format
+  dvector initialBeliefD;
+  initialBeliefD.resize(numStates);
+  FOR (s, numStates) {
+    initialBeliefD(s) = p.getInitialBelief(s);
+  }
+  copy(initialBelief, initialBeliefD);
+
+  // calculate isPomdpTerminalState
+  isPomdpTerminalState.resize(numStates, /* initialValue = */ false);
+  // FIX fill me in
+
+#if 0
+  dvector initialBeliefx;
+  std::vector<bool> isPomdpTerminalStatex;
+  kmatrix Rx;
+  std::vector<kmatrix> Tx, Ox;
 
   // pre-process
   initialBeliefx.resize(numStates);
@@ -224,6 +257,7 @@ void Pomdp::readFromFileCassandra(const string& fileName) {
     copy( Ttr[a], Tx[a] );
     copy( O[a], Ox[a] );
   }
+#endif // if 0
 
 #if USE_DEBUG_PRINT
   gettimeofday(&endTime,0);
@@ -452,6 +486,9 @@ void Pomdp::debugDensity(void) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.9  2006/04/28 18:53:57  trey
+ * removed obsolete #if for NO_COMPRESSED_MATRICES
+ *
  * Revision 1.8  2006/04/28 17:57:41  trey
  * changed to use apache license
  *
