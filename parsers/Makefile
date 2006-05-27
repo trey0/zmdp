@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.7 2006-04-28 17:57:41 trey Exp $
+# $Id: Makefile,v 1.8 2006-05-27 19:04:32 trey Exp $
 #
 # Copyright (c) 2002-2005, Trey Smith. All rights reserved.
 #
@@ -29,7 +29,9 @@ include $(SRC_DIR)/common/options.mak
 # ADD ANY SUBDIRS THAT NEED TO BE VISITED DURING A BUILD TO THE SUBDIRS LIST
 SUBDIRS := 
 
-INSTALLHEADERS_HEADERS := pomdpCassandraWrapper.h
+INSTALLHEADERS_HEADERS := \
+	pomdpCassandraWrapper.h \
+	sparse-matrix.h
 include $(BUILD_DIR)/installheaders.mak
 
 BUILDLIB_TARGET := libzmdpPomdpParser.a
@@ -56,6 +58,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.7  2006/04/28 17:57:41  trey
+# changed to use apache license
+#
 # Revision 1.6  2006/01/31 20:26:43  trey
 # renamed libpomdp_spec -> libzmdpPomdpParser
 #
