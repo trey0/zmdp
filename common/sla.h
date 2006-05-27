@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.18 $  $Author: trey $  $Date: 2006-04-28 18:52:41 $
+ $Revision: 1.19 $  $Author: trey $  $Date: 2006-05-27 19:03:02 $
    
  @file    sla.h
  @brief   No brief
@@ -153,6 +153,7 @@ namespace sla {
     unsigned int size1(void) const { return size1_; }
     unsigned int size2(void) const { return size2_; }
     unsigned int filled(void) const { return data.size(); }
+    void clear(void);
     void resize(unsigned int _size1, unsigned int _size2, double value = 0.0);
     void push_back(unsigned int r, unsigned int c, double value);
     void canonicalize(void);
@@ -469,6 +470,11 @@ namespace sla {
     return 0.0;
   }
 
+  inline void kmatrix::clear(void)
+  {
+    resize(0,0,0);
+  }
+
   inline void kmatrix::resize(unsigned int _size1, unsigned int _size2,
 			      double value)
   {
@@ -721,6 +727,7 @@ namespace sla {
   // A = A'
   inline void kmatrix_transpose_in_place(kmatrix& A)
   {
+    std::swap(A.size1_, A.size2_);
     FOR_EACH ( Ai, A.data ) {
       std::swap( Ai->r, Ai->c );
     }
@@ -1257,6 +1264,9 @@ typedef sla::dvector obs_prob_vector;
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.18  2006/04/28 18:52:41  trey
+ * removed obsolete USE_COMPRESSED_ALPHA ifdef
+ *
  * Revision 1.17  2006/04/28 17:57:41  trey
  * changed to use apache license
  *
