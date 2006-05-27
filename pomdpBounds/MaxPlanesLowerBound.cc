@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.4 $  $Author: trey $  $Date: 2006-04-28 21:14:20 $
+ $Revision: 1.5 $  $Author: trey $  $Date: 2006-05-27 19:21:50 $
    
  @file    MaxPlanesLowerBound.cc
  @brief   No brief
@@ -315,7 +315,7 @@ void MaxPlanesLowerBound::writeToFile(const std::string& outFileName) const
 "# Each lower bound plane is only defined over a subset of the belief\n"
 "# simplex--it is defined for those beliefs b such that the non-zero\n"
 "# entries of b are a subset of the entries present in the plane's alpha\n"
-"# vector.  We call these the planes that are 'applicable' to b.\n"
+"# vector.  If this condition holds we say the plane is 'applicable' to b.\n"
 "#\n"
 "# Given a belief b, both of the queries above can be answered by the\n"
 "# following process: first, throw out all the planes that are not\n"
@@ -350,6 +350,9 @@ void MaxPlanesLowerBound::writeToFile(const std::string& outFileName) const
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2006/04/28 21:14:20  trey
+ * now automatically write an explanation of the policy format to top of each policy output file
+ *
  * Revision 1.3  2006/04/28 17:57:41  trey
  * changed to use apache license
  *
