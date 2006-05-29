@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-05-29 04:06:02 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-05-29 04:56:36 $
    
  @file    decision-tree.c
  @brief   No brief
@@ -303,13 +303,17 @@ static void dtDebugPrintTable(DTTable* t, int indent)
   int i;
 
   dtSpaces(indent);
-  printf("table -- default:\n");
-  dtDebugPrintNode(t->defaultEntry, indent+2);
+  printf("table:\n");
+  dtSpaces(indent+2);
+  printf("default:\n");
+  dtDebugPrintNode(t->defaultEntry, indent+4);
   for (i=0; i < t->numEntries; i++) {
-    dtSpaces(indent);
-    if (NULL != t->entries[i]) {
+    dtSpaces(indent+2);
+    if (NULL == t->entries[i]) {
+      printf("entry %d: (default)\n", i);
+    } else {
       printf("entry %d:\n", i);
-      dtDebugPrintNode(t->entries[i], indent+2);
+      dtDebugPrintNode(t->entries[i], indent+4);
     }
   };
 }
@@ -320,6 +324,9 @@ static void dtDebugPrintTable(DTTable* t, int indent)
 
 void dtInit(int numActions, int numStates, int numObservations)
 {
+  /* guard to prevent double initialization */
+  if (NULL != gTree) return;
+
   gTableSizes = (int*) malloc(DT_TABLE_DEPTH*sizeof(int));
   gTableSizes[0] = numActions;
   gTableSizes[1] = numStates;
@@ -366,5 +373,8 @@ void dtDebugPrint(const char* header)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/05/29 04:06:02  trey
+ * initial check-in
+ *
  *
  ***************************************************************************/
