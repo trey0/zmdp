@@ -377,6 +377,9 @@ void convertMatrices() {
    */
 
   int a;
+#if USE_DEBUG_PRINT
+  struct timeval startTime, endTime;
+#endif
 
   /* Allocate room for each action */
   P = (Matrix *) malloc( gNumActions * sizeof( *P ) );
@@ -386,8 +389,16 @@ void convertMatrices() {
 
   for( a = 0; a < gNumActions; a++ ) {
 
+#if USE_DEBUG_PRINT
+    printf("pomdp_spec: transforming transition matrix [a=%d]\n", a);
+#endif
+
     P[a] = transformIMatrix( IP[a] );
     destroyIMatrix( IP[a] );
+
+#if USE_DEBUG_PRINT
+    printf("pomdp_spec: transforming obs matrix [a=%d]\n", a);
+#endif
 
     if( gProblemType == POMDP_problem_type ) {
       R[a] = transformIMatrix( IR[a] );
@@ -404,7 +415,19 @@ void convertMatrices() {
   /* Calculate expected immediate rewards for action-state pairs, but
      do it in the sparse matrix representation to eliminate zeroes */
 
+#if USE_DEBUG_PRINT
+  printf("pomdp_spec: computing rewards\n");
+  gettimeofday(&startTime, NULL);
+#endif
+
   computeRewards();
+
+#if USE_DEBUG_PRINT
+  gettimeofday(&endTime, NULL);
+  printf("  (took %lf seconds)\n",
+	 endTime.tv_sec - startTime.tv_sec + 1e-6 * (endTime.tv_usec - startTime.tv_usec));
+  printf("pomdp_spec: transforming reward matrix\n");
+#endif
 
   /* Then convert it into the real representation */
   Q = transformIMatrix( IQ );
