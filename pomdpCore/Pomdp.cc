@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.11 $  $Author: trey $  $Date: 2006-05-29 05:05:19 $
+ $Revision: 1.12 $  $Author: trey $  $Date: 2006-05-29 06:05:43 $
   
  @file    Pomdp.cc
  @brief   No brief
@@ -97,8 +97,18 @@ void Pomdp::readFromFile(const std::string& fileName,
   }
 
   // post-process: calculate isPomdpTerminalState
-  isPomdpTerminalState.resize(numStates, /* initialValue = */ false);
-  // FIX fill me in
+#if USE_DEBUG_PRINT
+  printf("Pomdp::readFromFile: marking zero-reward absorbing states as terminal\n");
+#endif
+  isPomdpTerminalState.resize(numStates, /* initialValue = */ true);
+  FOR (s, numStates) {
+    FOR (a, numActions) {
+      if ((fabs(1.0 - T[a](s,s)) > OBS_IS_ZERO_EPS) || R(s,a) != 0.0) {
+	isPomdpTerminalState[s] = false;
+	break;
+      }
+    }
+  }
 }
 
 const belief_vector& Pomdp::getInitialBelief(void) const
@@ -472,6 +482,9 @@ void Pomdp::debugDensity(void) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.11  2006/05/29 05:05:19  trey
+ * updated handling of isTerminalState, no longer explicitly specified in the model file
+ *
  * Revision 1.10  2006/05/27 19:02:18  trey
  * cleaned up CassandraMatrix -> sla::cmatrix conversion
  *
