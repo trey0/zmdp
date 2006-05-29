@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2006-05-29 04:56:36 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2006-05-29 05:49:03 $
    
  @file    decision-tree.c
  @brief   No brief
@@ -214,7 +214,7 @@ DTNode* dtAddInternal(DTNode* node, int* vec, int index, double val)
      DT_TABLE_DEPTH). */
   allWildcards = 1;
   for (i = index; i < DT_TABLE_DEPTH; i++) {
-    if (vec[index] != WILDCARD_SPEC) {
+    if (vec[i] != WILDCARD_SPEC) {
       allWildcards = 0;
       break;
     }
@@ -373,6 +373,9 @@ void dtDebugPrint(const char* header)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2006/05/29 04:56:36  trey
+ * added guard against double initialization; improved debug output
+ *
  * Revision 1.1  2006/05/29 04:06:02  trey
  * initial check-in
  *
