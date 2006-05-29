@@ -89,10 +89,14 @@ that was specified in the file.  */
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <string.h>
 
 #include "mdp.h"
 #include "sparse-matrix.h"
 #include "imm-reward.h"
+#include "decision-tree.h"
+
+#define USE_DECISION_TREE (1)
 
 /* As we parse the file, we will encounter only one R : * : *.... line
    at a time, so we will keep the intermediate matrix as a global
@@ -136,6 +140,10 @@ void destroyImmRewards() {
     free( temp );
 
   }  /* while */
+
+#if USE_DECISION_TREE
+  dtDeallocate();
+#endif
 
 }  /* destroyImmRewardList */
 /**********************************************************************/
@@ -276,6 +284,56 @@ void enterImmReward( int cur_state, int next_state, int obs,
 
 }  /* enterImmReward */
 /**********************************************************************/
+void irAddToDecisionTree(Imm_Reward_List node)
+{
+  int i, j, k;
+  Matrix m;
+
+  assert( node != NULL );
+
+  /* ensure the decision tree is initialized (ok to call dtInit() more than once) */
+  dtInit(gNumActions, gNumStates, gNumObservations);
+
+  switch( node->type ) {
+  case ir_value:
+    if ( gProblemType == POMDP_problem_type ) { /* pomdp */
+      dtAdd(node->action, node->cur_state, node->next_state, node->obs, node->rep.value);
+    } else { /* mdp */
+      dtAdd(node->action, node->cur_state, node->next_state, WILDCARD_SPEC, node->rep.value);
+    }
+    break;
+    
+  case ir_vector:
+    if ( gProblemType == POMDP_problem_type ) { /* pomdp */
+      for (i=0; i < gNumObservations; i++) {
+	dtAdd(node->action, node->cur_state, node->next_state, i, node->rep.vector[i]);
+      }
+    } else { /* mdp */
+      for (i=0; i < gNumStates; i++) {
+	dtAdd(node->action, node->cur_state, i, WILDCARD_SPEC, node->rep.vector[i]);
+      }
+    }
+    break;
+    
+  case ir_matrix:
+    m = node->rep.matrix;
+    for (i=0; i < m->num_rows; i++) {
+      for (j=0; j < m->row_length[i]; j++) {
+	k = m->row_start[i] + j;
+	if( gProblemType == POMDP_problem_type )  { /* pomdp */
+	  dtAdd(node->action, node->cur_state, i, m->col[k], m->mat_val[k]);
+	} else { /* mdp */
+	  dtAdd(node->action, i, m->col[k], WILDCARD_SPEC, m->mat_val[k]);
+	}
+      }
+    }
+    break;
+    
+  default:
+    assert(0 /* never reach this point */);
+  }  /* switch */
+}
+/**********************************************************************/
 void doneImmReward() {
   
   if( gCurImmRewardNode == NULL )
@@ -299,6 +357,10 @@ void doneImmReward() {
     break;
   }  /* switch */
 
+#if USE_DECISION_TREE
+  irAddToDecisionTree(gCurImmRewardNode);
+#endif
+
   gImmRewardList = appendImmRewardList( gImmRewardList,
 				       gCurImmRewardNode );
   gCurImmRewardNode = NULL;
@@ -306,7 +368,10 @@ void doneImmReward() {
 }  /* doneImmReward */
 /**********************************************************************/
 double getImmediateReward( int action, int cur_state, int next_state,
-			int obs ) {
+			   int obs ) {
+#if USE_DECISION_TREE
+  return dtGet(action, cur_state, next_state, obs);
+#else
   Imm_Reward_List temp = gImmRewardList;
   double return_value = 0.0;
 
@@ -397,8 +462,6 @@ double getImmediateReward( int action, int cur_state, int next_state,
   }  /* while */
 
   return( return_value );
-  
+#endif /* if USE_DECISION_TREE / else */
 }  /* getImmediateReward */
 /**********************************************************************/
-
-
