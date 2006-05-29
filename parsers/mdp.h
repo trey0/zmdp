@@ -28,6 +28,8 @@
 
 #define MDP_H
 
+#include <stdio.h>
+
 #include "sparse-matrix.h"
 
 /* Use this type for a variable that indicated whether we have a 
