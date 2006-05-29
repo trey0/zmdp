@@ -1548,6 +1548,9 @@ int readMDPFile( FILE *file ) {
    yyin = file;
 
    returnValue = yyparse();
+#if USE_DEBUG_PRINT
+   printf("pomdp_spec: done parsing, beginning conversion to sparse-matrix\n");
+#endif
 
    /* If there are syntax errors, then we have to do something if we 
       want to parse another file without restarting.  It seems that
