@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-05-29 05:02:52 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-05-29 05:48:11 $
    
  @file    testDecisionTree.c
  @brief   No brief
@@ -40,7 +40,7 @@ int main(int argc, char** argv)
   dtAdd(1, 0, 0,  -1, 6.0);
   dtAdd(1, 0, -1, -1, 7.0);
 
-  dtDebugPrint("decision tree:");
+  dtAdd(-1, 2, -1, -1, 2.7);
 
   /* do a few queries */
   result = dtGet(0, 1, 2, 3);
@@ -55,6 +55,10 @@ int main(int argc, char** argv)
   printf("expecting: result=%lf\n", 7.0);
   printf("got:       result=%lf\n", result);
 
+  result = dtGet(3, 2, 0, 0);
+  printf("expecting: result=%lf\n", 2.7);
+  printf("got:       result=%lf\n", result);
+
   /* clean up */
   dtDeallocate();
 
@@ -64,5 +68,8 @@ int main(int argc, char** argv)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/05/29 05:02:52  trey
+ * initial check-in
+ *
  *
  ***************************************************************************/
