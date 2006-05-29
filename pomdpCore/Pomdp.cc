@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.10 $  $Author: trey $  $Date: 2006-05-27 19:02:18 $
+ $Revision: 1.11 $  $Author: trey $  $Date: 2006-05-29 05:05:19 $
   
  @file    Pomdp.cc
  @brief   No brief
@@ -95,6 +95,10 @@ void Pomdp::readFromFile(const std::string& fileName,
   } else {
     readFromFileCassandra(fileName);
   }
+
+  // post-process: calculate isPomdpTerminalState
+  isPomdpTerminalState.resize(numStates, /* initialValue = */ false);
+  // FIX fill me in
 }
 
 const belief_vector& Pomdp::getInitialBelief(void) const
@@ -151,8 +155,6 @@ AbstractBound* Pomdp::newUpperBound(void) const
   return NULL;
 }
 
-// NOTE: this only works if terminal states are explicitly marked
-// using the non-standard 'E:' extension to Cassandra's POMDP format
 bool Pomdp::getIsTerminalState(const state_vector& s) const
 {
   double nonTerminalSum = 0.0;
@@ -206,10 +208,6 @@ void Pomdp::readFromFileCassandra(const string& fileName) {
     initialBeliefD(s) = p.getInitialBelief(s);
   }
   copy(initialBelief, initialBeliefD);
-
-  // calculate isPomdpTerminalState
-  isPomdpTerminalState.resize(numStates, /* initialValue = */ false);
-  // FIX fill me in
 
 #if 0
   dvector initialBeliefx;
@@ -295,7 +293,6 @@ void Pomdp::readFromFileFast(const std::string& fileName)
   }
 
   dvector initialBeliefx;
-  std::vector<bool> isPomdpTerminalStatex;
   kmatrix Rx;
   std::vector<kmatrix> Tx, Ox;
 
@@ -372,7 +369,6 @@ void Pomdp::readFromFileFast(const std::string& fileName)
 	setBeliefSize(numStates);
 	initialBeliefx.resize(numStates);
 	set_to_zero(initialBeliefx);
-	isPomdpTerminalStatex.resize(numStates, false);
 	Rx.resize(numStates, numActions);
 	Tx.resize(numActions);
 	Ox.resize(numActions);
@@ -389,15 +385,6 @@ void Pomdp::readFromFileFast(const std::string& fileName)
       if (PM_PREFIX_MATCHES("start:")) {
 	data = buf + strlen("start: ");
 	readVector(data,initialBeliefx,numStates);
-      } else if (PM_PREFIX_MATCHES("E:")) {
-	int s;
-	if (1 != sscanf(buf, "E: %d", &s)) {
-	  cerr << "ERROR: line " << lineNumber
-	       << ": syntax error in E statement"
-	       << endl;
-	  exit(EXIT_FAILURE);
-	}
-	isPomdpTerminalStatex[s] = true;
       } else if (PM_PREFIX_MATCHES("R:")) {
 	int s, a;
 	double reward;
@@ -443,7 +430,6 @@ void Pomdp::readFromFileFast(const std::string& fileName)
 
   // post-process
   copy( initialBelief, initialBeliefx );
-  isPomdpTerminalState = isPomdpTerminalStatex;
   copy( R, Rx );
   Ttr.resize(numActions);
   O.resize(numActions);
@@ -486,6 +472,9 @@ void Pomdp::debugDensity(void) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.10  2006/05/27 19:02:18  trey
+ * cleaned up CassandraMatrix -> sla::cmatrix conversion
+ *
  * Revision 1.9  2006/04/28 18:53:57  trey
  * removed obsolete #if for NO_COMPRESSED_MATRICES
  *
