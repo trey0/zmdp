@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2006-05-29 05:49:03 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2006-06-01 15:59:55 $
    
  @file    decision-tree.c
  @brief   No brief
@@ -59,6 +59,9 @@ struct DTNodeStruct {
     double val;
   } data;
 };
+
+typedef struct DTNodeStruct DTNode;
+typedef struct DTTableStruct DTTable;
 
 /**********************************************************************
  * FUNCTION PROTOTYPES
@@ -373,6 +376,9 @@ void dtDebugPrint(const char* header)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2006/05/29 05:49:03  trey
+ * fixed a serious bug when a wildcard is followed by a number
+ *
  * Revision 1.2  2006/05/29 04:56:36  trey
  * added guard against double initialization; improved debug output
  *

@@ -1,8 +1,9 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-05-29 04:06:02 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-06-01 15:59:55 $
    
  @file    decision-tree.h
- @brief   No brief
+ @brief   Efficient decision tree data structure for MDP/POMDP immediate
+          rewards.
 
  Copyright (c) 2006, Trey Smith. All rights reserved.
 
@@ -23,14 +24,39 @@
 #ifndef INCdecision_tree_h
 #define INCdecision_tree_h
 
-typedef struct DTNodeStruct DTNode;
-typedef struct DTTableStruct DTTable;
+/* The decision-tree library efficiently stores a mapping [a,s,s',o] ->
+   val, where a is an action, s and s' are states, o is an observation
+   (all integers), and val is an immediate reward value (real).
 
+   * Construct the immediate reward mapping by calling dtInit() and
+     repeatedly calling dtAdd(), one time for each "entry" in the mapping.
+
+   * Query immediate rewards by calling dtGet().
+
+   * When finished, call dtDeallocate().
+
+   The decision-tree library is intended to be used only by the
+   imm-reward library.  (The dtGet() function 
+*/
+
+/* Initialize the decision-tree library--dimensionality of the model
+   must be specified so that tables in the decision tree can be
+   allocated appropriately later. */
 extern void dtInit(int numActions, int numStates, int numObservations);
+
+/* Adds an entry to the decision tree.  Any of the first four arguments
+   can be given the value -1 (== WILDCARD_SPEC), indicating a wildcard.
+   Later calls to dtAdd() overwrite earlier calls. */
 extern void dtAdd(int action, int cur_state, int next_state, int obs, double val);
+
+/* Returns the immediate reward for a particular [a,s,s',o] tuple. */
 extern double dtGet(int action, int cur_state, int next_state, int obs);
+
+/* Cleans up all decision tree data structures on the heap. */
 extern void dtDeallocate(void);
 
+/* Print a textual representation of the decision tree data structure to
+   stdout.  Intended for debugging. */
 extern void dtDebugPrint(const char* header);
 
 #endif // INCdecision_tree_h
@@ -38,5 +64,8 @@ extern void dtDebugPrint(const char* header);
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/05/29 04:06:02  trey
+ * initial check-in
+ *
  *
  ***************************************************************************/
