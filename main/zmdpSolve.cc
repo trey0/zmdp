@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.5 $  $Author: trey $  $Date: 2006-04-28 20:33:54 $
+ $Revision: 1.6 $  $Author: trey $  $Date: 2006-06-01 16:49:54 $
 
  @file    zmdpSolve.cc
  @brief   No brief
@@ -73,7 +73,6 @@ void doSolve(const SolverParams& p, const OutputParams& op)
 {
   StopWatch run;
 
-  setSignalHandler(SIGINT, &sigIntHandler);
   init_matrix_utils();
 
   printf("%05d reading model file and allocating data structures\n",
@@ -95,6 +94,8 @@ void doSolve(const SolverParams& p, const OutputParams& op)
   printf("%05d finished initialization, beginning to improve policy\n",
 	 (int) run.elapsedTime());
   
+  setSignalHandler(SIGINT, &sigIntHandler);
+
   double lastPrintTime = -1000;
   bool reachedTargetPrecision = false;
   bool reachedTimeout = false;
@@ -290,6 +291,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.5  2006/04/28 20:33:54  trey
+ * added handling of SIGINT
+ *
  * Revision 1.4  2006/04/28 17:57:41  trey
  * changed to use apache license
  *
