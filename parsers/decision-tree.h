@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2006-06-01 15:59:55 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2006-06-01 16:48:36 $
    
  @file    decision-tree.h
  @brief   Efficient decision tree data structure for MDP/POMDP immediate
@@ -24,7 +24,10 @@
 #ifndef INCdecision_tree_h
 #define INCdecision_tree_h
 
-/* The decision-tree library efficiently stores a mapping [a,s,s',o] ->
+/**********************************************************************
+   See an example of how to use this library in testDecisionTree.c.
+
+   The decision-tree library efficiently stores a mapping [a,s,s',o] ->
    val, where a is an action, s and s' are states, o is an observation
    (all integers), and val is an immediate reward value (real).
 
@@ -36,8 +39,9 @@
    * When finished, call dtDeallocate().
 
    The decision-tree library is intended to be used only by the
-   imm-reward library.  (The dtGet() function 
-*/
+   imm-reward library.  (The dtGet() function hides behind the
+   getImmediateReward() function in imm-reward.c).
+ **********************************************************************/
 
 /* Initialize the decision-tree library--dimensionality of the model
    must be specified so that tables in the decision tree can be
@@ -64,6 +68,9 @@ extern void dtDebugPrint(const char* header);
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2006/06/01 15:59:55  trey
+ * no longer publish unnecessary typedefs in header
+ *
  * Revision 1.1  2006/05/29 04:06:02  trey
  * initial check-in
  *
