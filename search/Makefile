@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.13 2006-04-28 22:33:41 trey Exp $
+# $Id: Makefile,v 1.14 2006-06-03 10:57:13 trey Exp $
 #
 # Copyright (c) 2006, Trey Smith. All rights reserved.
 #
@@ -27,7 +27,7 @@ include $(CHECKOUT_DIR)/src/build/header.mak
 include $(SRC_DIR)/common/options.mak
 
 maininstall:
-	$(MAKE) $(MFLAGS) -C .. -fMakefile SUBDIRS='rtdp main' install
+	$(MAKE) $(MFLAGS) -C .. -fMakefile SUBDIRS='search main' install
 
 # ADD ANY SUBDIRS THAT NEED TO BE VISITED DURING A BUILD TO THE SUBDIRS LIST
 SUBDIRS :=
@@ -62,6 +62,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.13  2006/04/28 22:33:41  trey
+# renamed zmdpRtdp -> zmdpSearch
+#
 # Revision 1.12  2006/04/28 17:57:41  trey
 # changed to use apache license
 #
