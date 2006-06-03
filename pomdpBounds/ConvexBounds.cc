@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.7 $  $Author: trey $  $Date: 2006-05-12 16:04:30 $
+ $Revision: 1.8 $  $Author: trey $  $Date: 2006-06-03 13:32:08 $
    
  @file    ConvexBounds.cc
  @brief   No brief
@@ -41,6 +41,7 @@ using namespace sla;
 using namespace MatrixUtils;
 
 #define CB_QVAL_UNDEFINED (-99e+20)
+#define CB_INITIALIZATION_PRECISION_FACTOR (1e-2)
 
 namespace zmdp {
 
@@ -256,7 +257,7 @@ void ConvexBounds::initialize(const MDP* _pomdp,
 			      double _targetPrecision)
 {
   pomdp = (const Pomdp*) _pomdp;
-  targetPrecision = _targetPrecision;
+  targetPrecision = CB_INITIALIZATION_PRECISION_FACTOR * _targetPrecision;
 
   if (keepLowerBound) {
     lowerBound = new MaxPlanesLowerBound(pomdp);
@@ -422,6 +423,9 @@ void ConvexBounds::writePolicy(const std::string& outFileName)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.7  2006/05/12 16:04:30  trey
+ * fixed problem with uninitialized variable
+ *
  * Revision 1.6  2006/04/28 17:57:41  trey
  * changed to use apache license
  *
