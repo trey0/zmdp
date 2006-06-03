@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2006-04-28 17:57:41 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2006-06-03 10:59:03 $
    
  @file    FastInfUBInitializer.cc
  @brief   No brief
@@ -153,6 +153,15 @@ void FastInfUBInitializer::initFIB(double targetPrecision)
     }
   }
 
+  // post-process: make sure the value for all terminal states
+  // is exactly 0, since that is how the ubVal field of terminal
+  // nodes is initialized.
+  FOR (i, pomdp->numStates) {
+    if (pomdp->isPomdpTerminalState[i]) {
+      dalpha(i) = 0.0;
+    }
+  }
+
   // write out result
   bound->pts.clear();
   copy(bound->cornerPts, dalpha);
@@ -163,6 +172,9 @@ void FastInfUBInitializer::initFIB(double targetPrecision)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2006/04/28 17:57:41  trey
+ * changed to use apache license
+ *
  * Revision 1.2  2006/04/27 23:08:50  trey
  * put some output in USE_DEBUG_PRINT
  *
