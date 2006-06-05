@@ -280,7 +280,7 @@ EOF
     #print "T: * : * : * 0.0\n";
     #print "O: * : * : * 0.0\n";
 
-    print "E: st\n";
+    print "# E: st\n";
     print "\n";
 
     for my $s (@state_list) {
