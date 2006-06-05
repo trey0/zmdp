@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.12 $  $Author: trey $  $Date: 2006-05-29 06:05:43 $
+ $Revision: 1.13 $  $Author: trey $  $Date: 2006-06-05 20:10:46 $
   
  @file    Pomdp.cc
  @brief   No brief
@@ -39,6 +39,8 @@
 #include "MatrixUtils.h"
 #include "slaMatrixUtils.h"
 #include "sla_cassandra.h"
+#include "MaxPlanesLowerBound.h"
+#include "SawtoothUpperBound.h"
 
 using namespace std;
 using namespace MatrixUtils;
@@ -153,16 +155,12 @@ double Pomdp::getReward(const belief_vector& b, int a) const
 
 AbstractBound* Pomdp::newLowerBound(void) const
 {
-  // no default bounds are provided
-  assert(0);
-  return NULL;
+  return new MaxPlanesLowerBound(this);
 }
 
 AbstractBound* Pomdp::newUpperBound(void) const
 {
-  // no default bounds are provided
-  assert(0);
-  return NULL;
+  return new SawtoothUpperBound(this);
 }
 
 bool Pomdp::getIsTerminalState(const state_vector& s) const
@@ -482,6 +480,9 @@ void Pomdp::debugDensity(void) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.12  2006/05/29 06:05:43  trey
+ * now mark zero-reward absorbing states as terminal, without an explicit list in the pomdp model file
+ *
  * Revision 1.11  2006/05/29 05:05:19  trey
  * updated handling of isTerminalState, no longer explicitly specified in the model file
  *
