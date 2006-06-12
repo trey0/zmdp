@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-06-12 18:12:08 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-06-12 18:44:58 $
    
  @file    LSModelFile.cc
  @brief   No brief
@@ -45,6 +45,25 @@ typedef std::map<std::string, std::string> ParamLookup;
 /**********************************************************************
  * LOCAL HELPER FUNCTIONS
  **********************************************************************/
+
+static void convertToDoubleVector(std::vector<double>& result,
+				  const std::string& s)
+{
+  string::size_type p1, p2;
+  p1 = 0;
+  while (1) {
+    p2 = s.find_first_of(" \t", p1);
+    if (string::npos == p2) {
+      result.push_back(atof(s.substr(p1).c_str()));
+      break;
+    } else {
+      if (p1 != p2) {
+	result.push_back(atof(s.substr(p1,(p2-p1)).c_str()));
+      }
+      p1 = p2+1;
+    }
+  }
+}
 
 static std::string getVal(const ParamLookup& params,
 			  const std::string& paramName)
@@ -145,9 +164,9 @@ void LSGrid::writeToFile(FILE* outFile) const
   }
 }
 
-void LSGrid::calculateMaxCell(void)
+int LSGrid::getMaxCellValue(void)
 {
-  maxValue = 0;
+  int maxValue = 0;
   FOR (y, height) {
     FOR (x, width) {
       int cell = getCell(LSPos(x,y));
@@ -157,6 +176,7 @@ void LSGrid::calculateMaxCell(void)
     }
   }
   maxValue++;
+  return maxValue;
 }
 
 /**********************************************************************
@@ -190,7 +210,7 @@ void LSModelFile::readFromFile(const std::string& fname)
     if ('#' == lbuf[0]) continue;
     if ('-' == lbuf[0]) goto preambleDone;
     lbuf[strlen(lbuf)-1] = '\0'; // truncate newline
-    if (2 != sscanf(lbuf, "%s %s", key, value)) {
+    if (2 != sscanf(lbuf, "%s %[-0-9.eE \t]", key, value)) {
       fprintf(stderr, "ERROR: %s: line %d: syntax error, expected '<key> <value>'\n",
 	      fname.c_str(), lnum);
       exit(EXIT_FAILURE);
@@ -205,6 +225,7 @@ void LSModelFile::readFromFile(const std::string& fname)
   /* store parameters */
   startX = atoi(getVal(params, "startX").c_str());
   startY = atoi(getVal(params, "startY").c_str());
+  convertToDoubleVector(regionPriors, getVal(params, "regionPriors"));
 
   /* read map data into intermediate data structure */
   std::vector<std::string> rows;
@@ -259,13 +280,26 @@ void LSModelFile::readFromFile(const std::string& fname)
       grid.setCell(LSPos(x, y), cell);
     }
   }
-  grid.calculateMaxCell();
+
+  if ((int)regionPriors.size() != grid.getMaxCellValue()) {
+    int n = grid.getMaxCellValue();
+    fprintf(stderr, "ERROR: %s: number of regionPriors (%lu) should match number of regions in map (a-%c=%d)\n",
+	    fname.c_str(), regionPriors.size(), (char) ((n-1)+97), n);
+    exit(EXIT_FAILURE);
+  }
 }
 
 void LSModelFile::writeToFile(FILE* outFile) const
 {
   fprintf(outFile, "startX %d\n", startX);
   fprintf(outFile, "startY %d\n", startY);
+
+  fprintf(outFile, "regionPriors ");
+  FOR (i, regionPriors.size()) {
+    fprintf(outFile, "%lf ", regionPriors[i]);
+  }
+  fprintf(outFile, "\n");
+
   fprintf(outFile, "---\n");
   grid.writeToFile(outFile);
 }
@@ -273,6 +307,9 @@ void LSModelFile::writeToFile(FILE* outFile) const
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/06/12 18:12:08  trey
+ * renamed LSModel to LSModelFile; minor updates
+ *
  * Revision 1.1  2006/06/11 14:37:38  trey
  * initial check-in
  *

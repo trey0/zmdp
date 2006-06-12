@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-06-12 18:12:08 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-06-12 18:44:58 $
    
  @file    LSModelFile.h
  @brief   No brief
@@ -43,8 +43,6 @@ struct LSGrid {
      LS_OBSTACLE (hex is an obstacle) or 0..maxValue-1 (indicating which
      geological region the hex is in) */
   unsigned char* data;
-  /* cell values range from 0..maxValue-1 */
-  int maxValue;
 
   LSGrid(void);
   ~LSGrid(void);
@@ -53,7 +51,7 @@ struct LSGrid {
   unsigned char getCellBounded(const LSPos& pos) const;
   bool getExitLegal(const LSPos& pos) const;
   void writeToFile(FILE* outFile) const;
-  void calculateMaxCell(void);
+  int getMaxCellValue(void);
 };
 
 struct LSModelFile {
@@ -72,6 +70,9 @@ struct LSModelFile {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/06/12 18:12:08  trey
+ * renamed LSModel to LSModelFile; minor updates
+ *
  * Revision 1.1  2006/06/11 14:37:39  trey
  * initial check-in
  *
