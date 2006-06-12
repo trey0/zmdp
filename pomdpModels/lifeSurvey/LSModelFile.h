@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2006-06-12 18:44:58 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2006-06-12 21:09:10 $
    
  @file    LSModelFile.h
  @brief   No brief
@@ -29,6 +29,8 @@
 
 #define LS_OBSTACLE (100)
 
+#define LS_NUM_OBSERVATIONS (3)
+
 struct LSPos {
   /* special case: x = -1 indicates the terminal state */
   int x, y;
@@ -42,10 +44,10 @@ struct LSGrid {
   /* values in the data array correspond to map hexes -- either
      LS_OBSTACLE (hex is an obstacle) or 0..maxValue-1 (indicating which
      geological region the hex is in) */
-  unsigned char* data;
+  std::vector<unsigned char> data;
 
   LSGrid(void);
-  ~LSGrid(void);
+
   unsigned char getCell(const LSPos& pos) const { return data[width*pos.y + pos.x]; }
   void setCell(const LSPos& pos, unsigned char c) { data[width*pos.y + pos.x] = c; }
   unsigned char getCellBounded(const LSPos& pos) const;
@@ -57,6 +59,8 @@ struct LSGrid {
 struct LSModelFile {
   int startX, startY;
   std::vector<double> regionPriors;
+  std::vector<double> obsDistributionLifeAbsent;
+  std::vector<double> obsDistributionLifePresent;
   LSGrid grid;
 
   LSModelFile(void);
@@ -70,6 +74,9 @@ struct LSModelFile {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2006/06/12 18:44:58  trey
+ * regionPriors now implemented correctly
+ *
  * Revision 1.1  2006/06/12 18:12:08  trey
  * renamed LSModel to LSModelFile; minor updates
  *

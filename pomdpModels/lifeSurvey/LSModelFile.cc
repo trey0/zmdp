@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2006-06-12 18:44:58 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2006-06-12 21:09:10 $
    
  @file    LSModelFile.cc
  @brief   No brief
@@ -65,6 +65,17 @@ static void convertToDoubleVector(std::vector<double>& result,
   }
 }
 
+static void writeDoubleVectorToFile(FILE* outFile,
+				    const char* header,
+				    const std::vector<double>& vec)
+{
+  fprintf(outFile, "%s ", header);
+  FOR (i, vec.size()) {
+    fprintf(outFile, "%lf ", vec[i]);
+  }
+  fprintf(outFile, "\n");
+}
+
 static std::string getVal(const ParamLookup& params,
 			  const std::string& paramName)
 {
@@ -111,17 +122,8 @@ static std::string parseRow(const char* inRow,
 
 LSGrid::LSGrid(void) :
   width(0),
-  height(0),
-  data(NULL)
+  height(0)
 {}
-
-LSGrid::~LSGrid(void)
-{
-  if (NULL != data) {
-    delete[] data;
-    data = NULL;
-  }
-}
 
 unsigned char LSGrid::getCellBounded(const LSPos& pos) const
 {
@@ -225,7 +227,18 @@ void LSModelFile::readFromFile(const std::string& fname)
   /* store parameters */
   startX = atoi(getVal(params, "startX").c_str());
   startY = atoi(getVal(params, "startY").c_str());
-  convertToDoubleVector(regionPriors, getVal(params, "regionPriors"));
+  convertToDoubleVector(regionPriors,
+			getVal(params, "regionPriors"));
+  convertToDoubleVector(obsDistributionLifeAbsent,
+			getVal(params, "obsDistributionLifeAbsent"));
+  convertToDoubleVector(obsDistributionLifePresent,
+			getVal(params, "obsDistributionLifePresent"));
+  if ((obsDistributionLifeAbsent.size() != LS_NUM_OBSERVATIONS)
+      || (obsDistributionLifePresent.size() != LS_NUM_OBSERVATIONS)) {
+    fprintf(stderr, "ERROR: %s: obsDistributionLife{Absent,Present} vectors must have %d entries each\n",
+	    fname.c_str(), LS_NUM_OBSERVATIONS);
+    exit(EXIT_FAILURE);
+  }
 
   /* read map data into intermediate data structure */
   std::vector<std::string> rows;
@@ -254,12 +267,7 @@ void LSModelFile::readFromFile(const std::string& fname)
   /* allocate final map data structure */
   grid.width = maxRowWidth;
   grid.height = rows.size();
-  grid.data = new unsigned char[grid.width*grid.height];
-  FOR (y, grid.height) {
-    FOR (x, grid.width) {
-      grid.setCell(LSPos(x,y),LS_OBSTACLE);
-    }
-  }
+  grid.data.resize(grid.width * grid.height, LS_OBSTACLE);
 
   /* convert from immediate to final data structure */
   FOR (y0, rows.size()) {
@@ -293,13 +301,9 @@ void LSModelFile::writeToFile(FILE* outFile) const
 {
   fprintf(outFile, "startX %d\n", startX);
   fprintf(outFile, "startY %d\n", startY);
-
-  fprintf(outFile, "regionPriors ");
-  FOR (i, regionPriors.size()) {
-    fprintf(outFile, "%lf ", regionPriors[i]);
-  }
-  fprintf(outFile, "\n");
-
+  writeDoubleVectorToFile(outFile, "regionPriors", regionPriors);
+  writeDoubleVectorToFile(outFile, "obsDistributionLifeAbsent", obsDistributionLifeAbsent);
+  writeDoubleVectorToFile(outFile, "obsDistributionLifePresent", obsDistributionLifePresent);
   fprintf(outFile, "---\n");
   grid.writeToFile(outFile);
 }
@@ -307,6 +311,9 @@ void LSModelFile::writeToFile(FILE* outFile) const
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2006/06/12 18:44:58  trey
+ * regionPriors now implemented correctly
+ *
  * Revision 1.1  2006/06/12 18:12:08  trey
  * renamed LSModel to LSModelFile; minor updates
  *
