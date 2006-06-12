@@ -1,7 +1,7 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-06-11 14:37:39 $
+ $Revision: 1.1 $  $Author: trey $  $Date: 2006-06-12 18:12:47 $
    
- @file    testLSModel.cc
+ @file    testLSModelFile.cc
  @brief   No brief
 
  Copyright (c) 2006, Trey Smith. All rights reserved.
@@ -31,13 +31,13 @@
 
 #include <iostream>
 
-#include "LSModel.h"
+#include "LSModelFile.h"
 
 using namespace std;
 
 void usage(void) {
   cerr <<
-    "usage: testLSModel OPTIONS <foo.lifeSurvey>\n"
+    "usage: testLSModelFile OPTIONS <foo.lifeSurvey>\n"
     "  -h or --help   Display this help\n";
   exit(EXIT_FAILURE);
 }
@@ -59,16 +59,16 @@ int main(int argc, char *argv[]) {
     usage();
   }
 
-  LSModel m;
+  LSModelFile m;
 
   // read the map in
   m.readFromFile(modelFileName);
 
   // modify it a bit
-  m.grid.setCell(0,0,2);
-  m.grid.setCell(3,6,2);
-  m.grid.setCell(17,0,2);
-  m.grid.setCell(20,6,2);
+  m.grid.setCell(LSPos(0,0),1);
+  m.grid.setCell(LSPos(3,6),1);
+  m.grid.setCell(LSPos(17,0),1);
+  m.grid.setCell(LSPos(20,6),1);
 
   // write it back out to stdout
   m.writeToFile(stdout);
@@ -78,5 +78,8 @@ int main(int argc, char *argv[]) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/06/11 14:37:39  trey
+ * initial check-in
+ *
  *
  ***************************************************************************/

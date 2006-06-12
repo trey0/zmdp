@@ -1,7 +1,7 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-06-11 14:37:38 $
+ $Revision: 1.1 $  $Author: trey $  $Date: 2006-06-12 18:12:08 $
    
- @file    LSModel.cc
+ @file    LSModelFile.cc
  @brief   No brief
 
  Copyright (c) 2006, Trey Smith. All rights reserved.
@@ -31,7 +31,7 @@
 #include <vector>
 #include <algorithm>
 
-#include "LSModel.h"
+#include "LSModelFile.h"
 #include "zmdpCommonDefs.h"
 
 using namespace std;
@@ -51,7 +51,7 @@ static std::string getVal(const ParamLookup& params,
 {
   typeof(params.begin()) i = params.find(paramName);
   if (params.end() == i) {
-    fprintf(stderr, "ERROR: LSModel: preamble does not specify a value for parameter '%s'\n",
+    fprintf(stderr, "ERROR: LSModelFile: preamble does not specify a value for parameter '%s'\n",
 	    paramName.c_str());
     exit(EXIT_FAILURE);
   } else {
@@ -104,18 +104,39 @@ LSGrid::~LSGrid(void)
   }
 }
 
+unsigned char LSGrid::getCellBounded(const LSPos& pos) const
+{
+  if (0 <= pos.x && pos.x < (int)width && 0 <= pos.y && pos.y < (int)height) {
+    return getCell(pos);
+  } else {
+    return LS_OBSTACLE;
+  }
+}
+
+bool LSGrid::getExitLegal(const LSPos& pos) const
+{
+  /* exiting is legal if there are no non-obstacle cells further to the
+     east of this cell in the same row */
+  for (int x=pos.x+1; x < (int)width; x++) {
+    if (LS_OBSTACLE != getCell(LSPos(x, pos.y))) {
+      return false;
+    }
+  }
+  return true;
+}
+
 void LSGrid::writeToFile(FILE* outFile) const
 {
-  FOR (i, height) {
-    int rowNum = height - i - 1;
-    if ((rowNum % 2) == 1) fputc(' ', outFile);
-    for (unsigned int j=rowNum/2; j < width; j++) {
-      unsigned char cell = getCell(j,rowNum);
+  FOR (y0, height) {
+    int y = height - y0 - 1;
+    if ((y % 2) == 1) fputc(' ', outFile);
+    for (unsigned int x=y/2; x < width; x++) {
+      unsigned char cell = getCell(LSPos(x,y));
       char outCell;
-      if (0 == cell) {
+      if (LS_OBSTACLE == cell) {
 	outCell = ' ';
       } else {
-	outCell = cell + 96;
+	outCell = cell + 97;
       }
       fputc(outCell, outFile);
       fputc(' ', outFile);
@@ -124,20 +145,34 @@ void LSGrid::writeToFile(FILE* outFile) const
   }
 }
 
+void LSGrid::calculateMaxCell(void)
+{
+  maxValue = 0;
+  FOR (y, height) {
+    FOR (x, width) {
+      int cell = getCell(LSPos(x,y));
+      if (LS_OBSTACLE != cell) {
+	maxValue = std::max(cell, maxValue);
+      }
+    }
+  }
+  maxValue++;
+}
+
 /**********************************************************************
  * LSMODEL FUNCTIONS
  **********************************************************************/
 
-LSModel::LSModel(void) :
+LSModelFile::LSModelFile(void) :
   startX(-1),
   startY(-1)
 {}
 
-void LSModel::readFromFile(const std::string& fname)
+void LSModelFile::readFromFile(const std::string& fname)
 {
   FILE* modelFile = fopen(fname.c_str(), "r");
   if (NULL == modelFile) {
-    fprintf(stderr, "ERROR: LSModel: couldn't open %s for reading: %s\n", fname.c_str(),
+    fprintf(stderr, "ERROR: LSModelFile: couldn't open %s for reading: %s\n", fname.c_str(),
 	    strerror(errno));
     exit(EXIT_FAILURE);
   }
@@ -190,38 +225,44 @@ void LSModel::readFromFile(const std::string& fname)
 
   /* calculate dimensions of map */
   int maxRowWidth = 0;
-  FOR (i, rows.size()) {
-    int rowNum = rows.size() - i - 1;
-    maxRowWidth = std::max(maxRowWidth, (int) (rowNum/2 + rows[i].size()));
+  FOR (y0, rows.size()) {
+    int y = rows.size() - y0 - 1;
+    maxRowWidth = std::max(maxRowWidth, (int) (y/2 + rows[y0].size()));
   }
 
   /* allocate final map data structure */
   grid.width = maxRowWidth;
   grid.height = rows.size();
   grid.data = new unsigned char[grid.width*grid.height];
-  memset(grid.data, grid.width*grid.height, 0);
+  FOR (y, grid.height) {
+    FOR (x, grid.width) {
+      grid.setCell(LSPos(x,y),LS_OBSTACLE);
+    }
+  }
 
   /* convert from immediate to final data structure */
-  FOR (i, rows.size()) {
-    int rowNum = rows.size() - i - 1;
-    FOR (j, rows[i].size()) {
-      char c = rows[i][j];
+  FOR (y0, rows.size()) {
+    int y = rows.size() - y0 - 1;
+    FOR (x0, rows[y0].size()) {
+      int x = y/2 + x0;
+      char c = rows[y0][x0];
       unsigned char cell;
       if (' ' == c) {
-	cell = 0;
+	cell = LS_OBSTACLE;
       } else if (97 <= c && c <= 122) {
-	cell = c-96;
+	cell = c-97;
       } else {
 	fprintf(stderr, "ERROR: %s: while parsing map, found character '%c', expected space or a-z.\n",
 		fname.c_str(), c);
 	exit(EXIT_FAILURE);
       }
-      grid.setCell(rowNum/2 + j, rowNum, cell);
+      grid.setCell(LSPos(x, y), cell);
     }
   }
+  grid.calculateMaxCell();
 }
 
-void LSModel::writeToFile(FILE* outFile) const
+void LSModelFile::writeToFile(FILE* outFile) const
 {
   fprintf(outFile, "startX %d\n", startX);
   fprintf(outFile, "startY %d\n", startY);
@@ -232,5 +273,8 @@ void LSModel::writeToFile(FILE* outFile) const
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/06/11 14:37:38  trey
+ * initial check-in
+ *
  *
  ***************************************************************************/

@@ -1,7 +1,7 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-06-11 14:37:39 $
+ $Revision: 1.1 $  $Author: trey $  $Date: 2006-06-12 18:12:08 $
    
- @file    LSModel.h
+ @file    LSModelFile.h
  @brief   No brief
 
  Copyright (c) 2006, Trey Smith. All rights reserved.
@@ -20,41 +20,61 @@
 
  ***************************************************************************/
 
-#ifndef INCLSModel_h
-#define INCLSModel_h
+#ifndef INCLSModelFile_h
+#define INCLSModelFile_h
 
 #include <stdio.h>
 #include <string>
+#include <vector>
+
+#define LS_OBSTACLE (100)
+
+struct LSPos {
+  /* special case: x = -1 indicates the terminal state */
+  int x, y;
+
+  LSPos(void) : x(-1), y(-1) {}
+  LSPos(int _x, int _y) : x(_x), y(_y) {}
+};
 
 struct LSGrid {
   unsigned int width, height;
-  /* entries in the data array correspond to map hexes -- either 0 (hex
-     is an obstacle) or 1..n (indicating which geological region the hex
-     is in) */
+  /* values in the data array correspond to map hexes -- either
+     LS_OBSTACLE (hex is an obstacle) or 0..maxValue-1 (indicating which
+     geological region the hex is in) */
   unsigned char* data;
+  /* cell values range from 0..maxValue-1 */
+  int maxValue;
 
   LSGrid(void);
   ~LSGrid(void);
-  unsigned char getCell(int x, int y) const { return data[width*y + x]; }
-  void setCell(int x, int y, unsigned char c) { data[width*y + x] = c; }
+  unsigned char getCell(const LSPos& pos) const { return data[width*pos.y + pos.x]; }
+  void setCell(const LSPos& pos, unsigned char c) { data[width*pos.y + pos.x] = c; }
+  unsigned char getCellBounded(const LSPos& pos) const;
+  bool getExitLegal(const LSPos& pos) const;
   void writeToFile(FILE* outFile) const;
+  void calculateMaxCell(void);
 };
 
-struct LSModel {
+struct LSModelFile {
   int startX, startY;
+  std::vector<double> regionPriors;
   LSGrid grid;
 
-  LSModel(void);
+  LSModelFile(void);
   void readFromFile(const std::string& mapFileName);
   void writeToFile(FILE* outFile) const;
 };
 
 
-#endif // INCLSModel_h
+#endif // INCLSModelFile_h
 
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/06/11 14:37:39  trey
+ * initial check-in
+ *
  *
  ***************************************************************************/
 
