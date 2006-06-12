@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.1 2006-06-11 14:37:39 trey Exp $
+# $Id: Makefile,v 1.2 2006-06-12 18:12:30 trey Exp $
 #
 # Copyright (c) 2002-2005, Trey Smith. All rights reserved.
 #
@@ -34,18 +34,18 @@ CFLAGS += -I$(CHECKOUT_DIR)/external/boost
 #INSTALLHEADERS_HEADERS :=
 #include $(BUILD_DIR)/installheaders.mak
 
-#BUILDBIN_TARGET := gen_LifeSurvey
-#BUILDBIN_SRCS := gen_LifeSurvey.cc
-#BUILDBIN_INDEP_LIBS := 
-#BUILDBIN_DEP_LIBS :=
-#include $(BUILD_DIR)/buildbin.mak
+BUILDBIN_TARGET := gen_LifeSurvey
+BUILDBIN_SRCS := gen_LifeSurvey.cc LSModelFile.cc
+BUILDBIN_INDEP_LIBS := 
+BUILDBIN_DEP_LIBS :=
+include $(BUILD_DIR)/buildbin.mak
 
 ifneq (,$(TEST))
 
 # add targets here to be built with 'make TEST=1 install'
 
-BUILDBIN_TARGET := testLSModel
-BUILDBIN_SRCS := testLSModel.cc LSModel.cc
+BUILDBIN_TARGET := testLSModelFile
+BUILDBIN_SRCS := testLSModelFile.cc LSModelFile.cc
 BUILDBIN_INDEP_LIBS := 
 BUILDBIN_DEP_LIBS :=
 include $(BUILD_DIR)/buildbin.mak
@@ -59,6 +59,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.1  2006/06/11 14:37:39  trey
+# initial check-in
+#
 # Revision 1.6  2006/05/27 19:01:43  trey
 # added testPomdpRead
 #
