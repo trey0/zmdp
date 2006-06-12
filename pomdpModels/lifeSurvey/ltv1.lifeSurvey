@@ -1,10 +1,13 @@
 startX 1
 startY 2
+regionPriors 0.1 0.5 0.5
+obsDistributionLifeAbsent  0.5 0.3 0.2
+obsDistributionLifePresent 0.2 0.3 0.5
 ---
-a a a a a a a a a a a a a a a a a a
- a a a a a a a a a a a a a a a a a
-a a a a a a a a a a a a a a a a a a
- a a a a a a a a a a a   a a a a a
+a a a a a a a b b b b a a a a a a a
+ a a a a a a a b b b a a a a a a a
+a a a a a a a a a a a a a a c c c c
+ a a a a a a a a a a a   a a c c c
 a a a a a a a a a a a a a a a a a a
  a a a a a a a a a a a a a a a a a
 a a a a a a a a a a a a a a a a a a
