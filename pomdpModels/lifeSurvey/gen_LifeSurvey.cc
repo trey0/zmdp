@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2006-06-13 02:01:19 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2006-06-13 14:44:10 $
   
  @file    gen_LifeSurvey.cc
  @brief   No brief
@@ -47,7 +47,7 @@ using namespace std;
  * MACROS
  **********************************************************************/
 
-#define LS_NUM_ACTIONS (8)
+#define LS_NUM_ACTIONS (7)
 
 #define LS_COST_BASE (1)
 
@@ -77,8 +77,7 @@ enum LSDirectionEnum {
 
 enum LSActionTypeEnum {
   LS_ACT_MOVE, /* move or sampling move */
-  LS_ACT_LOOK,
-  LS_ACT_EXIT
+  LS_ACT_LOOK
 };
 
 struct LSState {
@@ -122,7 +121,7 @@ struct LSObservation {
 
 struct LSStateEntry {
   LSState s;
-  bool visited;
+  bool touched;
 };
 
 struct LSStateTable {
@@ -158,7 +157,7 @@ struct LSModel {
 		   const LSState& s, int ai) const;
   void getObservations(std::vector<LSObsOutcome>& result,
 		       int spi, int ai) const;
-  void writeToFile(FILE* outFile);
+  void writeToFile(FILE* outFile, bool fullIdentifiers);
 };
 
 
@@ -167,6 +166,29 @@ struct LSModel {
  **********************************************************************/
 
 LSStateTable tableG;
+
+/**********************************************************************
+ * STATIC FUNCTIONS
+ **********************************************************************/
+
+static bool endsWith(const std::string& s,
+		     const std::string& suffix)
+{
+  if (s.size() < suffix.size()) return false;
+  return (s.substr(s.size() - suffix.size()) == suffix);
+}
+
+static std::string replaceSuffix(const std::string& s,
+				 const std::string& suffix,
+				 const std::string& replacement)
+{
+  if (s.size() < suffix.size()) return s;
+  if (s.substr(s.size() - suffix.size()) != suffix) return s;
+
+  std::string ret = s;
+  ret.replace(ret.size() - suffix.size(), suffix.size(), replacement);
+  return ret;
+}
 
 /**********************************************************************
  * LSSTATE FUNCTIONS
@@ -228,8 +250,6 @@ LSAction::LSAction(int ai)
   moveDirection = -1;
   if (6 == ai) {
     type = LS_ACT_LOOK;
-  } else if (7 == ai) {
-    type = LS_ACT_EXIT;
   } else {
     type = LS_ACT_MOVE;
     useSample = ai / 3;
@@ -241,8 +261,6 @@ int LSAction::toInt(void) const
 {
   if (LS_ACT_LOOK == type) {
     return 6;
-  } else if (LS_ACT_EXIT == type) {
-    return 7;
   } else {
     return useSample * 3 + moveDirection;
   }
@@ -258,7 +276,6 @@ std::string LSAction::toString(void) const
   case 4: return "aes";
   case 5: return "ases";
   case 6: return "alook";
-  case 7: return "aexit";
   default:
     assert(0); // never reach this point
     return NULL;
@@ -324,10 +341,15 @@ int LSStateTable::getStateIndex(const LSState& s)
     lookup[ss] = si;
     LSStateEntry e;
     e.s = s;
-    e.visited = false;
+    e.touched = false;
     states.push_back(e);
+    //printf("getStateIndex: new entry %d\n", si);
     return si;
   } else {
+#if 0
+    printf("getStateIndex: found %d (touched=%d)\n", sloc->second,
+	   states[sloc->second].touched);
+#endif
     return sloc->second;
   }
 }
@@ -507,8 +529,16 @@ void LSModel::getOutcomes(std::vector<LSOutcome>& outcomes, double& reward,
       }
     double actionReward = getReward(oldRewardLevel, newRewardLevel);
     nextState.rewardLevelInRegion[nextCellRegion] = newRewardLevel;
-    reward = actionReward - actionCost;
     
+    if (mfile.grid.getAtExit(nextState.pos)) {
+      /* we entered an exit hex -- transition to the terminal state */
+      outc.prob = 1.0;
+      outc.nextState = LSState::getTerminalState().toInt();
+      outcomes.push_back(outc);
+      reward = actionReward - actionCost;
+      return;
+    }
+
     /* canonicalize state by quashing useless reward level information
        about unreachable regions */
     FOR (r, nextState.rewardLevelInRegion.size()) {
@@ -564,6 +594,7 @@ void LSModel::getOutcomes(std::vector<LSOutcome>& outcomes, double& reward,
 	outcomes.push_back(outc);
       }
     }
+    reward = actionReward - actionCost;
     return;
   } /* case LS_ACT_MOVE */
     
@@ -585,23 +616,6 @@ void LSModel::getOutcomes(std::vector<LSOutcome>& outcomes, double& reward,
     outcomes.push_back(outc);
     reward = -LS_COST_LOOKAHEAD;
     return;
-    
-  case LS_ACT_EXIT:
-    if (mfile.grid.getExitLegal(s.pos)) {
-      /* legal exit: transition to terminal state, no cost */
-      outc.prob = 1.0;
-      outc.nextState = LSState::getTerminalState().toInt();
-      outcomes.push_back(outc);
-      reward = 0;
-      return;
-    } else {
-      /* illegal exit: no change in state, incur penalty */
-      outc.prob = 1.0;
-      outc.nextState = s.toInt();
-      outcomes.push_back(outc);
-      reward = -LS_PENALTY_ILLEGAL;
-      return;
-    }
     
   default:
     assert(0); // never reach this point
@@ -644,7 +658,7 @@ void LSModel::getObservations(std::vector<LSObsOutcome>& result,
   }
 }
 
-void LSModel::writeToFile(FILE* outFile)
+void LSModel::writeToFile(FILE* outFile, bool fullIdentifiers)
 {
   // generate possible initial states
   LSState preInit;
@@ -668,35 +682,37 @@ void LSModel::writeToFile(FILE* outFile)
   // generate all reachable states using breadth-first search
   std::queue<int> stateQueue;
   FOR_EACH (sp, initStates) {
-    stateQueue.push(sp->nextState);
+    LSStateEntry& e = tableG.getState(sp->nextState);
+    if (!e.touched) {
+      //printf("stateQueue pushing %d\n", sp->nextState);
+      stateQueue.push(sp->nextState);
+      e.touched = true;
+    }
   }
   std::vector<LSOutcome> outcomes;
-  //int i=0;
+  int i=0;
   while (!stateQueue.empty()) {
-    int si = stateQueue.back();
+    int si = stateQueue.front();
     stateQueue.pop();
-    LSStateEntry& e = tableG.getState(si);
-    LSState& s = e.s;
-    e.visited = true;
+    LSState s = tableG.getState(si).s;
     FOR (ai, LS_NUM_ACTIONS) {
       getOutcomes(outcomes, reward, s, ai);
       FOR_EACH (sp, outcomes) {
-	if (!tableG.getState(sp->nextState).visited) {
+	LSStateEntry& e = tableG.getState(sp->nextState);
+	if (!e.touched) {
+	  //printf("stateQueue pushing %d\n", sp->nextState);
 	  stateQueue.push(sp->nextState);
+	  e.touched = true;
 	}
       }
     }
-#if 0
-    if (0 == (i++) % 10000) {
-      FOR (si, tableG.states.size()) {
-	LSState s(si);
-	printf("%s\n", s.toString().c_str());
-      }
-      break;
+    if (0 == ((++i) % 1000)) {
+      LSState s(si);
+      printf("... %s\n", s.toString().c_str());
     }
-#endif
   }
   int numStates = tableG.states.size();
+  printf("numStates=%d\n", numStates);
 
   // convert initStates to dense belief vector
   std::vector<double> initBelief(numStates, 0);
@@ -705,33 +721,49 @@ void LSModel::writeToFile(FILE* outFile)
   }
 
   // write preamble
-  fprintf(outFile, "discount: 1.0\n");
+  fprintf(outFile, "discount: 0.999\n");
   fprintf(outFile, "values: reward\n");
 
-  fprintf(outFile, "actions: ");
-  FOR (ai, LS_NUM_ACTIONS) {
-    LSAction a(ai);
-    fprintf(outFile, "%s ", a.toString().c_str());
+  if (fullIdentifiers) {
+    fprintf(outFile, "actions: ");
+    FOR (ai, LS_NUM_ACTIONS) {
+      LSAction a(ai);
+      fprintf(outFile, "%s ", a.toString().c_str());
+    }
+    fprintf(outFile, "\n");
+  } else {
+    fprintf(outFile, "actions: %d\n", LS_NUM_ACTIONS);
   }
-  fprintf(outFile, "\n");
 
-  fprintf(outFile, "observations: ");
-  FOR (oi, LS_NUM_OBSERVATIONS) {
-    LSObservation o(oi);
-    fprintf(outFile, "%s ", o.toString().c_str());
+  if (fullIdentifiers) {
+    fprintf(outFile, "observations: ");
+    FOR (oi, LS_NUM_OBSERVATIONS) {
+      LSObservation o(oi);
+      fprintf(outFile, "%s ", o.toString().c_str());
+    }
+    fprintf(outFile, "\n\n");
+  } else {
+    fprintf(outFile, "observations: %d\n", LS_NUM_OBSERVATIONS);
   }
-  fprintf(outFile, "\n\n");
 
-  fprintf(outFile, "states: ");
-  FOR (si, numStates) {
-    LSState s(si);
-    fprintf(outFile, "%s ", s.toString().c_str());
+  if (fullIdentifiers) {
+    fprintf(outFile, "states: ");
+    FOR (si, numStates) {
+      LSState s(si);
+      fprintf(outFile, "%s ", s.toString().c_str());
+    }
+    fprintf(outFile, "\n\n");
+  } else {
+    fprintf(outFile, "states: %d\n\n", numStates);
   }
-  fprintf(outFile, "\n\n");
 
   fprintf(outFile, "start: ");
   FOR_EACH (sp, initBelief) {
-    fprintf(outFile, "%lf ", *sp);
+    if (0.0 == *sp) {
+      fprintf(outFile, "0 ");
+    } else {
+      fprintf(outFile, "%lf ", *sp);
+    }
   }
   fprintf(outFile, "\n\n");
 
@@ -744,22 +776,37 @@ void LSModel::writeToFile(FILE* outFile)
 
       getOutcomes(outcomes, reward, s, ai);
       if (reward != 0.0) {
-	fprintf(outFile, "R: %-5s : %-20s : * : * %lf\n",
-		a.toString().c_str(), s.toString().c_str(), reward);
+	if (fullIdentifiers) {
+	  fprintf(outFile, "R: %-5s : %-20s : * : * %lf\n",
+		  a.toString().c_str(), s.toString().c_str(), reward);
+	} else {
+	  fprintf(outFile, "R: %d : %d : * : * %lf\n",
+		  ai, si, reward);
+	}
       }
       FOR_EACH (op, outcomes) {
-	LSState sp(op->nextState);
-	fprintf(outFile, "T: %-5s : %-20s : %-20s %lf\n",
-		a.toString().c_str(), s.toString().c_str(), sp.toString().c_str(),
-		op->prob);
+	if (fullIdentifiers) {
+	  LSState sp(op->nextState);
+	  fprintf(outFile, "T: %-5s : %-20s : %-20s %lf\n",
+		  a.toString().c_str(), s.toString().c_str(), sp.toString().c_str(),
+		  op->prob);
+	} else {
+	  fprintf(outFile, "T: %d : %d : %d %lf\n",
+		  ai, si, op->nextState, op->prob);
+	}
       }
 
       getObservations(obsOutcomes, si, ai);
       FOR_EACH (op, obsOutcomes) {
-	LSObservation o(op->obs);
-	fprintf(outFile, "O: %-5s : %-20s : %-5s %lf\n",
-		a.toString().c_str(), s.toString().c_str(), o.toString().c_str(),
-		op->prob);
+	if (fullIdentifiers) {
+	  LSObservation o(op->obs);
+	  fprintf(outFile, "O: %-5s : %-20s : %-5s %lf\n",
+		  a.toString().c_str(), s.toString().c_str(), o.toString().c_str(),
+		  op->prob);
+	} else {
+	  fprintf(outFile, "O: %d : %d : %d %lf\n",
+		  ai, si, op->obs, op->prob);
+	}
       }
       fprintf(outFile, "\n");
     }
@@ -772,17 +819,23 @@ void LSModel::writeToFile(FILE* outFile)
 
 void usage(const char* argv0) {
   cerr <<
-    "usage: " << argv0 << " OPTIONS <my.lifeSurvey> <my.pomdp>\n"
-    "  -h or --help   Display this help\n";
+    "usage: " << argv0 << " OPTIONS <my.lifeSurvey> [my.pomdp]\n"
+    "  -h or --help   Display this help\n"
+    "  -f or --full   Use verbose identifiers in output model instead of numbers\n"
+    "                  (useful only for debugging -- full identifiers are not\n"
+    "                   compatible with the fast parser 'zmdpSolve -f')\n";
   exit(EXIT_FAILURE);
 }
 
 int main(int argc, char *argv[]) {
-  static char shortOptions[] = "h";
+  static char shortOptions[] = "hf";
   static struct option longOptions[]={
     {"help",          0,NULL,'h'},
+    {"full",          0,NULL,'f'},
     {NULL,0,0,0}
   };
+
+  bool fullIdentifiers = false;
 
   while (1) {
     char optchar = getopt_long(argc,argv,shortOptions,longOptions,NULL);
@@ -791,6 +844,10 @@ int main(int argc, char *argv[]) {
     switch (optchar) {
     case 'h': // help
       usage(argv[0]);
+      break;
+
+    case 'f': // full
+      fullIdentifiers = true;
       break;
 
     case '?': // unknown option
@@ -803,29 +860,46 @@ int main(int argc, char *argv[]) {
       abort(); // never reach this point
     }
   }
-  if (argc-optind != 2) {
-    cerr << "ERROR: wrong number of arguments (should be 1)" << endl << endl;
+  if (! (1 <= argc-optind && argc-optind <= 2)) {
+    cerr << "ERROR: wrong number of arguments (should be 1-2)" << endl << endl;
     usage(argv[0]);
   }
 
   const char* modelFileName = argv[optind++];
-  const char* pomdpFileName = argv[optind++];
+  std::string pomdpFileName;
+  if (1 == argc-optind) {
+    pomdpFileName = argv[optind++];
+  } else {
+    // infer pomdp file name
+    if (endsWith(modelFileName, ".lifeSurvey")) {
+      pomdpFileName = replaceSuffix(modelFileName, ".lifeSurvey", ".pomdp");
+    } else {
+      fprintf(stderr, "ERROR: model filename %s does not end in '.lifeSurvey', can't infer the pomdp filename; you must specify it\n",
+	      modelFileName);
+      exit(EXIT_FAILURE);
+    }
+  }
 
   LSModel m;
   m.init(modelFileName);
 
-  FILE* pomdpFile = fopen(pomdpFileName, "w");
+  FILE* pomdpFile = fopen(pomdpFileName.c_str(), "w");
   if (NULL == pomdpFile) {
     fprintf(stderr, "ERROR: couldn't open '%s' for writing: %s\n",
-	    pomdpFileName, strerror(errno));
+	    pomdpFileName.c_str(), strerror(errno));
     exit(EXIT_FAILURE);
   }
-  m.writeToFile(pomdpFile);
+  m.writeToFile(pomdpFile, fullIdentifiers);
+
+  printf("done writing %s\n", pomdpFileName.c_str());
 }
 
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2006/06/13 02:01:19  trey
+ * now prints body of pomdp file
+ *
  * Revision 1.2  2006/06/12 21:09:34  trey
  * almost complete, not debugged yet
  *
