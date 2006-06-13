@@ -1,0 +1,9 @@
+startX 1
+startY 1
+regionPriors 0.1 0.5 0.5
+obsDistributionLifeAbsent  0.5 0.3 0.2
+obsDistributionLifePresent 0.2 0.3 0.5
+---
+a b b
+ a a
+a c c
