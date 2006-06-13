@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.4 $  $Author: trey $  $Date: 2006-06-13 01:02:20 $
+ $Revision: 1.5 $  $Author: trey $  $Date: 2006-06-13 14:43:14 $
    
  @file    LSModelFile.cc
  @brief   No brief
@@ -134,7 +134,7 @@ unsigned char LSGrid::getCellBounded(const LSPos& pos) const
   }
 }
 
-bool LSGrid::getExitLegal(const LSPos& pos) const
+bool LSGrid::getAtExit(const LSPos& pos) const
 {
   /* exiting is legal if there are no non-obstacle cells further to the
      east of this cell in the same row */
@@ -311,6 +311,9 @@ void LSModelFile::writeToFile(FILE* outFile) const
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2006/06/13 01:02:20  trey
+ * fixed off-by-one error in odd rows of map
+ *
  * Revision 1.3  2006/06/12 21:09:10  trey
  * added support for obsDistributionXXX parameters
  *

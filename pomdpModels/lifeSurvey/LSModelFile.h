@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.4 $  $Author: trey $  $Date: 2006-06-13 01:02:20 $
+ $Revision: 1.5 $  $Author: trey $  $Date: 2006-06-13 14:43:14 $
    
  @file    LSModelFile.h
  @brief   No brief
@@ -52,7 +52,7 @@ struct LSGrid {
   unsigned char getCell(const LSPos& pos) const { return data[width*pos.y + pos.x]; }
   void setCell(const LSPos& pos, unsigned char c) { data[width*pos.y + pos.x] = c; }
   unsigned char getCellBounded(const LSPos& pos) const;
-  bool getExitLegal(const LSPos& pos) const;
+  bool getAtExit(const LSPos& pos) const;
   void writeToFile(FILE* outFile) const;
   int getMaxCellValue(void);
 };
@@ -75,6 +75,9 @@ struct LSModelFile {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2006/06/13 01:02:20  trey
+ * fixed off-by-one error in odd rows of map
+ *
  * Revision 1.3  2006/06/12 21:09:10  trey
  * added support for obsDistributionXXX parameters
  *
