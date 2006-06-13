@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2006-06-12 21:09:34 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2006-06-13 02:01:19 $
   
  @file    gen_LifeSurvey.cc
  @brief   No brief
@@ -63,7 +63,7 @@ using namespace std;
 
 #define LS_UNREACHABLE (9)
 
-#define OBS_NULL (8)
+#define OBS_NULL (LS_NUM_OBSERVATIONS-1)
 
 /**********************************************************************
  * DATA STRUCTURES
@@ -130,13 +130,12 @@ struct LSStateTable {
   std::vector<LSStateEntry> states;
 
   int getStateIndex(const LSState& s);
-  const LSStateEntry& getState(int si) const;
+  LSStateEntry& getState(int si);
 };
 
 struct LSOutcome {
   double prob;
   int nextState;
-  double reward;
 };
 
 struct LSObsOutcome {
@@ -155,10 +154,10 @@ struct LSModel {
   LSPos getNeighbor(const LSPos& pos, int dir) const;
   double getReward(int oldRewardLevel, int newRewardLevel) const;
   double getLifePrior(const LSPos& pos) const;
-  void getOutcomeVector(std::vector<LSOutcome>& result,
-			const LSState& s, int ai) const;
-  void getObservationVector(std::vector<LSObsOutcome>& result,
-			    int spi, int ai) const;
+  void getOutcomes(std::vector<LSOutcome>& outcomes, double& reward,
+		   const LSState& s, int ai) const;
+  void getObservations(std::vector<LSObsOutcome>& result,
+		       int spi, int ai) const;
   void writeToFile(FILE* outFile);
 };
 
@@ -198,7 +197,7 @@ std::string LSState::toString(void) const
     FOR (i, rewardLevelInRegion.size()) {
       snprintf(&rbuf[i], 2, "%d", rewardLevelInRegion[i]);
     }
-    snprintf(buf, sizeof(buf), "sx%02dy%dd%du%dn%d%d%dr%s",
+    snprintf(buf, sizeof(buf), "sx%dy%dd%du%dn%d%d%dr%s",
 	     pos.x, pos.y, lastMoveDirection, usedLookaheadInThisCell,
 	     lifeInNeighborCell[0], lifeInNeighborCell[1], lifeInNeighborCell[2],
 	     rbuf);
@@ -224,7 +223,7 @@ LSState LSState::getTerminalState(void)
 
 LSAction::LSAction(int ai)
 {
-  assert(0 <= ai && ai <= 6);
+  assert(0 <= ai && ai < LS_NUM_ACTIONS);
   useSample = -1;
   moveDirection = -1;
   if (6 == ai) {
@@ -279,10 +278,10 @@ LSObservation::LSObservation(int oi)
     lifeInNeighborConfidence[2] = -1;
   } else {
     isNull = 0;
-    lifeInNeighborConfidence[2] = oi % LS_NUM_OBSERVATIONS;
-    oi /= LS_NUM_OBSERVATIONS;
-    lifeInNeighborConfidence[1] = oi % LS_NUM_OBSERVATIONS;
-    oi /= LS_NUM_OBSERVATIONS;
+    lifeInNeighborConfidence[2] = oi % LS_BASE_NUM_OBSERVATIONS;
+    oi /= LS_BASE_NUM_OBSERVATIONS;
+    lifeInNeighborConfidence[1] = oi % LS_BASE_NUM_OBSERVATIONS;
+    oi /= LS_BASE_NUM_OBSERVATIONS;
     lifeInNeighborConfidence[0] = oi;
   }
 }
@@ -293,8 +292,8 @@ int LSObservation::toInt(void) const
     return 0;
   } else {
     return lifeInNeighborConfidence[2]
-      + LS_NUM_OBSERVATIONS * (lifeInNeighborConfidence[1] +
-			       LS_NUM_OBSERVATIONS * lifeInNeighborConfidence[0]);
+      + LS_BASE_NUM_OBSERVATIONS * (lifeInNeighborConfidence[1] +
+			       LS_BASE_NUM_OBSERVATIONS * lifeInNeighborConfidence[0]);
   }
 }
 
@@ -333,7 +332,7 @@ int LSStateTable::getStateIndex(const LSState& s)
   }
 }
 
-const LSStateEntry& LSStateTable::getState(int si) const
+LSStateEntry& LSStateTable::getState(int si)
 {
   return states[si];
 }
@@ -353,6 +352,9 @@ void LSModel::init(const std::string& modelFileName)
   regionReachable.resize(mfile.regionPriors.size());
   FOR (r, mfile.regionPriors.size()) {
     calculateRegionReachable(regionReachable[r], mfile.grid, r);
+#if 0
+    printf("regionReachable %d:\n", r);
+#endif
   }
 }
 
@@ -371,6 +373,11 @@ void LSModel::calculateRegionReachable(LSGrid& result,
     }
   }
   
+#if 0
+    printf("reachability before dp:\n");
+    result.writeToFile(stdout);
+#endif
+
   /* now use dynamic programming to additionally mark cells that can
      reach region r */
   int numChanges;
@@ -384,11 +391,36 @@ void LSModel::calculateRegionReachable(LSGrid& result,
 		|| (1 == result.getCellBounded(getNeighbor(pos, LS_E)))
 		|| (1 == result.getCellBounded(getNeighbor(pos, LS_SE))))) {
 	  result.setCell(pos, 1);
+#if 0
+	  printf("setCell: %d,%d\n", pos.x, pos.y);
+#endif
 	  numChanges++;
 	}
+#if 0
+	else {
+	  if (0 == result.getCell(pos)) {
+	    LSPos pne = getNeighbor(pos, LS_NE);
+	    LSPos pe =  getNeighbor(pos, LS_E);
+	    LSPos pse = getNeighbor(pos, LS_SE);
+	    printf("notSet:  %d,%d -- %d,%d=%d %d,%d=%d %d,%d=%d\n",
+		   pos.x, pos.y,
+		   pne.x, pne.y, result.getCellBounded(pne),
+		   pe.x,  pe.y,  result.getCellBounded(pe),
+		   pse.x, pse.y, result.getCellBounded(pse));
+	  }
+	}
+#endif
       }
     }
+#if 0
+    printf("nextLoop\n");
+#endif
   } while (numChanges > 0);
+
+#if 0
+    printf("reachability after dp:\n");
+    result.writeToFile(stdout);
+#endif
 }
 
 LSPos LSModel::getNeighbor(const LSPos& pos, int dir) const
@@ -421,25 +453,24 @@ double LSModel::getLifePrior(const LSPos& pos) const
   int region = mfile.grid.getCellBounded(pos);
   if (LS_OBSTACLE == region) {
     return 0;
-    } else {
-      return mfile.regionPriors[region];
-    }
+  } else {
+    return mfile.regionPriors[region];
+  }
 }
 
-void LSModel::getOutcomeVector(std::vector<LSOutcome>& result,
-			       const LSState& s, int ai) const
+void LSModel::getOutcomes(std::vector<LSOutcome>& outcomes, double& reward,
+			  const LSState& s, int ai) const
 {
-  int si = s.toInt();
   LSState nextState = s;
   LSOutcome outc;
-  result.clear();
+  outcomes.clear();
   
   if (s.isTerminal()) {
     /* terminal state -- all actions are absorbing with 0 cost */
     outc.prob = 1.0;
-    outc.nextState = si;
-    outc.reward = 0;
-    result.push_back(outc);
+    outc.nextState = s.toInt();
+    outcomes.push_back(outc);
+    reward = 0;
     return;
   }
   
@@ -459,9 +490,9 @@ void LSModel::getOutcomeVector(std::vector<LSOutcome>& result,
 	|| (LS_SE == s.lastMoveDirection && LS_NE == a.moveDirection)) {
       /* illegal move -- no state change and incur a penalty */
       outc.prob = 1.0;
-      outc.nextState = si;
-      outc.reward = -LS_PENALTY_ILLEGAL;
-      result.push_back(outc);
+      outc.nextState = s.toInt();
+      outcomes.push_back(outc);
+      reward = -LS_PENALTY_ILLEGAL;
       return;
     }
     
@@ -476,6 +507,7 @@ void LSModel::getOutcomeVector(std::vector<LSOutcome>& result,
       }
     double actionReward = getReward(oldRewardLevel, newRewardLevel);
     nextState.rewardLevelInRegion[nextCellRegion] = newRewardLevel;
+    reward = actionReward - actionCost;
     
     /* canonicalize state by quashing useless reward level information
        about unreachable regions */
@@ -488,10 +520,16 @@ void LSModel::getOutcomeVector(std::vector<LSOutcome>& result,
     }
     
     /* generate outcomes for different possible nextState.lifeInNeighborCell values */
-    outc.reward = actionReward - actionCost;
     double np[3];
     FOR (j, 3) {
       np[j] = getLifePrior(getNeighbor(nextState.pos, j));
+#if 0
+      LSPos npos = getNeighbor(nextState.pos, j);
+      printf("pos=%d,%d npos=%d,%d region=%d np=%lf\n",
+	     nextState.pos.x, nextState.pos.y, npos.x, npos.y,
+	     mfile.grid.getCell(npos),
+	     getLifePrior(npos));
+#endif
     }
     switch (a.moveDirection) {
     case LS_NE:
@@ -516,10 +554,14 @@ void LSModel::getOutcomeVector(std::vector<LSOutcome>& result,
 	i0 /= 2;
 	nextState.lifeInNeighborCell[j] = nset;
 	outc.prob *= nset ? np[j] : (1-np[j]);
+#if 0
+	printf("i=%d j=%d np[j]=%lf nset=%d probterm=%lf\n",
+	       i, j, np[j], nset, (nset ? np[j] : (1-np[j])));
+#endif
       }
       if (outc.prob != 0.0) {
 	outc.nextState = nextState.toInt();
-	result.push_back(outc);
+	outcomes.push_back(outc);
       }
     }
     return;
@@ -529,9 +571,9 @@ void LSModel::getOutcomeVector(std::vector<LSOutcome>& result,
     if (s.usedLookaheadInThisCell) {
       /* can only use lookahead action once in any given cell */
       outc.prob = 1.0;
-      outc.nextState = si;
-      outc.reward = LS_PENALTY_ILLEGAL;
-      result.push_back(outc);
+      outc.nextState = s.toInt();
+      outcomes.push_back(outc);
+      reward = -LS_PENALTY_ILLEGAL;
       return;
     }
     
@@ -540,8 +582,8 @@ void LSModel::getOutcomeVector(std::vector<LSOutcome>& result,
     
     outc.prob = 1.0;
     outc.nextState = nextState.toInt();
-    outc.reward = -LS_COST_LOOKAHEAD;
-    result.push_back(outc);
+    outcomes.push_back(outc);
+    reward = -LS_COST_LOOKAHEAD;
     return;
     
   case LS_ACT_EXIT:
@@ -549,15 +591,15 @@ void LSModel::getOutcomeVector(std::vector<LSOutcome>& result,
       /* legal exit: transition to terminal state, no cost */
       outc.prob = 1.0;
       outc.nextState = LSState::getTerminalState().toInt();
-      outc.reward = 0;
-      result.push_back(outc);
+      outcomes.push_back(outc);
+      reward = 0;
       return;
     } else {
       /* illegal exit: no change in state, incur penalty */
       outc.prob = 1.0;
-      outc.nextState = si;
-      outc.reward = -LS_PENALTY_ILLEGAL;
-      result.push_back(outc);
+      outc.nextState = s.toInt();
+      outcomes.push_back(outc);
+      reward = -LS_PENALTY_ILLEGAL;
       return;
     }
     
@@ -567,26 +609,30 @@ void LSModel::getOutcomeVector(std::vector<LSOutcome>& result,
   }
 }
 
-void LSModel::getObservationVector(std::vector<LSObsOutcome>& result,
-				   int spi, int ai) const
+void LSModel::getObservations(std::vector<LSObsOutcome>& result,
+			      int spi, int ai) const
 {
   LSAction a(ai);
   LSObsOutcome outc;
   result.clear();
   
-  if (LS_ACT_LOOK != a.type) {
+  LSState sp(spi);
+  if (sp.isTerminal()) {
+    outc.prob = 1.0;
+    outc.obs = OBS_NULL;
+    result.push_back(outc);
+  } else if (LS_ACT_LOOK != a.type) {
     outc.prob = 1.0;
     outc.obs = OBS_NULL;
     result.push_back(outc);
   } else {
-    LSState sp(spi);
-    FOR (i, LS_NUM_OBSERVATIONS*LS_NUM_OBSERVATIONS*LS_NUM_OBSERVATIONS) {
+    FOR (i, LS_NUM_OBSERVATIONS-1) {
       outc.obs = i;
       outc.prob = 1.0;
       int i0 = i;
       for (int j=2; j >= 0; j--) {
-	int obsj = i0 % LS_NUM_OBSERVATIONS;
-	i0 /= LS_NUM_OBSERVATIONS;
+	int obsj = i0 % LS_BASE_NUM_OBSERVATIONS;
+	i0 /= LS_BASE_NUM_OBSERVATIONS;
 	outc.prob *= (sp.lifeInNeighborCell[j]
 		      ? mfile.obsDistributionLifePresent[obsj]
 		      : mfile.obsDistributionLifeAbsent[obsj]);
@@ -606,6 +652,9 @@ void LSModel::writeToFile(FILE* outFile)
   preInit.lastMoveDirection = LS_E;
   preInit.usedLookaheadInThisCell = 0;
   preInit.rewardLevelInRegion.resize(mfile.regionPriors.size(), 0);
+  FOR (i, 3) {
+    preInit.lifeInNeighborCell[i] = 0;
+  }
 
   LSAction a;
   a.type = LS_ACT_MOVE;
@@ -613,26 +662,39 @@ void LSModel::writeToFile(FILE* outFile)
   a.moveDirection = LS_E;
 
   std::vector<LSOutcome> initStates;
-  getOutcomeVector(initStates, preInit, a.toInt());
+  double reward;
+  getOutcomes(initStates, reward, preInit, a.toInt());
   
   // generate all reachable states using breadth-first search
   std::queue<int> stateQueue;
   FOR_EACH (sp, initStates) {
     stateQueue.push(sp->nextState);
   }
+  std::vector<LSOutcome> outcomes;
+  //int i=0;
   while (!stateQueue.empty()) {
     int si = stateQueue.back();
     stateQueue.pop();
-    const LSState& s = tableG.getState(si).s;
+    LSStateEntry& e = tableG.getState(si);
+    LSState& s = e.s;
+    e.visited = true;
     FOR (ai, LS_NUM_ACTIONS) {
-      std::vector<LSOutcome> outcomes;
-      getOutcomeVector(outcomes, s, ai);
+      getOutcomes(outcomes, reward, s, ai);
       FOR_EACH (sp, outcomes) {
 	if (!tableG.getState(sp->nextState).visited) {
 	  stateQueue.push(sp->nextState);
 	}
       }
     }
+#if 0
+    if (0 == (i++) % 10000) {
+      FOR (si, tableG.states.size()) {
+	LSState s(si);
+	printf("%s\n", s.toString().c_str());
+      }
+      break;
+    }
+#endif
   }
   int numStates = tableG.states.size();
 
@@ -646,13 +708,6 @@ void LSModel::writeToFile(FILE* outFile)
   fprintf(outFile, "discount: 1.0\n");
   fprintf(outFile, "values: reward\n");
 
-  fprintf(outFile, "states: ");
-  FOR (si, numStates) {
-    LSState s(si);
-    fprintf(outFile, "%s ", s.toString().c_str());
-  }
-  fprintf(outFile, "\n");
-
   fprintf(outFile, "actions: ");
   FOR (ai, LS_NUM_ACTIONS) {
     LSAction a(ai);
@@ -665,18 +720,50 @@ void LSModel::writeToFile(FILE* outFile)
     LSObservation o(oi);
     fprintf(outFile, "%s ", o.toString().c_str());
   }
-  fprintf(outFile, "\n");
+  fprintf(outFile, "\n\n");
+
+  fprintf(outFile, "states: ");
+  FOR (si, numStates) {
+    LSState s(si);
+    fprintf(outFile, "%s ", s.toString().c_str());
+  }
+  fprintf(outFile, "\n\n");
 
   fprintf(outFile, "start: ");
   FOR_EACH (sp, initBelief) {
     fprintf(outFile, "%lf ", *sp);
   }
-  fprintf(outFile, "\n");
-
-  fprintf(outFile, "\n");
+  fprintf(outFile, "\n\n");
 
   // write main body
-  // FIX fill me in
+  std::vector<LSObsOutcome> obsOutcomes;
+  FOR (si, numStates) {
+    LSState s(si);
+    FOR (ai, LS_NUM_ACTIONS) {
+      LSAction a(ai);
+
+      getOutcomes(outcomes, reward, s, ai);
+      if (reward != 0.0) {
+	fprintf(outFile, "R: %-5s : %-20s : * : * %lf\n",
+		a.toString().c_str(), s.toString().c_str(), reward);
+      }
+      FOR_EACH (op, outcomes) {
+	LSState sp(op->nextState);
+	fprintf(outFile, "T: %-5s : %-20s : %-20s %lf\n",
+		a.toString().c_str(), s.toString().c_str(), sp.toString().c_str(),
+		op->prob);
+      }
+
+      getObservations(obsOutcomes, si, ai);
+      FOR_EACH (op, obsOutcomes) {
+	LSObservation o(op->obs);
+	fprintf(outFile, "O: %-5s : %-20s : %-5s %lf\n",
+		a.toString().c_str(), s.toString().c_str(), o.toString().c_str(),
+		op->prob);
+      }
+      fprintf(outFile, "\n");
+    }
+  }
 }
 
 /**********************************************************************
@@ -739,6 +826,9 @@ int main(int argc, char *argv[]) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2006/06/12 21:09:34  trey
+ * almost complete, not debugged yet
+ *
  * Revision 1.1  2006/06/12 18:11:39  trey
  * initial check-in
  *
