@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2006-06-12 21:09:10 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2006-06-13 01:02:20 $
    
  @file    LSModelFile.cc
  @brief   No brief
@@ -70,8 +70,8 @@ static void writeDoubleVectorToFile(FILE* outFile,
 				    const std::vector<double>& vec)
 {
   fprintf(outFile, "%s ", header);
-  FOR (i, vec.size()) {
-    fprintf(outFile, "%lf ", vec[i]);
+  FOR_EACH (dp, vec) {
+    fprintf(outFile, "%lf ", *dp);
   }
   fprintf(outFile, "\n");
 }
@@ -127,7 +127,7 @@ LSGrid::LSGrid(void) :
 
 unsigned char LSGrid::getCellBounded(const LSPos& pos) const
 {
-  if (0 <= pos.x && pos.x < (int)width && 0 <= pos.y && pos.y < (int)height) {
+  if (0 <= pos.x && pos.x < ((int)width) && 0 <= pos.y && pos.y < ((int)height)) {
     return getCell(pos);
   } else {
     return LS_OBSTACLE;
@@ -151,7 +151,7 @@ void LSGrid::writeToFile(FILE* outFile) const
   FOR (y0, height) {
     int y = height - y0 - 1;
     if ((y % 2) == 1) fputc(' ', outFile);
-    for (unsigned int x=y/2; x < width; x++) {
+    for (unsigned int x=(y+1)/2; x < width; x++) {
       unsigned char cell = getCell(LSPos(x,y));
       char outCell;
       if (LS_OBSTACLE == cell) {
@@ -233,10 +233,10 @@ void LSModelFile::readFromFile(const std::string& fname)
 			getVal(params, "obsDistributionLifeAbsent"));
   convertToDoubleVector(obsDistributionLifePresent,
 			getVal(params, "obsDistributionLifePresent"));
-  if ((obsDistributionLifeAbsent.size() != LS_NUM_OBSERVATIONS)
-      || (obsDistributionLifePresent.size() != LS_NUM_OBSERVATIONS)) {
+  if ((obsDistributionLifeAbsent.size() != LS_BASE_NUM_OBSERVATIONS)
+      || (obsDistributionLifePresent.size() != LS_BASE_NUM_OBSERVATIONS)) {
     fprintf(stderr, "ERROR: %s: obsDistributionLife{Absent,Present} vectors must have %d entries each\n",
-	    fname.c_str(), LS_NUM_OBSERVATIONS);
+	    fname.c_str(), LS_BASE_NUM_OBSERVATIONS);
     exit(EXIT_FAILURE);
   }
 
@@ -261,7 +261,7 @@ void LSModelFile::readFromFile(const std::string& fname)
   int maxRowWidth = 0;
   FOR (y0, rows.size()) {
     int y = rows.size() - y0 - 1;
-    maxRowWidth = std::max(maxRowWidth, (int) (y/2 + rows[y0].size()));
+    maxRowWidth = std::max(maxRowWidth, (int) ((y+1)/2 + rows[y0].size()));
   }
 
   /* allocate final map data structure */
@@ -273,7 +273,7 @@ void LSModelFile::readFromFile(const std::string& fname)
   FOR (y0, rows.size()) {
     int y = rows.size() - y0 - 1;
     FOR (x0, rows[y0].size()) {
-      int x = y/2 + x0;
+      int x = (y+1)/2 + x0;
       char c = rows[y0][x0];
       unsigned char cell;
       if (' ' == c) {
@@ -291,8 +291,8 @@ void LSModelFile::readFromFile(const std::string& fname)
 
   if ((int)regionPriors.size() != grid.getMaxCellValue()) {
     int n = grid.getMaxCellValue();
-    fprintf(stderr, "ERROR: %s: number of regionPriors (%lu) should match number of regions in map (a-%c=%d)\n",
-	    fname.c_str(), regionPriors.size(), (char) ((n-1)+97), n);
+    fprintf(stderr, "ERROR: %s: number of regionPriors (%d) should match number of regions in map (a-%c=%d)\n",
+	    fname.c_str(), (int)regionPriors.size(), (char) ((n-1)+97), n);
     exit(EXIT_FAILURE);
   }
 }
@@ -311,6 +311,9 @@ void LSModelFile::writeToFile(FILE* outFile) const
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2006/06/12 21:09:10  trey
+ * added support for obsDistributionXXX parameters
+ *
  * Revision 1.2  2006/06/12 18:44:58  trey
  * regionPriors now implemented correctly
  *

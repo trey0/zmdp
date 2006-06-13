@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2006-06-12 21:09:10 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2006-06-13 01:02:20 $
    
  @file    LSModelFile.h
  @brief   No brief
@@ -29,7 +29,8 @@
 
 #define LS_OBSTACLE (100)
 
-#define LS_NUM_OBSERVATIONS (3)
+#define LS_BASE_NUM_OBSERVATIONS (3)
+#define LS_NUM_OBSERVATIONS (LS_BASE_NUM_OBSERVATIONS*LS_BASE_NUM_OBSERVATIONS*LS_BASE_NUM_OBSERVATIONS+1)
 
 struct LSPos {
   /* special case: x = -1 indicates the terminal state */
@@ -74,6 +75,9 @@ struct LSModelFile {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2006/06/12 21:09:10  trey
+ * added support for obsDistributionXXX parameters
+ *
  * Revision 1.2  2006/06/12 18:44:58  trey
  * regionPriors now implemented correctly
  *
