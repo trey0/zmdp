@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.4 $  $Author: trey $  $Date: 2006-06-13 14:44:10 $
+ $Revision: 1.5 $  $Author: trey $  $Date: 2006-06-13 18:29:11 $
   
  @file    gen_LifeSurvey.cc
  @brief   No brief
@@ -49,11 +49,9 @@ using namespace std;
 
 #define LS_NUM_ACTIONS (7)
 
-#define LS_COST_BASE (1)
-
-#define LS_COST_MOVE          (LS_COST_BASE)
-#define LS_COST_SAMPLING_MOVE (5*LS_COST_BASE)
-#define LS_COST_LOOKAHEAD     (5*LS_COST_BASE)
+#define LS_COST_MOVE          (1*mfile.baseCost)
+#define LS_COST_SAMPLING_MOVE (5*mfile.baseCost)
+#define LS_COST_LOOKAHEAD     (1*mfile.baseCost)
 
 #define LS_PENALTY_ILLEGAL (100)
 
@@ -122,6 +120,8 @@ struct LSObservation {
 struct LSStateEntry {
   LSState s;
   bool touched;
+  double maxIncomingReward;
+  int prevState;
 };
 
 struct LSStateTable {
@@ -342,6 +342,8 @@ int LSStateTable::getStateIndex(const LSState& s)
     LSStateEntry e;
     e.s = s;
     e.touched = false;
+    e.maxIncomingReward = -99e+20;
+    e.prevState = 0;
     states.push_back(e);
     //printf("getStateIndex: new entry %d\n", si);
     return si;
@@ -528,7 +530,7 @@ void LSModel::getOutcomes(std::vector<LSOutcome>& outcomes, double& reward,
       newRewardLevel = 1;
       }
     double actionReward = getReward(oldRewardLevel, newRewardLevel);
-    nextState.rewardLevelInRegion[nextCellRegion] = newRewardLevel;
+    nextState.rewardLevelInRegion[nextCellRegion] = std::max(newRewardLevel, oldRewardLevel);
     
     if (mfile.grid.getAtExit(nextState.pos)) {
       /* we entered an exit hex -- transition to the terminal state */
@@ -687,6 +689,8 @@ void LSModel::writeToFile(FILE* outFile, bool fullIdentifiers)
       //printf("stateQueue pushing %d\n", sp->nextState);
       stateQueue.push(sp->nextState);
       e.touched = true;
+      e.maxIncomingReward = 0.0;
+      e.prevState = 0;
     }
   }
   std::vector<LSOutcome> outcomes;
@@ -694,7 +698,9 @@ void LSModel::writeToFile(FILE* outFile, bool fullIdentifiers)
   while (!stateQueue.empty()) {
     int si = stateQueue.front();
     stateQueue.pop();
-    LSState s = tableG.getState(si).s;
+    LSStateEntry& e = tableG.getState(si);
+    double prevIncomingReward = e.maxIncomingReward;
+    LSState s = e.s;
     FOR (ai, LS_NUM_ACTIONS) {
       getOutcomes(outcomes, reward, s, ai);
       FOR_EACH (sp, outcomes) {
@@ -703,6 +709,11 @@ void LSModel::writeToFile(FILE* outFile, bool fullIdentifiers)
 	  //printf("stateQueue pushing %d\n", sp->nextState);
 	  stateQueue.push(sp->nextState);
 	  e.touched = true;
+	}
+	double reward0 = prevIncomingReward + reward;
+	if (reward0 > e.maxIncomingReward) {
+	  e.maxIncomingReward = reward0;
+	  e.prevState = si;
 	}
       }
     }
@@ -713,6 +724,25 @@ void LSModel::writeToFile(FILE* outFile, bool fullIdentifiers)
   }
   int numStates = tableG.states.size();
   printf("numStates=%d\n", numStates);
+#if 0
+  double maxMax = -99e+20;
+  FOR (si, numStates) {
+    LSStateEntry& e = tableG.getState(si);
+    LSState s = e.s;
+    printf("s=%s prevState=%s mir=%lf\n", s.toString().c_str(),
+	   LSState(e.prevState).toString().c_str(), e.maxIncomingReward);
+    double cap = 0;
+    FOR (i, s.rewardLevelInRegion.size()) {
+      int rewardLevel = std::min(3, s.rewardLevelInRegion[i]);
+      cap += getReward(0, rewardLevel);
+    }
+    if (e.maxIncomingReward > cap) {
+      printf("  cap violation: cap=%lf\n", cap);
+    }
+    maxMax = std::max(maxMax, e.maxIncomingReward);
+  }
+  printf("maxMax=%lf\n", maxMax);
+#endif
 
   // convert initStates to dense belief vector
   std::vector<double> initBelief(numStates, 0);
@@ -897,6 +927,9 @@ int main(int argc, char *argv[]) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2006/06/13 14:44:10  trey
+ * fixed bug in breadth-first state analysis, made command-line args more convenient, made pomdp output numeric by default
+ *
  * Revision 1.3  2006/06/13 02:01:19  trey
  * now prints body of pomdp file
  *
