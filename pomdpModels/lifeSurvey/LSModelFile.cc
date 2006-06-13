@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.5 $  $Author: trey $  $Date: 2006-06-13 14:43:14 $
+ $Revision: 1.6 $  $Author: trey $  $Date: 2006-06-13 18:28:34 $
    
  @file    LSModelFile.cc
  @brief   No brief
@@ -227,6 +227,7 @@ void LSModelFile::readFromFile(const std::string& fname)
   /* store parameters */
   startX = atoi(getVal(params, "startX").c_str());
   startY = atoi(getVal(params, "startY").c_str());
+  baseCost = atof(getVal(params, "baseCost").c_str());
   convertToDoubleVector(regionPriors,
 			getVal(params, "regionPriors"));
   convertToDoubleVector(obsDistributionLifeAbsent,
@@ -301,6 +302,7 @@ void LSModelFile::writeToFile(FILE* outFile) const
 {
   fprintf(outFile, "startX %d\n", startX);
   fprintf(outFile, "startY %d\n", startY);
+  fprintf(outFile, "baseCost %lf\n", baseCost);
   writeDoubleVectorToFile(outFile, "regionPriors", regionPriors);
   writeDoubleVectorToFile(outFile, "obsDistributionLifeAbsent", obsDistributionLifeAbsent);
   writeDoubleVectorToFile(outFile, "obsDistributionLifePresent", obsDistributionLifePresent);
@@ -311,6 +313,9 @@ void LSModelFile::writeToFile(FILE* outFile) const
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.5  2006/06/13 14:43:14  trey
+ * renamed getExitLegal() -> getAtExit()
+ *
  * Revision 1.4  2006/06/13 01:02:20  trey
  * fixed off-by-one error in odd rows of map
  *

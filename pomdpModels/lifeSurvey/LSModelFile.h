@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.5 $  $Author: trey $  $Date: 2006-06-13 14:43:14 $
+ $Revision: 1.6 $  $Author: trey $  $Date: 2006-06-13 18:28:34 $
    
  @file    LSModelFile.h
  @brief   No brief
@@ -59,6 +59,7 @@ struct LSGrid {
 
 struct LSModelFile {
   int startX, startY;
+  double baseCost;
   std::vector<double> regionPriors;
   std::vector<double> obsDistributionLifeAbsent;
   std::vector<double> obsDistributionLifePresent;
@@ -75,6 +76,9 @@ struct LSModelFile {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.5  2006/06/13 14:43:14  trey
+ * renamed getExitLegal() -> getAtExit()
+ *
  * Revision 1.4  2006/06/13 01:02:20  trey
  * fixed off-by-one error in odd rows of map
  *
