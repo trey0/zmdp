@@ -1,0 +1,10 @@
+startX 1
+startY 1
+baseCost 1.0
+regionPriors 0.1 0.5 0.5
+obsDistributionLifeAbsent  0.7 0.2 0.1
+obsDistributionLifePresent 0.1 0.2 0.7
+---
+a b b b b a a a a a a
+ a b b b a   a a c c
+a a a a a a a a c c c
