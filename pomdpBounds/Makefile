@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.3 2006-04-28 17:57:41 trey Exp $
+# $Id: Makefile,v 1.4 2006-06-14 18:17:33 trey Exp $
 #
 # Copyright (c) 2006, Trey Smith. All rights reserved.
 #
@@ -53,6 +53,19 @@ BUILDLIB_SRCS := \
 	ConvexBounds.cc
 include $(BUILD_DIR)/buildlib.mak
 
+ifneq (,$(TEST))
+
+# add targets here to be built with 'make TEST=1 install'
+
+BUILDBIN_TARGET := testReadPolicy
+BUILDBIN_SRCS := testReadPolicy.cc
+BUILDBIN_INDEP_LIBS := 
+BUILDBIN_DEP_LIBS := -lzmdpPomdpBounds -lzmdpBounds -lzmdpPomdpCore -lzmdpCommon
+include $(BUILD_DIR)/buildbin.mak
+
+endif
+
+
 ######################################################################
 # DO NOT MODIFY BELOW THIS POINT
 
@@ -60,6 +73,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.3  2006/04/28 17:57:41  trey
+# changed to use apache license
+#
 # Revision 1.2  2006/04/08 22:21:46  trey
 # fixed maininstall target to work as expected
 #
