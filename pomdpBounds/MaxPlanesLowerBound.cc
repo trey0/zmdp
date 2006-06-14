@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.5 $  $Author: trey $  $Date: 2006-05-27 19:21:50 $
+ $Revision: 1.6 $  $Author: trey $  $Date: 2006-06-14 18:17:21 $
    
  @file    MaxPlanesLowerBound.cc
  @brief   No brief
@@ -43,6 +43,22 @@ using namespace MatrixUtils;
 using namespace sla;
 
 namespace zmdp {
+
+/**********************************************************************
+ * LOCAL HELPER FUNCTIONS
+ **********************************************************************/
+
+static std::string stripWhiteSpace(const std::string& s)
+{
+  string::size_type p1, p2;
+  p1 = s.find_first_not_of(" \t");
+  if (string::npos == p1) {
+    return s;
+  } else {
+    p2 = s.find_last_not_of(" \t")+1;
+    return s.substr(p1, p2-p1);
+  }
+}
 
 /**********************************************************************
  * LB PLANE
@@ -345,11 +361,106 @@ void MaxPlanesLowerBound::writeToFile(const std::string& outFileName) const
   out.close();
 }
 
+void MaxPlanesLowerBound::readFromFile(const std::string& inFileName)
+{
+
+  ifstream inFile(inFileName.c_str());
+  if (!inFile) {
+    cerr << "ERROR: couldn't open " << inFileName << " for reading: "
+	 << strerror(errno) << endl;
+    exit(EXIT_FAILURE);
+  }
+  
+  char buf[1024];
+  std::string s;
+  LBPlane plane;
+  int entryIndex;
+  double entryVal;
+  int parseState = 0;
+  int lnum = 0;
+  while (!inFile.eof()) {
+    inFile.getline(buf, sizeof(buf));
+    lnum++;
+
+    // strip whitespace, ignore empty lines and comments
+    s = stripWhiteSpace(buf);
+    if (0 == s.size()) continue;
+    if ('#' == s[0]) continue;
+
+    // ignore these types of lines because they contain redundant information
+    if (s == "{") continue;
+    if (s == "}" or s == "},") continue;
+    if (s == "[") continue;
+    if (s == "]" or s == "],") continue;
+    if (string::npos != s.find("numPlanes")) continue;
+    if (string::npos != s.find("planes")) continue;
+    if (string::npos != s.find("numEntries")) continue;
+    if (string::npos != s.find("entries")) continue;
+
+  parseLineAgain:
+    switch (parseState) {
+    case 0:
+      if (string::npos != s.find("policyType")
+	  && string::npos != s.find("MaxPlanesLowerBound")) {
+	parseState = 1;
+      } else {
+	fprintf(stderr, "ERROR: %s: line %d: expected 'policyType => \"MaxPlanesLowerBound\"'\n",
+		inFileName.c_str(), lnum);
+	exit(EXIT_FAILURE);
+      }
+      break;
+    case 1:
+      if (string::npos != s.find("action")
+	  && (1 == sscanf(s.c_str(), "action => %d", &plane.action))) {
+	parseState = 2;
+      } else {
+	fprintf(stderr, "ERROR: %s: line %d: expected 'action => <int>'\n",
+		inFileName.c_str(), lnum);
+	exit(EXIT_FAILURE);
+      }
+      break;
+    case 2:
+      if (string::npos != s.find("action")) {
+	/* end of entries vector */
+	mask_set_to_one(plane.mask, plane.alpha);
+	planes.push_back(plane);
+	plane = LBPlane();
+	parseState = 1;
+	goto parseLineAgain;
+      } else if (2 == sscanf(s.c_str(), "%d, %lf", &entryIndex, &entryVal)) {
+	plane.alpha.push_back(entryIndex, entryVal);
+      } else {
+	printf("s=[%s]\n", s.c_str());
+	fprintf(stderr, "ERROR: %s: line %d: expected entry '<int>, <double>'\n",
+		inFileName.c_str(), lnum);
+	exit(EXIT_FAILURE);
+      }
+      break;
+    default:
+      assert(0); // never reach this point
+    }
+  }
+  
+  /* fold in last plane */
+  if (2 == parseState) {
+    mask_set_to_one(plane.mask, plane.alpha);
+    planes.push_back(plane);
+  }
+
+  inFile.close();
+
+  // the set of planes should have been pruned before it was written out
+  lastPruneNumPlanes = planes.size();
+}
+
 }; // namespace zmdp
 
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.5  2006/05/27 19:21:50  trey
+ * corrected a sentence in header comment that did not make sense
+ *
  * Revision 1.4  2006/04/28 21:14:20  trey
  * now automatically write an explanation of the policy format to top of each policy output file
  *

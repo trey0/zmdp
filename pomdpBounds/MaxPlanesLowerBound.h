@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2006-04-28 17:57:41 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2006-06-14 18:17:21 $
    
  @file    MaxPlanesLowerBound.h
  @brief   No brief
@@ -99,6 +99,7 @@ public:
   void maybePrune(void);
 
   void writeToFile(const std::string& outFileName) const;
+  void readFromFile(const std::string& inFileName);
 };
 std::ostream& operator<<(std::ostream& out, const MaxPlanesLowerBound& al);
 
@@ -109,6 +110,9 @@ std::ostream& operator<<(std::ostream& out, const MaxPlanesLowerBound& al);
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2006/04/28 17:57:41  trey
+ * changed to use apache license
+ *
  * Revision 1.2  2006/04/27 23:10:31  trey
  * added support for writing policies
  *
