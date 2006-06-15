@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.4 2006-06-14 18:17:33 trey Exp $
+# $Id: Makefile,v 1.5 2006-06-15 16:05:12 trey Exp $
 #
 # Copyright (c) 2006, Trey Smith. All rights reserved.
 #
@@ -60,7 +60,12 @@ ifneq (,$(TEST))
 BUILDBIN_TARGET := testReadPolicy
 BUILDBIN_SRCS := testReadPolicy.cc
 BUILDBIN_INDEP_LIBS := 
-BUILDBIN_DEP_LIBS := -lzmdpPomdpBounds -lzmdpBounds -lzmdpPomdpCore -lzmdpCommon
+BUILDBIN_DEP_LIBS := \
+	-lzmdpPomdpCore \
+	-lzmdpPomdpBounds \
+	-lzmdpPomdpParser \
+	-lzmdpBounds \
+	-lzmdpCommon
 include $(BUILD_DIR)/buildbin.mak
 
 endif
@@ -73,6 +78,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.4  2006/06/14 18:17:33  trey
+# added testReadPolicy.cc
+#
 # Revision 1.3  2006/04/28 17:57:41  trey
 # changed to use apache license
 #

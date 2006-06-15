@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-06-14 18:17:07 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-06-15 16:05:12 $
    
  @file    testReadPolicy.cc
  @brief   No brief
@@ -63,7 +63,13 @@ int main(int argc, char *argv[]) {
     usage();
   }
 
-  MaxPlanesLowerBound m(/* mdp = */ NULL);
+  // create a bogus pomdp because the reading code needs to
+  // know the number of states... the rest of the pomdp model
+  // is not used
+  Pomdp* p = new Pomdp();
+  p->numStates = 500000; // random number of states
+
+  MaxPlanesLowerBound m(/* mdp = */ p);
   m.readFromFile(inFileName);
   m.writeToFile(outFileName);
 }
@@ -72,5 +78,8 @@ int main(int argc, char *argv[]) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/06/14 18:17:07  trey
+ * initial check-in
+ *
  *
  ***************************************************************************/

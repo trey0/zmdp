@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.6 $  $Author: trey $  $Date: 2006-06-14 18:17:21 $
+ $Revision: 1.7 $  $Author: trey $  $Date: 2006-06-15 16:05:12 $
    
  @file    MaxPlanesLowerBound.cc
  @brief   No brief
@@ -400,6 +400,7 @@ void MaxPlanesLowerBound::readFromFile(const std::string& inFileName)
   parseLineAgain:
     switch (parseState) {
     case 0:
+      /* at the beginning of the file, check that this is the right type of policy */
       if (string::npos != s.find("policyType")
 	  && string::npos != s.find("MaxPlanesLowerBound")) {
 	parseState = 1;
@@ -410,8 +411,10 @@ void MaxPlanesLowerBound::readFromFile(const std::string& inFileName)
       }
       break;
     case 1:
+      /* at the start of a plane, read the action */
       if (string::npos != s.find("action")
 	  && (1 == sscanf(s.c_str(), "action => %d", &plane.action))) {
+	plane.alpha.resize(pomdp->numStates);
 	parseState = 2;
       } else {
 	fprintf(stderr, "ERROR: %s: line %d: expected 'action => <int>'\n",
@@ -421,13 +424,15 @@ void MaxPlanesLowerBound::readFromFile(const std::string& inFileName)
       break;
     case 2:
       if (string::npos != s.find("action")) {
-	/* end of entries vector */
+	/* finding the 'action' keyword indicates we are at the start of
+	   another plane; finish up the plane we were working on and
+	   reparse the current line in parse state 1 */
 	mask_set_to_one(plane.mask, plane.alpha);
 	planes.push_back(plane);
-	plane = LBPlane();
 	parseState = 1;
 	goto parseLineAgain;
       } else if (2 == sscanf(s.c_str(), "%d, %lf", &entryIndex, &entryVal)) {
+	/* push another entry into the plane */
 	plane.alpha.push_back(entryIndex, entryVal);
       } else {
 	printf("s=[%s]\n", s.c_str());
@@ -441,7 +446,7 @@ void MaxPlanesLowerBound::readFromFile(const std::string& inFileName)
     }
   }
   
-  /* fold in last plane */
+  /* reached EOF, finish up the last plane */
   if (2 == parseState) {
     mask_set_to_one(plane.mask, plane.alpha);
     planes.push_back(plane);
@@ -458,6 +463,9 @@ void MaxPlanesLowerBound::readFromFile(const std::string& inFileName)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.6  2006/06/14 18:17:21  trey
+ * added abliity to read in a policy
+ *
  * Revision 1.5  2006/05/27 19:21:50  trey
  * corrected a sentence in header comment that did not make sense
  *
