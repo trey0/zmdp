@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2006-04-28 17:57:41 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2006-06-15 16:09:47 $
 
  @file    TestDriver.cc
  @brief   No brief
@@ -141,25 +141,25 @@ void TestDriver::interleave(int numIterations,
 }
 
 void TestDriver::batchTestIncremental(int numIterations,
-				      AbstractSim* _sim,
-				      Solver& solver,
+				      SolverObjects& so,
 				      int numSteps,
 				      double minPrecision,
 				      double minOrder, double maxOrder,
 				      double ticksPerOrder,
-				      const string& outFileName,
+				      const string& incPlotFileName,
 				      const string& boundsFileName,
-				      const string& simFileName)
+				      const string& simFileName,
+				      const char* outPolicyFileName)
 {
   int action, last_action;
   belief_vector last_belief, diff;
   bool can_reuse_last_action;
 
-  sim = _sim;
+  sim = so.sim;
 
-  ofstream out( outFileName.c_str() );
+  ofstream out( incPlotFileName.c_str() );
   if (! out) {
-    cerr << "ERROR: couldn't open " << outFileName << " for writing: "
+    cerr << "ERROR: couldn't open " << incPlotFileName << " for writing: "
 	 << strerror(errno) << endl;
     exit(EXIT_FAILURE);
   }
@@ -170,7 +170,7 @@ void TestDriver::batchTestIncremental(int numIterations,
 	 << strerror(errno) << endl;
     exit(EXIT_FAILURE);
   }
-  solver.setBoundsFile(&boundsFile);
+  so.solver->setBoundsFile(&boundsFile);
   
   ofstream simOutFile( simFileName.c_str() );
   if (! simOutFile) {
@@ -179,7 +179,7 @@ void TestDriver::batchTestIncremental(int numIterations,
     exit(EXIT_FAILURE);
   }
 
-  solver.planInit(sim->getModel(), minPrecision);
+  so.solver->planInit(sim->getModel(), minPrecision);
 
   double timeSoFar = 1e-20;
   double logLastSimTime = -99;
@@ -188,8 +188,8 @@ void TestDriver::batchTestIncremental(int numIterations,
   while (!achieved_precision && timeSoFar < pow(10,maxOrder)) {
     timeval plan_start = getTime();
     achieved_precision =
-      solver.planFixedTime(sim->getModel()->getInitialState(),
-			   /* maxTime = */ -1, minPrecision);
+      so.solver->planFixedTime(sim->getModel()->getInitialState(),
+			       /* maxTime = */ -1, minPrecision);
     double deltaTime = timevalToSeconds(getTime() - plan_start);
     timeSoFar += deltaTime;
 
@@ -202,6 +202,20 @@ void TestDriver::batchTestIncremental(int numIterations,
 	// or when the run ends because we achieved the desired precision
 	|| achieved_precision) {
       logLastSimTime = ::log(timeSoFar);
+
+      // write output policy at each evaluation epoch if that was requested
+      if (NULL != outPolicyFileName) {
+	// create a backup of the policy from the last epoch in case policy
+	// writing is interrupted
+	string cmd = string("mv ") + outPolicyFileName + " " + outPolicyFileName + ".bak >& /dev/null";
+	system(cmd.c_str());
+
+	so.bounds->writePolicy(outPolicyFileName);
+
+	// delete the backup
+	cmd = string("rm -f ") + outPolicyFileName + ".bak >& /dev/null";
+	system(cmd.c_str());
+      }
 
       // repeatedly simulate, reusing the initial solution
       simOutFile << "----- time " << timeSoFar << endl;
@@ -229,7 +243,7 @@ void TestDriver::batchTestIncremental(int numIterations,
 	  if (can_reuse_last_action) {
 	    action = last_action;
 	  } else {
-	    action = solver.chooseAction(sim->getInformationState());
+	    action = so.solver->chooseAction(sim->getInformationState());
 	  }
 
 	  last_action = action;
@@ -257,7 +271,7 @@ void TestDriver::batchTestIncremental(int numIterations,
       double success_rate = ((double) num_successes) / numIterations;
 
 #if 0
-      ValueInterval val = solver.getValueAt(model->getInitialState());
+      ValueInterval val = so.solver.getValueAt(model->getInitialState());
       // for some reason, if i use sqrt() instead of ::sqrt(), it's ambiguous
       out << timeSoFar << " " << avg << " "
 	  << (stdev/::sqrt(numIterations)*1.96) << " "
@@ -293,6 +307,9 @@ void TestDriver::printRewards(void) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2006/04/28 17:57:41  trey
+ * changed to use apache license
+ *
  * Revision 1.1  2006/04/27 23:16:45  trey
  * renamed common/Interleave to main/TestDriver
  *

@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.4 $  $Author: trey $  $Date: 2006-04-28 17:57:41 $
+ $Revision: 1.5 $  $Author: trey $  $Date: 2006-06-15 16:10:57 $
 
  @file    zmdpBenchmark.cc
  @brief   No brief
@@ -55,17 +55,27 @@ void doBenchmark(const SolverParams& p, const BenchmarkParams& bp)
   SolverObjects so;
   constructSolverObjects(so, p);
 
+  if (NULL != p.outPolicyFileName) {
+    if (!so.bounds->getSupportsPolicyOutput()) {
+      cerr << "ERROR: -o specified, but with selected options, policy output is not supported:" << endl;
+      cerr << "  in order to enable policy output, problem must be a POMDP; if" << endl;
+      cout << "  it is, try adding the '-v convex' and '--lower-bound' options" << endl;
+      exit(EXIT_FAILURE);
+    }
+  }
+
   TestDriver x;
   x.batchTestIncremental(/* numIterations = */ bp.numIterations,
-			 so.sim, *so.solver,
+			 so,
 			 /* numSteps = */ 251,
 			 /* targetPrecision = */ p.targetPrecision,
 			 /* minOrder = */ bp.minOrder,
 			 /* maxOrder = */ bp.maxOrder,
 			 /* ticksPerOrder = */ 10,
-			 /* outFileName = */ "inc.plot",
+			 /* incPlotFileName = */ "inc.plot",
 			 /* boundsFileName = */ "bounds.plot",
-			 /* simFileName = */ "sim.plot");
+			 /* simFileName = */ "sim.plot",
+			 /* outPolicyFileName = */ p.outPolicyFileName);
   x.printRewards();
 }
 
@@ -96,13 +106,15 @@ void usage(const char* cmdName) {
     "  --upper-bound          Forces zmdpBenchmark to use the upper bound for action selection\n"
     "                           (normally the lower bound is used if it is available).\n"
     "\n"
-    "Performance evaluation options:\n"
+    "Performance evaluation and output options:\n"
     "  -i or --iterations     Set number of simulation iterations at each policy\n"
     "                           evaluation epoch [default: 100]\n"
     "  --min-eval             If minEval=k, start logging policy evaluation epochs\n"
     "                           after 10^k seconds of policy improvement [default: 0]\n"
     "  --max-eval             If maxEval=k, run ends after at most 10^k seconds of policy\n"
     "                           improvement [default: 3]\n"
+    "  -o or --output         Specify name of policy output file (if specified,a policy\n"
+    "                           is saved at each evaluation epoch) [default: no output]\n"
     "\n"
     "Examples:\n"
     "  " << cmdName << " RockSample_4_4.pomdp\n"
@@ -116,7 +128,7 @@ void usage(const char* cmdName) {
 }
 
 int main(int argc, char **argv) {
-  static char shortOptions[] = "hs:t:v:fi:";
+  static char shortOptions[] = "hs:t:v:fi:o:";
   static struct option longOptions[]={
     {"help",          0,NULL,'h'},
     {"version",       0,NULL,'V'},
@@ -131,6 +143,7 @@ int main(int argc, char **argv) {
     {"iterations",    1,NULL,'i'},
     {"min-eval",      1,NULL,'X'},
     {"max-eval",      1,NULL,'Y'},
+    {"output",        1,NULL,'o'},
     {NULL,0,0,0}
   };
 
@@ -189,6 +202,9 @@ int main(int argc, char **argv) {
     case 'Y': // max-eval
       bp.maxOrder = atoi(optarg);
       break;
+    case 'o': // output
+      p.outPolicyFileName = optarg;
+      break;
 
     case '?': // unknown option
     case ':': // option with missing parameter
@@ -228,6 +244,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2006/04/28 17:57:41  trey
+ * changed to use apache license
+ *
  * Revision 1.3  2006/04/27 23:19:03  trey
  * renamed Interleave -> TestDriver
  *

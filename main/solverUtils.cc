@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2006-04-28 17:57:41 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2006-06-15 16:10:01 $
 
  @file    solverUtils.cc
  @brief   No brief
@@ -104,6 +104,7 @@ SolverParams::SolverParams(void)
   useHeuristic = true;
   forceLowerBound = false;
   forceUpperBoundActionSelection = false;
+  outPolicyFileName = NULL;
 }
 
 void SolverParams::setStrategy(const char* strategyName)
@@ -217,6 +218,9 @@ void constructSolverObjects(SolverObjects& obj, const SolverParams& p)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2006/04/28 17:57:41  trey
+ * changed to use apache license
+ *
  * Revision 1.2  2006/04/27 23:07:54  trey
  * added bounds to SolverObjects data structure
  *

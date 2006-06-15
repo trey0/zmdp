@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.6 $  $Author: trey $  $Date: 2006-06-01 16:49:54 $
+ $Revision: 1.7 $  $Author: trey $  $Date: 2006-06-15 16:08:37 $
 
  @file    zmdpSolve.cc
  @brief   No brief
@@ -36,14 +36,12 @@ using namespace MatrixUtils;
 using namespace zmdp;
 
 struct OutputParams {
-  const char* outFileName;
   double timeoutSeconds;
 
   OutputParams(void);
 };
 
 OutputParams::OutputParams(void) {
-  outFileName = "out.policy";
   timeoutSeconds = -1;
 }
 
@@ -136,8 +134,8 @@ void doSolve(const SolverParams& p, const OutputParams& op)
   }
 
   // write out a policy
-  printf("%05d writing policy to '%s'\n", (int) run.elapsedTime(), op.outFileName);
-  so.bounds->writePolicy(op.outFileName);
+  printf("%05d writing policy to '%s'\n", (int) run.elapsedTime(), p.outPolicyFileName);
+  so.bounds->writePolicy(p.outPolicyFileName);
 
   printf("%05d done\n", (int) run.elapsedTime());
 }
@@ -206,6 +204,7 @@ int main(int argc, char **argv) {
 
   SolverParams p;
   OutputParams op;
+  p.outPolicyFileName = "out.policy"; // default value
 
 #if USE_DEBUG_PRINT
   // save arguments for debug printout later
@@ -253,7 +252,7 @@ int main(int argc, char **argv) {
       p.forceUpperBoundActionSelection = true;
       break;
     case 'o': // output
-      op.outFileName = optarg;
+      p.outPolicyFileName = optarg;
       break;
     case 'T': // timeout
       op.timeoutSeconds = atof(optarg);
@@ -291,6 +290,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.6  2006/06/01 16:49:54  trey
+ * moved installation of the SIGINT handler to after initialization, so an interrupt during initialization causes the solver to exit immediately
+ *
  * Revision 1.5  2006/04/28 20:33:54  trey
  * added handling of SIGINT
  *

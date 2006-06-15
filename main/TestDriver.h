@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2006-04-28 17:57:41 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2006-06-15 16:09:47 $
    
  @file    TestDriver.h
  @brief   No brief
@@ -25,8 +25,7 @@
 
 #include <vector>
 
-#include "Solver.h"
-#include "AbstractSim.h"
+#include "solverUtils.h"
 
 namespace zmdp {
 
@@ -49,18 +48,19 @@ public:
 		  int numSteps,
 		  double minPrecision,
 		  double minWait,
-		  const std::string& outFileName,
+		  const std::string& incPlotFileName,
 		  const std::string& boundsFileNameFmt,
 		  const std::string& simFileNameFmt);
   double getReward(void) { return sim->rewardSoFar; }
   void batchTestIncremental(int numIterations,
-			    AbstractSim* _sim,
-			    Solver& solver, int numSteps,
+			    SolverObjects& so,
+			    int numSteps,
 			    double minPrecision,
 			    double minOrder, double maxOrder, double ticksPerOrder,
-			    const std::string& outFileName,
+			    const std::string& incPlotFileName,
 			    const std::string& boundsFileName,
-			    const std::string& simFileName);
+			    const std::string& simFileName,
+			    const char* outPolicyFileName);
   void printRewards(void);
 
 };
@@ -72,6 +72,9 @@ public:
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2006/04/28 17:57:41  trey
+ * changed to use apache license
+ *
  * Revision 1.1  2006/04/27 23:16:45  trey
  * renamed common/Interleave to main/TestDriver
  *

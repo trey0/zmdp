@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.4 $  $Author: trey $  $Date: 2006-04-28 17:57:41 $
+ $Revision: 1.5 $  $Author: trey $  $Date: 2006-06-15 16:10:01 $
    
  @file    solverUtils.h
  @brief   No brief
@@ -81,6 +81,7 @@ struct SolverParams {
   bool useHeuristic;
   bool forceLowerBound;
   bool forceUpperBoundActionSelection;
+  const char* outPolicyFileName;
 
   SolverParams(void);
   void setStrategy(const char* strategyName);
@@ -105,6 +106,9 @@ void constructSolverObjects(SolverObjects& obj, const SolverParams& p);
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2006/04/28 17:57:41  trey
+ * changed to use apache license
+ *
  * Revision 1.3  2006/04/27 23:18:48  trey
  * removed unnecessary #include of Interleave.h
  *
