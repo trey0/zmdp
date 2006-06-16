@@ -48,6 +48,7 @@ src/pomdpParser  POMDP problem parsing code (thanks to Tony Cassandra!)
 src/pomdpCore    Basic POMDP operations and simulation
 src/pomdpBounds  Value function bounds representations specific to POMDPs
 src/pomdpModels  Some example POMDP problems
+src/pomdpExec    Interface you can use to execute policies output by zmdp.
 src/main         Glue code for invoking algorithms from the shell
 src/tools        Tools for scripting multiple runs and plotting performance.
 
@@ -73,25 +74,25 @@ INSTALLATION INSTRUCTIONS
 
 * Unpack the tarball to generate the zmdp directory:
 
-  tar xvfz zmdp-0.4.2.tgz
+  tar xvfz zmdp-0.5.0.tgz
 
 * Build:
 
-  cd zmdp-0.4.2/src
+  cd zmdp-0.5.0/src
   make install
-  (generates binaries in zmdp-0.4.2/bin/<os_name>/, <os_name> = linux2 or darwin8)
+  (generates binaries in zmdp-0.5.0/bin/<os_name>/, <os_name> = linux2 or darwin8)
 
 * Do a test run:
 
-  mkdir zmdp-0.4.2/results/
-  cd zmdp-0.4.2/results
+  mkdir zmdp-0.5.0/results/
+  cd zmdp-0.5.0/results
   ../bin/<os_name>/zmdpSolve ../src/pomdpModels/three_state.pomdp
   (look at results in 'out.policy')
 
 * If you wish to test with one of the included RockSample problem
   instances, generate it.
 
-  cd zmdp-0.4.2/src/pomdpModels
+  cd zmdp-0.5.0/src/pomdpModels
   ./gen_RockSample_5_7
   (generates RockSample_5_7.pomdp)
 
@@ -212,6 +213,18 @@ REFERENCES
 ========================================================================
 RELEASE NOTES
 
+Changes from 0.4.2 to 0.5.0 (15 Jun 2006)
+
+* Added PomdpExec, an interface you can use to write an executive that
+  reads in and executes POMDP policies output by zmdp.  (See
+  src/pomdpExec/testPomdpExec.cc for an example.)
+
+* Added ability for zmdpBenchmark to write out a policy file at each
+  evaluation epoch.
+
+* Added an early version of the LifeSurvey POMDP domain (this domain may
+  change in future releases).
+
 Changes from 0.4.0 to 0.4.2 (5 Jun 2006)
 
 * Fixed a bug which caused zmdpSolve to crash when convex bounds
@@ -285,4 +298,4 @@ zpomdp 0.1.0 (28 Oct 2005)
 * Initial release.
 
 ==========================================================
-$Id: README,v 1.13 2006-06-05 20:17:22 trey Exp $
+$Id: README,v 1.14 2006-06-16 02:41:06 trey Exp $
