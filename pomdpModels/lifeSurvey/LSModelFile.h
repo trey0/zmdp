@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.6 $  $Author: trey $  $Date: 2006-06-13 18:28:34 $
+ $Revision: 1.7 $  $Author: trey $  $Date: 2006-06-16 14:45:20 $
    
  @file    LSModelFile.h
  @brief   No brief
@@ -53,7 +53,7 @@ struct LSGrid {
   void setCell(const LSPos& pos, unsigned char c) { data[width*pos.y + pos.x] = c; }
   unsigned char getCellBounded(const LSPos& pos) const;
   bool getAtExit(const LSPos& pos) const;
-  void writeToFile(FILE* outFile) const;
+  void writeToFile(FILE* outFile, bool binaryMap = false) const;
   int getMaxCellValue(void);
 };
 
@@ -76,6 +76,9 @@ struct LSModelFile {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.6  2006/06/13 18:28:34  trey
+ * added baseCost parameter
+ *
  * Revision 1.5  2006/06/13 14:43:14  trey
  * renamed getExitLegal() -> getAtExit()
  *

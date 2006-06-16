@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.2 2006-06-12 18:12:30 trey Exp $
+# $Id: Makefile,v 1.3 2006-06-16 14:45:20 trey Exp $
 #
 # Copyright (c) 2002-2005, Trey Smith. All rights reserved.
 #
@@ -40,6 +40,12 @@ BUILDBIN_INDEP_LIBS :=
 BUILDBIN_DEP_LIBS :=
 include $(BUILD_DIR)/buildbin.mak
 
+BUILDBIN_TARGET := genTargetLocations
+BUILDBIN_SRCS := genTargetLocations.cc LSModelFile.cc
+BUILDBIN_INDEP_LIBS := 
+BUILDBIN_DEP_LIBS :=
+include $(BUILD_DIR)/buildbin.mak
+
 ifneq (,$(TEST))
 
 # add targets here to be built with 'make TEST=1 install'
@@ -59,6 +65,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.2  2006/06/12 18:12:30  trey
+# rename LSModel -> LSModelFile; uncommented gen_LifeSurvey build
+#
 # Revision 1.1  2006/06/11 14:37:39  trey
 # initial check-in
 #

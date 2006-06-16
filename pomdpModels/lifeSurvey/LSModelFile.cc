@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.6 $  $Author: trey $  $Date: 2006-06-13 18:28:34 $
+ $Revision: 1.7 $  $Author: trey $  $Date: 2006-06-16 14:45:20 $
    
  @file    LSModelFile.cc
  @brief   No brief
@@ -146,10 +146,23 @@ bool LSGrid::getAtExit(const LSPos& pos) const
   return true;
 }
 
-void LSGrid::writeToFile(FILE* outFile) const
+void LSGrid::writeToFile(FILE* outFile, bool binaryMap) const
 {
+  int y;
+  if (binaryMap) {
+    y = height;
+    fprintf(outFile, "  ");
+    if ((y % 2) == 1) fputc(' ', outFile);
+    for (unsigned int x=(y+1)/2; x < width; x++) {
+      fprintf(outFile, "%d ", x%10);
+    }
+    fprintf(outFile, "\n");
+  }
   FOR (y0, height) {
-    int y = height - y0 - 1;
+    y = height - y0 - 1;
+    if (binaryMap) {
+      fprintf(outFile, "%d ", y%10);
+    }
     if ((y % 2) == 1) fputc(' ', outFile);
     for (unsigned int x=(y+1)/2; x < width; x++) {
       unsigned char cell = getCell(LSPos(x,y));
@@ -157,12 +170,30 @@ void LSGrid::writeToFile(FILE* outFile) const
       if (LS_OBSTACLE == cell) {
 	outCell = ' ';
       } else {
-	outCell = cell + 97;
+	if (binaryMap && ((0 == cell) || (1 == cell))) {
+	  if (cell) {
+	    outCell = 'O';
+	  } else {
+	    outCell = '*';
+	  }
+	} else {
+	  outCell = cell + 97;
+	}
       }
       fputc(outCell, outFile);
       fputc(' ', outFile);
     }
+    if (binaryMap) {
+      fprintf(outFile, " %d", y%10);
+    }
     fputc('\n', outFile);
+  }
+  if (binaryMap) {
+    fprintf(outFile, "   ");
+    for (unsigned int x=0; x < width; x++) {
+      fprintf(outFile, "%d ", x%10);
+    }
+    fprintf(outFile, "\n");
   }
 }
 
@@ -313,6 +344,9 @@ void LSModelFile::writeToFile(FILE* outFile) const
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.6  2006/06/13 18:28:34  trey
+ * added baseCost parameter
+ *
  * Revision 1.5  2006/06/13 14:43:14  trey
  * renamed getExitLegal() -> getAtExit()
  *
