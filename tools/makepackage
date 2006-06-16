@@ -5,7 +5,7 @@
 #  README: update release notes (use 'cvs diff -r zmdp-old-version -D now')
 #  README: update installation instructions to show correct version
 #  repository: 'cvs rtag zmdp-x-x-x src'
-#  make version directory and tarball using this script
+#  make version directory and tarball 'makepackage x.x.x'
 #  test build and functionality in version directory
 #  copy tarball and README to www directory
 #  update www/zmdp/index.html
