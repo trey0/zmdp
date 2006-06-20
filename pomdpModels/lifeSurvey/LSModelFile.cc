@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.7 $  $Author: trey $  $Date: 2006-06-16 14:45:20 $
+ $Revision: 1.8 $  $Author: trey $  $Date: 2006-06-20 01:22:25 $
    
  @file    LSModelFile.cc
  @brief   No brief
@@ -47,7 +47,8 @@ typedef std::map<std::string, std::string> ParamLookup;
  **********************************************************************/
 
 static void convertToDoubleVector(std::vector<double>& result,
-				  const std::string& s)
+				  const std::string& s,
+				  int doNormalizeVector)
 {
   string::size_type p1, p2;
   p1 = 0;
@@ -61,6 +62,16 @@ static void convertToDoubleVector(std::vector<double>& result,
 	result.push_back(atof(s.substr(p1,(p2-p1)).c_str()));
       }
       p1 = p2+1;
+    }
+  }
+
+  if (doNormalizeVector) {
+    double sum = 0.0;
+    FOR_EACH (vp, result) {
+      sum += *vp;
+    }
+    FOR_EACH (vp, result) {
+      *vp /= sum;
     }
   }
 }
@@ -260,11 +271,14 @@ void LSModelFile::readFromFile(const std::string& fname)
   startY = atoi(getVal(params, "startY").c_str());
   baseCost = atof(getVal(params, "baseCost").c_str());
   convertToDoubleVector(regionPriors,
-			getVal(params, "regionPriors"));
+			getVal(params, "regionPriors"),
+			/* doNormalizeVector = */ 0);
   convertToDoubleVector(obsDistributionLifeAbsent,
-			getVal(params, "obsDistributionLifeAbsent"));
+			getVal(params, "obsDistributionLifeAbsent"),
+			/* doNormalizeVector = */ 1);
   convertToDoubleVector(obsDistributionLifePresent,
-			getVal(params, "obsDistributionLifePresent"));
+			getVal(params, "obsDistributionLifePresent"),
+			/* doNormalizeVector = */ 1);
   if ((obsDistributionLifeAbsent.size() != LS_BASE_NUM_OBSERVATIONS)
       || (obsDistributionLifePresent.size() != LS_BASE_NUM_OBSERVATIONS)) {
     fprintf(stderr, "ERROR: %s: obsDistributionLife{Absent,Present} vectors must have %d entries each\n",
@@ -344,6 +358,9 @@ void LSModelFile::writeToFile(FILE* outFile) const
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.7  2006/06/16 14:45:20  trey
+ * added ability to generate target map
+ *
  * Revision 1.6  2006/06/13 18:28:34  trey
  * added baseCost parameter
  *
