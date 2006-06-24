@@ -213,7 +213,7 @@ REFERENCES
 ========================================================================
 RELEASE NOTES
 
-Changes from 0.4.2 to 0.5.0 (15 Jun 2006)
+Changes from 0.4.2 to 0.5.0 (24 Jun 2006)
 
 * Added PomdpExec, an interface you can use to write an executive that
   reads in and executes POMDP policies output by zmdp.  (See
@@ -298,4 +298,4 @@ zpomdp 0.1.0 (28 Oct 2005)
 * Initial release.
 
 ==========================================================
-$Id: README,v 1.14 2006-06-16 02:41:06 trey Exp $
+$Id: README,v 1.15 2006-06-24 16:32:42 trey Exp $
