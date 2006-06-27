@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.3 2006-06-16 14:45:20 trey Exp $
+# $Id: Makefile,v 1.4 2006-06-27 16:04:40 trey Exp $
 #
 # Copyright (c) 2002-2005, Trey Smith. All rights reserved.
 #
@@ -31,19 +31,27 @@ SUBDIRS :=
 
 CFLAGS += -I$(CHECKOUT_DIR)/external/boost
 
-#INSTALLHEADERS_HEADERS :=
-#include $(BUILD_DIR)/installheaders.mak
+INSTALLHEADERS_HEADERS := \
+	LSModelFile.h \
+	LifeSurvey.h
+include $(BUILD_DIR)/installheaders.mak
+
+BUILDLIB_TARGET := libzmdpLifeSurvey.a
+BUILDLIB_SRCS := \
+	LSModelFile.cc \
+	LifeSurvey.cc
+include $(BUILD_DIR)/buildlib.mak
 
 BUILDBIN_TARGET := gen_LifeSurvey
-BUILDBIN_SRCS := gen_LifeSurvey.cc LSModelFile.cc
+BUILDBIN_SRCS := gen_LifeSurvey.cc
 BUILDBIN_INDEP_LIBS := 
-BUILDBIN_DEP_LIBS :=
+BUILDBIN_DEP_LIBS := -lzmdpLifeSurvey
 include $(BUILD_DIR)/buildbin.mak
 
 BUILDBIN_TARGET := genTargetLocations
-BUILDBIN_SRCS := genTargetLocations.cc LSModelFile.cc
+BUILDBIN_SRCS := genTargetLocations.cc
 BUILDBIN_INDEP_LIBS := 
-BUILDBIN_DEP_LIBS :=
+BUILDBIN_DEP_LIBS := -lzmdpLifeSurvey
 include $(BUILD_DIR)/buildbin.mak
 
 ifneq (,$(TEST))
@@ -65,6 +73,12 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.4  2006/06/26 21:34:45  trey
+# regrouped most source files into libzmdpLifeSurvey.a
+#
+# Revision 1.3  2006/06/16 14:45:20  trey
+# added ability to generate target map
+#
 # Revision 1.2  2006/06/12 18:12:30  trey
 # rename LSModel -> LSModelFile; uncommented gen_LifeSurvey build
 #

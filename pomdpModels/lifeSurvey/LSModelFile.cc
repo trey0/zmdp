@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.8 $  $Author: trey $  $Date: 2006-06-20 01:22:25 $
+ $Revision: 1.9 $  $Author: trey $  $Date: 2006-06-27 16:04:39 $
    
  @file    LSModelFile.cc
  @brief   No brief
@@ -35,6 +35,8 @@
 #include "zmdpCommonDefs.h"
 
 using namespace std;
+
+namespace zmdp {
 
 /**********************************************************************
  * DATA STRUCTURES
@@ -355,9 +357,17 @@ void LSModelFile::writeToFile(FILE* outFile) const
   grid.writeToFile(outFile);
 }
 
+}; // namespace zmdp
+
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.9  2006/06/26 21:33:52  trey
+ * put everything in zmdp namespace
+ *
+ * Revision 1.8  2006/06/20 01:22:25  trey
+ * now normalize obsDistribution parameters
+ *
  * Revision 1.7  2006/06/16 14:45:20  trey
  * added ability to generate target map
  *

@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-06-16 14:45:20 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-06-27 16:04:40 $
    
  @file    genTargetLocationsl.cc
  @brief   No brief
@@ -35,6 +35,7 @@
 #include "LSModelFile.h"
 
 using namespace std;
+using namespace zmdp;
 
 static double unitRand(void)
 {
@@ -119,5 +120,11 @@ int main(int argc, char *argv[]) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2006/06/26 21:34:18  trey
+ * now use zmdp namespace
+ *
+ * Revision 1.1  2006/06/16 14:45:20  trey
+ * added ability to generate target map
+ *
  *
  ***************************************************************************/

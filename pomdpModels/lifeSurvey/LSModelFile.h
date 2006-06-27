@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.7 $  $Author: trey $  $Date: 2006-06-16 14:45:20 $
+ $Revision: 1.8 $  $Author: trey $  $Date: 2006-06-27 16:04:39 $
    
  @file    LSModelFile.h
  @brief   No brief
@@ -31,6 +31,8 @@
 
 #define LS_BASE_NUM_OBSERVATIONS (3)
 #define LS_NUM_OBSERVATIONS (LS_BASE_NUM_OBSERVATIONS*LS_BASE_NUM_OBSERVATIONS*LS_BASE_NUM_OBSERVATIONS+1)
+
+namespace zmdp {
 
 struct LSPos {
   /* special case: x = -1 indicates the terminal state */
@@ -70,12 +72,19 @@ struct LSModelFile {
   void writeToFile(FILE* outFile) const;
 };
 
+} // namespace zmdp
 
 #endif // INCLSModelFile_h
 
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.8  2006/06/26 21:33:52  trey
+ * put everything in zmdp namespace
+ *
+ * Revision 1.7  2006/06/16 14:45:20  trey
+ * added ability to generate target map
+ *
  * Revision 1.6  2006/06/13 18:28:34  trey
  * added baseCost parameter
  *
