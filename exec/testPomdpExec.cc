@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-06-24 16:25:28 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-06-27 18:20:18 $
    
  @file    testPomdpExec.cc
  @brief   No brief
@@ -33,7 +33,7 @@
 #include <iostream>
 
 #include "MatrixUtils.h"
-#include "PomdpExec.h"
+#include "MaxPlanesLowerBoundExec.h"
 
 using namespace std;
 using namespace zmdp;
@@ -45,22 +45,24 @@ void doit(const char* modelFileName,
   // seeds random number generator
   MatrixUtils::init_matrix_utils();
 
-  PomdpExec p;
+  MaxPlanesLowerBoundExec* em = new MaxPlanesLowerBoundExec();
   printf("initializing\n");
-  p.init(modelFileName, useFastParser, policyFileName);
+  em->init(modelFileName, useFastParser, policyFileName);
+
+  PomdpExec* e = em;
 
   for (int i=0; i < 3; i++) {
     printf("new simulation run\n");
-    p.setToInitialBelief();
+    e->setToInitialBelief();
     printf("  reset to initial belief\n");
     while (1) {
-      int a = p.chooseAction();
+      int a = e->chooseAction();
       printf("  chose action %d\n", a);
-      int o = p.getRandomObservation(a);
+      int o = e->getRandomObservation(a);
       printf("  simulated seeing random observation %d\n", o);
-      p.advanceToNextBelief(a,o);
+      e->advanceToNextBelief(a,o);
       printf("  updated belief\n");
-      if (p.getBeliefIsTerminal()) {
+      if (e->getBeliefIsTerminal()) {
 	printf("  belief is terminal, ending run\n");
 	break;
       }
@@ -125,5 +127,8 @@ int main(int argc, char *argv[])
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/06/24 16:25:28  trey
+ * initial check-in
+ *
  *
  ***************************************************************************/
