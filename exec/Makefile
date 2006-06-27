@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.1 2006-06-24 16:25:27 trey Exp $
+# $Id: Makefile,v 1.2 2006-06-27 18:20:31 trey Exp $
 #
 # Copyright (c) 2006, Trey Smith. All rights reserved.
 #
@@ -34,12 +34,15 @@ SUBDIRS :=
 
 CFLAGS +=
 
-INSTALLHEADERS_HEADERS := PomdpExec.h
+INSTALLHEADERS_HEADERS := \
+	PomdpExec.h \
+	MaxPlanesLowerBoundExec.h
 include $(BUILD_DIR)/installheaders.mak
 
 BUILDLIB_TARGET := libzmdpPomdpExec.a
 BUILDLIB_SRCS := \
-	PomdpExec.cc
+	PomdpExec.cc \
+	MaxPlanesLowerBoundExec.cc
 include $(BUILD_DIR)/buildlib.mak
 
 ifneq (,$(TEST))
@@ -68,4 +71,7 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.1  2006/06/24 16:25:27  trey
+# initial check-in
+#
 #
