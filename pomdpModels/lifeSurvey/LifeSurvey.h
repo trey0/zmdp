@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-06-27 16:04:40 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-06-29 21:38:23 $
    
  @file    LifeSurvey.h
  @brief   No brief
@@ -22,6 +22,9 @@
 
 #ifndef INCLifeSurvey_h
 #define INCLifeSurvey_h
+
+#include <vector>
+#include <map>
 
 #include "LSModelFile.h"
 
@@ -141,6 +144,7 @@ struct LSModel {
 		   const LSState& s, int ai) const;
   void getObservations(std::vector<LSObsOutcome>& result,
 		       int spi, int ai) const;
+  void getInitialStateDistribution(std::vector<LSOutcome>& initStates);
   void writeToFile(FILE* outFile, bool fullIdentifiers);
 };
 
@@ -158,6 +162,9 @@ extern LSStateTable tableG;
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/06/27 16:04:40  trey
+ * refactored so outside code can access the LifeSurvey model using -lzmdpLifeSurvey
+ *
  * Revision 1.1  2006/06/26 21:33:36  trey
  * moved most functions from gen_LifeSurvey.cc to new files LifeSurvey.{h,cc}
  *

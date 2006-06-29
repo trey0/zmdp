@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-06-27 16:04:40 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-06-29 21:38:23 $
   
  @file    LifeSurvey.cc
  @brief   No brief
@@ -521,7 +521,7 @@ void LSModel::getObservations(std::vector<LSObsOutcome>& result,
   }
 }
 
-void LSModel::writeToFile(FILE* outFile, bool fullIdentifiers)
+void LSModel::getInitialStateDistribution(std::vector<LSOutcome>& initStates)
 {
   // generate possible initial states
   LSState preInit;
@@ -538,10 +538,15 @@ void LSModel::writeToFile(FILE* outFile, bool fullIdentifiers)
   a.useSample = 0;
   a.moveDirection = LS_E;
 
-  std::vector<LSOutcome> initStates;
   double reward;
   getOutcomes(initStates, reward, preInit, a.toInt());
-  
+}
+
+void LSModel::writeToFile(FILE* outFile, bool fullIdentifiers)
+{
+  std::vector<LSOutcome> initStates;
+  getInitialStateDistribution(initStates);
+
   // generate all reachable states using breadth-first search
   std::queue<int> stateQueue;
   FOR_EACH (sp, initStates) {
@@ -555,6 +560,7 @@ void LSModel::writeToFile(FILE* outFile, bool fullIdentifiers)
     }
   }
   std::vector<LSOutcome> outcomes;
+  double reward;
   int i=0;
   while (!stateQueue.empty()) {
     int si = stateQueue.front();
@@ -709,6 +715,9 @@ void LSModel::writeToFile(FILE* outFile, bool fullIdentifiers)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/06/27 16:04:40  trey
+ * refactored so outside code can access the LifeSurvey model using -lzmdpLifeSurvey
+ *
  * Revision 1.1  2006/06/26 21:33:36  trey
  * moved most functions from gen_LifeSurvey.cc to new files LifeSurvey.{h,cc}
  *
