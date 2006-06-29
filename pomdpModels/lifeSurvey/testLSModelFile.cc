@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-06-12 18:12:47 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-06-29 21:38:37 $
    
  @file    testLSModelFile.cc
  @brief   No brief
@@ -34,6 +34,7 @@
 #include "LSModelFile.h"
 
 using namespace std;
+using namespace zmdp;
 
 void usage(void) {
   cerr <<
@@ -78,6 +79,9 @@ int main(int argc, char *argv[]) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/06/12 18:12:47  trey
+ * renamed LSModel to LSModelFile; minor updates
+ *
  * Revision 1.1  2006/06/11 14:37:39  trey
  * initial check-in
  *
