@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.4 2006-06-27 16:04:40 trey Exp $
+# $Id: Makefile,v 1.5 2006-06-29 21:39:04 trey Exp $
 #
 # Copyright (c) 2002-2005, Trey Smith. All rights reserved.
 #
@@ -29,17 +29,19 @@ include $(SRC_DIR)/common/options.mak
 # ADD ANY SUBDIRS THAT NEED TO BE VISITED DURING A BUILD TO THE SUBDIRS LIST
 SUBDIRS := 
 
-CFLAGS += -I$(CHECKOUT_DIR)/external/boost
+CFLAGS +=
 
 INSTALLHEADERS_HEADERS := \
 	LSModelFile.h \
-	LifeSurvey.h
+	LifeSurvey.h \
+	LSPathAndReactExec.h
 include $(BUILD_DIR)/installheaders.mak
 
 BUILDLIB_TARGET := libzmdpLifeSurvey.a
 BUILDLIB_SRCS := \
 	LSModelFile.cc \
-	LifeSurvey.cc
+	LifeSurvey.cc \
+	LSPathAndReactExec.cc
 include $(BUILD_DIR)/buildlib.mak
 
 BUILDBIN_TARGET := gen_LifeSurvey
@@ -64,6 +66,19 @@ BUILDBIN_INDEP_LIBS :=
 BUILDBIN_DEP_LIBS :=
 include $(BUILD_DIR)/buildbin.mak
 
+BUILDBIN_TARGET := testLSPathAndReact
+BUILDBIN_SRCS := testLSPathAndReact.cc
+BUILDBIN_INDEP_LIBS := 
+BUILDBIN_DEP_LIBS := \
+	-lzmdpLifeSurvey \
+	-lzmdpPomdpExec \
+	-lzmdpPomdpCore \
+	-lzmdpPomdpBounds \
+	-lzmdpPomdpParser \
+	-lzmdpBounds \
+	-lzmdpCommon
+include $(BUILD_DIR)/buildbin.mak
+
 endif
 
 ######################################################################
@@ -73,6 +88,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.4  2006/06/27 16:04:40  trey
+# refactored so outside code can access the LifeSurvey model using -lzmdpLifeSurvey
+#
 # Revision 1.4  2006/06/26 21:34:45  trey
 # regrouped most source files into libzmdpLifeSurvey.a
 #
