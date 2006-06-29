@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-06-29 21:37:56 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-06-29 21:59:38 $
    
  @file    LSPathAndReactExec.cc
  @brief   No brief
@@ -243,11 +243,17 @@ void LSPathAndReactExec::generatePath(void)
 
 #if 1
   // debug
-  printf("best path:\n");
+  printf("  numPathsEvaluated=%d\n", numPathsEvaluated);
+  printf("  best path:\n");
+  int j=0;
+  printf("    ");
   FOR_EACH (cellP, plannedPath) {
-    printf("  (%d,%d)\n", cellP->pos.x, cellP->pos.y);
+    printf("(%2d,%2d) ", cellP->pos.x, cellP->pos.y);
+    if (0 == (++j % 5)) {
+      printf("\n    ");
+    }
   }
-  printf("numPathsEvaluated=%d\n", numPathsEvaluated);
+  printf("\n");
 #endif
 }
 
@@ -263,11 +269,25 @@ void LSPathAndReactExec::getBestExtension(LSPath& bestPathMatchingPrefix,
   bestPathMatchingPrefix = LSPath();
   bestPathValue = -999;
 
+  // update nextCellsCovered (counting the forward neighbors of the current cell)
+  std::vector<int> nextCellsCovered = cellsCoveredInRegion;
+  FOR (dir, 3) {
+    LSPos nextPos = m.getNeighbor(entry.pos, dir);
+    int nextCellRegion = f.grid.getCellBounded(nextPos);
+    if (LS_OBSTACLE == nextCellRegion
+	|| (LS_SE == entry.lastMoveDirection && LS_NE == dir)
+	|| (LS_NE == entry.lastMoveDirection && LS_SE == dir)) {
+      // invalid move
+    } else {
+      nextCellsCovered[nextCellRegion]++;
+    }
+  }
+
   // calculate value for the path up to this point
   double val = 0.0;
   FOR (r, f.regionPriors.size()) {
     double probLifeIsSampledInRegion =
-      1 - pow(1 - f.regionPriors[r], cellsCoveredInRegion[r]);
+      1 - pow(1 - f.regionPriors[r], nextCellsCovered[r]);
     val += probLifeIsSampledInRegion;
   }
 
@@ -290,7 +310,7 @@ void LSPathAndReactExec::getBestExtension(LSPath& bestPathMatchingPrefix,
     bestValueInCell = val;
   } else {
     // there is another path at least as good as this one; prune this branch
-    //return;
+    return;
   }
 
   if (f.grid.getAtExit(entry.pos)) {
@@ -301,20 +321,6 @@ void LSPathAndReactExec::getBestExtension(LSPath& bestPathMatchingPrefix,
 
   } else {
     // prefix is a partial path through the map; choose the best extension
-
-    // update nextCellsCovered (counting the forward neighbors of the current cell)
-    std::vector<int> nextCellsCovered = cellsCoveredInRegion;
-    FOR (dir, 3) {
-      LSPos nextPos = m.getNeighbor(entry.pos, dir);
-      int nextCellRegion = f.grid.getCellBounded(nextPos);
-      if (LS_OBSTACLE == nextCellRegion
-	  || (LS_SE == entry.lastMoveDirection && LS_NE == dir)
-	  || (LS_NE == entry.lastMoveDirection && LS_SE == dir)) {
-	// invalid move
-      } else {
-	nextCellsCovered[nextCellRegion]++;
-      }
-    }
 
     // try out different extensions of prefix and keep the best
     LSPathEntry nextEntry;
@@ -329,14 +335,14 @@ void LSPathAndReactExec::getBestExtension(LSPath& bestPathMatchingPrefix,
 	// invalid move
       } else {
 	// calculate the best extension that includes moving in direction <dir>
-	double val;
+	double extVal;
 	prefix.push_back(nextEntry);
-	getBestExtension(extension, val, prefix, nextCellsCovered);
+	getBestExtension(extension, extVal, prefix, nextCellsCovered);
 	prefix.pop_back();
 
-	if (val > bestPathValue) {
+	if (extVal > bestPathValue) {
 	  bestPathMatchingPrefix = extension;
-	  bestPathValue = val;
+	  bestPathValue = extVal;
 	}
       }
     }
@@ -348,5 +354,8 @@ void LSPathAndReactExec::getBestExtension(LSPath& bestPathMatchingPrefix,
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/06/29 21:37:56  trey
+ * initial check-in
+ *
  *
  ***************************************************************************/
