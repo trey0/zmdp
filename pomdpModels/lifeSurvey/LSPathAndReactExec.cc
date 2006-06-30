@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2006-06-29 21:59:38 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2006-06-30 17:50:37 $
    
  @file    LSPathAndReactExec.cc
  @brief   No brief
@@ -87,7 +87,8 @@ void LSPathAndReactExec::setToInitialBelief(void)
   m.getInitialStateDistribution(initStates);
 
   // (reduce state distribution to a deterministic state)
-  LSState currentState = initStates[0].nextState;
+  assert(initStates.size() > 0);
+  currentState = initStates[0].nextState;
   FOR (i, 3) {
     // assume no life unless life is positively sensed
     currentState.lifeInNeighborCell[i] = 0;
@@ -165,7 +166,7 @@ int LSPathAndReactExec::chooseAction(void)
     a.type = LS_ACT_LOOK;
   }
 
-  return 1; // non-sampling move east
+  return a.toInt();
 }
 
 void LSPathAndReactExec::advanceToNextBelief(int ai, int oi)
@@ -186,17 +187,19 @@ void LSPathAndReactExec::advanceToNextBelief(int ai, int oi)
     // last action was a move; we believe none of the cells in front has life
     // until we get a positive lookahead observation
     FOR (i, 3) {
-      currentState.lifeInNeighborCell[i] = 0;
+      nextState.lifeInNeighborCell[i] = 0;
     }
   } else {
     // last action was a lookahead; mark high confidence neighbor cells
     // as containing life
     FOR (i, 3) {
       if (LS_BASE_NUM_OBSERVATIONS-1 == o.lifeInNeighborConfidence[i]) {
-	currentState.lifeInNeighborCell[i] = 1;
+	nextState.lifeInNeighborCell[i] = 1;
       }
     }
   }
+
+  currentState = nextState;
 }
 
 int LSPathAndReactExec::getDistanceToNearestPathCell(const LSPos& pos) const
@@ -263,7 +266,7 @@ void LSPathAndReactExec::getBestExtension(LSPath& bestPathMatchingPrefix,
 					  const std::vector<int>& cellsCoveredInRegion)
 {
   const LSModelFile& f = m.mfile;
-  const LSPathEntry& entry = prefix.back();
+  LSPathEntry entry = prefix.back();
 
   // set up default return value
   bestPathMatchingPrefix = LSPath();
@@ -354,6 +357,9 @@ void LSPathAndReactExec::getBestExtension(LSPath& bestPathMatchingPrefix,
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2006/06/29 21:59:38  trey
+ * weird bug in generated path seems to be fixed; chooseAction() still broken
+ *
  * Revision 1.1  2006/06/29 21:37:56  trey
  * initial check-in
  *
