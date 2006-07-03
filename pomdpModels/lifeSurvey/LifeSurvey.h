@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2006-06-29 21:38:23 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2006-07-03 21:20:04 $
    
  @file    LifeSurvey.h
  @brief   No brief
@@ -38,7 +38,7 @@ namespace zmdp {
 
 #define LS_COST_MOVE          (1*mfile.baseCost)
 #define LS_COST_SAMPLING_MOVE (5*mfile.baseCost)
-#define LS_COST_LOOKAHEAD     (1*mfile.baseCost)
+#define LS_COST_LOOKAHEAD     (mfile.lookaheadCost*mfile.baseCost)
 
 #define LS_PENALTY_ILLEGAL (100)
 
@@ -162,6 +162,9 @@ extern LSStateTable tableG;
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2006/06/29 21:38:23  trey
+ * added getInitialStateDistribution()
+ *
  * Revision 1.1  2006/06/27 16:04:40  trey
  * refactored so outside code can access the LifeSurvey model using -lzmdpLifeSurvey
  *

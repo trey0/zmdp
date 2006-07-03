@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.8 $  $Author: trey $  $Date: 2006-06-27 16:04:39 $
+ $Revision: 1.9 $  $Author: trey $  $Date: 2006-07-03 21:20:04 $
    
  @file    LSModelFile.h
  @brief   No brief
@@ -62,6 +62,7 @@ struct LSGrid {
 struct LSModelFile {
   int startX, startY;
   double baseCost;
+  double lookaheadCost;
   std::vector<double> regionPriors;
   std::vector<double> obsDistributionLifeAbsent;
   std::vector<double> obsDistributionLifePresent;
@@ -79,6 +80,9 @@ struct LSModelFile {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.8  2006/06/27 16:04:39  trey
+ * refactored so outside code can access the LifeSurvey model using -lzmdpLifeSurvey
+ *
  * Revision 1.8  2006/06/26 21:33:52  trey
  * put everything in zmdp namespace
  *

@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.9 $  $Author: trey $  $Date: 2006-06-27 16:04:39 $
+ $Revision: 1.10 $  $Author: trey $  $Date: 2006-07-03 21:20:04 $
    
  @file    LSModelFile.cc
  @brief   No brief
@@ -272,6 +272,7 @@ void LSModelFile::readFromFile(const std::string& fname)
   startX = atoi(getVal(params, "startX").c_str());
   startY = atoi(getVal(params, "startY").c_str());
   baseCost = atof(getVal(params, "baseCost").c_str());
+  lookaheadCost = atof(getVal(params, "lookaheadCost").c_str());
   convertToDoubleVector(regionPriors,
 			getVal(params, "regionPriors"),
 			/* doNormalizeVector = */ 0);
@@ -362,6 +363,9 @@ void LSModelFile::writeToFile(FILE* outFile) const
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.9  2006/06/27 16:04:39  trey
+ * refactored so outside code can access the LifeSurvey model using -lzmdpLifeSurvey
+ *
  * Revision 1.9  2006/06/26 21:33:52  trey
  * put everything in zmdp namespace
  *
