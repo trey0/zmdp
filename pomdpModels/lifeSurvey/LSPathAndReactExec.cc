@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2006-06-30 17:50:37 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2006-07-03 14:30:06 $
    
  @file    LSPathAndReactExec.cc
  @brief   No brief
@@ -93,10 +93,6 @@ void LSPathAndReactExec::setToInitialBelief(void)
     // assume no life unless life is positively sensed
     currentState.lifeInNeighborCell[i] = 0;
   }
-
-  // set level 1 reward in region containing first cell
-  int r = m.mfile.grid.getCell(currentState.pos);
-  currentState.rewardLevelInRegion[r] = 1;
 }
 
 /*
@@ -237,16 +233,23 @@ void LSPathAndReactExec::generatePath(void)
   LSPath initialPrefix;
   initialPrefix.push_back(entry);
 
-  bestValueMap.resize(f.grid.width*f.grid.height*3, -999);
+  bestValueMap.clear();
+  bestValueMap.resize(f.grid.width*f.grid.height*3);
   numPathsEvaluated = 0;
 
   double plannedPathValue;
-  std::vector<int> cellsCoveredInRegion(m.mfile.regionPriors.size(), 0);
-  getBestExtension(plannedPath, plannedPathValue, initialPrefix, cellsCoveredInRegion);
+  LSValueEntry initialValue;
+  initialValue.unreachableRegionValue = 0;
+  initialValue.regionCounts.resize(m.mfile.regionPriors.size(), 0);
+
+  getBestExtension(plannedPath, plannedPathValue, initialPrefix,
+		   initialValue);
 
 #if 1
   // debug
   printf("  numPathsEvaluated=%d\n", numPathsEvaluated);
+  printf("  best path value (expected number of life samples): %lf\n",
+	 plannedPathValue);
   printf("  best path:\n");
   int j=0;
   printf("    ");
@@ -263,7 +266,7 @@ void LSPathAndReactExec::generatePath(void)
 void LSPathAndReactExec::getBestExtension(LSPath& bestPathMatchingPrefix,
 					  double& bestPathValue,
 					  LSPath& prefix,
-					  const std::vector<int>& cellsCoveredInRegion)
+					  const LSValueEntry& valueSoFar)
 {
   const LSModelFile& f = m.mfile;
   LSPathEntry entry = prefix.back();
@@ -272,8 +275,8 @@ void LSPathAndReactExec::getBestExtension(LSPath& bestPathMatchingPrefix,
   bestPathMatchingPrefix = LSPath();
   bestPathValue = -999;
 
-  // update nextCellsCovered (counting the forward neighbors of the current cell)
-  std::vector<int> nextCellsCovered = cellsCoveredInRegion;
+  // add forward neighbors of current cell to regionCounts
+  LSValueEntry nextValueSoFar = valueSoFar;
   FOR (dir, 3) {
     LSPos nextPos = m.getNeighbor(entry.pos, dir);
     int nextCellRegion = f.grid.getCellBounded(nextPos);
@@ -282,16 +285,23 @@ void LSPathAndReactExec::getBestExtension(LSPath& bestPathMatchingPrefix,
 	|| (LS_NE == entry.lastMoveDirection && LS_SE == dir)) {
       // invalid move
     } else {
-      nextCellsCovered[nextCellRegion]++;
+      nextValueSoFar.regionCounts[nextCellRegion]++;
     }
   }
 
-  // calculate value for the path up to this point
-  double val = 0.0;
+  // fold counts of unreachable regions into unreachableRegionValue
+  // (all regions are considered unreachable if we are at the exit)
+  bool atExit = f.grid.getAtExit(entry.pos);
   FOR (r, f.regionPriors.size()) {
-    double probLifeIsSampledInRegion =
-      1 - pow(1 - f.regionPriors[r], nextCellsCovered[r]);
-    val += probLifeIsSampledInRegion;
+    if (LS_UNREACHABLE != nextValueSoFar.regionCounts[r]) {
+      if (atExit || !m.regionReachable[r].getCell(entry.pos)) {
+	double probLifeIsSampledInRegion =
+	  1 - pow(1 - f.regionPriors[r],
+		  nextValueSoFar.regionCounts[r]);
+	nextValueSoFar.unreachableRegionValue += probLifeIsSampledInRegion;
+	nextValueSoFar.regionCounts[r] = LS_UNREACHABLE;
+      }
+    }
   }
 
   // debug
@@ -306,21 +316,17 @@ void LSPathAndReactExec::getBestExtension(LSPath& bestPathMatchingPrefix,
     }
   }
 
-  double& bestValueInCell = bestValueMap[3*(f.grid.width*entry.pos.y + entry.pos.x)
-					 + entry.lastMoveDirection];
-  if (val > bestValueInCell) {
-    // mark the best value so far for any path leading up to this cell
-    bestValueInCell = val;
-  } else {
-    // there is another path at least as good as this one; prune this branch
+  if (getValueIsDominated(entry, nextValueSoFar)) {
+    // there is another path going through this cell that is
+    // at least as good as this one; prune this search branch
     return;
   }
 
-  if (f.grid.getAtExit(entry.pos)) {
+  if (atExit) {
     // prefix is a complete path through the map; return it
 
     bestPathMatchingPrefix = prefix;
-    bestPathValue = val;
+    bestPathValue = nextValueSoFar.unreachableRegionValue;
 
   } else {
     // prefix is a partial path through the map; choose the best extension
@@ -340,7 +346,7 @@ void LSPathAndReactExec::getBestExtension(LSPath& bestPathMatchingPrefix,
 	// calculate the best extension that includes moving in direction <dir>
 	double extVal;
 	prefix.push_back(nextEntry);
-	getBestExtension(extension, extVal, prefix, nextCellsCovered);
+	getBestExtension(extension, extVal, prefix, nextValueSoFar);
 	prefix.pop_back();
 
 	if (extVal > bestPathValue) {
@@ -352,11 +358,43 @@ void LSPathAndReactExec::getBestExtension(LSPath& bestPathMatchingPrefix,
   }
 }
 
+bool LSPathAndReactExec::getValueIsDominated(const LSPathEntry& pe,
+					     const LSValueEntry& val)
+{
+  const LSModelFile& f = m.mfile;
+  LSValueVector& vec = bestValueMap[3*(f.grid.width*pe.pos.y + pe.pos.x)
+				    + pe.lastMoveDirection];
+  FOR_EACH (entryP, vec) {
+    if (dominates(*entryP, val)) return true;
+  }
+
+  // val is not dominated by any existing entry in vec; add
+  // val to vec
+  vec.push_back(val);
+  return false;
+}
+
+bool LSPathAndReactExec::dominates(const LSValueEntry& val1,
+				   const LSValueEntry& val2)
+{
+  if (val1.unreachableRegionValue < val2.unreachableRegionValue) {
+    return false;
+  }
+  assert(val1.regionCounts.size() == val2.regionCounts.size());
+  FOR (i, val1.regionCounts.size()) {
+    if (val1.regionCounts[i] < val2.regionCounts[i]) return false;
+  }
+  return true;
+}
+
 }; // namespace zmdp
 
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2006/06/30 17:50:37  trey
+ * fixed core dump from shadowing variable declaration
+ *
  * Revision 1.2  2006/06/29 21:59:38  trey
  * weird bug in generated path seems to be fixed; chooseAction() still broken
  *

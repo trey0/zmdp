@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-06-29 21:37:56 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-07-03 14:30:06 $
    
  @file    LSPathAndReactExec.h
  @brief   No brief
@@ -39,12 +39,19 @@ struct LSPathEntry {
 
 typedef std::vector<LSPathEntry> LSPath;
 
+struct LSValueEntry {
+  double unreachableRegionValue;
+  std::vector<int> regionCounts;
+};
+
+typedef std::vector<LSValueEntry> LSValueVector;
+
 struct LSPathAndReactExec : public PomdpExec {
   LSModel m;
   LSPath plannedPath;
   LSState currentState;
 
-  std::vector<double> bestValueMap;
+  std::vector<LSValueVector> bestValueMap;
   int numPathsEvaluated;
 
   LSPathAndReactExec(void);
@@ -64,7 +71,11 @@ struct LSPathAndReactExec : public PomdpExec {
   void getBestExtension(LSPath& bestPathMatchingPrefix,
 			double& bestPathValue,
 			LSPath& prefix,
-			const std::vector<int>& cellsCoveredInRegion);
+			const LSValueEntry& valueSoFar);
+  bool getValueIsDominated(const LSPathEntry& pe,
+			   const LSValueEntry& val);
+  bool dominates(const LSValueEntry& val1,
+		 const LSValueEntry& val2);
 };
 
 } // namespace zmdp
@@ -74,6 +85,9 @@ struct LSPathAndReactExec : public PomdpExec {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/06/29 21:37:56  trey
+ * initial check-in
+ *
  *
  ***************************************************************************/
 
