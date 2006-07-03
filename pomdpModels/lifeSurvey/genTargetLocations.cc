@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2006-06-27 16:04:40 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2006-07-03 21:20:21 $
    
  @file    genTargetLocationsl.cc
  @brief   No brief
@@ -46,19 +46,22 @@ void usage(const char* binaryName) {
   cerr <<
     "usage: " << binaryName << " OPTIONS <foo.lifeSurvey>\n"
     "  -h or --help   Display this help\n"
-    "  -s or --seed   Set random seed\n";
+    "  -s or --seed   Set random seed\n"
+    "  -n or --noise  Set noise factor\n";
   exit(EXIT_FAILURE);
 }
 
 int main(int argc, char *argv[]) {
-  static char shortOptions[] = "hs:";
+  static char shortOptions[] = "hs:n:";
   static struct option longOptions[]={
     {"help",          0,NULL,'h'},
     {"seed",          1,NULL,'s'},
+    {"noiseFactor",         1,NULL,'n'},
     {NULL,0,0,0}
   };
 
   int seed = -1;
+  double noiseFactor = 0;
   while (1) {
     char optchar = getopt_long(argc,argv,shortOptions,longOptions,NULL);
     if (optchar == -1) break;
@@ -70,6 +73,10 @@ int main(int argc, char *argv[]) {
 
     case 's': // seed
       seed = atoi(optarg);
+      break;
+
+    case 'n': // noise
+      noiseFactor = atof(optarg);
       break;
 
     case '?': // unknown option
@@ -92,7 +99,7 @@ int main(int argc, char *argv[]) {
   if (-1 == seed) {
     seed = time(NULL) % RAND_MAX;
   }
-  printf("RANDOM SEED: %d\n", seed);
+  printf("noise=%lf seed=%d\n", noiseFactor, seed);
   srand(seed);
 
   LSModelFile m;
@@ -100,12 +107,21 @@ int main(int argc, char *argv[]) {
   // read the map in
   m.readFromFile(modelFileName);
 
+  // add noise to priors (if any)
+  std::vector<double> noisyPriors = m.regionPriors;
+  if (noiseFactor > 0) {
+    for (int r=0; r < (int)noisyPriors.size(); r++) {
+      double noise = (2 * unitRand() * noiseFactor) - noiseFactor;
+      noisyPriors[r] *= (1.0 + noise);
+    }
+  }
+
   // set locations of targets
   for (int y=0; y < (int)m.grid.height; y++) {
     for (int x=0; x < (int)m.grid.width; x++) {
       unsigned char r = m.grid.getCell(LSPos(x,y));
       if (LS_OBSTACLE != r) {
-	double prob = m.regionPriors[r];
+	double prob = noisyPriors[r];
 	bool hasTarget = (unitRand() < prob);
 	m.grid.setCell(LSPos(x,y),hasTarget);
       }
@@ -120,6 +136,9 @@ int main(int argc, char *argv[]) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2006/06/27 16:04:40  trey
+ * refactored so outside code can access the LifeSurvey model using -lzmdpLifeSurvey
+ *
  * Revision 1.2  2006/06/26 21:34:18  trey
  * now use zmdp namespace
  *
