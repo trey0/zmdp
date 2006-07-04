@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: fgprof,v 1.2 2006-07-04 22:13:04 trey Exp $
+# $Id: fgprof,v 1.3 2006-07-04 23:20:35 trey Exp $
 #
 # DESCRIPTION:  
 
@@ -24,12 +24,14 @@ my $args = join(" ", @ARGV);
 open(GPROF, "gprof --no-flat-profile $args |");
 
 while (<GPROF>) {
-    s/zmdp:://g;
     s/std::basic_string<char, std::char_traits<char>, std::allocator<char> >/string/g;
     s/std::vector<([\w:]*), std::allocator<[\w:]*> >/std::vector<\1>/g;
     s/__gnu_cxx::__normal_iterator<sla::(\w+)_entry const\*, std::vector<sla::\w+_entry> >/\1_iterator/g;
     s/__gnu_cxx::__normal_iterator<sla::(\w+)_entry\*, std::vector<sla::\w+_entry> >/\1_iterator/g;
     s/__gnu_cxx::__normal_iterator<([\w\*]+), std::vector<[\w\*]+> >/std::vector<\1>::iterator/g;
+    s/zmdp:://g;
+    s/sla:://g;
+    s/std:://g;
 
     chop;
     &print_wrap($_,180,51);
@@ -37,6 +39,9 @@ while (<GPROF>) {
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.2  2006/07/04 22:13:04  trey
+# fgprof no longer tied to testPomdp binary name; also, now filter out zmdp:: in symbols
+#
 # Revision 1.1  2005/03/10 21:14:48  trey
 # initial check-in
 #
