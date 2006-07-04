@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.21 $  $Author: trey $  $Date: 2006-07-04 22:31:56 $
+ $Revision: 1.22 $  $Author: trey $  $Date: 2006-07-04 23:15:30 $
    
  @file    sla.h
  @brief   No brief
@@ -771,10 +771,46 @@ namespace sla {
 		   const cmatrix& A,
 		   const cvector& x)
   {
-    dvector tmp;
-    
-    mult( tmp, A, x );
-    copy( result, tmp );
+    if (x.filled() * A.filled() < 0.1 * A.size1() * A.size2()) {
+      // this sparse accumulator technique is only a good idea if both A
+      // and x are very sparse.  in that case, allocating and
+      // initializing a dense vector of the right size for temporary
+      // storage can dominate running time.  but for somewhat denser
+      // operands, the alternate implementation below is likely to be
+      // better.
+      
+      typeof(A.data.begin()) Ai, col_end;
+      int xind;
+      double xval;
+      cvector tmp;
+      cvector accum;
+      
+      accum.resize(x.size());
+      FOR_EACH (xi, x.data) {
+	xind = xi->index;
+	xval = xi->value;
+	col_end = A.data.begin() + A.col_starts[xind+1];
+	tmp.resize(x.size());
+	for (Ai = A.data.begin() + A.col_starts[xind];
+	     Ai != col_end;
+	     Ai++) {
+	  tmp.push_back(Ai->index, xval * Ai->value);
+	}
+	accum += tmp;
+      }
+      
+      result.resize(x.size());
+      FOR_EACH (ai, accum.data) {
+	if (fabs(ai->value) > SPARSE_EPS) {
+	  result.data.push_back(*ai);
+	}
+      }
+    } else {
+      dvector tmp;
+      
+      mult( tmp, A, x );
+      copy( result, tmp );
+    }
   }
   
   // result = x * A
@@ -1244,6 +1280,9 @@ typedef sla::dvector obs_prob_vector;
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.21  2006/07/04 22:31:56  trey
+ * simplified and sped up dmatrix/dvector resize routines
+ *
  * Revision 1.20  2006/07/04 22:11:39  trey
  * simplified and sped up copy(cvector,dvector)
  *
