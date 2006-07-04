@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.19 $  $Author: trey $  $Date: 2006-05-27 19:03:02 $
+ $Revision: 1.20 $  $Author: trey $  $Date: 2006-07-04 22:11:39 $
    
  @file    sla.h
  @brief   No brief
@@ -624,29 +624,13 @@ namespace sla {
 
   inline void copy(cvector& result, const dvector& x)
   {
-    int num_filled;
     int i;
-    typeof(result.data.begin()) ri;
-    
-    // count non-zeros
-    num_filled = 0;
-    FOR_EACH (xi, x.data) {
-      if (fabs(*xi) > SPARSE_EPS) num_filled++;
-    }
-    //std::cout << "convert: num_filled=" << num_filled << std::endl;
-    
-    // resize result vector
-    result.resize( x.size() );
-    result.data.resize(num_filled);
-    
-    // copy non-zeros to result
+
+    result.resize(x.size());
     i = 0;
-    ri = result.data.begin();
     FOR_EACH (xi, x.data) {
       if (fabs(*xi) > SPARSE_EPS) {
-	ri->index = i;
-	ri->value = *xi;
-	ri++;
+	result.push_back(i,*xi);
       }
       i++;
     }
@@ -1264,6 +1248,9 @@ typedef sla::dvector obs_prob_vector;
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.19  2006/05/27 19:03:02  trey
+ * added kmatrix::clear(); fixed dimensions in kmatrix_transpose_in_place()
+ *
  * Revision 1.18  2006/04/28 18:52:41  trey
  * removed obsolete USE_COMPRESSED_ALPHA ifdef
  *
