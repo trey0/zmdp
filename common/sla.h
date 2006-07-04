@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.20 $  $Author: trey $  $Date: 2006-07-04 22:11:39 $
+ $Revision: 1.21 $  $Author: trey $  $Date: 2006-07-04 22:31:56 $
    
  @file    sla.h
  @brief   No brief
@@ -326,10 +326,8 @@ namespace sla {
   inline void dvector::resize(unsigned int _size, double value)
   {
     assert(0 == value);
-    data.resize( _size );
-    FOR_EACH (di, data) {
-      (*di) = 0.0;
-    }
+    data.clear();
+    data.resize(_size, value);
   }
 
   inline void dvector::read(std::istream& in)
@@ -446,10 +444,8 @@ namespace sla {
     assert( 0 == value );
     size1_ = _size1;
     size2_ = _size2;
-    data.resize( size1_ * size2_ );
-    FOR_EACH (di, data) {
-      (*di) = 0.0;
-    }
+    data.clear();
+    data.resize(size1_*size2_, value);
   }
 
   /**********************************************************************
@@ -1248,6 +1244,9 @@ typedef sla::dvector obs_prob_vector;
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.20  2006/07/04 22:11:39  trey
+ * simplified and sped up copy(cvector,dvector)
+ *
  * Revision 1.19  2006/05/27 19:03:02  trey
  * added kmatrix::clear(); fixed dimensions in kmatrix_transpose_in_place()
  *
