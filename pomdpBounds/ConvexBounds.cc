@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.8 $  $Author: trey $  $Date: 2006-06-03 13:32:08 $
+ $Revision: 1.9 $  $Author: trey $  $Date: 2006-07-04 23:21:03 $
    
  @file    ConvexBounds.cc
  @brief   No brief
@@ -58,7 +58,6 @@ void ConvexBounds::getNewLBPlaneQ(LBPlane& result, const MDPNode& cn, int a)
 {
   alpha_vector betaA(pomdp->getBeliefSize()), betaAO(pomdp->getBeliefSize());
   alpha_vector tmp, tmp2;
-  obs_prob_vector opv;
 #if USE_MASKED_ALPHA
   alpha_vector tmp3;
 #endif
@@ -423,6 +422,9 @@ void ConvexBounds::writePolicy(const std::string& outFileName)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.8  2006/06/03 13:32:08  trey
+ * added CB_INITIALIZATION_PRECISION_FACTOR -- initialization is now forced to converge more tightly than the overall desired precision
+ *
  * Revision 1.7  2006/05/12 16:04:30  trey
  * fixed problem with uninitialized variable
  *
