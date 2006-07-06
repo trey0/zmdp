@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.4 $  $Author: trey $  $Date: 2006-07-03 14:30:06 $
+ $Revision: 1.5 $  $Author: trey $  $Date: 2006-07-06 16:15:44 $
    
  @file    LSPathAndReactExec.cc
  @brief   No brief
@@ -167,6 +167,18 @@ int LSPathAndReactExec::chooseAction(void)
 
 void LSPathAndReactExec::advanceToNextBelief(int ai, int oi)
 {
+#if 1
+  // sanity check
+  obs_prob_vector opv;
+  pomdp->getObsProbVector(opv, currentBelief, ai);
+  assert(0 <= oi && oi < (int)opv.size());
+  if (opv(oi) < 1e-10) {
+    fprintf(stderr, "ERROR: LSPathAndReactExec::advanceToNextBelief -- got impossible observation %d (prob=%lg)\n",
+	    oi, opv(oi));
+    exit(EXIT_FAILURE);
+  }
+#endif
+
   pomdp->getNextBelief(currentBelief, currentBelief, ai, oi);
 
   // get possible next outcomes according to probabilistic LS model
@@ -392,6 +404,9 @@ bool LSPathAndReactExec::dominates(const LSValueEntry& val1,
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2006/07/03 14:30:06  trey
+ * code no longer makes subtly invalid assumptions about when one path dominates another, so the output path is guaranteed to be optimal (luckily, seems to output the same path as before)
+ *
  * Revision 1.3  2006/06/30 17:50:37  trey
  * fixed core dump from shadowing variable declaration
  *
