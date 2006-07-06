@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2006-07-03 21:20:21 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2006-07-06 15:22:51 $
    
  @file    genTargetLocationsl.cc
  @brief   No brief
@@ -99,7 +99,6 @@ int main(int argc, char *argv[]) {
   if (-1 == seed) {
     seed = time(NULL) % RAND_MAX;
   }
-  printf("noise=%lf seed=%d\n", noiseFactor, seed);
   srand(seed);
 
   LSModelFile m;
@@ -117,25 +116,42 @@ int main(int argc, char *argv[]) {
   }
 
   // set locations of targets
-  for (int y=0; y < (int)m.grid.height; y++) {
-    for (int x=0; x < (int)m.grid.width; x++) {
+  std::vector<LSPos> targets;
+  for (int x=0; x < (int)m.grid.width; x++) {
+    for (int y=0; y < (int)m.grid.height; y++) {
       unsigned char r = m.grid.getCell(LSPos(x,y));
       if (LS_OBSTACLE != r) {
 	double prob = noisyPriors[r];
 	bool hasTarget = (unitRand() < prob);
 	m.grid.setCell(LSPos(x,y),hasTarget);
+	if (hasTarget) {
+	  targets.push_back(LSPos(x,y));
+	}
       }
     }
   }
 
   // write the resulting target map back out to stdout
+  printf("noise=%lf seed=%d numTargets=%d\n", noiseFactor, seed,
+	 targets.size());
   m.grid.writeToFile(stdout, /* binaryMap = */ true);
+  printf("--");
+  for (int i=0; i < (int)targets.size(); i++) {
+    if (i%5 == 0) {
+      printf("\n");
+    }
+    printf("%2d,%2d ", targets[i].x, targets[i].y);
+  }
+  printf("\n");
 }
 
 
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2006/07/03 21:20:21  trey
+ * added noise parameter
+ *
  * Revision 1.2  2006/06/27 16:04:40  trey
  * refactored so outside code can access the LifeSurvey model using -lzmdpLifeSurvey
  *
