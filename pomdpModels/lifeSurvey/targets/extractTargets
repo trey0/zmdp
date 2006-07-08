@@ -1,0 +1,31 @@
+#!/usr/bin/perl -w
+
+sub extractTargets {
+    my $inFile = shift;
+    my $outFile = shift;
+
+    open(IN, "<$inFile") or die "ERROR: couldn't open $inFile for reading: $!\n";
+    open(OUT, ">$outFile") or die "ERROR: couldn't open $outFile for writing: $!\n";
+
+    while (<IN>) {
+	chop;
+	if (s/,//g) {
+	    s/^\s+//;
+	    @targetCoords = split /\s+/;
+	    my $n = $#targetCoords+1;
+	    if ($n % 2 != 0) {
+		die "ERROR: odd number of target coords\n";
+	    }
+	    for my $i (0..($n/2)-1) {
+		$xi = $targetCoords[$i*2];
+		$yi = $targetCoords[$i*2+1];
+		print OUT "$xi $yi\n";
+	    }
+	}
+    }
+
+    close(IN);
+    close(OUT);
+}
+
+&extractTargets($ARGV[0], $ARGV[1]);
