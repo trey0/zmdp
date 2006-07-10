@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.5 2006-06-29 21:39:04 trey Exp $
+# $Id: Makefile,v 1.6 2006-07-10 02:22:41 trey Exp $
 #
 # Copyright (c) 2002-2005, Trey Smith. All rights reserved.
 #
@@ -56,6 +56,12 @@ BUILDBIN_INDEP_LIBS :=
 BUILDBIN_DEP_LIBS := -lzmdpLifeSurvey
 include $(BUILD_DIR)/buildbin.mak
 
+BUILDBIN_TARGET := calcLSTrialStats
+BUILDBIN_SRCS := calcLSTrialStats.cc
+BUILDBIN_INDEP_LIBS := 
+BUILDBIN_DEP_LIBS := -lzmdpLifeSurvey
+include $(BUILD_DIR)/buildbin.mak
+
 ifneq (,$(TEST))
 
 # add targets here to be built with 'make TEST=1 install'
@@ -88,6 +94,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.5  2006/06/29 21:39:04  trey
+# added LSPathAndReact and corresponding test
+#
 # Revision 1.4  2006/06/27 16:04:40  trey
 # refactored so outside code can access the LifeSurvey model using -lzmdpLifeSurvey
 #
