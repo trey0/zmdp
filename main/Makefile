@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.32 2006-04-28 22:33:36 trey Exp $
+# $Id: Makefile,v 1.33 2006-07-10 03:35:57 trey Exp $
 #
 # Copyright (c) 2002-2005, Trey Smith. All rights reserved.
 #
@@ -31,10 +31,10 @@ maininstall: install
 # ADD ANY SUBDIRS THAT NEED TO BE VISITED DURING A BUILD TO THE SUBDIRS LIST
 SUBDIRS :=
 
-ALL_LIBS := \
+MAIN_LIBS := \
 	-lzmdpSearch \
-	-lzmdpPomdpBounds \
 	-lzmdpPomdpCore \
+	-lzmdpPomdpBounds \
 	-lzmdpPomdpParser \
 	-lzmdpBounds \
 	-lzmdpRaceTrack \
@@ -43,13 +43,19 @@ ALL_LIBS := \
 BUILDBIN_TARGET := zmdpBenchmark
 BUILDBIN_SRCS := zmdpBenchmark.cc TestDriver.cc solverUtils.cc
 BUILDBIN_INDEP_LIBS :=
-BUILDBIN_DEP_LIBS := $(ALL_LIBS)
+BUILDBIN_DEP_LIBS := $(MAIN_LIBS)
 include $(BUILD_DIR)/buildbin.mak
 
 BUILDBIN_TARGET := zmdpSolve
 BUILDBIN_SRCS := zmdpSolve.cc solverUtils.cc
 BUILDBIN_INDEP_LIBS :=
-BUILDBIN_DEP_LIBS := $(ALL_LIBS)
+BUILDBIN_DEP_LIBS := $(MAIN_LIBS)
+include $(BUILD_DIR)/buildbin.mak
+
+BUILDBIN_TARGET := zmdpEvaluate
+BUILDBIN_SRCS := zmdpEvaluate.cc
+BUILDBIN_INDEP_LIBS :=
+BUILDBIN_DEP_LIBS := -lzmdpLifeSurvey -lzmdpPomdpExec $(MAIN_LIBS)
 include $(BUILD_DIR)/buildbin.mak
 
 ######################################################################
@@ -59,6 +65,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.32  2006/04/28 22:33:36  trey
+# renamed zmdpRtdp -> zmdpSearch
+#
 # Revision 1.31  2006/04/28 17:57:41  trey
 # changed to use apache license
 #
