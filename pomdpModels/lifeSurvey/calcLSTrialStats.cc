@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-07-10 02:21:35 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-07-10 19:33:35 $
    
  @file    calcLSTrialStats.cc
  @brief   No brief
@@ -47,33 +47,6 @@ struct TraceEntry {
   int o;
 };
 
-void readTargetList(std::vector<LSPos>& result,
-		    const char* fname)
-{
-  FILE* f = fopen(fname, "r");
-  if (NULL == f) {
-    fprintf(stderr, "ERROR: couldn't open %s for reading: %s\n",
-	    fname, strerror(errno));
-    exit(EXIT_FAILURE);
-  }
-
-  char buf[256];
-  LSPos p;
-  int lnum = 0;
-  result.clear();
-  while (fgets(buf,sizeof(buf),f)) {
-    lnum++;
-    if (0 == strlen(buf) || '#' == buf[0]) continue;
-    if (2 != sscanf(buf, "%d %d", &p.x, &p.y)) {
-      fprintf(stderr, "%s:%d: syntax error, expected integers '<x> <y>' on each line\n",
-	      fname, lnum);
-      exit(EXIT_FAILURE);
-    }
-    result.push_back(p);
-  }
-  fclose(f);
-}
-
 void readTrace(std::vector<TraceEntry>& result,
 	       const char* fname)
 {
@@ -101,17 +74,6 @@ void readTrace(std::vector<TraceEntry>& result,
   fclose(f);
 }
 
-bool getIsTarget(const std::vector<LSPos> targetList,
-		 const LSPos& pos)
-{
-  FOR_EACH (targetP, targetList) {
-    if (targetP->x == pos.x && targetP->y == pos.y) {
-      return true;
-    }
-  }
-  return false;
-}
-
 void doit(const char* lifeSurveyFileName,
 	  const char* targetListFileName,
 	  const char* traceFileName)
@@ -121,7 +83,7 @@ void doit(const char* lifeSurveyFileName,
   const LSModelFile& f = m.mfile;
 
   std::vector<LSPos> targetList;
-  readTargetList(targetList, targetListFileName);
+  LSModel::readTargetList(targetList, targetListFileName);
 
   std::vector<TraceEntry> trace;
   readTrace(trace, traceFileName);
@@ -174,7 +136,7 @@ void doit(const char* lifeSurveyFileName,
 	}
 	numIllegalActions++;
       } else {
-	bool isTarget = getIsTarget(targetList, nextPos);
+	bool isTarget = LSModel::getInTargetList(nextPos, targetList);
 	int oldRewardLevel = regionRewards[cellType];
 	int newRewardLevel = isTarget ? (a.useSample ? 3 : 2) : 1;
 	if (newRewardLevel > oldRewardLevel) {
@@ -278,5 +240,8 @@ int main(int argc, char *argv[])
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/07/10 02:21:35  trey
+ * initial check-in
+ *
  *
  ***************************************************************************/
