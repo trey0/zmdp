@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2006-07-03 21:20:04 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2006-07-10 19:33:08 $
    
  @file    LifeSurvey.h
  @brief   No brief
@@ -132,7 +132,9 @@ struct LSObsOutcome {
 struct LSModel {
   LSModelFile mfile;
   std::vector<LSGrid> regionReachable;
+  std::vector<LSPos>* targetList;
 
+  LSModel(void);
   void init(const std::string& modelFileName);
   void calculateRegionReachable(LSGrid& result,
 				const LSGrid& g,
@@ -146,6 +148,11 @@ struct LSModel {
 		       int spi, int ai) const;
   void getInitialStateDistribution(std::vector<LSOutcome>& initStates);
   void writeToFile(FILE* outFile, bool fullIdentifiers);
+  void setTargetList(const std::string& targetListFileName);
+  static void readTargetList(std::vector<LSPos>& result,
+			     const char* fname);
+  static bool getInTargetList(const LSPos& pos,
+			      const std::vector<LSPos> targetList);
 };
 
 
@@ -162,6 +169,9 @@ extern LSStateTable tableG;
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2006/07/03 21:20:04  trey
+ * added lookaheadCost parameter
+ *
  * Revision 1.2  2006/06/29 21:38:23  trey
  * added getInitialStateDistribution()
  *

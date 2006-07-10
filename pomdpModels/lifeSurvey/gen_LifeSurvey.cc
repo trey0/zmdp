@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.6 $  $Author: trey $  $Date: 2006-06-27 16:04:40 $
+ $Revision: 1.7 $  $Author: trey $  $Date: 2006-07-10 19:33:08 $
   
  @file    gen_LifeSurvey.cc
  @brief   No brief
@@ -73,22 +73,25 @@ static std::string replaceSuffix(const std::string& s,
 void usage(const char* argv0) {
   cerr <<
     "usage: " << argv0 << " OPTIONS <my.lifeSurvey> [my.pomdp]\n"
-    "  -h or --help   Display this help\n"
-    "  -f or --full   Use verbose identifiers in output model instead of numbers\n"
-    "                  (useful only for debugging -- full identifiers are not\n"
-    "                   compatible with the fast parser 'zmdpSolve -f')\n";
+    "  -h or --help         Display this help\n"
+    "  -f or --full         Use verbose identifiers in output model instead of numbers\n"
+    "                        (useful only for debugging -- full identifiers are not\n"
+    "                         compatible with the fast parser 'zmdpSolve -f')\n"
+    "  -t or --target-list  Specify known list of targets\n";
   exit(EXIT_FAILURE);
 }
 
 int main(int argc, char *argv[]) {
-  static char shortOptions[] = "hf";
+  static char shortOptions[] = "hft:";
   static struct option longOptions[]={
     {"help",          0,NULL,'h'},
     {"full",          0,NULL,'f'},
+    {"target-list",   1,NULL,'t'},
     {NULL,0,0,0}
   };
 
   bool fullIdentifiers = false;
+  const char* targetListFileName = NULL;
 
   while (1) {
     char optchar = getopt_long(argc,argv,shortOptions,longOptions,NULL);
@@ -101,6 +104,10 @@ int main(int argc, char *argv[]) {
 
     case 'f': // full
       fullIdentifiers = true;
+      break;
+
+    case 't': // target-list
+      targetListFileName = optarg;
       break;
 
     case '?': // unknown option
@@ -135,6 +142,7 @@ int main(int argc, char *argv[]) {
 
   LSModel m;
   m.init(modelFileName);
+  m.setTargetList(targetListFileName);
 
   FILE* pomdpFile = fopen(pomdpFileName.c_str(), "w");
   if (NULL == pomdpFile) {
@@ -150,6 +158,9 @@ int main(int argc, char *argv[]) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.6  2006/06/27 16:04:40  trey
+ * refactored so outside code can access the LifeSurvey model using -lzmdpLifeSurvey
+ *
  * Revision 1.6  2006/06/26 21:32:49  trey
  * moved most functions into LifeSurvey.cc
  *

@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2006-06-29 21:38:23 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2006-07-10 19:33:08 $
   
  @file    LifeSurvey.cc
  @brief   No brief
@@ -226,6 +226,10 @@ LSStateEntry& LSStateTable::getState(int si)
  * LSMODEL FUNCTIONS
  **********************************************************************/
 
+LSModel::LSModel(void) :
+  targetList(NULL)
+{}
+
 void LSModel::init(const std::string& modelFileName)
 {
   mfile.readFromFile(modelFileName);
@@ -339,7 +343,11 @@ double LSModel::getLifePrior(const LSPos& pos) const
   if (LS_OBSTACLE == region) {
     return 0;
   } else {
-    return mfile.regionPriors[region];
+    if (NULL == targetList) {
+      return mfile.regionPriors[region];
+    } else {
+      return getInTargetList(pos, *targetList) ? 1.0 : 0.0;
+    }
   }
 }
 
@@ -710,11 +718,58 @@ void LSModel::writeToFile(FILE* outFile, bool fullIdentifiers)
   }
 }
 
+void LSModel::setTargetList(const std::string& targetListFileName)
+{
+  targetList = new std::vector<LSPos>();
+  readTargetList(*targetList, targetListFileName.c_str());
+}
+
+void LSModel::readTargetList(std::vector<LSPos>& result,
+			     const char* fname)
+{
+  FILE* f = fopen(fname, "r");
+  if (NULL == f) {
+    fprintf(stderr, "ERROR: couldn't open %s for reading: %s\n",
+	    fname, strerror(errno));
+    exit(EXIT_FAILURE);
+  }
+
+  char buf[256];
+  LSPos p;
+  int lnum = 0;
+  result.clear();
+  while (fgets(buf,sizeof(buf),f)) {
+    lnum++;
+    if (0 == strlen(buf) || '#' == buf[0]) continue;
+    if (2 != sscanf(buf, "%d %d", &p.x, &p.y)) {
+      fprintf(stderr, "%s:%d: syntax error, expected integers '<x> <y>' on each line\n",
+	      fname, lnum);
+      exit(EXIT_FAILURE);
+    }
+    result.push_back(p);
+  }
+  fclose(f);
+}
+
+bool LSModel::getInTargetList(const LSPos& pos,
+			      const std::vector<LSPos> targetList)
+{
+  FOR_EACH (targetP, targetList) {
+    if (targetP->x == pos.x && targetP->y == pos.y) {
+      return true;
+    }
+  }
+  return false;
+}
+
 }; // namespace zmdp
 
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2006/06/29 21:38:23  trey
+ * added getInitialStateDistribution()
+ *
  * Revision 1.1  2006/06/27 16:04:40  trey
  * refactored so outside code can access the LifeSurvey model using -lzmdpLifeSurvey
  *
