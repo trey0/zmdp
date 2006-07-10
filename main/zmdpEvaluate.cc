@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-07-10 03:35:49 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-07-10 19:34:35 $
 
  @file    zmdpEvaluate.cc
  @brief   Use to evaluate a POMDP policy in simulation.
@@ -43,13 +43,18 @@ const char* policyTypeG = ZE_DEFAULT_POLICY_TYPE;
 bool useFastParserG = true;
 const char* policyFileNameG = NULL;
 const char* sourceModelFileNameG = NULL;
-const char* modelFileNameG = NULL;
+const char* simModelFileNameG = NULL;
+const char* plannerModelFileNameG = NULL;
 int iterationsG = ZE_DEFAULT_ITERATIONS;
 
 void doit(void)
 {
   // seeds random number generator
   init_matrix_utils();
+
+  if (NULL == plannerModelFileNameG) {
+    plannerModelFileNameG = simModelFileNameG;
+  }
 
   // initialize exec
   PomdpExec* e;
@@ -59,7 +64,7 @@ void doit(void)
       exit(EXIT_FAILURE);
     }
     MaxPlanesLowerBoundExec* em = new MaxPlanesLowerBoundExec();
-    em->init(modelFileNameG, useFastParserG, policyFileNameG);
+    em->init(plannerModelFileNameG, useFastParserG, policyFileNameG);
     e = em;
   } else if (0 == strcmp(policyTypeG, "lspath")) {
     if (NULL == sourceModelFileNameG) {
@@ -67,7 +72,7 @@ void doit(void)
       exit(EXIT_FAILURE);
     }
     LSPathAndReactExec* el = new LSPathAndReactExec();
-    el->init(modelFileNameG, useFastParserG, sourceModelFileNameG);
+    el->init(plannerModelFileNameG, useFastParserG, sourceModelFileNameG);
     e = el;
   } else {
     fprintf(stderr, "ERROR: unknown policy type '%s' (-h for help)\n",
@@ -76,15 +81,23 @@ void doit(void)
   }
 
   // initialize simulator
+  Pomdp* simPomdp;
+  if (plannerModelFileNameG == simModelFileNameG) {
+    simPomdp = e->pomdp;
+  } else {
+    simPomdp = new Pomdp(plannerModelFileNameG, useFastParserG);
+  }
+  PomdpSim* sim = new PomdpSim(simPomdp);
+
   ofstream simOutFile("sim.plot");
   if (!simOutFile) {
     fprintf(stderr, "ERROR: couldn't open sim.plot for writing: %s\n",
 	    strerror(errno));
     exit(EXIT_FAILURE);
   }
-  PomdpSim* sim = new PomdpSim(e->pomdp);
   sim->simOutFile = &simOutFile;
 
+  // do evaluation
   std::vector<double> rewardValues;
   for (int i=0; i < iterationsG; i++) {
     sim->restart();
@@ -102,7 +115,8 @@ void doit(void)
       fflush(stdout);
     }
   }
-  
+  printf("\n");
+
   double avg, stdev;
   calc_avg_stdev_collection(rewardValues.begin(), rewardValues.end(),
 			    avg, stdev);
@@ -119,6 +133,7 @@ void usage(const char* cmdName) {
     "                           [default: " << ZE_DEFAULT_POLICY_TYPE << "]\n"
     "  -f or --fast           Use fast (but very picky) alternate POMDP parser\n"
     "  -p or --policy         Specify policy file (required with -t maxplanes)\n"
+    "  -m or --model          Specify planner model (if different from evalation model)\n"
     "  -s or --source-model   Specify source model file (required with -t lspath)\n"
     "  -i or --iterations     Set number of simulation iterations [default: " << ZE_DEFAULT_ITERATIONS << "]\n"
     "\n"
@@ -132,13 +147,14 @@ void usage(const char* cmdName) {
 }
 
 int main(int argc, char **argv) {
-  static char shortOptions[] = "ht:fp:s:i:";
+  static char shortOptions[] = "ht:fp:m:s:i:";
   static struct option longOptions[]={
     {"help",          0,NULL,'h'},
     {"version",       0,NULL,'V'},
     {"type",          1,NULL,'t'},
     {"fast",          0,NULL,'f'},
     {"policy",        1,NULL,'p'},
+    {"model",         1,NULL,'m'},
     {"source-model",  1,NULL,'s'},
     {"iterations",    1,NULL,'i'},
     {NULL,0,0,0}
@@ -171,6 +187,9 @@ int main(int argc, char **argv) {
     case 'p': // policy
       policyFileNameG = optarg;
       break;
+    case 'm': // model
+      plannerModelFileNameG = optarg;
+      break;
     case 's': // source-model
       sourceModelFileNameG = optarg;
       break;
@@ -193,7 +212,7 @@ int main(int argc, char **argv) {
     usage(argv[0]);
   }
 
-  modelFileNameG = argv[optind++];
+  simModelFileNameG = argv[optind++];
 
 #if 0
   printf("CFLAGS = %s\n", CFLAGS);
@@ -208,5 +227,8 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/07/10 03:35:49  trey
+ * initial check-in
+ *
  *
  ***************************************************************************/
