@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.10 $  $Author: trey $  $Date: 2006-07-03 21:20:04 $
+ $Revision: 1.11 $  $Author: trey $  $Date: 2006-07-10 02:22:26 $
    
  @file    LSModelFile.cc
  @brief   No brief
@@ -159,10 +159,10 @@ bool LSGrid::getAtExit(const LSPos& pos) const
   return true;
 }
 
-void LSGrid::writeToFile(FILE* outFile, bool binaryMap) const
+void LSGrid::writeToFile(FILE* outFile, bool showCoords, bool binaryMap) const
 {
   int y;
-  if (binaryMap) {
+  if (showCoords) {
     y = height;
     fprintf(outFile, "  ");
     if ((y % 2) == 1) fputc(' ', outFile);
@@ -173,7 +173,7 @@ void LSGrid::writeToFile(FILE* outFile, bool binaryMap) const
   }
   FOR (y0, height) {
     y = height - y0 - 1;
-    if (binaryMap) {
+    if (showCoords) {
       fprintf(outFile, "%d ", y%10);
     }
     if ((y % 2) == 1) fputc(' ', outFile);
@@ -196,12 +196,12 @@ void LSGrid::writeToFile(FILE* outFile, bool binaryMap) const
       fputc(outCell, outFile);
       fputc(' ', outFile);
     }
-    if (binaryMap) {
+    if (showCoords) {
       fprintf(outFile, " %d", y%10);
     }
     fputc('\n', outFile);
   }
-  if (binaryMap) {
+  if (showCoords) {
     fprintf(outFile, "   ");
     for (unsigned int x=0; x < width; x++) {
       fprintf(outFile, "%d ", x%10);
@@ -363,6 +363,9 @@ void LSModelFile::writeToFile(FILE* outFile) const
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.10  2006/07/03 21:20:04  trey
+ * added lookaheadCost parameter
+ *
  * Revision 1.9  2006/06/27 16:04:39  trey
  * refactored so outside code can access the LifeSurvey model using -lzmdpLifeSurvey
  *

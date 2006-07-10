@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.9 $  $Author: trey $  $Date: 2006-07-03 21:20:04 $
+ $Revision: 1.10 $  $Author: trey $  $Date: 2006-07-10 02:22:26 $
    
  @file    LSModelFile.h
  @brief   No brief
@@ -55,7 +55,7 @@ struct LSGrid {
   void setCell(const LSPos& pos, unsigned char c) { data[width*pos.y + pos.x] = c; }
   unsigned char getCellBounded(const LSPos& pos) const;
   bool getAtExit(const LSPos& pos) const;
-  void writeToFile(FILE* outFile, bool binaryMap = false) const;
+  void writeToFile(FILE* outFile, bool showCoords = false, bool binaryMap = false) const;
   int getMaxCellValue(void);
 };
 
@@ -80,6 +80,9 @@ struct LSModelFile {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.9  2006/07/03 21:20:04  trey
+ * added lookaheadCost parameter
+ *
  * Revision 1.8  2006/06/27 16:04:39  trey
  * refactored so outside code can access the LifeSurvey model using -lzmdpLifeSurvey
  *
