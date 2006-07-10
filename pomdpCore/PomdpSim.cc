@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.4 $  $Author: trey $  $Date: 2006-04-28 17:57:41 $
+ $Revision: 1.5 $  $Author: trey $  $Date: 2006-07-10 03:36:26 $
    
  @file    PomdpSim.cc
  @brief   No brief
@@ -175,6 +175,8 @@ void PomdpSim::performAction(int a) {
     (*simOutFile) << "belief: " << sparseRep(currentBelief) << endl;
     simOutFile->flush();
   }
+
+  lastObservation = o;
 }
 
 }; // namespace zmdp
@@ -182,6 +184,9 @@ void PomdpSim::performAction(int a) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2006/04/28 17:57:41  trey
+ * changed to use apache license
+ *
  * Revision 1.3  2006/02/06 19:26:09  trey
  * removed numOutcomes from MDP class because some MDPs have a varying number of outcomes depending on state; replaced with numObservations in Pomdp class
  *

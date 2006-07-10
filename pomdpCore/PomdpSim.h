@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2006-04-28 17:57:41 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2006-07-10 03:36:26 $
    
  @file    PomdpSim.h
  @brief   No brief
@@ -35,6 +35,7 @@ public:
   int state;
   cvector currentBelief;
   int lastState;
+  int lastObservation;
   
   PomdpSim(Pomdp* _pomdp);
 
@@ -51,6 +52,9 @@ public:
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2006/04/28 17:57:41  trey
+ * changed to use apache license
+ *
  * Revision 1.2  2006/02/01 01:09:38  trey
  * renamed pomdp namespace -> zmdp
  *
