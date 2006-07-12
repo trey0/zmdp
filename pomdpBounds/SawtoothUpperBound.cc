@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2006-04-28 17:57:41 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2006-07-12 19:45:55 $
    
  @file    SawtoothUpperBound.cc
  @brief   No brief
@@ -46,27 +46,11 @@ using namespace MatrixUtils;
 
 namespace zmdp {
 
-void BVPair::copyFrom(const belief_vector& _b, double _v)
-{
-  v = _v;
-  b = _b;
-  disabled = false;
-}
-
 SawtoothUpperBound::SawtoothUpperBound(const MDP* _pomdp)
 {
   pomdp = (const Pomdp*) _pomdp;
   numStates = pomdp->getBeliefSize();
   lastPruneNumPts = 0;
-}
-
-void SawtoothUpperBound::copyFrom(const SawtoothUpperBound& rhs)
-{
-  numStates = rhs.numStates;
-  lastPruneNumPts = rhs.lastPruneNumPts;
-  pts = rhs.pts;
-  
-  cornerPts = rhs.cornerPts;
 }
 
 void SawtoothUpperBound::initialize(double targetPrecision)
@@ -234,8 +218,7 @@ int SawtoothUpperBound::whichCornerPoint(const belief_vector& b) const {
 void SawtoothUpperBound::addPoint(const belief_vector& b, double val) {
   int wc = whichCornerPoint(b);
   if (-1 == wc) {
-    pts.push_back(BVPair());
-    pts.back().copyFrom( b, val );
+    pts.push_back(BVPair(b,val));
   } else {
     cornerPts(wc) = val;
   }
@@ -259,6 +242,9 @@ void SawtoothUpperBound::printToStream(ostream& out) const {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2006/04/28 17:57:41  trey
+ * changed to use apache license
+ *
  * Revision 1.1  2006/04/05 21:43:20  trey
  * collected and renamed several classes into pomdpBounds
  *

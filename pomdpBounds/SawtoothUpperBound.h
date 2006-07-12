@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2006-04-28 18:53:23 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2006-07-12 19:45:55 $
    
  @file    SawtoothUpperBound.h
  @brief   No brief
@@ -39,14 +39,9 @@ struct BVPair {
   bool disabled;
 
   BVPair(void) : disabled(false) {}
-  BVPair(const belief_vector& _b, double _v) {
-    copyFrom(_b, _v);
-  }
-
-  // override standard copy ctor and = op to get the right behavior
-  void copyFrom(const belief_vector& _b, double _v);
-  BVPair(const BVPair& rhs) { copyFrom(rhs.b, rhs.v); }
-  BVPair& operator=(const BVPair& rhs) { copyFrom(rhs.b, rhs.v); return *this; }
+  BVPair(const belief_vector& _b, double _v) :
+    b(_b), v(_v), disabled(false)
+  {}
 };
 
 class SawtoothUpperBound : public AbstractBound {
@@ -58,13 +53,6 @@ public:
   sla::dvector cornerPts;
 
   SawtoothUpperBound(const MDP* _pomdp);
-
-  // override standard copy ctor and = op to get the right behavior
-  void copyFrom(const SawtoothUpperBound& rhs);
-  SawtoothUpperBound(const SawtoothUpperBound& rhs) { copyFrom(rhs); }
-  SawtoothUpperBound& operator=(const SawtoothUpperBound& rhs) {
-    copyFrom(rhs); return *this;
-  }
 
   // performs any computation necessary to initialize the bound
   void initialize(double targetPrecision);
@@ -86,6 +74,9 @@ public:
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2006/04/28 18:53:23  trey
+ * removed unused SawtoothWithQBound
+ *
  * Revision 1.2  2006/04/28 17:57:41  trey
  * changed to use apache license
  *
