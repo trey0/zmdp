@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.4 $  $Author: trey $  $Date: 2006-06-14 18:17:21 $
+ $Revision: 1.5 $  $Author: trey $  $Date: 2006-07-12 19:41:34 $
    
  @file    MaxPlanesLowerBound.h
  @brief   No brief
@@ -58,14 +58,6 @@ public:
 #endif
 
   LBPlane(void) {}
-  LBPlane(const LBPlane& rhs);
-  LBPlane& operator=(const LBPlane& rhs);
-
-#if USE_MASKED_ALPHA
-  void copyFrom(const alpha_vector& _alpha, int _action, const sla::mvector& _mask);
-#else
-  void copyFrom(const alpha_vector& _alpha, int _action);
-#endif
   void write(std::ostream& out) const;
 };
 
@@ -93,7 +85,6 @@ public:
 		  , const sla::mvector& mask
 #endif
 		  );
-  void read(const std::string& filename);
 
   void prunePlanes(void);
   void maybePrune(void);
@@ -101,7 +92,6 @@ public:
   void writeToFile(const std::string& outFileName) const;
   void readFromFile(const std::string& inFileName);
 };
-std::ostream& operator<<(std::ostream& out, const MaxPlanesLowerBound& al);
 
 }; // namespace zmdp
 
@@ -110,6 +100,9 @@ std::ostream& operator<<(std::ostream& out, const MaxPlanesLowerBound& al);
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2006/06/14 18:17:21  trey
+ * added abliity to read in a policy
+ *
  * Revision 1.3  2006/04/28 17:57:41  trey
  * changed to use apache license
  *

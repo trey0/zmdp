@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.7 $  $Author: trey $  $Date: 2006-06-15 16:05:12 $
+ $Revision: 1.8 $  $Author: trey $  $Date: 2006-07-12 19:41:34 $
    
  @file    MaxPlanesLowerBound.cc
  @brief   No brief
@@ -63,39 +63,6 @@ static std::string stripWhiteSpace(const std::string& s)
 /**********************************************************************
  * LB PLANE
  **********************************************************************/
-
-LBPlane::LBPlane(const LBPlane& rhs)
-{
-  copyFrom(rhs.alpha, rhs.action
-#if USE_MASKED_ALPHA
-	   ,rhs.mask
-#endif
-	   );
-}
-
-LBPlane& LBPlane::operator=(const LBPlane& rhs)
-{
-  copyFrom(rhs.alpha, rhs.action
-#if USE_MASKED_ALPHA
-	   , rhs.mask
-#endif
-	   );
-  return *this;
-}
-
-void LBPlane::copyFrom(const alpha_vector& _alpha, int _action
-#if USE_MASKED_ALPHA
-			   , const sla::mvector& _mask
-#endif
-			   )
-{
-  action = _action;
-  alpha.resize(_alpha.size());
-  alpha = _alpha;
-#if USE_MASKED_ALPHA
-  mask = _mask;
-#endif
-}
 
 void LBPlane::write(std::ostream& out) const
 {
@@ -191,53 +158,13 @@ void MaxPlanesLowerBound::addLBPlane(const belief_vector& b,
 				     )
 {
   static int counter = 0;
-  planes.push_back(LBPlane());
-  planes.back().copyFrom(alpha, action
+  LBPlane& pback = planes.back();
+  pback.alpha = alpha;
+  pback.action = action;
 #if USE_MASKED_ALPHA
-		       ,mask
+  pback.mask = mask;
 #endif
-		       );
   counter++;
-}
-
-void MaxPlanesLowerBound::read(const std::string& filename)
-{
-  ifstream in(filename.c_str());
-  if (!in) {
-    cerr << "ERROR: couldn't open " << filename << " for reading: "
-	 << strerror(errno) << endl;
-    exit(EXIT_FAILURE);
-  }
-
-  belief_vector dummy_b(1);
-  LBPlane pr;
-  pr.alpha.resize(pomdp->getBeliefSize());
-  dvector alpha_tmp(pomdp->getBeliefSize());
-  while (1) {
-    in >> pr.action;
-    FOR (s, pomdp->getBeliefSize()) {
-      in >> alpha_tmp(s);
-    }
-    copy( pr.alpha, alpha_tmp );
-    addLBPlane(dummy_b, pr);
-
-    if (in.eof()) break;
-  }
-  in.close();
-}
-
-ostream& operator<<(ostream& out, const MaxPlanesLowerBound& al)
-{
-  out << "{" << endl;
-  //out << "  precision = " << al.precision << endl;
-  out << "  planes = {" << endl;
-  FOR_EACH (pr, al.planes) {
-    out << "    (" << pr->action << ") "
-	<< sparseRep(pr->alpha) << endl;
-  }
-  out << "  }" << endl;
-  out << "}" << endl;
-  return out;
 }
 
 /**********************************************************************
@@ -463,6 +390,9 @@ void MaxPlanesLowerBound::readFromFile(const std::string& inFileName)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.7  2006/06/15 16:05:12  trey
+ * fixed size() information for alpha vectors, had to reorder some libs
+ *
  * Revision 1.6  2006/06/14 18:17:21  trey
  * added abliity to read in a policy
  *
