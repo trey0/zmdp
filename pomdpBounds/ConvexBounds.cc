@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.9 $  $Author: trey $  $Date: 2006-07-04 23:21:03 $
+ $Revision: 1.10 $  $Author: trey $  $Date: 2006-07-12 19:42:00 $
    
  @file    ConvexBounds.cc
  @brief   No brief
@@ -102,10 +102,10 @@ void ConvexBounds::getNewLBPlaneQ(LBPlane& result, const MDPNode& cn, int a)
   betaA *= pomdp->getDiscount();
   betaA += Rxa;
   
+  result.alpha = betaA;
+  result.action = a;
 #if USE_MASKED_ALPHA
-  result.copyFrom(betaA, a, cn.s);
-#else
-  result.copyFrom(betaA, a);
+  result.mask = cn.s;
 #endif
 }
 
@@ -422,6 +422,9 @@ void ConvexBounds::writePolicy(const std::string& outFileName)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.9  2006/07/04 23:21:03  trey
+ * removed unused variable declaration
+ *
  * Revision 1.8  2006/06/03 13:32:08  trey
  * added CB_INITIALIZATION_PRECISION_FACTOR -- initialization is now forced to converge more tightly than the overall desired precision
  *
