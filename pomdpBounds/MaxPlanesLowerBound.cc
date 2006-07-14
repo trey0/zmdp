@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.8 $  $Author: trey $  $Date: 2006-07-12 19:41:34 $
+ $Revision: 1.9 $  $Author: trey $  $Date: 2006-07-14 15:09:13 $
    
  @file    MaxPlanesLowerBound.cc
  @brief   No brief
@@ -60,15 +60,42 @@ static std::string stripWhiteSpace(const std::string& s)
   }
 }
 
+static bool dominates(const LBPlane* a, const LBPlane* b)
+{
+#if USE_MASKED_ALPHA
+  return mask_dominates(a->alpha, b->alpha,
+			ZMDP_BOUNDS_PRUNE_EPS,
+			a->mask, b->mask);
+#else
+  return dominates(a->alpha, b->alpha, ZMDP_BOUNDS_PRUNE_EPS);
+#endif
+}
+
 /**********************************************************************
- * LB PLANE
+ * LBPLANE
  **********************************************************************/
+
+LBPlane::LBPlane(void) {}
+
+
+#if USE_MASKED_ALPHA
+LBPlane::LBPlane(const alpha_vector& _alpha, int _action, const sla::mvector& _mask) :
+  alpha(_alpha),
+  action(_action),
+  mask(_mask)
+{}  
+#else
+LBPlane::LBPlane(const alpha_vector& _alpha, int _action) :
+  alpha(_alpha),
+  action(_action)
+{}  
+#endif
 
 void LBPlane::write(std::ostream& out) const
 {
   out << "    {" << endl;
   out << "      action => " << action << "," << endl;
-  
+
 #if USE_MASKED_ALPHA
   out << "      numEntries => " << mask.filled() << "," << endl;
 #else
@@ -101,12 +128,20 @@ void LBPlane::write(std::ostream& out) const
 }
 
 /**********************************************************************
- * MAX PLANES BOUND
+ * MAX PLANES LOWER BOUND
  **********************************************************************/
 
 MaxPlanesLowerBound::MaxPlanesLowerBound(const MDP* _pomdp)
 {
   pomdp = (const Pomdp*) _pomdp;
+  lastPruneNumPlanes = 0;
+}
+
+MaxPlanesLowerBound::~MaxPlanesLowerBound(void)
+{
+  FOR_EACH (planeP, planes) {
+    delete *planeP;
+  }
 }
 
 void MaxPlanesLowerBound::initialize(double targetPrecision)
@@ -127,97 +162,60 @@ const LBPlane& MaxPlanesLowerBound::getBestLBPlane(const belief_vector& b) const
   double val, maxval = -99e+20;
   const LBPlane* ret = NULL;
   FOR_EACH (pr, planes) {
-    const LBPlane& al = *pr;
+    const LBPlane* al = *pr;
 #if USE_MASKED_ALPHA
-    if (!mask_subset( b, al.mask )) continue;
+    if (!mask_subset( b, al->mask )) continue;
 #endif
-    val = inner_prod( al.alpha, b );
+    val = inner_prod( al->alpha, b );
     if (val > maxval) {
       maxval = val;
-      ret = &al;
+      ret = al;
     }
   }
   return *ret;
 }
 
-void MaxPlanesLowerBound::addLBPlane(const belief_vector& b, const LBPlane& av)
+void MaxPlanesLowerBound::addLBPlane(LBPlane* av)
 {
-  addLBPlane(b, av.alpha, av.action
-#if USE_MASKED_ALPHA
-	     , av.mask
-#endif
-	     );
+  planes.push_back(av);
 }
-
-void MaxPlanesLowerBound::addLBPlane(const belief_vector& b,
-				     const alpha_vector& alpha,
-				     int action
-#if USE_MASKED_ALPHA
-				     , const sla::mvector& mask
-#endif
-				     )
-{
-  static int counter = 0;
-  LBPlane& pback = planes.back();
-  pback.alpha = alpha;
-  pback.action = action;
-#if USE_MASKED_ALPHA
-  pback.mask = mask;
-#endif
-  counter++;
-}
-
-/**********************************************************************
- * PRUNING
- **********************************************************************/
 
 void MaxPlanesLowerBound::prunePlanes(void)
 {
-  PlaneSet next_planes;
-  list<PlaneSet::iterator> erase_ptrs;
-  bool try_dominates_in, in_dominates_try;
-
-  FOR_EACH (try_pair, planes) {
-    LBPlane& try_alpha = *try_pair;
-    erase_ptrs.clear();
-    FOR_EACH (in_pair, next_planes) {
-      LBPlane& in_alpha = *in_pair;
-#if USE_MASKED_ALPHA
-      try_dominates_in = mask_dominates(try_alpha.alpha, in_alpha.alpha, ZMDP_BOUNDS_PRUNE_EPS,
-					try_alpha.mask,  in_alpha.mask);
-#else
-      try_dominates_in = dominates(try_alpha.alpha, in_alpha.alpha, ZMDP_BOUNDS_PRUNE_EPS);
-#endif
-      if (try_dominates_in) {
-	// delay erasure since we're still iterating through the set
-	erase_ptrs.push_back(in_pair);
-      } else {
-#if USE_MASKED_ALPHA
-	in_dominates_try = mask_dominates(in_alpha.alpha, try_alpha.alpha, ZMDP_BOUNDS_PRUNE_EPS,
-					  in_alpha.mask,  try_alpha.mask);
-#else
-	in_dominates_try = dominates(in_alpha.alpha, try_alpha.alpha, ZMDP_BOUNDS_PRUNE_EPS);
-#endif
-	if (in_dominates_try) goto next_try_pair;
-      }
-    }
-    // resolve delayed erasure
-    FOR_EACH (erase_ptr, erase_ptrs) {
-      typeof(next_planes.begin()) x, xp1;
-      x = xp1 = (*erase_ptr);
-      xp1++;
-      next_planes.erase(x,xp1);
-    }
-    next_planes.push_back( try_alpha );
-  next_try_pair: ;
-  }
 #if USE_DEBUG_PRINT
-  cout << "... pruned # planes from " << planes.size()
-       << " down to " << next_planes.size() << endl;
+  int oldNum = planes.size();
 #endif
+  typeof(planes.begin()) candidateP, memberP;
 
-  planes = next_planes;
+  candidateP = planes.begin();
+  while (candidateP != planes.end()) {
+    LBPlane* candidate = *candidateP;
+    memberP = planes.begin();
+    while (memberP != candidateP) {
+      LBPlane* member = *memberP;
+      if (dominates(candidate, member)) {
+	// memberP is pruned
+	deleteAndForward(member, candidate);
+	memberP = eraseElement(planes, memberP);
+	continue;
+      } else if (dominates(member, candidate)) {
+	// candidate is pruned
+	deleteAndForward(candidate, member);
+	candidateP = eraseElement(planes, candidateP);
+	// as a heuristic, move the winning member to the front of planes
+	eraseElement(planes, memberP);
+	planes.push_front(member);
+	goto nextCandidate;
+      }
+      memberP++;
+    }
+    candidateP++;
+  nextCandidate: ;
+  }
 
+#if USE_DEBUG_PRINT
+  cout << "... pruned # planes from " << oldNum << " down to " << planes.size() << endl;
+#endif
   lastPruneNumPlanes = planes.size();
 }
 
@@ -232,9 +230,11 @@ void MaxPlanesLowerBound::maybePrune(void)
   }
 }
 
-/**********************************************************************
- * WRITE POLICY
- **********************************************************************/
+void MaxPlanesLowerBound::deleteAndForward(LBPlane* victim, LBPlane* dominator)
+{
+  // FIX add reference forwarding
+  delete victim;
+}
 
 void MaxPlanesLowerBound::writeToFile(const std::string& outFileName) const
 {
@@ -275,11 +275,13 @@ void MaxPlanesLowerBound::writeToFile(const std::string& outFileName) const
 
   PlaneSet::const_iterator pi = planes.begin();
   FOR (i, planes.size()-1) {
-    pi->write(out);
+    (*pi)->write(out);
     out << "," << endl;
     pi++;
   }
-  pi->write(out);
+  if (planes.size() > 0) {
+    (*pi)->write(out);
+  }
   out << endl;
 
   out << "  ]" << endl;
@@ -355,7 +357,7 @@ void MaxPlanesLowerBound::readFromFile(const std::string& inFileName)
 	   another plane; finish up the plane we were working on and
 	   reparse the current line in parse state 1 */
 	mask_set_to_one(plane.mask, plane.alpha);
-	planes.push_back(plane);
+	planes.push_back(new LBPlane(plane));
 	parseState = 1;
 	goto parseLineAgain;
       } else if (2 == sscanf(s.c_str(), "%d, %lf", &entryIndex, &entryVal)) {
@@ -376,7 +378,7 @@ void MaxPlanesLowerBound::readFromFile(const std::string& inFileName)
   /* reached EOF, finish up the last plane */
   if (2 == parseState) {
     mask_set_to_one(plane.mask, plane.alpha);
-    planes.push_back(plane);
+    planes.push_back(new LBPlane(plane));
   }
 
   inFile.close();
@@ -390,6 +392,9 @@ void MaxPlanesLowerBound::readFromFile(const std::string& inFileName)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.8  2006/07/12 19:41:34  trey
+ * cleaned out some cruft
+ *
  * Revision 1.7  2006/06/15 16:05:12  trey
  * fixed size() information for alpha vectors, had to reorder some libs
  *

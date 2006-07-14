@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.5 $  $Author: trey $  $Date: 2006-07-12 19:41:34 $
+ $Revision: 1.6 $  $Author: trey $  $Date: 2006-07-14 15:09:13 $
    
  @file    MaxPlanesLowerBound.h
  @brief   No brief
@@ -49,19 +49,23 @@
 
 namespace zmdp {
 
-class LBPlane {
-public:
+struct LBPlane {
   alpha_vector alpha;
   int action;
 #if USE_MASKED_ALPHA
   sla::mvector mask;
 #endif
 
-  LBPlane(void) {}
+  LBPlane(void);
+#if USE_MASKED_ALPHA
+  LBPlane(const alpha_vector& _alpha, int _action, const sla::mvector& _mask);
+#else
+  LBPlane(const alpha_vector& _alpha, int _action);
+#endif
   void write(std::ostream& out) const;
 };
 
-typedef std::list< LBPlane > PlaneSet;
+typedef std::list< LBPlane* > PlaneSet;
 
 class MaxPlanesLowerBound : public AbstractBound {
 public:
@@ -70,6 +74,7 @@ public:
   int lastPruneNumPlanes;
   
   MaxPlanesLowerBound(const MDP* _pomdp);
+  ~MaxPlanesLowerBound(void);
 
   // performs any computation necessary to initialize the bound
   void initialize(double targetPrecision);
@@ -78,16 +83,10 @@ public:
   double getValue(const belief_vector& b) const;
 
   const LBPlane& getBestLBPlane(const belief_vector& b) const;
-  void addLBPlane(const belief_vector& b, const LBPlane& av);
-  void addLBPlane(const belief_vector& b, const alpha_vector& alpha,
-		  int action
-#if USE_MASKED_ALPHA
-		  , const sla::mvector& mask
-#endif
-		  );
-
+  void addLBPlane(LBPlane* av);
   void prunePlanes(void);
   void maybePrune(void);
+  void deleteAndForward(LBPlane* victim, LBPlane* dominator);
 
   void writeToFile(const std::string& outFileName) const;
   void readFromFile(const std::string& inFileName);
@@ -100,6 +99,9 @@ public:
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.5  2006/07/12 19:41:34  trey
+ * cleaned out some cruft
+ *
  * Revision 1.4  2006/06/14 18:17:21  trey
  * added abliity to read in a policy
  *
