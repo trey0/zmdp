@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.4 $  $Author: trey $  $Date: 2006-06-03 10:58:45 $
+ $Revision: 1.5 $  $Author: trey $  $Date: 2006-07-14 15:08:34 $
    
  @file    BlindLBInitializer.cc
  @brief   No brief
@@ -97,7 +97,6 @@ void BlindLBInitializer::initBlind(double targetPrecision)
   alpha_vector al(pomdp->numStates);
   alpha_vector nextAl, tmp, diff;
   alpha_vector weakAl;
-  belief_vector dummy; // ignored
   double maxResidual;
 #if USE_MASKED_ALPHA
   alpha_vector full_mask;
@@ -132,9 +131,9 @@ void BlindLBInitializer::initBlind(double targetPrecision)
 #endif
 
 #if USE_MASKED_ALPHA
-    bound->addLBPlane(dummy, al, a, full_mask);
+    bound->addLBPlane(new LBPlane(al, a, full_mask));
 #else 
-    bound->addLBPlane(dummy, al, a);
+    bound->addLBPlane(new LBPlane(al, a));
 #endif
   }
 }
@@ -144,6 +143,9 @@ void BlindLBInitializer::initBlind(double targetPrecision)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2006/06/03 10:58:45  trey
+ * added exact initialization rule for terminal states
+ *
  * Revision 1.3  2006/04/28 17:57:41  trey
  * changed to use apache license
  *
