@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2006-07-12 19:45:55 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2006-07-14 15:09:48 $
    
  @file    SawtoothUpperBound.cc
  @brief   No brief
@@ -53,106 +53,162 @@ SawtoothUpperBound::SawtoothUpperBound(const MDP* _pomdp)
   lastPruneNumPts = 0;
 }
 
+SawtoothUpperBound::~SawtoothUpperBound(void)
+{
+  FOR_EACH (entryP, pts) {
+    delete *entryP;
+  }
+}
+
 void SawtoothUpperBound::initialize(double targetPrecision)
 {
   FastInfUBInitializer fib(pomdp, this);
   fib.initialize(targetPrecision);
 }
 
-double SawtoothUpperBound::getValue(const belief_vector& b) const
+// cPair induces an upper bound on the value function at b, which
+// is equal to inner_prod(cornerPts, b) + delta.  getBVDelta()
+// calculates delta.
+double SawtoothUpperBound::getBVValue(const belief_vector& b,
+				      const BVPair* cPair,
+				      double innerCornerPtsB,
+				      double innerCornerPtsC)
 {
-  double val, min_val;
-  double ratio, min_ratio;
-  typeof(b.data.begin()) bi, bend;
-  typeof(b.data.begin()) ci, cend;
-  cvector tmp, bhat;
-  double cval;
-  double inner_cornerPts_b;
-  double inner_cornerPts_c;
+  const belief_vector& c = cPair->b;
+  double cVal = cPair->v;
+  
+  if (innerCornerPtsC <= cVal) {
+    // c does not provide a useful bound because it actually lies above
+    // the plane defined by cornerPts.  ideally, we would prune c here.
+    return 99e+20;
+  }
+  
+  double minRatio = 99e+20;
+  typeof(b.data.begin()) bi = b.data.begin();
+  typeof(b.data.begin())  bend = b.data.end();
+  typeof(b.data.begin()) ci = c.data.begin();
+  typeof(b.data.begin()) cend = c.data.end();
   bool bdone = false;
-
-  inner_cornerPts_b = inner_prod( cornerPts, b );
-  min_val = inner_cornerPts_b;
-
-  FOR_EACH (pr, pts) {
-    if (pr->disabled) {
-      //cout << "skipping" << endl;
-      continue;
-    }
-    const belief_vector& c = pr->b;
-    cval = pr->v;
-
-    inner_cornerPts_c = inner_prod( cornerPts, c );
-    if (inner_cornerPts_c <= cval) {
-      // FIX: should figure out a way to prune c here
-      //cout << "  bad cval" << endl;
-      continue;
-    }
-
-    min_ratio = 99e+20;
-
-    bi = b.data.begin();
-    bend = b.data.end();
-
-    ci = c.data.begin();
-    cend = c.data.end();
-
-    for (; ci != cend; ci++) {
-      if (0.0 == ci->value) continue;
-
-      // advance until bi->index >= ci->index
-      while (1) {
-	if (bi == bend) {
-	  bdone = true;
-	  goto break_ci_loop;
-	}
-	if (bi->index >= ci->index) break;
-	bi++;
+  
+  for (; ci != cend; ci++) {
+    if (0.0 == ci->value) continue;
+    
+    // advance until bi->index >= ci->index
+    while (1) {
+      if (bi == bend) {
+	bdone = true;
+	goto breakCiLoop;
       }
-
-      if (bi->index > ci->index) {
-	// we found a j such that b(j) = 0 and c(j) != 0, which implies
-	// min_ratio = 0, so this c is useless and should be skipped
-	//cout << "  skipping out" << endl;
-	goto continue_pts_loop;
-      }
-
-      ratio = bi->value / ci->value;
-      if (ratio < min_ratio) min_ratio = ratio;
-    }
-  break_ci_loop:
-    if (bdone) {
-      for (; ci != cend; ci++) {
-	if (0.0 != ci->value) goto continue_pts_loop;
-      }
+      if (bi->index >= ci->index) break;
+      bi++;
     }
     
-    val = inner_cornerPts_b
-      + min_ratio * ( cval - inner_cornerPts_c );
-#if 1
-    if (min_ratio > 1) {
-      if (min_ratio < 1 + MIN_RATIO_EPS) {
-	// round-off error, correct it down to 1
-	min_ratio = 1;
-      } else {
-	cout << "ERROR: min_ratio > 1 in upperBoundInternal!" << endl;
-	cout << "  (min_ratio-1)=" << (min_ratio-1) << endl;
-	cout << "  normb=" << norm_1(b) << endl;
-	cout << "  b=" << sparseRep(b) << endl;
-	cout << "  normc=" << norm_1(c) << endl;
-	cout << "  c=" << sparseRep(c) << endl;
-	exit(EXIT_FAILURE);
-      }
+    if (bi->index > ci->index) {
+      // we found a j such that b(j) = 0 and c(j) != 0, which implies
+      // minRatio = 0, so c does not provide a useful bound
+      return 99e+20;
     }
+    
+    minRatio = std::min(minRatio, bi->value / ci->value);
+  }
+ breakCiLoop:
+  if (bdone) {
+    for (; ci != cend; ci++) {
+      if (0.0 != ci->value) return 99e+20;
+    }
+  }
+  
+#if 1
+  if (minRatio > 1) {
+    if (minRatio < 1 + MIN_RATIO_EPS) {
+      // round-off error, correct it down to 1
+      minRatio = 1;
+    } else {
+      cout << "ERROR: minRatio > 1 in upperBoundInternal!" << endl;
+      cout << "  (minRatio-1)=" << (minRatio-1) << endl;
+      cout << "  normb=" << norm_1(b) << endl;
+      cout << "  b=" << sparseRep(b) << endl;
+      cout << "  normc=" << norm_1(c) << endl;
+      cout << "  c=" << sparseRep(c) << endl;
+      exit(EXIT_FAILURE);
+    }
+  }
 #endif
+  
+  return innerCornerPtsB + minRatio * (cVal - innerCornerPtsC);
+}
 
-    if (val < min_val) min_val = val;
+// return true iff xPair dominates yPair.  NOTE: innerCornerCache fields
+// must be set properly before dominates() is called!
+bool SawtoothUpperBound::dominates(const BVPair* xPair,
+				   const BVPair* yPair)
+{
+  double xValueAtY = getBVValue(yPair->b, xPair,
+				yPair->innerCornerCache,
+				xPair->innerCornerCache);
+  double yValueAtY = yPair->v;
+  return (xValueAtY < yValueAtY + ZMDP_BOUNDS_PRUNE_EPS);
+}
 
-  continue_pts_loop:
-    ;
+double SawtoothUpperBound::getValue(const belief_vector& b) const
+{
+  double innerCornerPtsB = inner_prod(cornerPts, b);
+  double minValue = innerCornerPtsB;
+  FOR_EACH (cPairP, pts) {
+    double innerCornerPtsC = inner_prod(cornerPts, (*cPairP)->b);
+    minValue = std::min(minValue, getBVValue(b, *cPairP, innerCornerPtsB, innerCornerPtsC));
+  }
+  return minValue;
+}
+
+void SawtoothUpperBound::deleteAndForward(BVPair* victim,
+					  BVPair* dominator)
+{
+  // FIX forward references
+  delete victim;
+}
+
+void SawtoothUpperBound::prune(void) {
+#if USE_DEBUG_PRINT
+  int oldNum = pts.size();
+#endif
+  typeof(pts.begin()) candidateP, memberP;
+
+  FOR_EACH (ptP, pts) {
+    BVPair* pt = *ptP;
+    pt->innerCornerCache = inner_prod(cornerPts, pt->b);
   }
 
-  return min_val;
+  candidateP = pts.begin();
+  while (candidateP != pts.end()) {
+    BVPair* candidate = *candidateP;
+    memberP = pts.begin();
+    while (memberP != candidateP) {
+      BVPair* member = *memberP;
+      if (dominates(candidate, member)) {
+	// memberP is pruned
+	deleteAndForward(member, candidate);
+	memberP = eraseElement(pts, memberP);
+	continue;
+      } else if (dominates(member, candidate)) {
+	// candidate is pruned
+	deleteAndForward(candidate, member);
+	candidateP = eraseElement(pts, candidateP);
+	// as a heuristic, move the winning member to the front of pts
+	eraseElement(pts, memberP);
+	pts.push_front(member);
+	goto nextCandidate;
+      }
+      memberP++;
+    }
+    candidateP++;
+  nextCandidate: ;
+  }
+
+#if USE_DEBUG_PRINT
+  cout << "... pruned # pts from " << oldNum << " down to " << pts.size() << endl;
+#endif
+  lastPruneNumPts = pts.size();
 }
 
 void SawtoothUpperBound::maybePrune(void) {
@@ -161,37 +217,6 @@ void SawtoothUpperBound::maybePrune(void) {
   if (pts.size() > nextPruneNumPts) {
     prune();
   }
-}
-
-void SawtoothUpperBound::prune(void) {
-#if USE_DEBUG_PRINT
-  int oldNum = pts.size();
-#endif
-  typeof(pts.begin()) x, xp1;
-  list< std::list<BVPair>::iterator > erase_ptrs;
-
-  FOR_EACH (ptp, pts) {
-    BVPair& try_pair = *ptp;
-    try_pair.disabled = true;
-    // put pt back in if v is at least epsilon smaller than
-    // upperBound(b) (smaller is better because it means the upper
-    // bound is tighter)
-    if (try_pair.v <= getValue(try_pair.b) - ZMDP_BOUNDS_PRUNE_EPS) {
-      try_pair.disabled = false;
-    } else {
-      erase_ptrs.push_back(ptp);
-    }
-  }
-  FOR_EACH (erase_ptr, erase_ptrs) {
-    x = xp1 = (*erase_ptr);
-    xp1++;
-    pts.erase( x, xp1 );
-  }
-
-#if USE_DEBUG_PRINT
-  cout << "... pruned # pts from " << oldNum << " down to " << pts.size() << endl;
-#endif
-  lastPruneNumPts = pts.size();
 }
 
 // if b is a corner point e_i, return i.  else return -1
@@ -215,24 +240,26 @@ int SawtoothUpperBound::whichCornerPoint(const belief_vector& b) const {
   }
 }
 
-void SawtoothUpperBound::addPoint(const belief_vector& b, double val) {
+void SawtoothUpperBound::addPoint(const belief_vector& b, double val)
+{
   int wc = whichCornerPoint(b);
   if (-1 == wc) {
-    pts.push_back(BVPair(b,val));
+    pts.push_back(new BVPair(b,val));
   } else {
     cornerPts(wc) = val;
   }
 }
 
-void SawtoothUpperBound::printToStream(ostream& out) const {
+void SawtoothUpperBound::printToStream(ostream& out) const
+{
   out << "{" << endl;
   out << "  cornerPts = " << sparseRep(cornerPts) << endl;
   out << "  " << pts.size() << " points:" << endl;
   FOR_EACH (pt, pts) {
-    const BVPair& pr = *pt;
-    out << "    " << sparseRep(pr.b)
-	<< " => " << pr.v
-	<< " (" << getValue(pr.b) << ")" << endl;
+    const BVPair* pr = *pt;
+    out << "    " << sparseRep(pr->b)
+	<< " => " << pr->v
+	<< " (" << getValue(pr->b) << ")" << endl;
   }
   out << "}" << endl;
 }
@@ -242,6 +269,9 @@ void SawtoothUpperBound::printToStream(ostream& out) const {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2006/07/12 19:45:55  trey
+ * cleaned out copyFrom() cruft
+ *
  * Revision 1.2  2006/04/28 17:57:41  trey
  * changed to use apache license
  *

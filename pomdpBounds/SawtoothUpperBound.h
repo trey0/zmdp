@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.4 $  $Author: trey $  $Date: 2006-07-12 19:45:55 $
+ $Revision: 1.5 $  $Author: trey $  $Date: 2006-07-14 15:09:48 $
    
  @file    SawtoothUpperBound.h
  @brief   No brief
@@ -36,12 +36,10 @@ namespace zmdp {
 struct BVPair {
   belief_vector b;
   double v;
-  bool disabled;
+  double innerCornerCache;
 
-  BVPair(void) : disabled(false) {}
-  BVPair(const belief_vector& _b, double _v) :
-    b(_b), v(_v), disabled(false)
-  {}
+  BVPair(void) {}
+  BVPair(const belief_vector& _b, double _v) : b(_b), v(_v) {}
 };
 
 class SawtoothUpperBound : public AbstractBound {
@@ -49,10 +47,11 @@ public:
   const Pomdp* pomdp;
   int numStates;
   int lastPruneNumPts;
-  std::list< BVPair > pts;
+  std::list<BVPair*> pts;
   sla::dvector cornerPts;
 
   SawtoothUpperBound(const MDP* _pomdp);
+  ~SawtoothUpperBound(void);
 
   // performs any computation necessary to initialize the bound
   void initialize(double targetPrecision);
@@ -60,8 +59,18 @@ public:
   // returns the bound value at state s
   double getValue(const belief_vector& b) const;
 
-  void maybePrune(void);
+  static double getBVValue(const belief_vector& b,
+			   const BVPair* cPair,
+			   double innerCornerPtsB,
+			   double innerCornerPtsC);
+  static bool dominates(const BVPair* xPair,
+			const BVPair* yPair);
+  
+  void deleteAndForward(BVPair* victim,
+			BVPair* dominator);
   void prune(void);
+  void maybePrune(void);
+
   int whichCornerPoint(const belief_vector& b) const;
   void addPoint(const belief_vector& b, double val);
   void printToStream(std::ostream& out) const;
@@ -74,6 +83,9 @@ public:
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2006/07/12 19:45:55  trey
+ * cleaned out copyFrom() cruft
+ *
  * Revision 1.3  2006/04/28 18:53:23  trey
  * removed unused SawtoothWithQBound
  *
