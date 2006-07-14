@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.10 $  $Author: trey $  $Date: 2006-07-12 19:42:00 $
+ $Revision: 1.11 $  $Author: trey $  $Date: 2006-07-14 15:10:08 $
    
  @file    ConvexBounds.cc
  @brief   No brief
@@ -136,11 +136,12 @@ void ConvexBounds::getNewLBPlane(LBPlane& result, MDPNode& cn)
 
 void ConvexBounds::updateLowerBound(MDPNode& cn)
 {
-  LBPlane newPlane;
-  getNewLBPlane(newPlane, cn);
-  lowerBound->addLBPlane(cn.s, newPlane);
+  LBPlane* newPlane = new LBPlane();
+  getNewLBPlane(*newPlane, cn);
+  cn.lbVal = inner_prod(cn.s, newPlane->alpha);
+
+  lowerBound->addLBPlane(newPlane);
   lowerBound->maybePrune();
-  cn.lbVal = inner_prod(cn.s, newPlane.alpha);
 }
 
 // upper bound on long-term reward for taking action a
@@ -422,6 +423,9 @@ void ConvexBounds::writePolicy(const std::string& outFileName)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.10  2006/07/12 19:42:00  trey
+ * removed use of obsolete copyFrom() function
+ *
  * Revision 1.9  2006/07/04 23:21:03  trey
  * removed unused variable declaration
  *
