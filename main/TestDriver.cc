@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2006-06-15 16:09:47 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2006-07-24 17:06:37 $
 
  @file    TestDriver.cc
  @brief   No brief
@@ -179,8 +179,10 @@ void TestDriver::batchTestIncremental(int numIterations,
     exit(EXIT_FAILURE);
   }
 
+  printf("initializing solver (includes calculating initial bounds)\n");
   so.solver->planInit(sim->getModel(), minPrecision);
 
+  printf("entering solver main loop\n");
   double timeSoFar = 1e-20;
   double logLastSimTime = -99;
   bool achieved_precision = false;
@@ -307,6 +309,9 @@ void TestDriver::printRewards(void) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2006/06/15 16:09:47  trey
+ * restructured so zmdpBenchmark can output policies
+ *
  * Revision 1.2  2006/04/28 17:57:41  trey
  * changed to use apache license
  *
