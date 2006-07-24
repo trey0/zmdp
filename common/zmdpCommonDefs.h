@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2006-04-28 17:57:41 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2006-07-24 17:06:10 $
    
  @file    zmdpCommonDefs.h
  @brief   No brief
@@ -69,6 +69,15 @@ const _InType& argmax_tp(_ForwardIterator start, _ForwardIterator end,
   }
 
   return *max_elt;
+}
+
+template <class _CollectionType, class _ForwardIterator>
+_ForwardIterator eraseElement(_CollectionType& c, _ForwardIterator i)
+{
+  _ForwardIterator ip1 = i;
+  ip1++;
+  c.erase(i,ip1);
+  return ip1;
 }
 
 }; // namespace zmdp
