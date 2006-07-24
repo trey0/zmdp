@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.4 $  $Author: trey $  $Date: 2006-07-14 15:09:48 $
+ $Revision: 1.5 $  $Author: trey $  $Date: 2006-07-24 14:38:24 $
    
  @file    SawtoothUpperBound.cc
  @brief   No brief
@@ -66,9 +66,7 @@ void SawtoothUpperBound::initialize(double targetPrecision)
   fib.initialize(targetPrecision);
 }
 
-// cPair induces an upper bound on the value function at b, which
-// is equal to inner_prod(cornerPts, b) + delta.  getBVDelta()
-// calculates delta.
+// returns the upper bound that the (belief,value) pair c induces on b.
 double SawtoothUpperBound::getBVValue(const belief_vector& b,
 				      const BVPair* cPair,
 				      double innerCornerPtsB,
@@ -269,6 +267,9 @@ void SawtoothUpperBound::printToStream(ostream& out) const
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2006/07/14 15:09:48  trey
+ * cleaned up pruning
+ *
  * Revision 1.3  2006/07/12 19:45:55  trey
  * cleaned out copyFrom() cruft
  *
