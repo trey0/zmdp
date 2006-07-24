@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.5 $  $Author: trey $  $Date: 2006-07-14 15:09:48 $
+ $Revision: 1.6 $  $Author: trey $  $Date: 2006-07-24 17:08:02 $
    
  @file    SawtoothUpperBound.h
  @brief   No brief
@@ -42,13 +42,18 @@ struct BVPair {
   BVPair(const belief_vector& _b, double _v) : b(_b), v(_v) {}
 };
 
+typedef std::list<BVPair*> BVList;
+
 class SawtoothUpperBound : public AbstractBound {
 public:
   const Pomdp* pomdp;
   int numStates;
   int lastPruneNumPts;
-  std::list<BVPair*> pts;
+  BVList pts;
   sla::dvector cornerPts;
+#if USE_CONVEX_SUPPORT_LIST
+  std::vector<BVList> supportList;
+#endif
 
   SawtoothUpperBound(const MDP* _pomdp);
   ~SawtoothUpperBound(void);
@@ -83,6 +88,9 @@ public:
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.5  2006/07/14 15:09:48  trey
+ * cleaned up pruning
+ *
  * Revision 1.4  2006/07/12 19:45:55  trey
  * cleaned out copyFrom() cruft
  *

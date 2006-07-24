@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.5 $  $Author: trey $  $Date: 2006-07-24 14:38:24 $
+ $Revision: 1.6 $  $Author: trey $  $Date: 2006-07-24 17:08:02 $
    
  @file    SawtoothUpperBound.cc
  @brief   No brief
@@ -51,6 +51,10 @@ SawtoothUpperBound::SawtoothUpperBound(const MDP* _pomdp)
   pomdp = (const Pomdp*) _pomdp;
   numStates = pomdp->getBeliefSize();
   lastPruneNumPts = 0;
+
+#if USE_CONVEX_SUPPORT_LIST
+  supportList.resize(pomdp->getBeliefSize());
+#endif
 }
 
 SawtoothUpperBound::~SawtoothUpperBound(void)
@@ -150,9 +154,26 @@ bool SawtoothUpperBound::dominates(const BVPair* xPair,
 
 double SawtoothUpperBound::getValue(const belief_vector& b) const
 {
+#if USE_CONVEX_SUPPORT_LIST
+  int minSupportIndex = -1;
+  int minSupportSize = INT_MAX;
+  FOR_EACH (eltP, b.data) {
+    int i = eltP->index;
+    int size = supportList[i].size();
+    if (size < minSupportSize) {
+      minSupportSize = size;
+      minSupportIndex = i;
+    }
+  }
+  assert(-1 != minSupportIndex);
+  const BVList& ptsToCheck = supportList[minSupportIndex];
+#else
+  const BVList& ptsToCheck = pts;
+#endif
+
   double innerCornerPtsB = inner_prod(cornerPts, b);
   double minValue = innerCornerPtsB;
-  FOR_EACH (cPairP, pts) {
+  FOR_EACH (cPairP, ptsToCheck) {
     double innerCornerPtsC = inner_prod(cornerPts, (*cPairP)->b);
     minValue = std::min(minValue, getBVValue(b, *cPairP, innerCornerPtsB, innerCornerPtsC));
   }
@@ -162,7 +183,19 @@ double SawtoothUpperBound::getValue(const belief_vector& b) const
 void SawtoothUpperBound::deleteAndForward(BVPair* victim,
 					  BVPair* dominator)
 {
-  // FIX forward references
+#if USE_CONVEX_SUPPORT_LIST
+  // remove victim from supportList
+  FOR_EACH (bi, victim->b.data) {
+    BVList& bvl = supportList[bi->index];
+    FOR_EACH (eltP, bvl) {
+      if (victim == *eltP) {
+	eraseElement(bvl, eltP);
+	break;
+      }
+    }
+  }
+#endif
+
   delete victim;
 }
 
@@ -242,7 +275,16 @@ void SawtoothUpperBound::addPoint(const belief_vector& b, double val)
 {
   int wc = whichCornerPoint(b);
   if (-1 == wc) {
-    pts.push_back(new BVPair(b,val));
+    BVPair* bv = new BVPair(b,val);
+
+#if USE_CONVEX_SUPPORT_LIST
+    // add new point to supportList
+    FOR_EACH (bi, b.data) {
+      supportList[bi->index].push_back(bv);
+    }
+#endif
+
+    pts.push_back(bv);
   } else {
     cornerPts(wc) = val;
   }
@@ -267,6 +309,9 @@ void SawtoothUpperBound::printToStream(ostream& out) const
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.5  2006/07/24 14:38:24  trey
+ * fixed inaccurate comment
+ *
  * Revision 1.4  2006/07/14 15:09:48  trey
  * cleaned up pruning
  *

@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.9 $  $Author: trey $  $Date: 2006-07-14 15:09:13 $
+ $Revision: 1.10 $  $Author: trey $  $Date: 2006-07-24 17:07:47 $
    
  @file    MaxPlanesLowerBound.cc
  @brief   No brief
@@ -135,6 +135,10 @@ MaxPlanesLowerBound::MaxPlanesLowerBound(const MDP* _pomdp)
 {
   pomdp = (const Pomdp*) _pomdp;
   lastPruneNumPlanes = 0;
+
+#if USE_CONVEX_SUPPORT_LIST
+  supportList.resize(pomdp->getBeliefSize());
+#endif
 }
 
 MaxPlanesLowerBound::~MaxPlanesLowerBound(void)
@@ -159,9 +163,26 @@ double MaxPlanesLowerBound::getValue(const belief_vector& b) const
 // return the alpha such that alpha * b has the highest value
 const LBPlane& MaxPlanesLowerBound::getBestLBPlane(const belief_vector& b) const 
 {
+#if USE_CONVEX_SUPPORT_LIST
+  int minSupportIndex = -1;
+  int minSupportSize = INT_MAX;
+  FOR_EACH (eltP, b.data) {
+    int i = eltP->index;
+    int size = supportList[i].size();
+    if (size < minSupportSize) {
+      minSupportSize = size;
+      minSupportIndex = i;
+    }
+  }
+  assert(-1 != minSupportIndex);
+  const PlaneSet& planesToCheck = supportList[minSupportIndex];
+#else
+  const PlaneSet& planesToCheck = planes;
+#endif
+
   double val, maxval = -99e+20;
   const LBPlane* ret = NULL;
-  FOR_EACH (pr, planes) {
+  FOR_EACH (pr, planesToCheck) {
     const LBPlane* al = *pr;
 #if USE_MASKED_ALPHA
     if (!mask_subset( b, al->mask )) continue;
@@ -178,6 +199,13 @@ const LBPlane& MaxPlanesLowerBound::getBestLBPlane(const belief_vector& b) const
 void MaxPlanesLowerBound::addLBPlane(LBPlane* av)
 {
   planes.push_back(av);
+
+#if USE_CONVEX_SUPPORT_LIST
+  // add new plane to supportList
+  FOR_EACH (ai, av->alpha.data) {
+    supportList[ai->index].push_back(av);
+  }
+#endif
 }
 
 void MaxPlanesLowerBound::prunePlanes(void)
@@ -232,7 +260,19 @@ void MaxPlanesLowerBound::maybePrune(void)
 
 void MaxPlanesLowerBound::deleteAndForward(LBPlane* victim, LBPlane* dominator)
 {
-  // FIX add reference forwarding
+#if USE_CONVEX_SUPPORT_LIST
+  // remove victim from supportList
+  FOR_EACH (ai, victim->alpha.data) {
+    PlaneSet& pi = supportList[ai->index];
+    FOR_EACH (eltP, pi) {
+      if (victim == *eltP) {
+	eraseElement(pi, eltP);
+	break;
+      }
+    }
+  }
+#endif
+
   delete victim;
 }
 
@@ -392,6 +432,9 @@ void MaxPlanesLowerBound::readFromFile(const std::string& inFileName)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.9  2006/07/14 15:09:13  trey
+ * cleaned up pruning; removed belief argument from addLBPlane()
+ *
  * Revision 1.8  2006/07/12 19:41:34  trey
  * cleaned out some cruft
  *

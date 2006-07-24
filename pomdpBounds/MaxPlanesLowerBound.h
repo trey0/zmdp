@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.6 $  $Author: trey $  $Date: 2006-07-14 15:09:13 $
+ $Revision: 1.7 $  $Author: trey $  $Date: 2006-07-24 17:07:47 $
    
  @file    MaxPlanesLowerBound.h
  @brief   No brief
@@ -72,6 +72,9 @@ public:
   const Pomdp* pomdp;
   PlaneSet planes;
   int lastPruneNumPlanes;
+#if USE_CONVEX_SUPPORT_LIST
+  std::vector<PlaneSet> supportList;
+#endif
   
   MaxPlanesLowerBound(const MDP* _pomdp);
   ~MaxPlanesLowerBound(void);
@@ -99,6 +102,9 @@ public:
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.6  2006/07/14 15:09:13  trey
+ * cleaned up pruning; removed belief argument from addLBPlane()
+ *
  * Revision 1.5  2006/07/12 19:41:34  trey
  * cleaned out some cruft
  *
