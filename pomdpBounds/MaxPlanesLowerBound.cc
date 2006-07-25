@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.11 $  $Author: trey $  $Date: 2006-07-25 19:40:49 $
+ $Revision: 1.12 $  $Author: trey $  $Date: 2006-07-25 23:24:23 $
    
  @file    MaxPlanesLowerBound.cc
  @brief   No brief
@@ -200,6 +200,7 @@ const LBPlane& MaxPlanesLowerBound::getBestLBPlaneConst(const belief_vector& b) 
       ret = al;
     }
   }
+
   return *ret;
 }
 
@@ -215,7 +216,7 @@ void MaxPlanesLowerBound::addLBPlane(LBPlane* av)
 
 #if USE_CONVEX_SUPPORT_LIST
   // add new plane to supportList
-  FOR_EACH (ai, av->alpha.data) {
+  FOR_EACH (ai, av->mask.data) {
     supportList[ai->index].push_back(av);
   }
 #endif
@@ -275,7 +276,7 @@ void MaxPlanesLowerBound::deleteAndForward(LBPlane* victim, LBPlane* dominator)
 {
 #if USE_CONVEX_SUPPORT_LIST
   // remove victim from supportList
-  FOR_EACH (ai, victim->alpha.data) {
+  FOR_EACH (ai, victim->mask.data) {
     PlaneSet& pi = supportList[ai->index];
     FOR_EACH (eltP, pi) {
       if (victim == *eltP) {
@@ -453,6 +454,9 @@ void MaxPlanesLowerBound::readFromFile(const std::string& inFileName)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.11  2006/07/25 19:40:49  trey
+ * added USE_CONVEX_CACHE support
+ *
  * Revision 1.10  2006/07/24 17:07:47  trey
  * added USE_CONVEX_SUPPORT_LIST
  *
