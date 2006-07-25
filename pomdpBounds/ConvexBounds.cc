@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.11 $  $Author: trey $  $Date: 2006-07-14 15:10:08 $
+ $Revision: 1.12 $  $Author: trey $  $Date: 2006-07-25 19:40:09 $
    
  @file    ConvexBounds.cc
  @brief   No brief
@@ -43,6 +43,9 @@ using namespace MatrixUtils;
 #define CB_QVAL_UNDEFINED (-99e+20)
 #define CB_INITIALIZATION_PRECISION_FACTOR (1e-2)
 
+#define CB_CACHE_INCREMENT 10
+#define CB_CACHE_FACTOR (1.1)
+
 namespace zmdp {
 
 ConvexBounds::ConvexBounds(bool _keepLowerBound,
@@ -53,10 +56,17 @@ ConvexBounds::ConvexBounds(bool _keepLowerBound,
   forceUpperBoundActionSelection(_forceUpperBoundActionSelection)
 {}
 
+struct ConvexBoundsData {
+  LBPlane* bestPlane;
+  int lastSetPlaneNumBackups;
+  int lastSetUBNumBackups;
+};
+
 // lower bound on long-term reward for taking action a (alpha vector)
-void ConvexBounds::getNewLBPlaneQ(LBPlane& result, const MDPNode& cn, int a)
+void ConvexBounds::getNewLBPlaneQ(LBPlane& result, MDPNode& cn, int a)
 {
-  alpha_vector betaA(pomdp->getBeliefSize()), betaAO(pomdp->getBeliefSize());
+  alpha_vector betaA(pomdp->getBeliefSize());
+  const alpha_vector* betaAO;
   alpha_vector tmp, tmp2;
 #if USE_MASKED_ALPHA
   alpha_vector tmp3;
@@ -65,24 +75,24 @@ void ConvexBounds::getNewLBPlaneQ(LBPlane& result, const MDPNode& cn, int a)
   set_to_zero(betaA);
   
   bool defaultIsSet = false;
-  alpha_vector defaultBetaAO;
+  const alpha_vector* defaultBetaAO = NULL;
   const MDPQEntry& Qa = cn.Q[a];
   FOR (o, Qa.getNumOutcomes()) {
     MDPEdge* e = Qa.outcomes[o];
     if (NULL != e) {
-      betaAO = lowerBound->getBestLBPlane(e->nextState->s).alpha;
+      betaAO = &getPlaneForNode(*e->nextState).alpha;
     } else {
       // impossible to see this observation, so it doesn't make sense to
       // pick the alpha that optimizes for the next belief.  plug in a
-      // default alpha (arbitrarily chosen to optimize for cn.b).
+      // default alpha (arbitrarily chosen to optimize for cn.s).
       if (!defaultIsSet) {
-	defaultBetaAO = lowerBound->getBestLBPlane(cn.s).alpha;
+	defaultBetaAO = &getPlaneForNode(cn).alpha;
 	defaultIsSet = true;
       }
       betaAO = defaultBetaAO;
     }
 
-    emult_column( tmp, pomdp->O[a], o, betaAO );
+    emult_column( tmp, pomdp->O[a], o, *betaAO );
 #if USE_MASKED_ALPHA
     mult( tmp3, pomdp->T[a], tmp );
     mask_copy( tmp2, tmp3, cn.s );
@@ -138,7 +148,8 @@ void ConvexBounds::updateLowerBound(MDPNode& cn)
 {
   LBPlane* newPlane = new LBPlane();
   getNewLBPlane(*newPlane, cn);
-  cn.lbVal = inner_prod(cn.s, newPlane->alpha);
+
+  setPlaneForNode(cn, newPlane);
 
   lowerBound->addLBPlane(newPlane);
   lowerBound->maybePrune();
@@ -153,7 +164,7 @@ double ConvexBounds::getNewUBValueQ(MDPNode& cn, int a)
   FOR (o, Qa.getNumOutcomes()) {
     MDPEdge* e = Qa.outcomes[o];
     if (NULL != e) {
-      val += e->obsProb * upperBound->getValue(e->nextState->s);
+      val += e->obsProb * getUBForNode(*e->nextState);
     }
   }
   val = Qa.immediateReward + pomdp->getDiscount() * val;
@@ -248,9 +259,76 @@ double ConvexBounds::getNewUBValue(MDPNode& cn, int* maxUBActionP)
 void ConvexBounds::updateUpperBound(MDPNode& cn, int* maxUBActionP)
 {
   double newUBVal = getNewUBValue(cn, maxUBActionP);
+  setUBForNode(cn, newUBVal);
   upperBound->addPoint(cn.s, newUBVal);
   upperBound->maybePrune();
-  cn.ubVal = newUBVal;
+}
+
+void ConvexBounds::setPlaneForNode(MDPNode& cn, LBPlane* newPlane)
+{
+  double newLB = inner_prod(newPlane->alpha, cn.s);
+#if USE_CONVEX_CACHE
+  if (newLB < cn.lbVal - ZMDP_BOUNDS_PRUNE_EPS) {
+#if 0
+    // debug
+    LBPlane* oldPlane = ((ConvexBoundsData*) cn.boundsData)->bestPlane;
+    printf("setPlaneForNode: ignoring new plane: newLB=%lf cn.lbVal=%lf diff=%lg ip=%lf\n",
+	   newLB, cn.lbVal, (newLB-cn.lbVal), inner_prod(oldPlane->alpha, cn.s));
+    LBPlane* newPlane = &lowerBound->getBestLBPlane(cn.s);
+    printf("setPlaneForNode: newPlane=%p oldPlane=%p\n",
+	   newPlane, oldPlane);
+#endif
+    return;
+  }
+  cn.lbVal = newLB;
+  ConvexBoundsData* bdata = (ConvexBoundsData*) cn.boundsData;
+  bdata->bestPlane = newPlane;
+  bdata->lastSetPlaneNumBackups = numBackups;
+  newPlane->backPointers.push_back(&bdata->bestPlane);
+#else
+  cn.lbVal = newLB;
+#endif
+}
+
+const LBPlane& ConvexBounds::getPlaneForNode(MDPNode& cn)
+{
+#if USE_CONVEX_CACHE
+  int n = ((ConvexBoundsData*) cn.boundsData)->lastSetPlaneNumBackups;
+  if (numBackups > (int) std::max((double) (n + CB_CACHE_INCREMENT), n * CB_CACHE_FACTOR)) {
+    LBPlane& newPlane = lowerBound->getBestLBPlane(cn.s);
+    setPlaneForNode(cn, &newPlane);
+    return newPlane;
+  } else {
+    return *((ConvexBoundsData*) cn.boundsData)->bestPlane;
+  }
+#else
+  return lowerBound->getBestLBPlane(cn.s);
+#endif
+}
+
+void ConvexBounds::setUBForNode(MDPNode& cn, double newUB)
+{
+  cn.ubVal = newUB;
+#if USE_CONVEX_CACHE
+  ConvexBoundsData* bdata = (ConvexBoundsData*) cn.boundsData;
+  bdata->lastSetUBNumBackups = numBackups;
+#endif
+}
+
+double ConvexBounds::getUBForNode(MDPNode& cn)
+{
+#if USE_CONVEX_CACHE
+  int n = ((ConvexBoundsData*) cn.boundsData)->lastSetUBNumBackups;
+  if (numBackups > (int) std::max((double) (n + CB_CACHE_INCREMENT), n * CB_CACHE_FACTOR)) {
+    double newUB = upperBound->getValue(cn.s);
+    setUBForNode(cn, newUB);
+    return newUB;
+  } else {
+    return cn.ubVal;
+  }
+#else
+  return upperBound->getValue(cn.s);
+#endif
 }
 
 void ConvexBounds::initialize(const MDP* _pomdp,
@@ -295,22 +373,24 @@ MDPNode* ConvexBounds::getNode(const state_vector& s)
     MDPNode& cn = *(new MDPNode);
     cn.s = s;
     cn.isTerminal = pomdp->getIsTerminalState(s);
+#if USE_CONVEX_CACHE
+    cn.boundsData = new ConvexBoundsData();
+#endif
     if (cn.isTerminal) {
-      cn.ubVal = 0;
+      setUBForNode(cn, 0);
     } else {
-      cn.ubVal = upperBound->getValue(s);
+      setUBForNode(cn, upperBound->getValue(s));
     }
     if (keepLowerBound) {
-      if (cn.isTerminal) {
-	cn.lbVal = 0;
-      } else {
-	cn.lbVal = lowerBound->getValue(s);
-      }
+      // note: this should also do the right thing if cn is terminal;
+      // at least one of the planes from initialization should give an
+      // lbVal of 0 for cn in that case.
+      cn.lbVal = -99e+20;
+      setPlaneForNode(cn, &lowerBound->getBestLBPlane(s));
     } else {
       cn.lbVal = -1; // n/a
     }
     cn.searchData = NULL;
-    cn.boundsData = NULL;
     (*lookup)[hs] = &cn;
 
     if (NULL != getNodeHandler) {
@@ -423,6 +503,9 @@ void ConvexBounds::writePolicy(const std::string& outFileName)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.11  2006/07/14 15:10:08  trey
+ * removed belief argument fram addLBPlane()
+ *
  * Revision 1.10  2006/07/12 19:42:00  trey
  * removed use of obsolete copyFrom() function
  *

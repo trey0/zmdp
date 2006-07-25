@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.6 $  $Author: trey $  $Date: 2006-04-28 17:57:41 $
+ $Revision: 1.7 $  $Author: trey $  $Date: 2006-07-25 19:40:09 $
    
  @file    ConvexBounds.h
  @brief   No brief
@@ -49,7 +49,7 @@ struct ConvexBounds : public IncrementalBounds {
 	       bool _forceUpperBoundActionSelection);
 
   // helper functions
-  void getNewLBPlaneQ(LBPlane& result, const MDPNode& cn, int a);
+  void getNewLBPlaneQ(LBPlane& result, MDPNode& cn, int a);
   void getNewLBPlane(LBPlane& result, MDPNode& cn);
   void updateLowerBound(MDPNode& cn);
   double getNewUBValueQ(MDPNode& cn, int a);
@@ -57,6 +57,10 @@ struct ConvexBounds : public IncrementalBounds {
   double getNewUBValueUseCache(MDPNode& cn, int* maxUBActionP);
   double getNewUBValue(MDPNode& cn, int* maxUBActionP);
   void updateUpperBound(MDPNode& cn, int* maxUBActionP);
+  void setPlaneForNode(MDPNode& cn, LBPlane* newPlane);
+  const LBPlane& getPlaneForNode(MDPNode& cn);
+  void setUBForNode(MDPNode& cn, double newUB);
+  double getUBForNode(MDPNode& cn);
 
   // implementations of virtual functions declared in IncrementalBounds
   void initialize(const MDP* _pomdp,
@@ -79,6 +83,9 @@ struct ConvexBounds : public IncrementalBounds {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.6  2006/04/28 17:57:41  trey
+ * changed to use apache license
+ *
  * Revision 1.5  2006/04/27 23:10:31  trey
  * added support for writing policies
  *
