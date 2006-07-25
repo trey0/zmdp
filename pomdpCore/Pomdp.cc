@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.13 $  $Author: trey $  $Date: 2006-06-05 20:10:46 $
+ $Revision: 1.14 $  $Author: trey $  $Date: 2006-07-25 19:42:20 $
   
  @file    Pomdp.cc
  @brief   No brief
@@ -217,54 +217,6 @@ void Pomdp::readFromFileCassandra(const string& fileName) {
   }
   copy(initialBelief, initialBeliefD);
 
-#if 0
-  dvector initialBeliefx;
-  std::vector<bool> isPomdpTerminalStatex;
-  kmatrix Rx;
-  std::vector<kmatrix> Tx, Ox;
-
-  // pre-process
-  initialBeliefx.resize(numStates);
-  set_to_zero(initialBeliefx);
-  isPomdpTerminalStatex.resize(numStates, /* initialValue = */ false);
-  Rx.resize(numStates, numActions);
-  Tx.resize(numActions);
-  Ox.resize(numActions);
-  FOR (a, numActions) {
-    Tx[a].resize(numStates, numStates);
-    Ox[a].resize(numStates, numObservations);
-  }
-
-  // copy
-  FOR (s, numStates) {
-    initialBeliefx(s) = p.getInitialBelief(s);
-    isPomdpTerminalStatex[s] = p.isTerminalState(s);
-    FOR (a, numActions) {
-      kmatrix_set_entry( Rx, s, a, p.R(s,a) );
-      FOR (sp, numStates) {
-	kmatrix_set_entry( Tx[a], s, sp, p.T(s,a,sp) );
-      }
-      FOR (o, numObservations) {
-	kmatrix_set_entry( Ox[a], s, o, p.O(s,a,o) );
-      }
-    }
-  }
-
-  // post-process
-  copy( initialBelief, initialBeliefx );
-  isPomdpTerminalState = isPomdpTerminalStatex;
-  copy( R, Rx );
-  Ttr.resize(numActions);
-  O.resize(numActions);
-  T.resize(numActions);
-  FOR (a, numActions) {
-    copy( T[a], Tx[a] );
-    kmatrix_transpose_in_place( Tx[a] );
-    copy( Ttr[a], Tx[a] );
-    copy( O[a], Ox[a] );
-  }
-#endif // if 0
-
 #if USE_DEBUG_PRINT
   gettimeofday(&endTime,0);
   double numSeconds = (endTime.tv_sec - startTime.tv_sec)
@@ -460,18 +412,18 @@ void Pomdp::readFromFileFast(const std::string& fileName)
 }
 
 void Pomdp::debugDensity(void) {
-  int Ttr_size = 0;
-  int Ttr_filled = 0;
-  int O_size = 0;
-  int O_filled = 0;
+  // use doubles to avoid int overflow (e.g. T_size is sometimes larger than MAX_INT)
+  double T_size = ((double) T[0].size1()) * T[0].size2() * numActions;
+  double O_size = ((double) O[0].size1()) * O[0].size2() * numActions;
+  double T_filled = 0;
+  double O_filled = 0;
   FOR (a, numActions) {
-    Ttr_size += Ttr[a].size1() * Ttr[a].size2();
-    O_size += O[a].size1() * O[a].size2();
-    Ttr_filled += Ttr[a].filled();
+    T_filled += T[a].filled();
     O_filled += O[a].filled();
   }
-  cout << "T density = " << (((double) Ttr_filled) / Ttr_size)
-       << ", O density = " << (((double) O_filled) / O_size)
+
+  cout << "T density = " << (T_filled / T_size)
+       << ", O density = " << (O_filled / O_size)
        << endl;
 }
 
@@ -480,6 +432,9 @@ void Pomdp::debugDensity(void) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.13  2006/06/05 20:10:46  trey
+ * filled in reasonable defaults for pomdp bounds
+ *
  * Revision 1.12  2006/05/29 06:05:43  trey
  * now mark zero-reward absorbing states as terminal, without an explicit list in the pomdp model file
  *
