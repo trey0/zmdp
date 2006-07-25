@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.7 $  $Author: trey $  $Date: 2006-07-24 17:07:47 $
+ $Revision: 1.8 $  $Author: trey $  $Date: 2006-07-25 19:40:49 $
    
  @file    MaxPlanesLowerBound.h
  @brief   No brief
@@ -55,6 +55,9 @@ struct LBPlane {
 #if USE_MASKED_ALPHA
   sla::mvector mask;
 #endif
+#if USE_CONVEX_CACHE
+  std::vector<LBPlane**> backPointers;
+#endif
 
   LBPlane(void);
 #if USE_MASKED_ALPHA
@@ -85,7 +88,8 @@ public:
   // returns the bound value at state s
   double getValue(const belief_vector& b) const;
 
-  const LBPlane& getBestLBPlane(const belief_vector& b) const;
+  LBPlane& getBestLBPlane(const belief_vector& b);
+  const LBPlane& getBestLBPlaneConst(const belief_vector& b) const;
   void addLBPlane(LBPlane* av);
   void prunePlanes(void);
   void maybePrune(void);
@@ -102,6 +106,9 @@ public:
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.7  2006/07/24 17:07:47  trey
+ * added USE_CONVEX_SUPPORT_LIST
+ *
  * Revision 1.6  2006/07/14 15:09:13  trey
  * cleaned up pruning; removed belief argument from addLBPlane()
  *

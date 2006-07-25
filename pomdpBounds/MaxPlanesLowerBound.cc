@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.10 $  $Author: trey $  $Date: 2006-07-24 17:07:47 $
+ $Revision: 1.11 $  $Author: trey $  $Date: 2006-07-25 19:40:49 $
    
  @file    MaxPlanesLowerBound.cc
  @brief   No brief
@@ -37,6 +37,13 @@
 #include "MatrixUtils.h"
 #include "MaxPlanesLowerBound.h"
 #include "BlindLBInitializer.h"
+
+#define PRUNE_PLANES_INCREMENT (10)
+#if USE_CONVEX_SUPPORT_LIST
+#  define PRUNE_PLANES_FACTOR (2.0)
+#else
+#  define PRUNE_PLANES_FACTOR (1.1)
+#endif
 
 using namespace std;
 using namespace MatrixUtils;
@@ -156,12 +163,12 @@ void MaxPlanesLowerBound::initialize(double targetPrecision)
 
 double MaxPlanesLowerBound::getValue(const belief_vector& b) const
 {
-  double v = inner_prod( getBestLBPlane(b).alpha, b );
+  double v = inner_prod( getBestLBPlaneConst(b).alpha, b );
   return v;
 }
 
 // return the alpha such that alpha * b has the highest value
-const LBPlane& MaxPlanesLowerBound::getBestLBPlane(const belief_vector& b) const 
+const LBPlane& MaxPlanesLowerBound::getBestLBPlaneConst(const belief_vector& b) const
 {
 #if USE_CONVEX_SUPPORT_LIST
   int minSupportIndex = -1;
@@ -194,6 +201,12 @@ const LBPlane& MaxPlanesLowerBound::getBestLBPlane(const belief_vector& b) const
     }
   }
   return *ret;
+}
+
+LBPlane& MaxPlanesLowerBound::getBestLBPlane(const belief_vector& b)
+{
+  // cast from 'const LBPlane&' to LBPlane&
+  return (LBPlane&) getBestLBPlaneConst(b);
 }
 
 void MaxPlanesLowerBound::addLBPlane(LBPlane* av)
@@ -251,8 +264,8 @@ void MaxPlanesLowerBound::prunePlanes(void)
 // since the last check
 void MaxPlanesLowerBound::maybePrune(void)
 {
-  unsigned int nextPruneNumPlanes = max(lastPruneNumPlanes + 10,
-					(int) (lastPruneNumPlanes * 1.1));
+  unsigned int nextPruneNumPlanes = max(lastPruneNumPlanes + PRUNE_PLANES_INCREMENT,
+					(int) (lastPruneNumPlanes * PRUNE_PLANES_FACTOR));
   if (planes.size() > nextPruneNumPlanes) {
     prunePlanes();
   }
@@ -270,6 +283,14 @@ void MaxPlanesLowerBound::deleteAndForward(LBPlane* victim, LBPlane* dominator)
 	break;
       }
     }
+  }
+#endif
+#if USE_CONVEX_CACHE
+  // forward backPointers from victim to dominator
+  FOR_EACH (bpP, victim->backPointers) {
+    LBPlane** bp = *bpP;
+    *bp = dominator;
+    dominator->backPointers.push_back(bp);
   }
 #endif
 
@@ -432,6 +453,9 @@ void MaxPlanesLowerBound::readFromFile(const std::string& inFileName)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.10  2006/07/24 17:07:47  trey
+ * added USE_CONVEX_SUPPORT_LIST
+ *
  * Revision 1.9  2006/07/14 15:09:13  trey
  * cleaned up pruning; removed belief argument from addLBPlane()
  *
