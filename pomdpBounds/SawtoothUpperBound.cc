@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.8 $  $Author: trey $  $Date: 2006-07-26 16:32:24 $
+ $Revision: 1.9 $  $Author: trey $  $Date: 2006-07-26 20:22:10 $
    
  @file    SawtoothUpperBound.cc
  @brief   No brief
@@ -51,6 +51,7 @@ SawtoothUpperBound::SawtoothUpperBound(const MDP* _pomdp)
   pomdp = (const Pomdp*) _pomdp;
   numStates = pomdp->getBeliefSize();
   lastPruneNumPts = 0;
+  lastPruneNumBackups = -1;
 
 #if USE_CONVEX_SUPPORT_LIST
   supportList.resize(pomdp->getBeliefSize());
@@ -199,7 +200,7 @@ void SawtoothUpperBound::deleteAndForward(BVPair* victim,
   delete victim;
 }
 
-void SawtoothUpperBound::prune(void) {
+void SawtoothUpperBound::prune(int numBackups) {
 #if USE_DEBUG_PRINT
   int oldNum = pts.size();
 #endif
@@ -216,7 +217,11 @@ void SawtoothUpperBound::prune(void) {
     memberP = pts.begin();
     while (memberP != candidateP) {
       BVPair* member = *memberP;
-      if (dominates(candidate, member)) {
+      if (candidate->numBackupsAtCreation <= lastPruneNumBackups
+	  && member->numBackupsAtCreation <= lastPruneNumBackups) {
+	// candidate and member were compared the last time we pruned
+	// and neither dominates the other; leave them both in
+      } else if (dominates(candidate, member)) {
 	// memberP is pruned
 	deleteAndForward(member, candidate);
 	memberP = eraseElement(pts, memberP);
@@ -240,13 +245,15 @@ void SawtoothUpperBound::prune(void) {
   cout << "... pruned # pts from " << oldNum << " down to " << pts.size() << endl;
 #endif
   lastPruneNumPts = pts.size();
+  lastPruneNumBackups = numBackups;
 }
 
-void SawtoothUpperBound::maybePrune(void) {
+void SawtoothUpperBound::maybePrune(int numBackups)
+{
   unsigned int nextPruneNumPts = max(lastPruneNumPts + PRUNE_PTS_INCREMENT,
 				     (int) (lastPruneNumPts * PRUNE_PTS_FACTOR));
   if (pts.size() > nextPruneNumPts) {
-    prune();
+    prune(numBackups);
   }
 }
 
@@ -268,6 +275,23 @@ int SawtoothUpperBound::whichCornerPoint(const belief_vector& b) const {
     return -1;
   } else {
     return non_zero_index;
+  }
+}
+
+void SawtoothUpperBound::addPoint(BVPair* bv)
+{
+  int wc = whichCornerPoint(bv->b);
+  if (-1 == wc) {
+#if USE_CONVEX_SUPPORT_LIST
+    // add new point to supportList
+    FOR_EACH (bi, bv->b.data) {
+      supportList[bi->index].push_back(bv);
+    }
+#endif
+    pts.push_back(bv);
+  } else {
+    cornerPts(wc) = bv->v;
+    delete bv;
   }
 }
 
@@ -309,6 +333,9 @@ void SawtoothUpperBound::printToStream(ostream& out) const
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.8  2006/07/26 16:32:24  trey
+ * removed dependence of pruning on USE_CONVEX_SUPPORT_LIST
+ *
  * Revision 1.7  2006/07/25 19:41:14  trey
  * pulled out constants to #defines
  *

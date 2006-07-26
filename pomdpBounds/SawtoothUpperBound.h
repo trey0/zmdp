@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.6 $  $Author: trey $  $Date: 2006-07-24 17:08:02 $
+ $Revision: 1.7 $  $Author: trey $  $Date: 2006-07-26 20:22:10 $
    
  @file    SawtoothUpperBound.h
  @brief   No brief
@@ -37,6 +37,7 @@ struct BVPair {
   belief_vector b;
   double v;
   double innerCornerCache;
+  int numBackupsAtCreation;
 
   BVPair(void) {}
   BVPair(const belief_vector& _b, double _v) : b(_b), v(_v) {}
@@ -49,6 +50,7 @@ public:
   const Pomdp* pomdp;
   int numStates;
   int lastPruneNumPts;
+  int lastPruneNumBackups;
   BVList pts;
   sla::dvector cornerPts;
 #if USE_CONVEX_SUPPORT_LIST
@@ -73,11 +75,12 @@ public:
   
   void deleteAndForward(BVPair* victim,
 			BVPair* dominator);
-  void prune(void);
-  void maybePrune(void);
+  void prune(int numBackups);
+  void maybePrune(int numBackups);
 
   int whichCornerPoint(const belief_vector& b) const;
   void addPoint(const belief_vector& b, double val);
+  void addPoint(BVPair* bv);
   void printToStream(std::ostream& out) const;
 };
 
@@ -88,6 +91,9 @@ public:
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.6  2006/07/24 17:08:02  trey
+ * added USE_CONVEX_SUPPORT_LIST
+ *
  * Revision 1.5  2006/07/14 15:09:48  trey
  * cleaned up pruning
  *
