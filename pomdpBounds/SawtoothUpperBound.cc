@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.7 $  $Author: trey $  $Date: 2006-07-25 19:41:14 $
+ $Revision: 1.8 $  $Author: trey $  $Date: 2006-07-26 16:32:24 $
    
  @file    SawtoothUpperBound.cc
  @brief   No brief
@@ -38,11 +38,7 @@
 
 #define MIN_RATIO_EPS (1e-10)
 #define PRUNE_PTS_INCREMENT (10)
-#if USE_CONVEX_SUPPORT_LIST
-#  define PRUNE_PTS_FACTOR (2.0)
-#else
-#  define PRUNE_PTS_FACTOR (1.1)
-#endif
+#define PRUNE_PTS_FACTOR (2.0)
 #define CORNER_EPS (1e-6)
 
 using namespace std;
@@ -313,6 +309,9 @@ void SawtoothUpperBound::printToStream(ostream& out) const
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.7  2006/07/25 19:41:14  trey
+ * pulled out constants to #defines
+ *
  * Revision 1.6  2006/07/24 17:08:02  trey
  * added USE_CONVEX_SUPPORT_LIST
  *

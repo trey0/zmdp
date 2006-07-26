@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.12 $  $Author: trey $  $Date: 2006-07-25 23:24:23 $
+ $Revision: 1.13 $  $Author: trey $  $Date: 2006-07-26 16:32:10 $
    
  @file    MaxPlanesLowerBound.cc
  @brief   No brief
@@ -39,11 +39,7 @@
 #include "BlindLBInitializer.h"
 
 #define PRUNE_PLANES_INCREMENT (10)
-#if USE_CONVEX_SUPPORT_LIST
-#  define PRUNE_PLANES_FACTOR (2.0)
-#else
-#  define PRUNE_PLANES_FACTOR (1.1)
-#endif
+#define PRUNE_PLANES_FACTOR (2.0)
 
 using namespace std;
 using namespace MatrixUtils;
@@ -454,6 +450,9 @@ void MaxPlanesLowerBound::readFromFile(const std::string& inFileName)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.12  2006/07/25 23:24:23  trey
+ * fixed subtle error in support list
+ *
  * Revision 1.11  2006/07/25 19:40:49  trey
  * added USE_CONVEX_CACHE support
  *

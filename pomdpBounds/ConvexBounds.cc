@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.12 $  $Author: trey $  $Date: 2006-07-25 19:40:09 $
+ $Revision: 1.13 $  $Author: trey $  $Date: 2006-07-26 16:32:10 $
    
  @file    ConvexBounds.cc
  @brief   No brief
@@ -77,10 +77,22 @@ void ConvexBounds::getNewLBPlaneQ(LBPlane& result, MDPNode& cn, int a)
   bool defaultIsSet = false;
   const alpha_vector* defaultBetaAO = NULL;
   const MDPQEntry& Qa = cn.Q[a];
+  alpha_vector maskedBeta;
   FOR (o, Qa.getNumOutcomes()) {
     MDPEdge* e = Qa.outcomes[o];
     if (NULL != e) {
       betaAO = &getPlaneForNode(*e->nextState).alpha;
+#if USE_MASKED_ALPHA
+      // occasionally, even if the nextState belief is sparse, the
+      // corresponding betaAO is one of the dense alpha vectors produced
+      // by the initial blind-policy heuristic.  in that case, we can
+      // speed up the matrix multiplication below by masking betaAO with
+      // the nextState belief (so it becomes much sparser).
+      if (betaAO->filled() > cn.s.filled()) {
+	mask_copy(maskedBeta, *betaAO, e->nextState->s);
+	betaAO = &maskedBeta;
+      }
+#endif
     } else {
       // impossible to see this observation, so it doesn't make sense to
       // pick the alpha that optimizes for the next belief.  plug in a
@@ -503,6 +515,9 @@ void ConvexBounds::writePolicy(const std::string& outFileName)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.12  2006/07/25 19:40:09  trey
+ * overhauled USE_CONVEX_CACHE
+ *
  * Revision 1.11  2006/07/14 15:10:08  trey
  * removed belief argument fram addLBPlane()
  *
