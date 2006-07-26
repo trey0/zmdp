@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.8 $  $Author: trey $  $Date: 2006-07-25 19:40:49 $
+ $Revision: 1.9 $  $Author: trey $  $Date: 2006-07-26 20:21:53 $
    
  @file    MaxPlanesLowerBound.h
  @brief   No brief
@@ -55,6 +55,7 @@ struct LBPlane {
 #if USE_MASKED_ALPHA
   sla::mvector mask;
 #endif
+  int numBackupsAtCreation;
 #if USE_CONVEX_CACHE
   std::vector<LBPlane**> backPointers;
 #endif
@@ -75,6 +76,7 @@ public:
   const Pomdp* pomdp;
   PlaneSet planes;
   int lastPruneNumPlanes;
+  int lastPruneNumBackups;
 #if USE_CONVEX_SUPPORT_LIST
   std::vector<PlaneSet> supportList;
 #endif
@@ -90,9 +92,13 @@ public:
 
   LBPlane& getBestLBPlane(const belief_vector& b);
   const LBPlane& getBestLBPlaneConst(const belief_vector& b) const;
+#if USE_CONVEX_CACHE
+  LBPlane& getBestLBPlaneWithCache(const belief_vector& b, LBPlane* currPlane,
+				   int lastSetPlaneNumBackups);
+#endif
   void addLBPlane(LBPlane* av);
-  void prunePlanes(void);
-  void maybePrune(void);
+  void prunePlanes(int numBackups);
+  void maybePrune(int numBackups);
   void deleteAndForward(LBPlane* victim, LBPlane* dominator);
 
   void writeToFile(const std::string& outFileName) const;
@@ -106,6 +112,9 @@ public:
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.8  2006/07/25 19:40:49  trey
+ * added USE_CONVEX_CACHE support
+ *
  * Revision 1.7  2006/07/24 17:07:47  trey
  * added USE_CONVEX_SUPPORT_LIST
  *

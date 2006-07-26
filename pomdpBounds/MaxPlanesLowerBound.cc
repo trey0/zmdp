@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.13 $  $Author: trey $  $Date: 2006-07-26 16:32:10 $
+ $Revision: 1.14 $  $Author: trey $  $Date: 2006-07-26 20:21:53 $
    
  @file    MaxPlanesLowerBound.cc
  @brief   No brief
@@ -39,7 +39,7 @@
 #include "BlindLBInitializer.h"
 
 #define PRUNE_PLANES_INCREMENT (10)
-#define PRUNE_PLANES_FACTOR (2.0)
+#define PRUNE_PLANES_FACTOR (1.1)
 
 using namespace std;
 using namespace MatrixUtils;
@@ -138,6 +138,7 @@ MaxPlanesLowerBound::MaxPlanesLowerBound(const MDP* _pomdp)
 {
   pomdp = (const Pomdp*) _pomdp;
   lastPruneNumPlanes = 0;
+  lastPruneNumBackups = -1;
 
 #if USE_CONVEX_SUPPORT_LIST
   supportList.resize(pomdp->getBeliefSize());
@@ -155,6 +156,13 @@ void MaxPlanesLowerBound::initialize(double targetPrecision)
 {
   BlindLBInitializer blb(pomdp, this);
   blb.initialize(targetPrecision);
+
+#if USE_CONVEX_CACHE
+  // planes from initialization should have their 'age' set appropriately
+  FOR_EACH (planeP, planes) {
+    (*planeP)->numBackupsAtCreation = 0;
+  }
+#endif
 }
 
 double MaxPlanesLowerBound::getValue(const belief_vector& b) const
@@ -206,6 +214,51 @@ LBPlane& MaxPlanesLowerBound::getBestLBPlane(const belief_vector& b)
   return (LBPlane&) getBestLBPlaneConst(b);
 }
 
+#if USE_CONVEX_CACHE
+// return the alpha such that alpha * b has the highest value
+LBPlane& MaxPlanesLowerBound::getBestLBPlaneWithCache(const belief_vector& b,
+						      LBPlane* currPlane,
+						      int lastSetPlaneNumBackups)
+{
+#if USE_CONVEX_SUPPORT_LIST
+  int minSupportIndex = -1;
+  int minSupportSize = INT_MAX;
+  FOR_EACH (eltP, b.data) {
+    int i = eltP->index;
+    int size = supportList[i].size();
+    if (size < minSupportSize) {
+      minSupportSize = size;
+      minSupportIndex = i;
+    }
+  }
+  assert(-1 != minSupportIndex);
+  const PlaneSet& planesToCheck = supportList[minSupportIndex];
+#else
+  const PlaneSet& planesToCheck = planes;
+#endif
+
+  double val;
+  LBPlane* ret = currPlane;
+  double maxval = inner_prod(currPlane->alpha, b);
+
+  FOR_EACH (pr, planesToCheck) {
+    LBPlane* al = *pr;
+#if USE_CONVEX_CACHE
+    if (al->numBackupsAtCreation <= lastSetPlaneNumBackups) continue;
+#endif
+#if USE_MASKED_ALPHA
+    if (!mask_subset( b, al->mask )) continue;
+#endif
+    val = inner_prod( al->alpha, b );
+    if (val > maxval) {
+      maxval = val;
+      ret = al;
+    }
+  }
+  return *ret;
+}
+#endif // USE_CONVEX_CACHE
+
 void MaxPlanesLowerBound::addLBPlane(LBPlane* av)
 {
   planes.push_back(av);
@@ -218,7 +271,7 @@ void MaxPlanesLowerBound::addLBPlane(LBPlane* av)
 #endif
 }
 
-void MaxPlanesLowerBound::prunePlanes(void)
+void MaxPlanesLowerBound::prunePlanes(int numBackups)
 {
 #if USE_DEBUG_PRINT
   int oldNum = planes.size();
@@ -231,7 +284,11 @@ void MaxPlanesLowerBound::prunePlanes(void)
     memberP = planes.begin();
     while (memberP != candidateP) {
       LBPlane* member = *memberP;
-      if (dominates(candidate, member)) {
+      if (candidate->numBackupsAtCreation <= lastPruneNumBackups
+	  && member->numBackupsAtCreation <= lastPruneNumBackups) {
+	// candidate and member were compared the last time we pruned
+	// and neither dominates the other; leave them both in
+      } else if (dominates(candidate, member)) {
 	// memberP is pruned
 	deleteAndForward(member, candidate);
 	memberP = eraseElement(planes, memberP);
@@ -255,16 +312,17 @@ void MaxPlanesLowerBound::prunePlanes(void)
   cout << "... pruned # planes from " << oldNum << " down to " << planes.size() << endl;
 #endif
   lastPruneNumPlanes = planes.size();
+  lastPruneNumBackups = numBackups;
 }
 
 // prune points and planes if the number has grown significantly
 // since the last check
-void MaxPlanesLowerBound::maybePrune(void)
+void MaxPlanesLowerBound::maybePrune(int numBackups)
 {
   unsigned int nextPruneNumPlanes = max(lastPruneNumPlanes + PRUNE_PLANES_INCREMENT,
 					(int) (lastPruneNumPlanes * PRUNE_PLANES_FACTOR));
   if (planes.size() > nextPruneNumPlanes) {
-    prunePlanes();
+    prunePlanes(numBackups);
   }
 }
 
@@ -443,6 +501,7 @@ void MaxPlanesLowerBound::readFromFile(const std::string& inFileName)
 
   // the set of planes should have been pruned before it was written out
   lastPruneNumPlanes = planes.size();
+  lastPruneNumBackups = -1;
 }
 
 }; // namespace zmdp
@@ -450,6 +509,9 @@ void MaxPlanesLowerBound::readFromFile(const std::string& inFileName)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.13  2006/07/26 16:32:10  trey
+ * removed dependence of pruning on USE_CONVEX_SUPPORT_LIST
+ *
  * Revision 1.12  2006/07/25 23:24:23  trey
  * fixed subtle error in support list
  *
