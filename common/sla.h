@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.22 $  $Author: trey $  $Date: 2006-07-04 23:15:30 $
+ $Revision: 1.23 $  $Author: trey $  $Date: 2006-07-26 20:22:58 $
    
  @file    sla.h
  @brief   No brief
@@ -241,7 +241,8 @@ namespace sla {
   // result = x * A
   void mult(dvector& result, const cvector& x, const cmatrix& A);
 
-  // result = x * A
+  // result = x * A [note: if you have transpose(A) available, try
+  //   mult(result, A', x) instead; it is often much faster]
   void mult(cvector& result, const cvector& x, const cmatrix& A);
 
   // result = x .* y [for all i, result(i) = x(i) * y(i)]
@@ -1280,6 +1281,9 @@ typedef sla::dvector obs_prob_vector;
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.22  2006/07/04 23:15:30  trey
+ * improved speed of mult(cmatrix,cvector) operation for very sparse operands
+ *
  * Revision 1.21  2006/07/04 22:31:56  trey
  * simplified and sped up dmatrix/dvector resize routines
  *
