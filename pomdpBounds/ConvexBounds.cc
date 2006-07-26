@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.13 $  $Author: trey $  $Date: 2006-07-26 16:32:10 $
+ $Revision: 1.14 $  $Author: trey $  $Date: 2006-07-26 20:20:41 $
    
  @file    ConvexBounds.cc
  @brief   No brief
@@ -56,11 +56,16 @@ ConvexBounds::ConvexBounds(bool _keepLowerBound,
   forceUpperBoundActionSelection(_forceUpperBoundActionSelection)
 {}
 
+#if USE_CONVEX_CACHE
 struct ConvexBoundsData {
   LBPlane* bestPlane;
   int lastSetPlaneNumBackups;
   int lastSetUBNumBackups;
+
+  ConvexBoundsData(void) : bestPlane(NULL), lastSetPlaneNumBackups(-1),
+			   lastSetUBNumBackups(-1) {}
 };
+#endif
 
 // lower bound on long-term reward for taking action a (alpha vector)
 void ConvexBounds::getNewLBPlaneQ(LBPlane& result, MDPNode& cn, int a)
@@ -129,6 +134,7 @@ void ConvexBounds::getNewLBPlaneQ(LBPlane& result, MDPNode& cn, int a)
 #if USE_MASKED_ALPHA
   result.mask = cn.s;
 #endif
+  result.numBackupsAtCreation = numBackups;
 }
 
 void ConvexBounds::getNewLBPlane(LBPlane& result, MDPNode& cn)
@@ -164,7 +170,7 @@ void ConvexBounds::updateLowerBound(MDPNode& cn)
   setPlaneForNode(cn, newPlane);
 
   lowerBound->addLBPlane(newPlane);
-  lowerBound->maybePrune();
+  lowerBound->maybePrune(numBackups);
 }
 
 // upper bound on long-term reward for taking action a
@@ -272,8 +278,13 @@ void ConvexBounds::updateUpperBound(MDPNode& cn, int* maxUBActionP)
 {
   double newUBVal = getNewUBValue(cn, maxUBActionP);
   setUBForNode(cn, newUBVal);
-  upperBound->addPoint(cn.s, newUBVal);
-  upperBound->maybePrune();
+
+  BVPair* newBV = new BVPair();
+  newBV->b = cn.s;
+  newBV->v = newUBVal;
+  newBV->numBackupsAtCreation = numBackups;
+  upperBound->addPoint(newBV);
+  upperBound->maybePrune(numBackups);
 }
 
 void ConvexBounds::setPlaneForNode(MDPNode& cn, LBPlane* newPlane)
@@ -305,6 +316,8 @@ void ConvexBounds::setPlaneForNode(MDPNode& cn, LBPlane* newPlane)
 const LBPlane& ConvexBounds::getPlaneForNode(MDPNode& cn)
 {
 #if USE_CONVEX_CACHE
+#if 0
+  // old version, did more harm than good
   int n = ((ConvexBoundsData*) cn.boundsData)->lastSetPlaneNumBackups;
   if (numBackups > (int) std::max((double) (n + CB_CACHE_INCREMENT), n * CB_CACHE_FACTOR)) {
     LBPlane& newPlane = lowerBound->getBestLBPlane(cn.s);
@@ -313,6 +326,10 @@ const LBPlane& ConvexBounds::getPlaneForNode(MDPNode& cn)
   } else {
     return *((ConvexBoundsData*) cn.boundsData)->bestPlane;
   }
+#endif
+  ConvexBoundsData* bdata = (ConvexBoundsData *) cn.boundsData;
+  return lowerBound->getBestLBPlaneWithCache(cn.s, bdata->bestPlane,
+					     bdata->lastSetPlaneNumBackups);
 #else
   return lowerBound->getBestLBPlane(cn.s);
 #endif
@@ -329,7 +346,7 @@ void ConvexBounds::setUBForNode(MDPNode& cn, double newUB)
 
 double ConvexBounds::getUBForNode(MDPNode& cn)
 {
-#if USE_CONVEX_CACHE
+#if 0 && USE_CONVEX_CACHE
   int n = ((ConvexBoundsData*) cn.boundsData)->lastSetUBNumBackups;
   if (numBackups > (int) std::max((double) (n + CB_CACHE_INCREMENT), n * CB_CACHE_FACTOR)) {
     double newUB = upperBound->getValue(cn.s);
@@ -506,7 +523,7 @@ bool ConvexBounds::getSupportsPolicyOutput(void) const
 void ConvexBounds::writePolicy(const std::string& outFileName)
 {
   assert(NULL != lowerBound);
-  lowerBound->prunePlanes();
+  lowerBound->prunePlanes(numBackups);
   lowerBound->writeToFile(outFileName);
 }
 
@@ -515,6 +532,9 @@ void ConvexBounds::writePolicy(const std::string& outFileName)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.13  2006/07/26 16:32:10  trey
+ * removed dependence of pruning on USE_CONVEX_SUPPORT_LIST
+ *
  * Revision 1.12  2006/07/25 19:40:09  trey
  * overhauled USE_CONVEX_CACHE
  *
