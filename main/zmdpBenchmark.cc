@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.5 $  $Author: trey $  $Date: 2006-06-15 16:10:57 $
+ $Revision: 1.6 $  $Author: trey $  $Date: 2006-07-26 20:52:57 $
 
  @file    zmdpBenchmark.cc
  @brief   No brief
@@ -52,6 +52,7 @@ void doBenchmark(const SolverParams& p, const BenchmarkParams& bp)
 {
   init_matrix_utils();
 
+  printf("reading input files\n");
   SolverObjects so;
   constructSolverObjects(so, p);
 
@@ -244,6 +245,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.5  2006/06/15 16:10:57  trey
+ * restructured so zmdpBenchmark can output policies
+ *
  * Revision 1.4  2006/04/28 17:57:41  trey
  * changed to use apache license
  *
