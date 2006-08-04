@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2006-07-10 19:34:35 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2006-08-04 22:30:41 $
 
  @file    zmdpEvaluate.cc
  @brief   Use to evaluate a POMDP policy in simulation.
@@ -40,7 +40,7 @@ using namespace zmdp;
 #define ZE_DEFAULT_POLICY_TYPE ("maxplanes")
 
 const char* policyTypeG = ZE_DEFAULT_POLICY_TYPE;
-bool useFastParserG = true;
+bool useFastParserG = false;
 const char* policyFileNameG = NULL;
 const char* sourceModelFileNameG = NULL;
 const char* simModelFileNameG = NULL;
@@ -85,7 +85,7 @@ void doit(void)
   if (plannerModelFileNameG == simModelFileNameG) {
     simPomdp = e->pomdp;
   } else {
-    simPomdp = new Pomdp(plannerModelFileNameG, useFastParserG);
+    simPomdp = new Pomdp(simModelFileNameG, useFastParserG);
   }
   PomdpSim* sim = new PomdpSim(simPomdp);
 
@@ -96,6 +96,13 @@ void doit(void)
     exit(EXIT_FAILURE);
   }
   sim->simOutFile = &simOutFile;
+
+  ofstream scoresOutFile("scores.plot");
+  if (!scoresOutFile) {
+    fprintf(stderr, "ERROR: couldn't open scores.plot for writing: %s\n",
+	    strerror(errno));
+    exit(EXIT_FAILURE);
+  }
 
   // do evaluation
   std::vector<double> rewardValues;
@@ -109,6 +116,7 @@ void doit(void)
       if (sim->terminated) break;
     }
     rewardValues.push_back(sim->rewardSoFar);
+    scoresOutFile << sim->rewardSoFar << endl;
     
     if (i%10 == 9) {
       printf(".");
@@ -122,6 +130,9 @@ void doit(void)
 			    avg, stdev);
   double conf95 = 1.96 * stdev / sqrt((double)rewardValues.size());
   printf("REWARD_AVG_STDEV %.3lf %.3lf\n", avg, conf95);
+
+  simOutFile.close();
+  scoresOutFile.close();
 }
 
 void usage(const char* cmdName) {
@@ -227,6 +238,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2006/07/10 19:34:35  trey
+ * added ability to use different models for planning and simulator evaluation
+ *
  * Revision 1.1  2006/07/10 03:35:49  trey
  * initial check-in
  *
