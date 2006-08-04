@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.7 $  $Author: trey $  $Date: 2006-07-10 19:33:08 $
+ $Revision: 1.8 $  $Author: trey $  $Date: 2006-08-04 22:34:42 $
   
  @file    gen_LifeSurvey.cc
  @brief   No brief
@@ -142,7 +142,9 @@ int main(int argc, char *argv[]) {
 
   LSModel m;
   m.init(modelFileName);
-  m.setTargetList(targetListFileName);
+  if (NULL != targetListFileName) {
+    m.setTargetList(targetListFileName);
+  }
 
   FILE* pomdpFile = fopen(pomdpFileName.c_str(), "w");
   if (NULL == pomdpFile) {
@@ -158,6 +160,9 @@ int main(int argc, char *argv[]) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.7  2006/07/10 19:33:08  trey
+ * added ability to generate a pomdp corresponding to a particular LS target layout, for evaluation purposes
+ *
  * Revision 1.6  2006/06/27 16:04:40  trey
  * refactored so outside code can access the LifeSurvey model using -lzmdpLifeSurvey
  *
