@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.15 $  $Author: trey $  $Date: 2006-07-26 20:38:10 $
+ $Revision: 1.16 $  $Author: trey $  $Date: 2006-08-04 22:31:50 $
    
  @file    MaxPlanesLowerBound.cc
  @brief   No brief
@@ -473,7 +473,7 @@ void MaxPlanesLowerBound::readFromFile(const std::string& inFileName)
 	   another plane; finish up the plane we were working on and
 	   reparse the current line in parse state 1 */
 	mask_set_to_one(plane.mask, plane.alpha);
-	planes.push_back(new LBPlane(plane));
+	addLBPlane(new LBPlane(plane));
 	parseState = 1;
 	goto parseLineAgain;
       } else if (2 == sscanf(s.c_str(), "%d, %lf", &entryIndex, &entryVal)) {
@@ -494,7 +494,7 @@ void MaxPlanesLowerBound::readFromFile(const std::string& inFileName)
   /* reached EOF, finish up the last plane */
   if (2 == parseState) {
     mask_set_to_one(plane.mask, plane.alpha);
-    planes.push_back(new LBPlane(plane));
+    addLBPlane(new LBPlane(plane));
   }
 
   inFile.close();
@@ -509,6 +509,9 @@ void MaxPlanesLowerBound::readFromFile(const std::string& inFileName)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.15  2006/07/26 20:38:10  trey
+ * fixed off-by-one error in rule for skipping alpha vectors in value function query
+ *
  * Revision 1.14  2006/07/26 20:21:53  trey
  * new implementation of USE_CONVEX_CACHE; during pruning, now skip comparison of planes if they were compared during last pruning cycle
  *
