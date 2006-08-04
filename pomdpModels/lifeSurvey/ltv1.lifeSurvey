@@ -1,7 +1,7 @@
 startX 1
 startY 2
 baseCost 1.0
-lookaheadCost 3.0
+lookaheadCost 5.0
 regionPriors 0.1 0.5 0.1 0.5 0.5
 obsDistributionLifeAbsent 42 7 9
 obsDistributionLifePresent 2 1 19
