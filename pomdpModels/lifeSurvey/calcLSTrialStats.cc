@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2006-07-10 19:33:35 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2006-08-04 22:33:38 $
    
  @file    calcLSTrialStats.cc
  @brief   No brief
@@ -78,6 +78,9 @@ void doit(const char* lifeSurveyFileName,
 	  const char* targetListFileName,
 	  const char* traceFileName)
 {
+  const double lookaheadCost = 5.0;
+  printf("LOOKAHEAD COST=%lf\n", lookaheadCost);
+
   LSModel m;
   m.init(lifeSurveyFileName);
   const LSModelFile& f = m.mfile;
@@ -122,7 +125,7 @@ void doit(const char* lifeSurveyFileName,
     double penalty = 0;
     if (LS_ACT_LOOK == a.type) {
       numLooks++;
-      cost = 3;
+      cost = lookaheadCost;
     } else {
       cost = a.useSample ? 5 : 1;
 
@@ -240,6 +243,9 @@ int main(int argc, char *argv[])
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2006/07/10 19:33:35  trey
+ * moved some functions to LifeSurvey.cc
+ *
  * Revision 1.1  2006/07/10 02:21:35  trey
  * initial check-in
  *
