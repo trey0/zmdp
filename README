@@ -1,4 +1,4 @@
-README for zmdp
+ZMDP Software for POMDP and MDP Planning
 
 This C++ source code implements several approximate value iteration
 algorithms for MDPs and POMDPs, including both algorithms I developed
@@ -312,4 +312,4 @@ zpomdp 0.1.0 (28 Oct 2005)
 * Initial release.
 
 ==========================================================
-$Id: README,v 1.18 2006-07-26 21:10:10 trey Exp $
+$Id: README,v 1.19 2006-08-04 22:29:45 trey Exp $
