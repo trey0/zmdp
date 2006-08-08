@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.16 $  $Author: trey $  $Date: 2006-08-04 22:31:50 $
+ $Revision: 1.17 $  $Author: trey $  $Date: 2006-08-08 21:17:20 $
    
  @file    MaxPlanesLowerBound.cc
  @brief   No brief
@@ -275,12 +275,25 @@ void MaxPlanesLowerBound::prunePlanes(int numBackups)
 {
 #if USE_DEBUG_PRINT
   int oldNum = planes.size();
+#if USE_REF_COUNT_PRUNE
+  int numRefCountDeletions = 0;
+#endif
 #endif
   typeof(planes.begin()) candidateP, memberP;
 
   candidateP = planes.begin();
   while (candidateP != planes.end()) {
     LBPlane* candidate = *candidateP;
+#if USE_REF_COUNT_PRUNE
+    if (candidate->backPointers.empty()) {
+      deleteAndForward(candidate, NULL);
+      candidateP = eraseElement(planes, candidateP);
+#if USE_DEBUG_PRINT
+      numRefCountDeletions++;
+#endif
+      continue;
+    }
+#endif
     memberP = planes.begin();
     while (memberP != candidateP) {
       LBPlane* member = *memberP;
@@ -310,6 +323,10 @@ void MaxPlanesLowerBound::prunePlanes(int numBackups)
 
 #if USE_DEBUG_PRINT
   cout << "... pruned # planes from " << oldNum << " down to " << planes.size() << endl;
+#if USE_REF_COUNT_PRUNE
+  printf("[lower bound] refCount was used for %d of %d deletions\n",
+	 numRefCountDeletions, (oldNum - planes.size()));
+#endif
 #endif
   lastPruneNumPlanes = planes.size();
   lastPruneNumBackups = numBackups;
@@ -509,6 +526,9 @@ void MaxPlanesLowerBound::readFromFile(const std::string& inFileName)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.16  2006/08/04 22:31:50  trey
+ * MaxPlanes policy reading works again; it was broken when support lists were introduced
+ *
  * Revision 1.15  2006/07/26 20:38:10  trey
  * fixed off-by-one error in rule for skipping alpha vectors in value function query
  *

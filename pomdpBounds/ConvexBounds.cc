@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.14 $  $Author: trey $  $Date: 2006-07-26 20:20:41 $
+ $Revision: 1.15 $  $Author: trey $  $Date: 2006-08-08 21:17:20 $
    
  @file    ConvexBounds.cc
  @brief   No brief
@@ -277,14 +277,7 @@ double ConvexBounds::getNewUBValue(MDPNode& cn, int* maxUBActionP)
 void ConvexBounds::updateUpperBound(MDPNode& cn, int* maxUBActionP)
 {
   double newUBVal = getNewUBValue(cn, maxUBActionP);
-  setUBForNode(cn, newUBVal);
-
-  BVPair* newBV = new BVPair();
-  newBV->b = cn.s;
-  newBV->v = newUBVal;
-  newBV->numBackupsAtCreation = numBackups;
-  upperBound->addPoint(newBV);
-  upperBound->maybePrune(numBackups);
+  setUBForNode(cn, newUBVal, true);
 }
 
 void ConvexBounds::setPlaneForNode(MDPNode& cn, LBPlane* newPlane)
@@ -303,8 +296,17 @@ void ConvexBounds::setPlaneForNode(MDPNode& cn, LBPlane* newPlane)
 #endif
     return;
   }
-  cn.lbVal = newLB;
   ConvexBoundsData* bdata = (ConvexBoundsData*) cn.boundsData;
+  LBPlane* oldPlane = bdata->bestPlane;
+  if (NULL != oldPlane) {
+    // remove &bdata->bestPlane from oldPlane->backPointers
+    std::list<LBPlane**>& backPointers = oldPlane->backPointers;
+    typeof(backPointers.begin()) eraseList =
+      std::remove(backPointers.begin(), backPointers.end(), &bdata->bestPlane);
+    backPointers.erase(eraseList);
+  }
+
+  cn.lbVal = newLB;
   bdata->bestPlane = newPlane;
   bdata->lastSetPlaneNumBackups = numBackups;
   newPlane->backPointers.push_back(&bdata->bestPlane);
@@ -335,13 +337,23 @@ const LBPlane& ConvexBounds::getPlaneForNode(MDPNode& cn)
 #endif
 }
 
-void ConvexBounds::setUBForNode(MDPNode& cn, double newUB)
+void ConvexBounds::setUBForNode(MDPNode& cn, double newUB, bool addBV)
 {
+  BVPair* newBV = new BVPair();
+  newBV->b = cn.s;
+  newBV->v = newUB;
+  newBV->numBackupsAtCreation = numBackups;
+
   cn.ubVal = newUB;
 #if USE_CONVEX_CACHE
   ConvexBoundsData* bdata = (ConvexBoundsData*) cn.boundsData;
   bdata->lastSetUBNumBackups = numBackups;
 #endif
+
+  if (addBV) {
+    upperBound->addPoint(newBV);
+    upperBound->maybePrune(numBackups);
+  }
 }
 
 double ConvexBounds::getUBForNode(MDPNode& cn)
@@ -350,7 +362,7 @@ double ConvexBounds::getUBForNode(MDPNode& cn)
   int n = ((ConvexBoundsData*) cn.boundsData)->lastSetUBNumBackups;
   if (numBackups > (int) std::max((double) (n + CB_CACHE_INCREMENT), n * CB_CACHE_FACTOR)) {
     double newUB = upperBound->getValue(cn.s);
-    setUBForNode(cn, newUB);
+    setUBForNode(cn, newUB, false);
     return newUB;
   } else {
     return cn.ubVal;
@@ -403,12 +415,14 @@ MDPNode* ConvexBounds::getNode(const state_vector& s)
     cn.s = s;
     cn.isTerminal = pomdp->getIsTerminalState(s);
 #if USE_CONVEX_CACHE
-    cn.boundsData = new ConvexBoundsData();
+    ConvexBoundsData* bdata = new ConvexBoundsData();
+    bdata->bestPlane = NULL;
+    cn.boundsData = bdata;
 #endif
     if (cn.isTerminal) {
-      setUBForNode(cn, 0);
+      setUBForNode(cn, 0, true);
     } else {
-      setUBForNode(cn, upperBound->getValue(s));
+      setUBForNode(cn, upperBound->getValue(s), false);
     }
     if (keepLowerBound) {
       // note: this should also do the right thing if cn is terminal;
@@ -532,6 +546,9 @@ void ConvexBounds::writePolicy(const std::string& outFileName)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.14  2006/07/26 20:20:41  trey
+ * new implementation of USE_CONVEX_CACHE
+ *
  * Revision 1.13  2006/07/26 16:32:10  trey
  * removed dependence of pruning on USE_CONVEX_SUPPORT_LIST
  *

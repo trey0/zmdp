@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.9 $  $Author: trey $  $Date: 2006-07-26 20:21:53 $
+ $Revision: 1.10 $  $Author: trey $  $Date: 2006-08-08 21:17:20 $
    
  @file    MaxPlanesLowerBound.h
  @brief   No brief
@@ -57,7 +57,7 @@ struct LBPlane {
 #endif
   int numBackupsAtCreation;
 #if USE_CONVEX_CACHE
-  std::vector<LBPlane**> backPointers;
+  std::list<LBPlane**> backPointers;
 #endif
 
   LBPlane(void);
@@ -112,6 +112,9 @@ public:
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.9  2006/07/26 20:21:53  trey
+ * new implementation of USE_CONVEX_CACHE; during pruning, now skip comparison of planes if they were compared during last pruning cycle
+ *
  * Revision 1.8  2006/07/25 19:40:49  trey
  * added USE_CONVEX_CACHE support
  *
