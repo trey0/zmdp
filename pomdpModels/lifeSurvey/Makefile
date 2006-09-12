@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.6 2006-07-10 02:22:41 trey Exp $
+# $Id: Makefile,v 1.7 2006-09-12 19:46:52 trey Exp $
 #
 # Copyright (c) 2002-2005, Trey Smith. All rights reserved.
 #
@@ -62,6 +62,12 @@ BUILDBIN_INDEP_LIBS :=
 BUILDBIN_DEP_LIBS := -lzmdpLifeSurvey
 include $(BUILD_DIR)/buildbin.mak
 
+BUILDBIN_TARGET := dumpMap
+BUILDBIN_SRCS := dumpMap.cc
+BUILDBIN_INDEP_LIBS := 
+BUILDBIN_DEP_LIBS := -lzmdpLifeSurvey
+include $(BUILD_DIR)/buildbin.mak
+
 ifneq (,$(TEST))
 
 # add targets here to be built with 'make TEST=1 install'
@@ -94,6 +100,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.6  2006/07/10 02:22:41  trey
+# added calcLSTrialStats
+#
 # Revision 1.5  2006/06/29 21:39:04  trey
 # added LSPathAndReact and corresponding test
 #
