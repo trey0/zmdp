@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2006-08-04 22:30:41 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2006-09-19 01:49:02 $
 
  @file    zmdpEvaluate.cc
  @brief   Use to evaluate a POMDP policy in simulation.
@@ -37,6 +37,7 @@ using namespace MatrixUtils;
 using namespace zmdp;
 
 #define ZE_DEFAULT_ITERATIONS (100)
+#define ZE_DEFAULT_MAX_STEPS (251)
 #define ZE_DEFAULT_POLICY_TYPE ("maxplanes")
 
 const char* policyTypeG = ZE_DEFAULT_POLICY_TYPE;
@@ -46,6 +47,7 @@ const char* sourceModelFileNameG = NULL;
 const char* simModelFileNameG = NULL;
 const char* plannerModelFileNameG = NULL;
 int iterationsG = ZE_DEFAULT_ITERATIONS;
+int maxStepsG = ZE_DEFAULT_MAX_STEPS;
 
 void doit(void)
 {
@@ -109,7 +111,7 @@ void doit(void)
   for (int i=0; i < iterationsG; i++) {
     sim->restart();
     e->setToInitialBelief();
-    while (1) {
+    for (int j=0; (j < maxStepsG) || (0 == maxStepsG); j++) {
       int a = e->chooseAction();
       sim->performAction(a);
       e->advanceToNextBelief(a, sim->lastObservation);
@@ -144,9 +146,12 @@ void usage(const char* cmdName) {
     "                           [default: " << ZE_DEFAULT_POLICY_TYPE << "]\n"
     "  -f or --fast           Use fast (but very picky) alternate POMDP parser\n"
     "  -p or --policy         Specify policy file (required with -t maxplanes)\n"
-    "  -m or --model          Specify planner model (if different from evalation model)\n"
+    "  -m or --model          Specify planner model (if different from evaluation model)\n"
     "  -s or --source-model   Specify source model file (required with -t lspath)\n"
-    "  -i or --iterations     Set number of simulation iterations [default: " << ZE_DEFAULT_ITERATIONS << "]\n"
+    "  -i or --iterations     Set number of simulation runs [default: " << ZE_DEFAULT_ITERATIONS << "]\n"
+    "  --max-steps            Set maximum number of steps in each simulator run; a\n"
+    "                            value of 0 means only terminate according to the model\n"
+    "                            [default: " << ZE_DEFAULT_MAX_STEPS << "]\n"
     "\n"
     "Examples:\n"
     "  " << cmdName << " -p my.policy -f ltv1.pomdp\n"
@@ -168,6 +173,7 @@ int main(int argc, char **argv) {
     {"model",         1,NULL,'m'},
     {"source-model",  1,NULL,'s'},
     {"iterations",    1,NULL,'i'},
+    {"max-steps",     1,NULL,'M'},
     {NULL,0,0,0}
   };
 
@@ -207,7 +213,9 @@ int main(int argc, char **argv) {
     case 'i': // iterations
       iterationsG = atoi(optarg);
       break;
-
+    case 'M': // max-steps
+      maxStepsG = atoi(optarg);
+      break;
     case '?': // unknown option
     case ':': // option with missing parameter
       // getopt() prints an informative error message
@@ -238,6 +246,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2006/08/04 22:30:41  trey
+ * fixed a serious error that caused incorrect evaluation when planning and evaluation models are different
+ *
  * Revision 1.2  2006/07/10 19:34:35  trey
  * added ability to use different models for planning and simulator evaluation
  *
