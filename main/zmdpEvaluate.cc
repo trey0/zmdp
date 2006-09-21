@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.4 $  $Author: trey $  $Date: 2006-09-19 01:49:02 $
+ $Revision: 1.5 $  $Author: trey $  $Date: 2006-09-21 17:26:06 $
 
  @file    zmdpEvaluate.cc
  @brief   Use to evaluate a POMDP policy in simulation.
@@ -131,7 +131,7 @@ void doit(void)
   calc_avg_stdev_collection(rewardValues.begin(), rewardValues.end(),
 			    avg, stdev);
   double conf95 = 1.96 * stdev / sqrt((double)rewardValues.size());
-  printf("REWARD_AVG_STDEV %.3lf %.3lf\n", avg, conf95);
+  printf("REWARD_MEAN_MEANCONF95 %.3lf %.3lf\n", avg, conf95);
 
   simOutFile.close();
   scoresOutFile.close();
@@ -246,6 +246,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2006/09/19 01:49:02  trey
+ * added --max-steps option
+ *
  * Revision 1.3  2006/08/04 22:30:41  trey
  * fixed a serious error that caused incorrect evaluation when planning and evaluation models are different
  *
