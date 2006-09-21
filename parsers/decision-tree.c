@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.5 $  $Author: trey $  $Date: 2006-09-21 15:30:40 $
+ $Revision: 1.6 $  $Author: trey $  $Date: 2006-09-21 16:33:36 $
    
  @file    decision-tree.c
  @brief   No brief
@@ -33,7 +33,6 @@
 
 #define DT_TABLE_DEPTH (4)
 #define WILDCARD_SPEC (-1) /* redundant definition with imm-reward.h */
-#define DT_FREE_AND_NULL(ptr) free(ptr); (ptr) = NULL;
 
 enum {
   DT_VAL,
@@ -118,6 +117,7 @@ static void dtInitTable(DTTable* t, int numEntries)
   t->numEntries = numEntries;
   t->entries = (DTNode**) malloc(numEntries * sizeof(DTNode*));
   memset(t->entries, 0, numEntries * sizeof(DTNode*));
+  t->defaultEntry = NULL; /* will be allocated later */
 }
 
 static void dtDestroyNode(DTNode* n)
@@ -135,7 +135,7 @@ static void dtDestroyNode(DTNode* n)
     assert(0 /* never reach this point */);
   }
 
-  DT_FREE_AND_NULL(n);
+  free(n);
 }
 
 static void dtDestroyTable(DTTable* t)
@@ -146,7 +146,8 @@ static void dtDestroyTable(DTTable* t)
     dtDestroyNode(t->entries[i]);
   }
   dtDestroyNode(t->defaultEntry);
-  DT_FREE_AND_NULL(t->entries);
+  free(t->entries);
+  t->entries = NULL;
 }
 
 static DTNode* dtDeepCopyNode(const DTNode* in)
@@ -289,6 +290,12 @@ static void dtSpaces(int indent)
 
 static void dtDebugPrintNode(DTNode* n, int indent)
 {
+  if (NULL == n) {
+    dtSpaces(indent);
+    printf("(NULL)\n");
+    return;
+  }
+
   switch (n->type) {
   case DT_VAL:
     dtSpaces(indent);
@@ -365,7 +372,9 @@ double dtGet(int action, int cur_state, int next_state, int obs)
 void dtDeallocate(void)
 {
   dtDestroyNode(gTree);
-  DT_FREE_AND_NULL(gTableSizes);
+  gTree = NULL;
+  free(gTableSizes);
+  gTableSizes = NULL;
 }
 
 void dtDebugPrint(const char* header)
@@ -377,6 +386,9 @@ void dtDebugPrint(const char* header)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.5  2006/09/21 15:30:40  trey
+ * fixed problem with using decision-tree.c to read a second POMDP model
+ *
  * Revision 1.4  2006/06/01 15:59:55  trey
  * no longer publish unnecessary typedefs in header
  *
