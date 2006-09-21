@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.4 $  $Author: trey $  $Date: 2006-06-01 15:59:55 $
+ $Revision: 1.5 $  $Author: trey $  $Date: 2006-09-21 15:30:40 $
    
  @file    decision-tree.c
  @brief   No brief
@@ -33,6 +33,7 @@
 
 #define DT_TABLE_DEPTH (4)
 #define WILDCARD_SPEC (-1) /* redundant definition with imm-reward.h */
+#define DT_FREE_AND_NULL(ptr) free(ptr); (ptr) = NULL;
 
 enum {
   DT_VAL,
@@ -134,7 +135,7 @@ static void dtDestroyNode(DTNode* n)
     assert(0 /* never reach this point */);
   }
 
-  free(n);
+  DT_FREE_AND_NULL(n);
 }
 
 static void dtDestroyTable(DTTable* t)
@@ -145,7 +146,7 @@ static void dtDestroyTable(DTTable* t)
     dtDestroyNode(t->entries[i]);
   }
   dtDestroyNode(t->defaultEntry);
-  free(t->entries);
+  DT_FREE_AND_NULL(t->entries);
 }
 
 static DTNode* dtDeepCopyNode(const DTNode* in)
@@ -364,7 +365,7 @@ double dtGet(int action, int cur_state, int next_state, int obs)
 void dtDeallocate(void)
 {
   dtDestroyNode(gTree);
-  free(gTableSizes);
+  DT_FREE_AND_NULL(gTableSizes);
 }
 
 void dtDebugPrint(const char* header)
@@ -376,6 +377,9 @@ void dtDebugPrint(const char* header)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2006/06/01 15:59:55  trey
+ * no longer publish unnecessary typedefs in header
+ *
  * Revision 1.3  2006/05/29 05:49:03  trey
  * fixed a serious bug when a wildcard is followed by a number
  *
