@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.5 $  $Author: trey $  $Date: 2006-07-10 02:22:01 $
+ $Revision: 1.6 $  $Author: trey $  $Date: 2006-09-21 15:27:14 $
    
  @file    genTargetLocationsl.cc
  @brief   No brief
@@ -133,7 +133,7 @@ int main(int argc, char *argv[]) {
 
   // write the resulting target map back out to stdout
   printf("noise=%lf seed=%d numTargets=%d\n", noiseFactor, seed,
-	 targets.size());
+	 (int)targets.size());
   m.grid.writeToFile(stdout, /* showCoords = */ true, /* binaryMap = */ true);
   printf("--");
   for (int i=0; i < (int)targets.size(); i++) {
@@ -149,6 +149,9 @@ int main(int argc, char *argv[]) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.5  2006/07/10 02:22:01  trey
+ * now use new showCoords arg to LSGrid::writeToFile
+ *
  * Revision 1.4  2006/07/06 15:22:51  trey
  * added extra information in target file output, makes placing targets easier
  *

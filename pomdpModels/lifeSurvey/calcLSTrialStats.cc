@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2006-08-04 22:33:38 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2006-09-21 15:27:14 $
    
  @file    calcLSTrialStats.cc
  @brief   No brief
@@ -180,7 +180,7 @@ void doit(const char* lifeSurveyFileName,
   debugGrid.writeToFile(stdout, /* showCoords = */ true);
   printf("\n");
 
-  printf("ACTIONS_LOOK_TOTAL %d %d\n", numLooks, trace.size());
+  printf("ACTIONS_LOOK_TOTAL %d %d\n", numLooks, (int)trace.size());
   printf("SAMPLES_GOOD_TOTAL %d %d\n", numGoodSamples, numSamples);
   printf("ILLEGAL_ACTIONS %d\n", numIllegalActions);
   printf("REWARD %.3lf\n", netSum);
@@ -243,6 +243,9 @@ int main(int argc, char *argv[])
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2006/08/04 22:33:38  trey
+ * changed lookaheadCost to match modified LifeSurvey models
+ *
  * Revision 1.2  2006/07/10 19:33:35  trey
  * moved some functions to LifeSurvey.cc
  *
