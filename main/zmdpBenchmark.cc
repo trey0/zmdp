@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.6 $  $Author: trey $  $Date: 2006-07-26 20:52:57 $
+ $Revision: 1.7 $  $Author: trey $  $Date: 2006-10-03 03:17:26 $
 
  @file    zmdpBenchmark.cc
  @brief   No brief
@@ -106,6 +106,9 @@ void usage(const char* cmdName) {
     "                           action selection, even if it is not used during search.\n"
     "  --upper-bound          Forces zmdpBenchmark to use the upper bound for action selection\n"
     "                           (normally the lower bound is used if it is available).\n"
+    "  --max-horizon          Informs zmdpBenchmark that the model will enter a zero-reward\n"
+    "                           absorbing state after the specified number of steps.\n"
+    "                           (only useful with -t pomdp; required if discount = 1).\n"
     "\n"
     "Performance evaluation and output options:\n"
     "  -i or --iterations     Set number of simulation iterations at each policy\n"
@@ -141,6 +144,7 @@ int main(int argc, char **argv) {
     {"weak-heuristic",0,NULL,'W'},
     {"lower-bound",   0,NULL,'L'},
     {"upper-bound",   0,NULL,'U'},
+    {"max-horizon",   1,NULL,'H'},
     {"iterations",    1,NULL,'i'},
     {"min-eval",      1,NULL,'X'},
     {"max-eval",      1,NULL,'Y'},
@@ -194,6 +198,9 @@ int main(int argc, char **argv) {
     case 'U': // upper-bound
       p.forceUpperBoundActionSelection = true;
       break;
+    case 'H': // max-horizon
+      p.maxHorizon = atoi(optarg);
+      break;
     case 'i': // iterations
       bp.numIterations = atoi(optarg);
       break;
@@ -245,6 +252,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.6  2006/07/26 20:52:57  trey
+ * added debug output
+ *
  * Revision 1.5  2006/06/15 16:10:57  trey
  * restructured so zmdpBenchmark can output policies
  *

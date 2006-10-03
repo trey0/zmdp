@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.7 $  $Author: trey $  $Date: 2006-06-15 16:08:37 $
+ $Revision: 1.8 $  $Author: trey $  $Date: 2006-10-03 03:17:26 $
 
  @file    zmdpSolve.cc
  @brief   No brief
@@ -166,6 +166,9 @@ void usage(const char* cmdName) {
     "                           action selection, even if it is not used during search.\n"
     "  --upper-bound          Forces zmdpSolve to use the upper bound for action selection\n"
     "                           (normally the lower bound is used if it is available).\n"
+    "  --max-horizon          Informs zmdpSolve that the model will enter a zero-reward\n"
+    "                           absorbing state after the specified number of steps.\n"
+    "                           (only useful with -t pomdp; required if discount = 1).\n"
     "\n"
     "Policy output options:\n"
     "  -o or --output         Specifies name of policy output file [default: 'out.policy']\n"
@@ -197,6 +200,7 @@ int main(int argc, char **argv) {
     {"weak-heuristic",0,NULL,'W'},
     {"lower-bound",   0,NULL,'L'},
     {"upper-bound",   0,NULL,'U'},
+    {"max-horizon",   1,NULL,'H'},
     {"output",        1,NULL,'o'},
     {"timeout",       1,NULL,'T'},
     {NULL,0,0,0}
@@ -251,6 +255,9 @@ int main(int argc, char **argv) {
     case 'U': // upper-bound
       p.forceUpperBoundActionSelection = true;
       break;
+    case 'H': // max-horizon
+      p.maxHorizon = atoi(optarg);
+      break;
     case 'o': // output
       p.outPolicyFileName = optarg;
       break;
@@ -290,6 +297,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.7  2006/06/15 16:08:37  trey
+ * restructured so zmdpBenchmark can output policies
+ *
  * Revision 1.6  2006/06/01 16:49:54  trey
  * moved installation of the SIGINT handler to after initialization, so an interrupt during initialization causes the solver to exit immediately
  *
