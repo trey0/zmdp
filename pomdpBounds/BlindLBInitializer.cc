@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.5 $  $Author: trey $  $Date: 2006-07-14 15:08:34 $
+ $Revision: 1.6 $  $Author: trey $  $Date: 2006-10-03 03:18:36 $
    
  @file    BlindLBInitializer.cc
  @brief   No brief
@@ -38,6 +38,7 @@ using namespace sla;
 using namespace MatrixUtils;
 
 #define PRUNE_EPS (1e-10)
+#define POMDP_LONG_TERM_UNBOUNDED (99e+20)
 
 namespace zmdp {
 
@@ -71,8 +72,17 @@ void BlindLBInitializer::initBlindWorstCase(alpha_vector& weakAlpha)
     }
   }
   dvector worstCaseDVector(pomdp->getNumStateDimensions());
-  assert(pomdp->getDiscount() < 1);
-  double worstCaseLongTerm = worstCaseReward / (1 - pomdp->getDiscount());
+
+  double longTermFactor = POMDP_LONG_TERM_UNBOUNDED;
+  if (pomdp->getDiscount() < 1.0) {
+    longTermFactor = std::min(longTermFactor, 1.0 / (1.0 - pomdp->getDiscount()));
+  }
+  if (pomdp->maxHorizon != -1) {
+    longTermFactor = std::min(longTermFactor, (double) pomdp->maxHorizon);
+  }
+  assert(longTermFactor != POMDP_LONG_TERM_UNBOUNDED);
+  
+  double worstCaseLongTerm = worstCaseReward * longTermFactor;
   FOR (i, pomdp->numStates) {
     worstCaseDVector(i) = worstCaseLongTerm;
   }
@@ -143,6 +153,9 @@ void BlindLBInitializer::initBlind(double targetPrecision)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.5  2006/07/14 15:08:34  trey
+ * removed belief argument to addLBPlane()
+ *
  * Revision 1.4  2006/06/03 10:58:45  trey
  * added exact initialization rule for terminal states
  *
