@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.4 $  $Author: trey $  $Date: 2006-06-15 16:10:01 $
+ $Revision: 1.5 $  $Author: trey $  $Date: 2006-10-03 03:17:08 $
 
  @file    solverUtils.cc
  @brief   No brief
@@ -105,6 +105,7 @@ SolverParams::SolverParams(void)
   forceLowerBound = false;
   forceUpperBoundActionSelection = false;
   outPolicyFileName = NULL;
+  maxHorizon = -1;
 }
 
 void SolverParams::setStrategy(const char* strategyName)
@@ -160,7 +161,7 @@ void constructSolverObjects(SolverObjects& obj, const SolverParams& p)
     obj.sim = new MDPSim(obj.problem);
     break;
   case T_POMDP:
-    obj.problem = new Pomdp(p.probName, p.useFastParser);
+    obj.problem = new Pomdp(p.probName, p.useFastParser, p.maxHorizon);
     obj.sim = new PomdpSim((Pomdp*) obj.problem);
     break;
   default:
@@ -218,6 +219,9 @@ void constructSolverObjects(SolverObjects& obj, const SolverParams& p)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2006/06/15 16:10:01  trey
+ * restructured so zmdpBenchmark can output policies
+ *
  * Revision 1.3  2006/04/28 17:57:41  trey
  * changed to use apache license
  *

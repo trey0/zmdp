@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.6 $  $Author: trey $  $Date: 2006-04-28 17:57:41 $
+ $Revision: 1.7 $  $Author: trey $  $Date: 2006-10-03 03:18:59 $
    
  @file    Pomdp.h
  @brief   No brief
@@ -47,8 +47,22 @@ public:
   std::vector<cmatrix> T, Ttr, O;
   std::vector<bool> isPomdpTerminalState;
 
+  // maxHorizon: if set to a value other than -1, this specifies the
+  // maximum planning horizon we will use with this model.  ideally, the
+  // model will be defined such that it is guaranteed to enter a
+  // zero-reward absorbing state by the time the planning horizon is
+  // reached.  in that case, the maxHorizon value is just a hint used
+  // when calculating initial bounds: we can multiply by maxHorizon if
+  // that gives a tighter bound than dividing by 1-gamma.  you can also
+  // specify a maxHorizon if the model is not guaranteed to terminate,
+  // but in that case the initial bounds are not necessarily uniformly
+  // improvable, so the reported range of policy quality may not be
+  // accurate.  (in practice, it will probably work ok anyway.)
+  int maxHorizon;
+
   Pomdp(void) {}
-  Pomdp(const std::string& fileName, bool useFastParser = false);
+  Pomdp(const std::string& fileName, bool useFastParser = false,
+	int _maxHorizon = -1);
 
   void readFromFile(const std::string& fileName,
 		    bool useFastParser = false);
@@ -102,6 +116,9 @@ protected:
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.6  2006/04/28 17:57:41  trey
+ * changed to use apache license
+ *
  * Revision 1.5  2006/02/17 18:36:35  trey
  * fixed getIsTerminalState() function so RTDP can be used
  *

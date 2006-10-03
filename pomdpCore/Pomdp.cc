@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.14 $  $Author: trey $  $Date: 2006-07-25 19:42:20 $
+ $Revision: 1.15 $  $Author: trey $  $Date: 2006-10-03 03:18:59 $
   
  @file    Pomdp.cc
  @brief   No brief
@@ -84,9 +84,10 @@ static void trimTrailingWhiteSpace(char *s)
  * POMDP FUNCTIONS
  ***************************************************************************/
 
-Pomdp::Pomdp(const std::string& fileName, bool useFastParser)
+Pomdp::Pomdp(const std::string& fileName, bool useFastParser, int _maxHorizon)
 {
   readFromFile(fileName, useFastParser);
+  maxHorizon = _maxHorizon;
 }
 
 void Pomdp::readFromFile(const std::string& fileName,
@@ -432,6 +433,9 @@ void Pomdp::debugDensity(void) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.14  2006/07/25 19:42:20  trey
+ * deleted some old unused code; modified density calculation to avoid int overflow
+ *
  * Revision 1.13  2006/06/05 20:10:46  trey
  * filled in reasonable defaults for pomdp bounds
  *

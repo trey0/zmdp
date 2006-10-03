@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.5 $  $Author: trey $  $Date: 2006-06-15 16:10:01 $
+ $Revision: 1.6 $  $Author: trey $  $Date: 2006-10-03 03:17:08 $
    
  @file    solverUtils.h
  @brief   No brief
@@ -82,6 +82,7 @@ struct SolverParams {
   bool forceLowerBound;
   bool forceUpperBoundActionSelection;
   const char* outPolicyFileName;
+  int maxHorizon;
 
   SolverParams(void);
   void setStrategy(const char* strategyName);
@@ -106,6 +107,9 @@ void constructSolverObjects(SolverObjects& obj, const SolverParams& p);
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.5  2006/06/15 16:10:01  trey
+ * restructured so zmdpBenchmark can output policies
+ *
  * Revision 1.4  2006/04/28 17:57:41  trey
  * changed to use apache license
  *
