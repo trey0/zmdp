@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.26 2006-04-28 21:11:15 trey Exp $
+# $Id: Makefile,v 1.27 2006-10-15 23:44:35 trey Exp $
 #
 # Copyright (c) 2002-2005, Trey Smith. All rights reserved.
 #
@@ -34,6 +34,7 @@ CFLAGS += -I$(CHECKOUT_DIR)/external/boost
 INSTALLHEADERS_HEADERS := \
 	zmdpCommonDefs.h \
 	zmdpCommonTime.h \
+	zmdpConfig.h \
 	sla.h \
 	sla_mask.h \
 	zmdpCommonTypes.h \
@@ -42,14 +43,16 @@ INSTALLHEADERS_HEADERS := \
 	MDP.h \
 	AbstractSim.h \
 	MDPSim.h \
-	Solver.h
+	Solver.h \
+	embedFiles.h
 include $(BUILD_DIR)/installheaders.mak
 
 BUILDLIB_TARGET := libzmdpCommon.a
 BUILDLIB_SRCS := \
 	zmdpCommonTypes.cc \
-	MDPSim.cc \
-	zmdpCommonTime.cc
+	zmdpCommonTime.cc \
+	zmdpConfig.cc \
+	MDPSim.cc
 include $(BUILD_DIR)/buildlib.mak
 
 ifneq (,$(TEST))
@@ -69,6 +72,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.26  2006/04/28 21:11:15  trey
+# removed PQueue
+#
 # Revision 1.25  2006/04/28 20:33:11  trey
 # moved common/Interleave -> main/TestDriver
 #
