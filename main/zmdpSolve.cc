@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.8 $  $Author: trey $  $Date: 2006-10-03 03:17:26 $
+ $Revision: 1.9 $  $Author: trey $  $Date: 2006-10-15 23:46:02 $
 
  @file    zmdpSolve.cc
  @brief   No brief
@@ -30,6 +30,7 @@
 
 #include "zmdpCommonTime.h"
 #include "solverUtils.h"
+#include "zmdpMainConfig.h"
 
 using namespace std;
 using namespace MatrixUtils;
@@ -81,14 +82,14 @@ void doSolve(const SolverParams& p, const OutputParams& op)
   if (!so.bounds->getSupportsPolicyOutput()) {
     cerr << "ERROR: with selected options, policy output is not supported:" << endl;
     cerr << "  in order to enable policy output, problem must be a POMDP; if" << endl;
-    cout << "  it is, try adding the '-v convex' and '--lower-bound' options" << endl;
+    cout << "  it is, try using '-v convex' and '--forceMaintainLowerBound 1'" << endl;
     exit(EXIT_FAILURE);
   }
 
   // initialize the solver
   printf("%05d calculating initial heuristics\n",
 	 (int) run.elapsedTime());
-  so.solver->planInit(so.sim->getModel(), p.targetPrecision);
+  so.solver->planInit(so.sim->getModel(), p.terminateRegretBound);
   printf("%05d finished initialization, beginning to improve policy\n",
 	 (int) run.elapsedTime());
   
@@ -102,7 +103,7 @@ void doSolve(const SolverParams& p, const OutputParams& op)
     // make a call to the solver
     reachedTargetPrecision =
       so.solver->planFixedTime(so.sim->getModel()->getInitialState(),
-			       /* maxTime = */ -1, p.targetPrecision);
+			       /* maxTime = */ -1, p.terminateRegretBound);
     numSolverCalls++;
 
     // check timeout
@@ -123,8 +124,8 @@ void doSolve(const SolverParams& p, const OutputParams& op)
 
   // say why the run ended
   if (reachedTargetPrecision) {
-    printf("%05d terminating run; reached target precision of %g\n",
-	   (int) run.elapsedTime(), p.targetPrecision);
+    printf("%05d terminating run; reached target regret bound of %g\n",
+	   (int) run.elapsedTime(), p.terminateRegretBound);
   } else if (reachedTimeout) {
     printf("%05d terminating run; passed specified timeout of %g seconds\n",
 	   (int) run.elapsedTime(), op.timeoutSeconds);
@@ -134,8 +135,8 @@ void doSolve(const SolverParams& p, const OutputParams& op)
   }
 
   // write out a policy
-  printf("%05d writing policy to '%s'\n", (int) run.elapsedTime(), p.outPolicyFileName);
-  so.bounds->writePolicy(p.outPolicyFileName);
+  printf("%05d writing policy to '%s'\n", (int) run.elapsedTime(), p.outputPolicyFile);
+  so.bounds->writePolicy(p.outputPolicyFile);
 
   printf("%05d done\n", (int) run.elapsedTime());
 }
@@ -145,42 +146,38 @@ void usage(const char* cmdName) {
     "usage: " << cmdName << " OPTIONS <model>\n"
     "  -h or --help           Print this help\n"
     "  --version              Print version information (CFLAGS used at compilation)\n"
+    "  -c or --config <file>  Specify a config file to read options from\n"
+    "  --genConfig <file>     Generate an example config file and exit\n"
     "\n"
-    "Solver options:\n"
-    "  -s or --search         Specifies search strategy. Valid choices:\n"
-    "                           rtdp, lrtdp, hdp, hsvi, frtdp [default: frtdp]\n"
-    "  -t or --type           Specifies problem type. Valid choices:\n"
-    "                           racetrack, pomdp [default: infer from model filename]\n"
-    "  -v or --value          Specifies value function representation. Valid choices\n"
-    "                         depend on problem type. With -t pomdp, choices are:\n"
-    "                           point, convex [default: convex]\n"
-    "                         For other problem types, choices are:\n"
-    "                           point [default: point]\n"
-    "  -f or --fast           Use fast (but very picky) alternate POMDP parser\n"
-    "  -p or --precision      Set target precision in solution quality; run ends when\n"
-    "                           target is reached [default: 1e-3]\n"
-    "  --weak-heuristic       Avoid spending time generating a good upper bound heuristic\n"
-    "                           (only valid for some problems, interpretation depends on\n"
-    "                            the problem; e.g. sets h_U = 0 for racetrack)\n"
-    "  --lower-bound          Forces zmdpSolve to maintain a lower bound and use it for\n"
-    "                           action selection, even if it is not used during search.\n"
-    "  --upper-bound          Forces zmdpSolve to use the upper bound for action selection\n"
-    "                           (normally the lower bound is used if it is available).\n"
-    "  --max-horizon          Informs zmdpSolve that the model will enter a zero-reward\n"
-    "                           absorbing state after the specified number of steps.\n"
-    "                           (only useful with -t pomdp; required if discount = 1).\n"
+    "  zmdpSolve is the simplified front-end to the ZMDP library.  Give it a model,\n"
+    "  it runs for a while and writes out a policy.  You can then use zmdpEvaluate to\n"
+    "  read in and evaluate the policy or execute the policy with your own executive.\n"
+    "  If you want to monitor performance as the solution algorithm is running, use\n"
+    "  zmdpBenchmark instead of zmdpSolve.\n"
     "\n"
-    "Policy output options:\n"
-    "  -o or --output         Specifies name of policy output file [default: 'out.policy']\n"
-    "  --timeout              Specifies a timeout in seconds.  If running time exceeds\n"
-    "                           the specified value, zmdpSolve writes out a policy\n"
-    "                           and terminates [default: no maximum]\n"
+    "  ZMDP gets configuration information from three places: (1) Default values\n"
+    "  are embedded in the binary at compile time.  (2) If you specify a config file\n"
+    "  using the --config option, any fields set in that file override the defaults.\n"
+    "  (3) You can override individual fields in the config file from the command line.\n"
+    "  For instance, if the config file specifies 'searchStrategy frtdp' you can override\n"
+    "  with '--searchStrategy hsvi' at the command line.\n"
+    "\n"
+    "  To generate an example config file (including default values and comments describing\n"
+    "  all the parameters), use the '--genConfig <file>' option.\n"
+    "\n"
+    "For convenience, there are also some abbreviations:\n"
+    "  -s = --searchStrategy\n"
+    "  -t = --modelType\n"
+    "  -v = --valueFunctionRepresentation\n"
+    "  -f = --useFastPomdpParser 1\n"
+    "  -p = --terminateRegretBound\n"
+    "  -o = --outputPolicyFile\n"
     "\n"
     "Examples:\n"
     "  " << cmdName << " RockSample_4_4.pomdp\n"
     "  " << cmdName << " large-b.racetrack\n"
-    "  " << cmdName << " --timeout 60 --output my.policy RockSample_4_4.pomdp\n"
-    "  " << cmdName << " --search lrtdp --value point RockSample_4_4.pomdp\n"
+    "  " << cmdName << " -t 60 -o my.policy RockSample_4_4.pomdp\n"
+    "  " << cmdName << " -s lrtdp -v point RockSample_4_4.pomdp\n"
     "  " << cmdName << " -f RockSample_5_7.pomdp\n"
     "\n"
 ;
@@ -188,27 +185,8 @@ void usage(const char* cmdName) {
 }
 
 int main(int argc, char **argv) {
-  static char shortOptions[] = "hs:t:v:fo:";
-  static struct option longOptions[]={
-    {"help",          0,NULL,'h'},
-    {"version",       0,NULL,'V'},
-    {"search",        1,NULL,'s'},
-    {"type",          1,NULL,'t'},
-    {"value",         1,NULL,'v'},
-    {"fast",          0,NULL,'f'},
-    {"precision",     1,NULL,'p'},
-    {"weak-heuristic",0,NULL,'W'},
-    {"lower-bound",   0,NULL,'L'},
-    {"upper-bound",   0,NULL,'U'},
-    {"max-horizon",   1,NULL,'H'},
-    {"output",        1,NULL,'o'},
-    {"timeout",       1,NULL,'T'},
-    {NULL,0,0,0}
-  };
-
   SolverParams p;
   OutputParams op;
-  p.outPolicyFileName = "out.policy"; // default value
 
 #if USE_DEBUG_PRINT
   // save arguments for debug printout later
@@ -218,70 +196,102 @@ int main(int argc, char **argv) {
   }
 #endif
 
+  bool argsOnly = false;
+  const char* configFileName = NULL;
+  ZMDPConfig commandLineConfig;
+
   p.cmdName = argv[0];
-  while (1) {
-    char optchar = getopt_long(argc,argv,shortOptions,longOptions,NULL);
-    if (optchar == -1) break;
+  for (int argi=1; argi < argc; argi++) {
+    std::string args = argv[argi];
+    if (!argsOnly && '-' == args[0]) {
+      if (args == "--") {
+	argsOnly = true;
+      } else if (args == "-h" || args == "--help") {
+	usage(argv[0]);
+      } else if (args == "--version") {
+	cout << "CFLAGS = " << CFLAGS << endl;
+	exit(EXIT_SUCCESS);
+      } else if (args == "-c" || args == "--config") {
+	if (++argi == argc) {
+	  fprintf(stderr, "ERROR: found -c option without argument (use -h for help)\n");
+	  exit(EXIT_FAILURE);
+	}
+	configFileName = argv[argi];
+      } else if (args == "--genConfig") {
+	if (++argi == argc) {
+	  fprintf(stderr, "ERROR: found --genConfig option without argument (use -h for help)\n");
+	  exit(EXIT_FAILURE);
+	}
+	embedWriteToFile(argv[argi], defaultConfig);
+	printf("wrote config file with default settings to %s\n", argv[argi]);
+	exit(EXIT_SUCCESS);
+      } else {
+	// replace abbreviations
+	if (args == "-s") {
+	  args = "--searchStrategy";
+	} else if (args == "-t") {
+	  args = "--modelType";
+	} else if (args == "-v") {
+	  args = "--valueFunctionRepresentation";
+	} else if (args == "-f") {
+	  commandLineConfig.setBool("useFastPomdpParser", true);
+	  continue;
+	} else if (args == "-p") {
+	  args = "--terminateRegretBound";
+	} else if (args == "-o") {
+	  args = "--outputPolicyFile";
+	}
 
-    switch (optchar) {
-    case 'h': // help
-      usage(argv[0]);
-      break;
-    case 'V': // version
-      cout << "CFLAGS = " << CFLAGS << endl;
-      exit(EXIT_SUCCESS);
-      break;
-    case 's': // search
-      p.setStrategy(optarg);
-      break;
-    case 't': // type
-      p.setProbType(optarg);
-      break;
-    case 'v': // value
-      p.setValueRepr(optarg);
-      break;
-    case 'f': // fast
-      p.useFastParser = true;
-      break;
-    case 'p': // precision
-      p.targetPrecision = atof(optarg);
-      break;
-    case 'W': // weak-heuristic
-      p.useHeuristic = false;
-      break;
-    case 'L': // lower-bound
-      p.forceLowerBound = true;
-      break;
-    case 'U': // upper-bound
-      p.forceUpperBoundActionSelection = true;
-      break;
-    case 'H': // max-horizon
-      p.maxHorizon = atoi(optarg);
-      break;
-    case 'o': // output
-      p.outPolicyFileName = optarg;
-      break;
-    case 'T': // timeout
-      op.timeoutSeconds = atof(optarg);
-      break;
-
-    case '?': // unknown option
-    case ':': // option with missing parameter
-      // getopt() prints an informative error message
-      cerr << endl;
-      usage(argv[0]);
-      break;
-    default:
-      abort(); // never reach this point
+	if (args.find("--") != 0) {
+	  fprintf(stderr, "ERROR: found unknown option '%s' (use -h for help)\n",
+		  args.c_str());
+	  exit(EXIT_FAILURE);
+	} else {
+	  if (++argi == argc) {
+	    fprintf(stderr, "ERROR: found %s option without argument (-h for help)\n",
+		    args.c_str());
+	    exit(EXIT_FAILURE);
+	  }
+	  commandLineConfig.setString(args.substr(2), argv[argi]);
+	}
+      }
+    } else {
+      cout << "args = " << args << endl;
+      if (NULL == p.probName) {
+	p.probName = argv[argi];
+      } else {
+	fprintf(stderr, "ERROR: expected exactly 1 argument (use -h for help)\n");
+	exit(EXIT_FAILURE);
+      }
     }
   }
-  if (argc-optind != 1) {
-    cerr << "ERROR: wrong number of arguments (should be 1)" << endl << endl;
-    usage(argv[0]);
+  if (NULL == p.probName) {
+    fprintf(stderr, "ERROR: expected exactly 1 argument (use -h for help)\n");
+    exit(EXIT_FAILURE);
   }
 
-  p.probName = argv[optind++];
-  p.inferMissingValues();
+  // config step 1: read defaults embedded in binary
+  ZMDPConfig config;
+  config.readFromString("<defaultConfig>", defaultConfig.data);
+
+  // config step 2: overwrite defaults with values specified in config file
+  // (signal an error if any new unexpected fields are defined)
+  config.setOverWriteOnlyMode(true);
+  if (NULL != configFileName) {
+    config.readFromFile(configFileName);
+  }
+
+  // config step 3: overwrite with values specified on command line
+  config.readFromConfig(commandLineConfig);
+
+  // default value of outputPolicyFile depends on the front end used;
+  // for zmdpSolve, it is "out.policy"
+  if (config.getString("outputPolicyFile") == "-") {
+    config.setString("outputPolicyFile", "out.policy");
+  }
+
+  // translate from config key/value table to params struct
+  p.setValues(config);
 
 #if USE_DEBUG_PRINT
   printf("CFLAGS = %s\n", CFLAGS);
@@ -297,6 +307,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.8  2006/10/03 03:17:26  trey
+ * added --max-horizon parameter
+ *
  * Revision 1.7  2006/06/15 16:08:37  trey
  * restructured so zmdpBenchmark can output policies
  *

@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.6 $  $Author: trey $  $Date: 2006-10-03 03:17:08 $
+ $Revision: 1.7 $  $Author: trey $  $Date: 2006-10-15 23:45:30 $
    
  @file    solverUtils.h
  @brief   No brief
@@ -24,6 +24,8 @@
 #define INCsolverUtils_h
 
 #include <iostream>
+
+#include "zmdpConfig.h"
 
 // search strategies
 #include "RTDP.h"
@@ -72,23 +74,26 @@ enum ValueReprsEnum {
 
 struct SolverParams {
   const char* cmdName;
-  int strategy;
-  int probType;
-  int valueRepr;
+  int searchStrategy; // strategy
+  int modelType; // problemType
+  int valueFunctionRepresentation; // valueRepr
   const char *probName;
-  double targetPrecision;
-  bool useFastParser;
-  bool useHeuristic;
-  bool forceLowerBound;
-  bool forceUpperBoundActionSelection;
-  const char* outPolicyFileName;
+  double terminateRegretBound; // targetPrecision
+  bool useFastPomdpParser; // useFastParser
+  bool useWeakUpperBoundHeuristic; // !useHeuristic
+  bool forceMaintainLowerBound; // forceLowerBound
+  bool forceUpperBoundRunTimeActionSelection; // forceUpperBoundActionSelection
+  const char* outputPolicyFile; // outPolicyFileName
   int maxHorizon;
 
   SolverParams(void);
+  void setValues(const ZMDPConfig& config);
+  void inferMissingValues(void);
+#if 0
   void setStrategy(const char* strategyName);
   void setProbType(const char* probTypeName);
   void setValueRepr(const char* valueReprName);
-  void inferMissingValues(void);
+#endif
 };
 
 struct SolverObjects {
@@ -107,6 +112,9 @@ void constructSolverObjects(SolverObjects& obj, const SolverParams& p);
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.6  2006/10/03 03:17:08  trey
+ * added maxHorizon parameter
+ *
  * Revision 1.5  2006/06/15 16:10:01  trey
  * restructured so zmdpBenchmark can output policies
  *

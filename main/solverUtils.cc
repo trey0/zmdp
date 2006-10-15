@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.5 $  $Author: trey $  $Date: 2006-10-03 03:17:08 $
+ $Revision: 1.6 $  $Author: trey $  $Date: 2006-10-15 23:45:31 $
 
  @file    solverUtils.cc
  @brief   No brief
@@ -57,27 +57,29 @@ static EnumEntry strategiesG[] = {
   {NULL, -1}
 };
 
-static EnumEntry probTypesG[] = {
+static EnumEntry modelTypesG[] = {
+  {"-",         -1},
   {"racetrack", T_RACETRACK},
   {"pomdp",     T_POMDP},
   {NULL, -1}
 };
 
 static EnumEntry valueReprsG[] = {
+  {"-",      -1},
   {"point",  V_POINT},
   {"convex", V_CONVEX},
   {NULL, -1}
 };
 
-int getEnum(const char* key, EnumEntry* table, const char* cmdName, const char *opt)
+int getEnum(const std::string& key, EnumEntry* table, const char* cmdName, const char *opt)
 {
   EnumEntry* i = table;
   for (; NULL != i->key; i++) {
-    if (0 == strcmp(i->key, key)) {
+    if (key == i->key) {
       return i->val;
     }
   }
-  fprintf(stderr, "ERROR: invalid parameter %s for option %s\n\n", key, opt);
+  fprintf(stderr, "ERROR: invalid value %s for config field %s\n\n", key.c_str(), opt);
   usage(cmdName);
   exit(EXIT_FAILURE);
 }
@@ -95,59 +97,54 @@ bool endsWith(const std::string& s,
 
 SolverParams::SolverParams(void)
 {
-  strategy = S_FRTDP;
-  probType = -1;
-  valueRepr = -1;
+  cmdName = NULL;
   probName = NULL;
-  targetPrecision = 1e-3;
-  useFastParser = false;
-  useHeuristic = true;
-  forceLowerBound = false;
-  forceUpperBoundActionSelection = false;
-  outPolicyFileName = NULL;
-  maxHorizon = -1;
 }
 
-void SolverParams::setStrategy(const char* strategyName)
+void SolverParams::setValues(const ZMDPConfig& config)
 {
-  strategy = getEnum(strategyName, strategiesG, cmdName, "--search");
-}
+  searchStrategy = getEnum(config.getString("searchStrategy"),
+			   strategiesG, cmdName, "searchStrategy");
+  modelType = getEnum(config.getString("modelType"),
+		      modelTypesG, cmdName, "modelType");
+  valueFunctionRepresentation = getEnum(config.getString("valueFunctionRepresentation"),
+					valueReprsG, cmdName, "valueFunctionRepresentation");
+  terminateRegretBound = config.getDouble("terminateRegretBound");
+  useFastPomdpParser = config.getBool("useFastPomdpParser");
+  useWeakUpperBoundHeuristic = config.getBool("useWeakUpperBoundHeuristic");
+  forceMaintainLowerBound = config.getBool("forceMaintainLowerBound");
+  forceUpperBoundRunTimeActionSelection = config.getBool("forceUpperBoundRunTimeActionSelection");
+  outputPolicyFile = config.getString("outputPolicyFile").c_str();
+  maxHorizon = config.getInt("maxHorizon");
 
-void SolverParams::setProbType(const char* probTypeName)
-{
-  probType = getEnum(probTypeName, probTypesG, cmdName, "--type");
-}
-
-void SolverParams::setValueRepr(const char* valueReprName)
-{
-  valueRepr = getEnum(valueReprName, valueReprsG, cmdName, "--value");
+  inferMissingValues();
 }
 
 void SolverParams::inferMissingValues(void)
 {
   // fill in default and inferred values
-  if (-1 == probType) {
+  if (-1 == modelType) {
     if (endsWith(probName, ".racetrack")) {
-      probType = T_RACETRACK;
+      modelType = T_RACETRACK;
     } else if (endsWith(probName, ".pomdp")) {
-      probType = T_POMDP;
+      modelType = T_POMDP;
     } else {
-      fprintf(stderr, "ERROR: couldn't infer problem type from problem filename %s (use --type option)\n\n",
+      fprintf(stderr, "ERROR: couldn't infer problem type from model filename %s (use --type option)\n\n",
 	      probName);
       usage(cmdName);
       exit(EXIT_FAILURE);
     }
   }
-  if (-1 == valueRepr) {
-    if (T_POMDP == probType) {
-      valueRepr = V_CONVEX;
+  if (-1 == valueFunctionRepresentation) {
+    if (T_POMDP == modelType) {
+      valueFunctionRepresentation = V_CONVEX;
     } else {
-      valueRepr = V_POINT;
+      valueFunctionRepresentation = V_POINT;
     }
   }
 
   // error check
-  if (V_CONVEX == valueRepr && T_POMDP != probType) {
+  if (V_CONVEX == valueFunctionRepresentation && T_POMDP != modelType) {
     fprintf(stderr, "ERROR: '-v convex' can only be used with '-t pomdp'\n\n");
     usage(cmdName);
   }
@@ -155,20 +152,20 @@ void SolverParams::inferMissingValues(void)
 
 void constructSolverObjects(SolverObjects& obj, const SolverParams& p)
 {
-  switch (p.probType) {
+  switch (p.modelType) {
   case T_RACETRACK:
     obj.problem = new RaceTrack(p.probName);
     obj.sim = new MDPSim(obj.problem);
     break;
   case T_POMDP:
-    obj.problem = new Pomdp(p.probName, p.useFastParser, p.maxHorizon);
+    obj.problem = new Pomdp(p.probName, p.useFastPomdpParser, p.maxHorizon);
     obj.sim = new PomdpSim((Pomdp*) obj.problem);
     break;
   default:
     assert(0); // never reach this point
   }
 
-  switch (p.strategy) {
+  switch (p.searchStrategy) {
   case S_RTDP:
     obj.solver = new RTDP();
     break;
@@ -188,25 +185,25 @@ void constructSolverObjects(SolverObjects& obj, const SolverParams& p)
     assert(0); // never reach this point
   };
 
-  bool keepLowerBound = p.forceLowerBound
+  bool keepLowerBound = p.forceMaintainLowerBound
     || ((RTDPCore *) obj.solver)->getUseLowerBound();
-  switch (p.valueRepr) {
+  switch (p.valueFunctionRepresentation) {
   case V_POINT:
     PointBounds* pb;
     AbstractBound *initLowerBound, *initUpperBound;
 
     pb = new PointBounds();
     initLowerBound = keepLowerBound ? obj.problem->newLowerBound() : NULL;
-    if (p.useHeuristic && T_POMDP != p.probType) {
-      initUpperBound = new RelaxUBInitializer(obj.problem);
-    } else {
+    if (p.useWeakUpperBoundHeuristic && T_POMDP == p.modelType) {
       initUpperBound = obj.problem->newUpperBound();
+    } else {
+      initUpperBound = new RelaxUBInitializer(obj.problem);
     }
-    pb->setBounds(initLowerBound, initUpperBound, p.forceUpperBoundActionSelection);
+    pb->setBounds(initLowerBound, initUpperBound, p.forceUpperBoundRunTimeActionSelection);
     obj.bounds = pb;
     break;
   case V_CONVEX:
-    obj.bounds = new ConvexBounds(keepLowerBound, p.forceUpperBoundActionSelection);
+    obj.bounds = new ConvexBounds(keepLowerBound, p.forceUpperBoundRunTimeActionSelection);
     break;
   default:
     assert(0); // never reach this point
@@ -219,6 +216,9 @@ void constructSolverObjects(SolverObjects& obj, const SolverParams& p)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.5  2006/10/03 03:17:08  trey
+ * added maxHorizon parameter
+ *
  * Revision 1.4  2006/06/15 16:10:01  trey
  * restructured so zmdpBenchmark can output policies
  *
