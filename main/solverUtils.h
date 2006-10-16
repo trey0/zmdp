@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.7 $  $Author: trey $  $Date: 2006-10-15 23:45:30 $
+ $Revision: 1.8 $  $Author: trey $  $Date: 2006-10-16 05:48:19 $
    
  @file    solverUtils.h
  @brief   No brief
@@ -74,26 +74,30 @@ enum ValueReprsEnum {
 
 struct SolverParams {
   const char* cmdName;
-  int searchStrategy; // strategy
-  int modelType; // problemType
-  int valueFunctionRepresentation; // valueRepr
   const char *probName;
-  double terminateRegretBound; // targetPrecision
-  bool useFastPomdpParser; // useFastParser
-  bool useWeakUpperBoundHeuristic; // !useHeuristic
-  bool forceMaintainLowerBound; // forceLowerBound
-  bool forceUpperBoundRunTimeActionSelection; // forceUpperBoundActionSelection
-  const char* outputPolicyFile; // outPolicyFileName
+
+  int searchStrategy;
+  int modelType;
+  int valueFunctionRepresentation;
+  const char* policyOutputFile;
+  bool useFastPomdpParser;
+  double terminateRegretBound;
+  double terminateWallclockSeconds;
   int maxHorizon;
+  bool useWeakUpperBoundHeuristic;
+  bool forceMaintainLowerBound;
+  bool forceUpperBoundRunTimeActionSelection;
+  int evaluationTrialsPerEpoch;
+  int evaluationMaxStepsPerTrial;
+  double evaluationFirstEpochWallclockSeconds;
+  double evaluationEpochsPerMagnitude;
+  const char* evaluationOutputFile;
+  const char* boundsOutputFile;
+  const char* simulationTraceOutputFile;
 
   SolverParams(void);
   void setValues(const ZMDPConfig& config);
   void inferMissingValues(void);
-#if 0
-  void setStrategy(const char* strategyName);
-  void setProbType(const char* probTypeName);
-  void setValueRepr(const char* valueReprName);
-#endif
 };
 
 struct SolverObjects {
@@ -112,6 +116,9 @@ void constructSolverObjects(SolverObjects& obj, const SolverParams& p);
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.7  2006/10/15 23:45:30  trey
+ * switched to new config mechanism
+ *
  * Revision 1.6  2006/10/03 03:17:08  trey
  * added maxHorizon parameter
  *

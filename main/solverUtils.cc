@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.6 $  $Author: trey $  $Date: 2006-10-15 23:45:31 $
+ $Revision: 1.7 $  $Author: trey $  $Date: 2006-10-16 05:48:19 $
 
  @file    solverUtils.cc
  @brief   No brief
@@ -109,13 +109,24 @@ void SolverParams::setValues(const ZMDPConfig& config)
 		      modelTypesG, cmdName, "modelType");
   valueFunctionRepresentation = getEnum(config.getString("valueFunctionRepresentation"),
 					valueReprsG, cmdName, "valueFunctionRepresentation");
-  terminateRegretBound = config.getDouble("terminateRegretBound");
+  policyOutputFile = config.getString("policyOutputFile").c_str();
+  if (0 == strcmp(policyOutputFile, "none")) {
+    policyOutputFile = NULL;
+  }
   useFastPomdpParser = config.getBool("useFastPomdpParser");
+  terminateRegretBound = config.getDouble("terminateRegretBound");
+  terminateWallclockSeconds = config.getDouble("terminateWallclockSeconds");
+  maxHorizon = config.getInt("maxHorizon");
   useWeakUpperBoundHeuristic = config.getBool("useWeakUpperBoundHeuristic");
   forceMaintainLowerBound = config.getBool("forceMaintainLowerBound");
   forceUpperBoundRunTimeActionSelection = config.getBool("forceUpperBoundRunTimeActionSelection");
-  outputPolicyFile = config.getString("outputPolicyFile").c_str();
-  maxHorizon = config.getInt("maxHorizon");
+  evaluationTrialsPerEpoch = config.getInt("evaluationTrialsPerEpoch");
+  evaluationMaxStepsPerTrial = config.getInt("evaluationMaxStepsPerTrial");
+  evaluationFirstEpochWallclockSeconds = config.getDouble("evaluationFirstEpochWallclockSeconds");
+  evaluationEpochsPerMagnitude = config.getDouble("evaluationEpochsPerMagnitude");
+  evaluationOutputFile = config.getString("evaluationOutputFile").c_str();
+  boundsOutputFile = config.getString("boundsOutputFile").c_str();
+  simulationTraceOutputFile = config.getString("simulationTraceOutputFile").c_str();
 
   inferMissingValues();
 }
@@ -216,6 +227,9 @@ void constructSolverObjects(SolverObjects& obj, const SolverParams& p)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.6  2006/10/15 23:45:31  trey
+ * switched to new config mechanism
+ *
  * Revision 1.5  2006/10/03 03:17:08  trey
  * added maxHorizon parameter
  *
