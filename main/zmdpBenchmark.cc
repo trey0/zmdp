@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.8 $  $Author: trey $  $Date: 2006-10-16 05:50:11 $
+ $Revision: 1.9 $  $Author: trey $  $Date: 2006-10-16 17:32:41 $
 
  @file    zmdpBenchmark.cc
  @brief   No brief
@@ -163,6 +163,8 @@ int main(int argc, char **argv) {
 	  args = "--terminateRegretBound";
 	} else if (args == "-o") {
 	  args = "--policyOutputFile";
+	} else if (args == "-i") {
+	  args = "--evaluationTrialsPerEpoch";
 	}
 
 	if (args.find("--") != 0) {
@@ -179,7 +181,6 @@ int main(int argc, char **argv) {
 	}
       }
     } else {
-      cout << "args = " << args << endl;
       if (NULL == p.probName) {
 	p.probName = argv[argi];
       } else {
@@ -192,7 +193,6 @@ int main(int argc, char **argv) {
     fprintf(stderr, "ERROR: expected exactly 1 argument (use -h for help)\n");
     exit(EXIT_FAILURE);
   }
-
 
   // config step 1: read defaults embedded in binary
   ZMDPConfig config;
@@ -237,6 +237,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.8  2006/10/16 05:50:11  trey
+ * switched zmdpBenchmark to use new config mechanism
+ *
  * Revision 1.7  2006/10/03 03:17:26  trey
  * added --max-horizon parameter
  *
