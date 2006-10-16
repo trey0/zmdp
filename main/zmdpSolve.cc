@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.9 $  $Author: trey $  $Date: 2006-10-15 23:46:02 $
+ $Revision: 1.10 $  $Author: trey $  $Date: 2006-10-16 05:49:37 $
 
  @file    zmdpSolve.cc
  @brief   No brief
@@ -135,8 +135,12 @@ void doSolve(const SolverParams& p, const OutputParams& op)
   }
 
   // write out a policy
-  printf("%05d writing policy to '%s'\n", (int) run.elapsedTime(), p.outputPolicyFile);
-  so.bounds->writePolicy(p.outputPolicyFile);
+  if (NULL == p.policyOutputFile) {
+    printf("%05d (policy output was not requested)\n", (int) run.elapsedTime());
+  } else {
+    printf("%05d writing policy to '%s'\n", (int) run.elapsedTime(), p.policyOutputFile);
+    so.bounds->writePolicy(p.policyOutputFile);
+  }
 
   printf("%05d done\n", (int) run.elapsedTime());
 }
@@ -169,9 +173,9 @@ void usage(const char* cmdName) {
     "  -s = --searchStrategy\n"
     "  -t = --modelType\n"
     "  -v = --valueFunctionRepresentation\n"
+    "  -o = --policyOutputFile\n"
     "  -f = --useFastPomdpParser 1\n"
     "  -p = --terminateRegretBound\n"
-    "  -o = --outputPolicyFile\n"
     "\n"
     "Examples:\n"
     "  " << cmdName << " RockSample_4_4.pomdp\n"
@@ -239,7 +243,7 @@ int main(int argc, char **argv) {
 	} else if (args == "-p") {
 	  args = "--terminateRegretBound";
 	} else if (args == "-o") {
-	  args = "--outputPolicyFile";
+	  args = "--policyOutputFile";
 	}
 
 	if (args.find("--") != 0) {
@@ -284,10 +288,10 @@ int main(int argc, char **argv) {
   // config step 3: overwrite with values specified on command line
   config.readFromConfig(commandLineConfig);
 
-  // default value of outputPolicyFile depends on the front end used;
+  // default value of policyOutputFile depends on the front end used;
   // for zmdpSolve, it is "out.policy"
-  if (config.getString("outputPolicyFile") == "-") {
-    config.setString("outputPolicyFile", "out.policy");
+  if (config.getString("policyOutputFile") == "-") {
+    config.setString("policyOutputFile", "out.policy");
   }
 
   // translate from config key/value table to params struct
@@ -307,6 +311,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.9  2006/10/15 23:46:02  trey
+ * switched to new config mechanism
+ *
  * Revision 1.8  2006/10/03 03:17:26  trey
  * added --max-horizon parameter
  *
