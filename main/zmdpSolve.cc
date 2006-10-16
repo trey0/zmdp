@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.10 $  $Author: trey $  $Date: 2006-10-16 05:49:37 $
+ $Revision: 1.11 $  $Author: trey $  $Date: 2006-10-16 17:33:04 $
 
  @file    zmdpSolve.cc
  @brief   No brief
@@ -36,16 +36,6 @@ using namespace std;
 using namespace MatrixUtils;
 using namespace zmdp;
 
-struct OutputParams {
-  double timeoutSeconds;
-
-  OutputParams(void);
-};
-
-OutputParams::OutputParams(void) {
-  timeoutSeconds = -1;
-}
-
 bool userTerminatedG = false;
 
 void sigIntHandler(int sig) {
@@ -68,7 +58,7 @@ void setSignalHandler(int sig, void (*handler)(int)) {
   }
 }
 
-void doSolve(const SolverParams& p, const OutputParams& op)
+void doSolve(const SolverParams& p)
 {
   StopWatch run;
 
@@ -108,7 +98,7 @@ void doSolve(const SolverParams& p, const OutputParams& op)
 
     // check timeout
     double elapsed = run.elapsedTime();
-    if (op.timeoutSeconds > 0 && elapsed >= op.timeoutSeconds) {
+    if (p.terminateWallclockSeconds > 0 && elapsed >= p.terminateWallclockSeconds) {
       reachedTimeout = true;
     }
 
@@ -128,7 +118,7 @@ void doSolve(const SolverParams& p, const OutputParams& op)
 	   (int) run.elapsedTime(), p.terminateRegretBound);
   } else if (reachedTimeout) {
     printf("%05d terminating run; passed specified timeout of %g seconds\n",
-	   (int) run.elapsedTime(), op.timeoutSeconds);
+	   (int) run.elapsedTime(), p.terminateWallclockSeconds);
   } else {
     printf("%05d terminating run; caught SIGINT from user\n",
 	   (int) run.elapsedTime());
@@ -190,7 +180,6 @@ void usage(const char* cmdName) {
 
 int main(int argc, char **argv) {
   SolverParams p;
-  OutputParams op;
 
 #if USE_DEBUG_PRINT
   // save arguments for debug printout later
@@ -303,7 +292,7 @@ int main(int argc, char **argv) {
   fflush(stdout);
 #endif
 
-  doSolve(p, op);
+  doSolve(p);
 
   return 0;
 }
@@ -311,6 +300,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.10  2006/10/16 05:49:37  trey
+ * renamed outputPolicyFile -> policyOutputFile
+ *
  * Revision 1.9  2006/10/15 23:46:02  trey
  * switched to new config mechanism
  *
