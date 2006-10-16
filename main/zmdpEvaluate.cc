@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.5 $  $Author: trey $  $Date: 2006-09-21 17:26:06 $
+ $Revision: 1.6 $  $Author: trey $  $Date: 2006-10-16 17:32:17 $
 
  @file    zmdpEvaluate.cc
  @brief   Use to evaluate a POMDP policy in simulation.
@@ -31,6 +31,8 @@
 #include "PomdpSim.h"
 #include "MaxPlanesLowerBoundExec.h"
 #include "LSPathAndReactExec.h"
+#include "solverUtils.h"
+#include "zmdpMainConfig.h"
 
 using namespace std;
 using namespace MatrixUtils;
@@ -41,15 +43,12 @@ using namespace zmdp;
 #define ZE_DEFAULT_POLICY_TYPE ("maxplanes")
 
 const char* policyTypeG = ZE_DEFAULT_POLICY_TYPE;
-bool useFastParserG = false;
 const char* policyFileNameG = NULL;
 const char* sourceModelFileNameG = NULL;
 const char* simModelFileNameG = NULL;
 const char* plannerModelFileNameG = NULL;
-int iterationsG = ZE_DEFAULT_ITERATIONS;
-int maxStepsG = ZE_DEFAULT_MAX_STEPS;
 
-void doit(void)
+void doit(const SolverParams& p)
 {
   // seeds random number generator
   init_matrix_utils();
@@ -66,7 +65,7 @@ void doit(void)
       exit(EXIT_FAILURE);
     }
     MaxPlanesLowerBoundExec* em = new MaxPlanesLowerBoundExec();
-    em->init(plannerModelFileNameG, useFastParserG, policyFileNameG);
+    em->init(plannerModelFileNameG, p.useFastPomdpParser, policyFileNameG);
     e = em;
   } else if (0 == strcmp(policyTypeG, "lspath")) {
     if (NULL == sourceModelFileNameG) {
@@ -74,7 +73,7 @@ void doit(void)
       exit(EXIT_FAILURE);
     }
     LSPathAndReactExec* el = new LSPathAndReactExec();
-    el->init(plannerModelFileNameG, useFastParserG, sourceModelFileNameG);
+    el->init(plannerModelFileNameG, p.useFastPomdpParser, sourceModelFileNameG);
     e = el;
   } else {
     fprintf(stderr, "ERROR: unknown policy type '%s' (-h for help)\n",
@@ -87,7 +86,7 @@ void doit(void)
   if (plannerModelFileNameG == simModelFileNameG) {
     simPomdp = e->pomdp;
   } else {
-    simPomdp = new Pomdp(simModelFileNameG, useFastParserG);
+    simPomdp = new Pomdp(simModelFileNameG, p.useFastPomdpParser);
   }
   PomdpSim* sim = new PomdpSim(simPomdp);
 
@@ -108,10 +107,10 @@ void doit(void)
 
   // do evaluation
   std::vector<double> rewardValues;
-  for (int i=0; i < iterationsG; i++) {
+  for (int i=0; i < p.evaluationTrialsPerEpoch; i++) {
     sim->restart();
     e->setToInitialBelief();
-    for (int j=0; (j < maxStepsG) || (0 == maxStepsG); j++) {
+    for (int j=0; (j < p.evaluationMaxStepsPerTrial) || (0 == p.evaluationMaxStepsPerTrial); j++) {
       int a = e->chooseAction();
       sim->performAction(a);
       e->advanceToNextBelief(a, sim->lastObservation);
@@ -139,19 +138,37 @@ void doit(void)
 
 void usage(const char* cmdName) {
   cerr <<
-    "usage: " << cmdName << " OPTIONS <model.pomdp>\n"
+    "usage: " << cmdName << " OPTIONS <evaluationModel>\n"
     "  -h or --help           Print this help\n"
     "  --version              Print version information (CFLAGS used at compilation)\n"
-    "  -t or --type           Specifies policy type.  Choices are: lspath, maxplanes\n"
+    "  -c or --config <file>  Specify a config file to read options from\n"
+    "  --genConfig <file>     Generate an example config file and exit\n"
+    "\n"
+    "  -t or --policyType     Specifies policy type.  Choices are: lspath, maxplanes\n"
     "                           [default: " << ZE_DEFAULT_POLICY_TYPE << "]\n"
-    "  -f or --fast           Use fast (but very picky) alternate POMDP parser\n"
-    "  -p or --policy         Specify policy file (required with -t maxplanes)\n"
+    "  -p or --policy         Specify input policy file (required with -t maxplanes)\n"
     "  -m or --model          Specify planner model (if different from evaluation model)\n"
-    "  -s or --source-model   Specify source model file (required with -t lspath)\n"
-    "  -i or --iterations     Set number of simulation runs [default: " << ZE_DEFAULT_ITERATIONS << "]\n"
-    "  --max-steps            Set maximum number of steps in each simulator run; a\n"
-    "                            value of 0 means only terminate according to the model\n"
-    "                            [default: " << ZE_DEFAULT_MAX_STEPS << "]\n"
+    "  -s or --sourceModel    Specify source model file (required with -t lspath)\n"
+    "\n"
+    "  zmdpEvaluate evaluates a policy output by zmdpSolve or zmdpBenchmark.\n"
+    "  The policy is evaluated by executing a number of trials in simulation;\n"
+    "  the output is mean reward and a 95% confidence interval for the estimate\n"
+    "  of the mean under the (not necessarily correct) assumption that the\n"
+    "  per-trial reward is normally distributed.  Sorry, statisticians may wince...\n"
+    "\n"
+    "  ZMDP gets configuration information from three places: (1) Default values\n"
+    "  are embedded in the binary at compile time.  (2) If you specify a config file\n"
+    "  using the --config option, any fields set in that file override the defaults.\n"
+    "  (3) You can override individual fields in the config file from the command line.\n"
+    "  For instance, if the config file specifies 'searchStrategy frtdp' you can override\n"
+    "  with '--searchStrategy hsvi' at the command line.\n"
+    "\n"
+    "  To generate an example config file (including default values and comments describing\n"
+    "  all the parameters), use the '--genConfig <file>' option.\n"
+    "\n"
+    "For convenience, there are also some abbreviations:\n"
+    "  -f = --useFastPomdpParser 1\n"
+    "  -i = --evaluationTrialsPerEpoch\n"
     "\n"
     "Examples:\n"
     "  " << cmdName << " -p my.policy -f ltv1.pomdp\n"
@@ -163,89 +180,139 @@ void usage(const char* cmdName) {
 }
 
 int main(int argc, char **argv) {
-  static char shortOptions[] = "ht:fp:m:s:i:";
-  static struct option longOptions[]={
-    {"help",          0,NULL,'h'},
-    {"version",       0,NULL,'V'},
-    {"type",          1,NULL,'t'},
-    {"fast",          0,NULL,'f'},
-    {"policy",        1,NULL,'p'},
-    {"model",         1,NULL,'m'},
-    {"source-model",  1,NULL,'s'},
-    {"iterations",    1,NULL,'i'},
-    {"max-steps",     1,NULL,'M'},
-    {NULL,0,0,0}
-  };
-
+#if 0
   // save arguments for debug printout later
   ostringstream outs;
   for (int i=1; i < argc; i++) {
     outs << argv[i] << " ";
   }
-
-  while (1) {
-    char optchar = getopt_long(argc,argv,shortOptions,longOptions,NULL);
-    if (optchar == -1) break;
-
-    switch (optchar) {
-    case 'h': // help
-      usage(argv[0]);
-      break;
-    case 'V': // version
-      cout << "CFLAGS = " << CFLAGS << endl;
-      exit(EXIT_SUCCESS);
-      break;
-    case 't': // type
-      policyTypeG = optarg;
-      break;
-    case 'f': // fast
-      useFastParserG = true;
-      break;
-    case 'p': // policy
-      policyFileNameG = optarg;
-      break;
-    case 'm': // model
-      plannerModelFileNameG = optarg;
-      break;
-    case 's': // source-model
-      sourceModelFileNameG = optarg;
-      break;
-    case 'i': // iterations
-      iterationsG = atoi(optarg);
-      break;
-    case 'M': // max-steps
-      maxStepsG = atoi(optarg);
-      break;
-    case '?': // unknown option
-    case ':': // option with missing parameter
-      // getopt() prints an informative error message
-      cerr << endl;
-      usage(argv[0]);
-      break;
-    default:
-      abort(); // never reach this point
-    }
-  }
-  if (argc-optind != 1) {
-    cerr << "ERROR: wrong number of arguments (should be 1)" << endl << endl;
-    usage(argv[0]);
-  }
-
-  simModelFileNameG = argv[optind++];
-
-#if 0
-  printf("CFLAGS = %s\n", CFLAGS);
-  printf("ARGS = %s\n", outs.str().c_str());
 #endif
 
-  doit();
+  bool argsOnly = false;
+  const char* configFileName = NULL;
+  ZMDPConfig commandLineConfig;
+  SolverParams p;
 
-  return 0;
+  p.cmdName = argv[0];
+  for (int argi=1; argi < argc; argi++) {
+    std::string args = argv[argi];
+    if (!argsOnly && '-' == args[0]) {
+      if (args == "--") {
+	argsOnly = true;
+      } else if (args == "-h" || args == "--help") {
+	usage(argv[0]);
+      } else if (args == "--version") {
+	cout << "CFLAGS = " << CFLAGS << endl;
+	exit(EXIT_SUCCESS);
+      } else if (args == "-c" || args == "--config") {
+	if (++argi == argc) {
+	  fprintf(stderr, "ERROR: found -c option without argument (use -h for help)\n");
+	  exit(EXIT_FAILURE);
+	}
+	configFileName = argv[argi];
+      } else if (args == "--genConfig") {
+	if (++argi == argc) {
+	  fprintf(stderr, "ERROR: found --genConfig option without argument (use -h for help)\n");
+	  exit(EXIT_FAILURE);
+	}
+	embedWriteToFile(argv[argi], defaultConfig);
+	printf("wrote config file with default settings to %s\n", argv[argi]);
+	exit(EXIT_SUCCESS);
+      } else if (args == "-t" || args == "--policyType") {
+	if (++argi == argc) {
+	  fprintf(stderr, "ERROR: found -t option without argument (use -h for help)\n");
+	  exit(EXIT_FAILURE);
+	}
+	policyTypeG = argv[argi];
+      } else if (args == "-p" || args == "--policy") {
+	if (++argi == argc) {
+	  fprintf(stderr, "ERROR: found -p option without argument (use -h for help)\n");
+	  exit(EXIT_FAILURE);
+	}
+	policyFileNameG = argv[argi];
+      } else if (args == "-m" || args == "--model") {
+	if (++argi == argc) {
+	  fprintf(stderr, "ERROR: found -m option without argument (use -h for help)\n");
+	  exit(EXIT_FAILURE);
+	}
+	plannerModelFileNameG = argv[argi];
+      } else if (args == "-s" || args == "--sourceModel") {
+	if (++argi == argc) {
+	  fprintf(stderr, "ERROR: found -s option without argument (use -h for help)\n");
+	  exit(EXIT_FAILURE);
+	}
+	sourceModelFileNameG = argv[argi];
+      } else {
+	// replace abbreviations
+	if (args == "-f") {
+	  commandLineConfig.setBool("useFastPomdpParser", true);
+	  continue;
+	} else if (args == "-i") {
+	  args = "--evaluationTrialsPerEpoch";
+	}
+
+	if (args.find("--") != 0) {
+	  fprintf(stderr, "ERROR: found unknown option '%s' (use -h for help)\n",
+		  args.c_str());
+	  exit(EXIT_FAILURE);
+	} else {
+	  if (++argi == argc) {
+	    fprintf(stderr, "ERROR: found %s option without argument (-h for help)\n",
+		    args.c_str());
+	    exit(EXIT_FAILURE);
+	  }
+	  commandLineConfig.setString(args.substr(2), argv[argi]);
+	}
+      }
+    } else {
+      cout << "args = " << args << endl;
+      if (NULL == simModelFileNameG) {
+	simModelFileNameG = argv[argi];
+      } else {
+	fprintf(stderr, "ERROR: expected exactly 1 argument (use -h for help)\n");
+	exit(EXIT_FAILURE);
+      }
+    }
+  }
+  if (NULL == simModelFileNameG) {
+    fprintf(stderr, "ERROR: expected exactly 1 argument (use -h for help)\n");
+    exit(EXIT_FAILURE);
+  }
+
+  // config step 1: read defaults embedded in binary
+  ZMDPConfig config;
+  config.readFromString("<defaultConfig>", defaultConfig.data);
+
+  // config step 2: overwrite defaults with values specified in config file
+  // (signal an error if any new unexpected fields are defined)
+  config.setOverWriteOnlyMode(true);
+  if (NULL != configFileName) {
+    config.readFromFile(configFileName);
+  }
+
+  // config step 3: overwrite with values specified on command line
+  config.readFromConfig(commandLineConfig);
+
+  // default value of policyOutputFile depends on the front end used;
+  // for zmdpBenchmark, it is "none"
+  if (config.getString("policyOutputFile") == "-") {
+    config.setString("policyOutputFile", "none");
+  }
+
+  // translate from config key/value table to params struct
+  p.setValues(config);
+
+  doit(p);
+
+  return EXIT_SUCCESS;
 }
 
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.5  2006/09/21 17:26:06  trey
+ * renamed output field
+ *
  * Revision 1.4  2006/09/19 01:49:02  trey
  * added --max-steps option
  *

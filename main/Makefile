@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.34 2006-10-16 05:51:07 trey Exp $
+# $Id: Makefile,v 1.35 2006-10-16 17:32:17 trey Exp $
 #
 # Copyright (c) 2002-2005, Trey Smith. All rights reserved.
 #
@@ -57,7 +57,7 @@ BUILDBIN_DEP_LIBS := $(MAIN_LIBS)
 include $(BUILD_DIR)/buildbin.mak
 
 BUILDBIN_TARGET := zmdpEvaluate
-BUILDBIN_SRCS := zmdpEvaluate.cc zmdpMainConfig.cc
+BUILDBIN_SRCS := zmdpEvaluate.cc solverUtils.cc zmdpMainConfig.cc
 BUILDBIN_INDEP_LIBS :=
 BUILDBIN_DEP_LIBS := -lzmdpLifeSurvey -lzmdpPomdpExec $(MAIN_LIBS)
 include $(BUILD_DIR)/buildbin.mak
@@ -69,6 +69,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.34  2006/10/16 05:51:07  trey
+# added zmdpMainConfig.cc
+#
 # Revision 1.33  2006/07/10 03:35:57  trey
 # added zmdpEvaluate
 #
