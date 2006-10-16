@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.33 2006-07-10 03:35:57 trey Exp $
+# $Id: Makefile,v 1.34 2006-10-16 05:51:07 trey Exp $
 #
 # Copyright (c) 2002-2005, Trey Smith. All rights reserved.
 #
@@ -40,20 +40,24 @@ MAIN_LIBS := \
 	-lzmdpRaceTrack \
 	-lzmdpCommon
 
+EMBEDFILES_TARGET := zmdpMainConfig.cc
+EMBEDFILES_SRC := zmdpMainConfig.h
+include $(BUILD_DIR)/embedfiles.mak
+
 BUILDBIN_TARGET := zmdpBenchmark
-BUILDBIN_SRCS := zmdpBenchmark.cc TestDriver.cc solverUtils.cc
+BUILDBIN_SRCS := zmdpBenchmark.cc TestDriver.cc solverUtils.cc zmdpMainConfig.cc
 BUILDBIN_INDEP_LIBS :=
 BUILDBIN_DEP_LIBS := $(MAIN_LIBS)
 include $(BUILD_DIR)/buildbin.mak
 
 BUILDBIN_TARGET := zmdpSolve
-BUILDBIN_SRCS := zmdpSolve.cc solverUtils.cc
+BUILDBIN_SRCS := zmdpSolve.cc solverUtils.cc zmdpMainConfig.cc
 BUILDBIN_INDEP_LIBS :=
 BUILDBIN_DEP_LIBS := $(MAIN_LIBS)
 include $(BUILD_DIR)/buildbin.mak
 
 BUILDBIN_TARGET := zmdpEvaluate
-BUILDBIN_SRCS := zmdpEvaluate.cc
+BUILDBIN_SRCS := zmdpEvaluate.cc zmdpMainConfig.cc
 BUILDBIN_INDEP_LIBS :=
 BUILDBIN_DEP_LIBS := -lzmdpLifeSurvey -lzmdpPomdpExec $(MAIN_LIBS)
 include $(BUILD_DIR)/buildbin.mak
@@ -65,6 +69,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.33  2006/07/10 03:35:57  trey
+# added zmdpEvaluate
+#
 # Revision 1.32  2006/04/28 22:33:36  trey
 # renamed zmdpRtdp -> zmdpSearch
 #
