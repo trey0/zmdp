@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.4 $  $Author: trey $  $Date: 2006-07-24 17:06:37 $
+ $Revision: 1.5 $  $Author: trey $  $Date: 2006-10-16 05:49:12 $
 
  @file    TestDriver.cc
  @brief   No brief
@@ -144,7 +144,8 @@ void TestDriver::batchTestIncremental(int numIterations,
 				      SolverObjects& so,
 				      int numSteps,
 				      double minPrecision,
-				      double minOrder, double maxOrder,
+				      double firstEpochWallclockSeconds,
+				      double terminateWallclockSeconds,
 				      double ticksPerOrder,
 				      const string& incPlotFileName,
 				      const string& boundsFileName,
@@ -187,7 +188,7 @@ void TestDriver::batchTestIncremental(int numIterations,
   double logLastSimTime = -99;
   bool achieved_precision = false;
   bool achieved_terminal_state;
-  while (!achieved_precision && timeSoFar < pow(10,maxOrder)) {
+  while (!achieved_precision && timeSoFar < terminateWallclockSeconds) {
     timeval plan_start = getTime();
     achieved_precision =
       so.solver->planFixedTime(sim->getModel()->getInitialState(),
@@ -197,10 +198,10 @@ void TestDriver::batchTestIncremental(int numIterations,
 
     sim->simOutFile = &simOutFile;
 
-    if ((timeSoFar > pow(10,minOrder)
+    if ((timeSoFar > firstEpochWallclockSeconds
 	 && log(timeSoFar) - logLastSimTime > ::log(10) / ticksPerOrder)
 	// ensure we do a simulation after the last iteration
-	|| timeSoFar >= pow(10,maxOrder)
+	|| timeSoFar >= terminateWallclockSeconds
 	// or when the run ends because we achieved the desired precision
 	|| achieved_precision) {
       logLastSimTime = ::log(timeSoFar);
@@ -309,6 +310,9 @@ void TestDriver::printRewards(void) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2006/07/24 17:06:37  trey
+ * added more debug output
+ *
  * Revision 1.3  2006/06/15 16:09:47  trey
  * restructured so zmdpBenchmark can output policies
  *
