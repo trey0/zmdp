@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.8 $  $Author: trey $  $Date: 2006-08-08 21:17:20 $
+ $Revision: 1.9 $  $Author: trey $  $Date: 2006-10-17 19:14:53 $
    
  @file    ConvexBounds.h
  @brief   No brief
@@ -41,8 +41,6 @@ struct ConvexBounds : public IncrementalBounds {
   SawtoothUpperBound* upperBound;
   bool keepLowerBound;
   double targetPrecision;
-  MDPNode* root;
-  MDPHash* lookup;
   bool forceUpperBoundActionSelection;
 
   ConvexBounds(bool _keepLowerBound,
@@ -83,6 +81,9 @@ struct ConvexBounds : public IncrementalBounds {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.8  2006/08/08 21:17:20  trey
+ * fixed a bug in LB backPointers code; added USE_REF_COUNT_PRUNE
+ *
  * Revision 1.7  2006/07/25 19:40:09  trey
  * overhauled USE_CONVEX_CACHE
  *

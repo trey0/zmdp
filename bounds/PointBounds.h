@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.6 $  $Author: trey $  $Date: 2006-04-28 17:57:41 $
+ $Revision: 1.7 $  $Author: trey $  $Date: 2006-10-17 19:16:56 $
    
  @file    PointBounds.h
  @brief   No brief
@@ -38,8 +38,6 @@ struct PointBounds : public IncrementalBounds {
   AbstractBound* initLowerBound;
   AbstractBound* initUpperBound;
   double targetPrecision;
-  MDPNode* root;
-  MDPHash* lookup;
   bool forceUpperBoundActionSelection;
 
   PointBounds(void);
@@ -72,6 +70,9 @@ struct PointBounds : public IncrementalBounds {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.6  2006/04/28 17:57:41  trey
+ * changed to use apache license
+ *
  * Revision 1.5  2006/04/10 20:25:08  trey
  * added forceUpperBoundActionSelection
  *
