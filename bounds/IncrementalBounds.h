@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.5 $  $Author: trey $  $Date: 2006-04-28 17:57:41 $
+ $Revision: 1.6 $  $Author: trey $  $Date: 2006-10-17 19:15:22 $
    
  @file    IncrementalBounds.h
  @brief   No brief
@@ -42,6 +42,9 @@ struct IncrementalBounds {
   GetNodeHandler getNodeHandler;
   void* handlerData;
 
+  MDPNode* root;
+  MDPHash* lookup;
+
   virtual ~IncrementalBounds(void) {}
 
   virtual void initialize(const MDP* _problem,
@@ -72,6 +75,9 @@ struct IncrementalBounds {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.5  2006/04/28 17:57:41  trey
+ * changed to use apache license
+ *
  * Revision 1.4  2006/04/27 22:58:37  trey
  * added API calls for writing policies
  *
