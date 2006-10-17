@@ -74,25 +74,25 @@ INSTALLATION INSTRUCTIONS
 
 * Unpack the tarball to generate the zmdp directory:
 
-  tar xvfz zmdp-0.5.5.tgz
+  tar xvfz zmdp-0.6.0.tgz
 
 * Build:
 
-  cd zmdp-0.5.5/src
+  cd zmdp-0.6.0/src
   make install
-  (generates binaries in zmdp-0.5.5/bin/<os_name>/, <os_name> = linux2 or darwin8)
+  (generates binaries in zmdp-0.6.0/bin/<os_name>/, <os_name> = linux2 or darwin8)
 
 * Do a test run:
 
-  mkdir zmdp-0.5.5/results/
-  cd zmdp-0.5.5/results
+  mkdir zmdp-0.6.0/results/
+  cd zmdp-0.6.0/results
   ../bin/<os_name>/zmdpSolve ../src/pomdpModels/three_state.pomdp
   (look at results in 'out.policy')
 
 * If you wish to test with one of the included RockSample problem
   instances, generate it.
 
-  cd zmdp-0.5.5/src/pomdpModels
+  cd zmdp-0.6.0/src/pomdpModels
   ./gen_RockSample_5_7
   (generates RockSample_5_7.pomdp)
 
@@ -213,6 +213,16 @@ REFERENCES
 ========================================================================
 RELEASE NOTES
 
+Changes from 0.5.5 to 0.6.0 (17 Oct 2006)
+
+* Added configuration file support, modified command-line options to
+  front-end binaries.  Several parameters that were previously
+  hard-coded can now be configured at run-time.
+
+* Fixed problem with zmdpSolve crashing on some POMDP models; the
+  problem was caused by subtle errors in upper bound pruning with -v
+  convex.
+
 Changes from 0.5.0 to 0.5.5 (2 Oct 2006)
 
 * Added --max-horizon option to zmdpSolve and zmdpBenchmark.  The
@@ -321,4 +331,4 @@ zpomdp 0.1.0 (28 Oct 2005)
 * Initial release.
 
 ==========================================================
-$Id: README,v 1.22 2006-10-03 03:26:25 trey Exp $
+$Id: README,v 1.23 2006-10-17 19:29:14 trey Exp $
