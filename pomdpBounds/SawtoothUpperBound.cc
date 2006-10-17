@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.9 $  $Author: trey $  $Date: 2006-07-26 20:22:10 $
+ $Revision: 1.10 $  $Author: trey $  $Date: 2006-10-17 19:14:02 $
    
  @file    SawtoothUpperBound.cc
  @brief   No brief
@@ -156,18 +156,7 @@ bool SawtoothUpperBound::dominates(const BVPair* xPair,
 double SawtoothUpperBound::getValue(const belief_vector& b) const
 {
 #if USE_CONVEX_SUPPORT_LIST
-  int minSupportIndex = -1;
-  int minSupportSize = INT_MAX;
-  FOR_EACH (eltP, b.data) {
-    int i = eltP->index;
-    int size = supportList[i].size();
-    if (size < minSupportSize) {
-      minSupportSize = size;
-      minSupportIndex = i;
-    }
-  }
-  assert(-1 != minSupportIndex);
-  const BVList& ptsToCheck = supportList[minSupportIndex];
+  const BVList& ptsToCheck = supportList[b.data[0].index];
 #else
   const BVList& ptsToCheck = pts;
 #endif
@@ -204,38 +193,36 @@ void SawtoothUpperBound::prune(int numBackups) {
 #if USE_DEBUG_PRINT
   int oldNum = pts.size();
 #endif
-  typeof(pts.begin()) candidateP, memberP;
 
   FOR_EACH (ptP, pts) {
     BVPair* pt = *ptP;
     pt->innerCornerCache = inner_prod(cornerPts, pt->b);
   }
 
-  candidateP = pts.begin();
+  typeof(pts.begin()) candidateP = pts.begin();
   while (candidateP != pts.end()) {
     BVPair* candidate = *candidateP;
-    memberP = pts.begin();
-    while (memberP != candidateP) {
-      BVPair* member = *memberP;
-      if (candidate->numBackupsAtCreation <= lastPruneNumBackups
-	  && member->numBackupsAtCreation <= lastPruneNumBackups) {
-	// candidate and member were compared the last time we pruned
+#if USE_CONVEX_SUPPORT_LIST
+    const BVList& ptsToCheck = supportList[candidate->b.data[0].index];
+#else
+    const BVList& ptsToCheck = pts;
+#endif
+    typeof(ptsToCheck.begin()) opponentP = ptsToCheck.begin();
+    while (opponentP != ptsToCheck.end()) {
+      BVPair* opponent = *opponentP;
+      if (candidate == opponent) {
+	// duh, can't dominate yourself
+      } else if (candidate->numBackupsAtCreation <= lastPruneNumBackups
+	  && opponent->numBackupsAtCreation <= lastPruneNumBackups) {
+	// candidate and opponent were compared the last time we pruned
 	// and neither dominates the other; leave them both in
-      } else if (dominates(candidate, member)) {
-	// memberP is pruned
-	deleteAndForward(member, candidate);
-	memberP = eraseElement(pts, memberP);
-	continue;
-      } else if (dominates(member, candidate)) {
+      } else if (dominates(opponent, candidate)) {
 	// candidate is pruned
-	deleteAndForward(candidate, member);
+	deleteAndForward(candidate, opponent);
 	candidateP = eraseElement(pts, candidateP);
-	// as a heuristic, move the winning member to the front of pts
-	eraseElement(pts, memberP);
-	pts.push_front(member);
 	goto nextCandidate;
       }
-      memberP++;
+      opponentP++;
     }
     candidateP++;
   nextCandidate: ;
@@ -333,6 +320,9 @@ void SawtoothUpperBound::printToStream(ostream& out) const
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.9  2006/07/26 20:22:10  trey
+ * new implementation of USE_CONVEX_CACHE; during pruning, now skip comparison of points if they were compared during last pruning cycle
+ *
  * Revision 1.8  2006/07/26 16:32:24  trey
  * removed dependence of pruning on USE_CONVEX_SUPPORT_LIST
  *
