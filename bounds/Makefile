@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.3 2006-04-28 17:57:41 trey Exp $
+# $Id: Makefile,v 1.4 2006-10-17 19:16:25 trey Exp $
 #
 # Copyright (c) 2006, Trey Smith. All rights reserved.
 #
@@ -44,6 +44,7 @@ include $(BUILD_DIR)/installheaders.mak
 
 BUILDLIB_TARGET := libzmdpBounds.a
 BUILDLIB_SRCS := \
+	MDPCache.cc \
 	IncrementalBounds.cc \
 	RelaxUBInitializer.cc \
 	PointBounds.cc
@@ -56,6 +57,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.3  2006/04/28 17:57:41  trey
+# changed to use apache license
+#
 # Revision 1.2  2006/04/05 21:35:43  trey
 # shuffled how source files fit into libraries
 #
