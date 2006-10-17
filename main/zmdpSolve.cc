@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.11 $  $Author: trey $  $Date: 2006-10-16 17:33:04 $
+ $Revision: 1.12 $  $Author: trey $  $Date: 2006-10-17 19:18:47 $
 
  @file    zmdpSolve.cc
  @brief   No brief
@@ -98,7 +98,7 @@ void doSolve(const SolverParams& p)
 
     // check timeout
     double elapsed = run.elapsedTime();
-    if (p.terminateWallclockSeconds > 0 && elapsed >= p.terminateWallclockSeconds) {
+    if (elapsed >= p.terminateWallclockSeconds) {
       reachedTimeout = true;
     }
 
@@ -106,7 +106,7 @@ void doSolve(const SolverParams& p)
     if ((elapsed - lastPrintTime > 10)
 	|| reachedTargetPrecision || reachedTimeout || userTerminatedG) {
       ValueInterval intv = so.solver->getValueAt(so.sim->getModel()->getInitialState());
-      printf("%05d %6d calls to solver, bounds [%8.4f .. %8.4f], precision %g\n",
+      printf("%05d %6d calls to solver, bounds [%8.4f .. %8.4f], regret <= %g\n",
 	     (int) elapsed, numSolverCalls, intv.l, intv.u, (intv.u - intv.l));
       lastPrintTime = elapsed;
     }
@@ -300,6 +300,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.11  2006/10/16 17:33:04  trey
+ * removed obsolete OutputParams struct
+ *
  * Revision 1.10  2006/10/16 05:49:37  trey
  * renamed outputPolicyFile -> policyOutputFile
  *

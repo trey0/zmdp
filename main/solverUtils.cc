@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.7 $  $Author: trey $  $Date: 2006-10-16 05:48:19 $
+ $Revision: 1.8 $  $Author: trey $  $Date: 2006-10-17 19:18:39 $
 
  @file    solverUtils.cc
  @brief   No brief
@@ -116,6 +116,9 @@ void SolverParams::setValues(const ZMDPConfig& config)
   useFastPomdpParser = config.getBool("useFastPomdpParser");
   terminateRegretBound = config.getDouble("terminateRegretBound");
   terminateWallclockSeconds = config.getDouble("terminateWallclockSeconds");
+  if (terminateWallclockSeconds <= 0.0) {
+    terminateWallclockSeconds = 99e+20;
+  }
   maxHorizon = config.getInt("maxHorizon");
   useWeakUpperBoundHeuristic = config.getBool("useWeakUpperBoundHeuristic");
   forceMaintainLowerBound = config.getBool("forceMaintainLowerBound");
@@ -227,6 +230,9 @@ void constructSolverObjects(SolverObjects& obj, const SolverParams& p)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.7  2006/10/16 05:48:19  trey
+ * moved BenchmarkParams fields into SolverParams
+ *
  * Revision 1.6  2006/10/15 23:45:31  trey
  * switched to new config mechanism
  *
