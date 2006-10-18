@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.7 $  $Author: trey $  $Date: 2006-10-18 18:30:13 $
+ $Revision: 1.8 $  $Author: trey $  $Date: 2006-10-18 18:30:51 $
 
  @file    TestDriver.cc
  @brief   No brief
@@ -41,8 +41,6 @@ using namespace std;
 using namespace MatrixUtils;
 
 namespace zmdp {
-
-#define NUM_SIM_ITERATIONS_TO_LOG (1)
 
 void TestDriver::interleave(const ZMDPConfig& config,
 			    int numIterations,
@@ -317,6 +315,9 @@ void TestDriver::printRewards(void) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.7  2006/10/18 18:30:13  trey
+ * NUM_SIM_ITERATIONS_TO_LOG changed to a run-time parameter simulationTracesToLogPerEpoch
+ *
  * Revision 1.6  2006/10/18 18:05:56  trey
  * now propagating config data structure to lower levels so config fields can be used to control more parts of the system
  *

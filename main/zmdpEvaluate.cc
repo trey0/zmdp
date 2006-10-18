@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.7 $  $Author: trey $  $Date: 2006-10-18 18:05:56 $
+ $Revision: 1.8 $  $Author: trey $  $Date: 2006-10-18 18:30:13 $
 
  @file    zmdpEvaluate.cc
  @brief   Use to evaluate a POMDP policy in simulation.
@@ -38,8 +38,6 @@ using namespace std;
 using namespace MatrixUtils;
 using namespace zmdp;
 
-#define ZE_DEFAULT_ITERATIONS (100)
-#define ZE_DEFAULT_MAX_STEPS (251)
 #define ZE_DEFAULT_POLICY_TYPE ("maxplanes")
 
 const char* policyTypeG = ZE_DEFAULT_POLICY_TYPE;
@@ -90,13 +88,21 @@ void doit(const ZMDPConfig& config, SolverParams& p)
   }
   PomdpSim* sim = new PomdpSim(simPomdp);
 
-  ofstream simOutFile("sim.plot");
+  const char* simulationTraceOutputFile =
+    config.getString("simulationTraceOutputFile").c_str();
+  
+  ofstream simOutFile(simulationTraceOutputFile);
   if (!simOutFile) {
-    fprintf(stderr, "ERROR: couldn't open sim.plot for writing: %s\n",
-	    strerror(errno));
+    fprintf(stderr, "ERROR: couldn't open %s for writing: %s\n",
+	    simulationTraceOutputFile, strerror(errno));
     exit(EXIT_FAILURE);
   }
   sim->simOutFile = &simOutFile;
+
+  int simulationTracesToLogPerEpoch = config.getInt("simulationTracesToLogPerEpoch");
+  if (simulationTracesToLogPerEpoch < 0) {
+    simulationTracesToLogPerEpoch = INT_MAX;
+  }
 
   ofstream scoresOutFile("scores.plot");
   if (!scoresOutFile) {
@@ -108,6 +114,10 @@ void doit(const ZMDPConfig& config, SolverParams& p)
   // do evaluation
   std::vector<double> rewardValues;
   for (int i=0; i < p.evaluationTrialsPerEpoch; i++) {
+    if (i >= simulationTracesToLogPerEpoch) {
+      sim->simOutFile = NULL; // stop logging
+    }
+
     sim->restart();
     e->setToInitialBelief();
     for (int j=0; (j < p.evaluationMaxStepsPerTrial) || (0 == p.evaluationMaxStepsPerTrial); j++) {
@@ -309,6 +319,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.7  2006/10/18 18:05:56  trey
+ * now propagating config data structure to lower levels so config fields can be used to control more parts of the system
+ *
  * Revision 1.6  2006/10/16 17:32:17  trey
  * switched zmdpEvaluate to use new config system
  *
