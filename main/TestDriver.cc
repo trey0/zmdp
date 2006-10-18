@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.6 $  $Author: trey $  $Date: 2006-10-18 18:05:56 $
+ $Revision: 1.7 $  $Author: trey $  $Date: 2006-10-18 18:30:13 $
 
  @file    TestDriver.cc
  @brief   No brief
@@ -182,6 +182,11 @@ void TestDriver::batchTestIncremental(const ZMDPConfig& config,
     exit(EXIT_FAILURE);
   }
 
+  int simulationTracesToLogPerEpoch = config.getInt("simulationTracesToLogPerEpoch");
+  if (simulationTracesToLogPerEpoch < 0) {
+    simulationTracesToLogPerEpoch = INT_MAX;
+  }
+
   printf("initializing solver (includes calculating initial bounds)\n");
   so.solver->planInit(sim->getModel(), config);
 
@@ -230,8 +235,8 @@ void TestDriver::batchTestIncremental(const ZMDPConfig& config,
       FOR (i, numIterations) {
 	cout << "#-#-#-#-#-#-# batchTest " << (i+1) << " / " << numIterations;
 	cout.flush();
-	if (i >= NUM_SIM_ITERATIONS_TO_LOG) {
-	  sim->simOutFile = NULL;
+	if (i >= simulationTracesToLogPerEpoch) {
+	  sim->simOutFile = NULL; // stop logging
 	}
 	sim->restart();
 	last_action = -1;
@@ -312,6 +317,9 @@ void TestDriver::printRewards(void) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.6  2006/10/18 18:05:56  trey
+ * now propagating config data structure to lower levels so config fields can be used to control more parts of the system
+ *
  * Revision 1.5  2006/10/16 05:49:12  trey
  * replaced minOrder, maxOrder with more intuitive parameters
  *
