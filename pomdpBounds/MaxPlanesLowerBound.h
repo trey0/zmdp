@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.10 $  $Author: trey $  $Date: 2006-08-08 21:17:20 $
+ $Revision: 1.11 $  $Author: trey $  $Date: 2006-10-18 18:07:13 $
    
  @file    MaxPlanesLowerBound.h
  @brief   No brief
@@ -37,6 +37,7 @@
 
 #include "zmdpCommonDefs.h"
 #include "zmdpCommonTypes.h"
+#include "zmdpConfig.h"
 #if USE_MASKED_ALPHA
 #  include "sla_mask.h"
 #endif
@@ -77,11 +78,11 @@ public:
   PlaneSet planes;
   int lastPruneNumPlanes;
   int lastPruneNumBackups;
-#if USE_CONVEX_SUPPORT_LIST
   std::vector<PlaneSet> supportList;
-#endif
+  bool useConvexSupportList;
   
-  MaxPlanesLowerBound(const MDP* _pomdp);
+  MaxPlanesLowerBound(const MDP* _pomdp,
+		      const ZMDPConfig& config);
   ~MaxPlanesLowerBound(void);
 
   // performs any computation necessary to initialize the bound
@@ -112,6 +113,9 @@ public:
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.10  2006/08/08 21:17:20  trey
+ * fixed a bug in LB backPointers code; added USE_REF_COUNT_PRUNE
+ *
  * Revision 1.9  2006/07/26 20:21:53  trey
  * new implementation of USE_CONVEX_CACHE; during pruning, now skip comparison of planes if they were compared during last pruning cycle
  *

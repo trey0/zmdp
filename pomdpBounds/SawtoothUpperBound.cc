@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.10 $  $Author: trey $  $Date: 2006-10-17 19:14:02 $
+ $Revision: 1.11 $  $Author: trey $  $Date: 2006-10-18 18:07:13 $
    
  @file    SawtoothUpperBound.cc
  @brief   No brief
@@ -46,16 +46,18 @@ using namespace MatrixUtils;
 
 namespace zmdp {
 
-SawtoothUpperBound::SawtoothUpperBound(const MDP* _pomdp)
+SawtoothUpperBound::SawtoothUpperBound(const MDP* _pomdp,
+				       const ZMDPConfig& config)
 {
   pomdp = (const Pomdp*) _pomdp;
   numStates = pomdp->getBeliefSize();
   lastPruneNumPts = 0;
   lastPruneNumBackups = -1;
+  useConvexSupportList = config.getBool("useConvexSupportList");
 
-#if USE_CONVEX_SUPPORT_LIST
-  supportList.resize(pomdp->getBeliefSize());
-#endif
+  if (useConvexSupportList) {
+    supportList.resize(pomdp->getBeliefSize());
+  }
 }
 
 SawtoothUpperBound::~SawtoothUpperBound(void)
@@ -155,15 +157,16 @@ bool SawtoothUpperBound::dominates(const BVPair* xPair,
 
 double SawtoothUpperBound::getValue(const belief_vector& b) const
 {
-#if USE_CONVEX_SUPPORT_LIST
-  const BVList& ptsToCheck = supportList[b.data[0].index];
-#else
-  const BVList& ptsToCheck = pts;
-#endif
+  const BVList* ptsToCheck;
+  if (useConvexSupportList) {
+    ptsToCheck = &supportList[b.data[0].index];
+  } else {
+    ptsToCheck = &pts;
+  }
 
   double innerCornerPtsB = inner_prod(cornerPts, b);
   double minValue = innerCornerPtsB;
-  FOR_EACH (cPairP, ptsToCheck) {
+  FOR_EACH (cPairP, *ptsToCheck) {
     double innerCornerPtsC = inner_prod(cornerPts, (*cPairP)->b);
     minValue = std::min(minValue, getBVValue(b, *cPairP, innerCornerPtsB, innerCornerPtsC));
   }
@@ -173,18 +176,18 @@ double SawtoothUpperBound::getValue(const belief_vector& b) const
 void SawtoothUpperBound::deleteAndForward(BVPair* victim,
 					  BVPair* dominator)
 {
-#if USE_CONVEX_SUPPORT_LIST
-  // remove victim from supportList
-  FOR_EACH (bi, victim->b.data) {
-    BVList& bvl = supportList[bi->index];
-    FOR_EACH (eltP, bvl) {
-      if (victim == *eltP) {
-	eraseElement(bvl, eltP);
-	break;
+  if (useConvexSupportList) {
+    // remove victim from supportList
+    FOR_EACH (bi, victim->b.data) {
+      BVList& bvl = supportList[bi->index];
+      FOR_EACH (eltP, bvl) {
+	if (victim == *eltP) {
+	  eraseElement(bvl, eltP);
+	  break;
+	}
       }
     }
   }
-#endif
 
   delete victim;
 }
@@ -202,13 +205,14 @@ void SawtoothUpperBound::prune(int numBackups) {
   typeof(pts.begin()) candidateP = pts.begin();
   while (candidateP != pts.end()) {
     BVPair* candidate = *candidateP;
-#if USE_CONVEX_SUPPORT_LIST
-    const BVList& ptsToCheck = supportList[candidate->b.data[0].index];
-#else
-    const BVList& ptsToCheck = pts;
-#endif
-    typeof(ptsToCheck.begin()) opponentP = ptsToCheck.begin();
-    while (opponentP != ptsToCheck.end()) {
+    const BVList* ptsToCheck;
+    if (useConvexSupportList) {
+      ptsToCheck = &supportList[candidate->b.data[0].index];
+    } else {
+      ptsToCheck = &pts;
+    }
+    typeof(ptsToCheck->begin()) opponentP = ptsToCheck->begin();
+    while (opponentP != ptsToCheck->end()) {
       BVPair* opponent = *opponentP;
       if (candidate == opponent) {
 	// duh, can't dominate yourself
@@ -269,12 +273,12 @@ void SawtoothUpperBound::addPoint(BVPair* bv)
 {
   int wc = whichCornerPoint(bv->b);
   if (-1 == wc) {
-#if USE_CONVEX_SUPPORT_LIST
-    // add new point to supportList
-    FOR_EACH (bi, bv->b.data) {
-      supportList[bi->index].push_back(bv);
+    if (useConvexSupportList) {
+      // add new point to supportList
+      FOR_EACH (bi, bv->b.data) {
+	supportList[bi->index].push_back(bv);
+      }
     }
-#endif
     pts.push_back(bv);
   } else {
     cornerPts(wc) = bv->v;
@@ -288,12 +292,12 @@ void SawtoothUpperBound::addPoint(const belief_vector& b, double val)
   if (-1 == wc) {
     BVPair* bv = new BVPair(b,val);
 
-#if USE_CONVEX_SUPPORT_LIST
-    // add new point to supportList
-    FOR_EACH (bi, b.data) {
-      supportList[bi->index].push_back(bv);
+    if (useConvexSupportList) {
+      // add new point to supportList
+      FOR_EACH (bi, b.data) {
+	supportList[bi->index].push_back(bv);
+      }
     }
-#endif
 
     pts.push_back(bv);
   } else {
@@ -320,6 +324,9 @@ void SawtoothUpperBound::printToStream(ostream& out) const
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.10  2006/10/17 19:14:02  trey
+ * fixed bad interaction between pruning and support lists; new pruning code is simpler, probably not quite as fast, hopefully bug-free
+ *
  * Revision 1.9  2006/07/26 20:22:10  trey
  * new implementation of USE_CONVEX_CACHE; during pruning, now skip comparison of points if they were compared during last pruning cycle
  *

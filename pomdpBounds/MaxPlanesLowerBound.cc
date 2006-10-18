@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.17 $  $Author: trey $  $Date: 2006-08-08 21:17:20 $
+ $Revision: 1.18 $  $Author: trey $  $Date: 2006-10-18 18:07:13 $
    
  @file    MaxPlanesLowerBound.cc
  @brief   No brief
@@ -134,15 +134,17 @@ void LBPlane::write(std::ostream& out) const
  * MAX PLANES LOWER BOUND
  **********************************************************************/
 
-MaxPlanesLowerBound::MaxPlanesLowerBound(const MDP* _pomdp)
+MaxPlanesLowerBound::MaxPlanesLowerBound(const MDP* _pomdp,
+					 const ZMDPConfig& config)
 {
   pomdp = (const Pomdp*) _pomdp;
   lastPruneNumPlanes = 0;
   lastPruneNumBackups = -1;
+  useConvexSupportList = config.getBool("useConvexSupportList");
 
-#if USE_CONVEX_SUPPORT_LIST
-  supportList.resize(pomdp->getBeliefSize());
-#endif
+  if (useConvexSupportList) {
+    supportList.resize(pomdp->getBeliefSize());
+  }
 }
 
 MaxPlanesLowerBound::~MaxPlanesLowerBound(void)
@@ -174,26 +176,27 @@ double MaxPlanesLowerBound::getValue(const belief_vector& b) const
 // return the alpha such that alpha * b has the highest value
 const LBPlane& MaxPlanesLowerBound::getBestLBPlaneConst(const belief_vector& b) const
 {
-#if USE_CONVEX_SUPPORT_LIST
-  int minSupportIndex = -1;
-  int minSupportSize = INT_MAX;
-  FOR_EACH (eltP, b.data) {
-    int i = eltP->index;
-    int size = supportList[i].size();
-    if (size < minSupportSize) {
-      minSupportSize = size;
-      minSupportIndex = i;
+  const PlaneSet* planesToCheck;
+  if (useConvexSupportList) {
+    int minSupportIndex = -1;
+    int minSupportSize = INT_MAX;
+    FOR_EACH (eltP, b.data) {
+      int i = eltP->index;
+      int size = supportList[i].size();
+      if (size < minSupportSize) {
+	minSupportSize = size;
+	minSupportIndex = i;
+      }
     }
+    assert(-1 != minSupportIndex);
+    planesToCheck = &supportList[minSupportIndex];
+  } else {
+    planesToCheck = &planes;
   }
-  assert(-1 != minSupportIndex);
-  const PlaneSet& planesToCheck = supportList[minSupportIndex];
-#else
-  const PlaneSet& planesToCheck = planes;
-#endif
 
   double val, maxval = -99e+20;
   const LBPlane* ret = NULL;
-  FOR_EACH (pr, planesToCheck) {
+  FOR_EACH (pr, *planesToCheck) {
     const LBPlane* al = *pr;
 #if USE_MASKED_ALPHA
     if (!mask_subset( b, al->mask )) continue;
@@ -220,28 +223,29 @@ LBPlane& MaxPlanesLowerBound::getBestLBPlaneWithCache(const belief_vector& b,
 						      LBPlane* currPlane,
 						      int lastSetPlaneNumBackups)
 {
-#if USE_CONVEX_SUPPORT_LIST
-  int minSupportIndex = -1;
-  int minSupportSize = INT_MAX;
-  FOR_EACH (eltP, b.data) {
-    int i = eltP->index;
-    int size = supportList[i].size();
-    if (size < minSupportSize) {
-      minSupportSize = size;
-      minSupportIndex = i;
+  const PlaneSet* planesToCheck;
+  if (useConvexSupportList) {
+    int minSupportIndex = -1;
+    int minSupportSize = INT_MAX;
+    FOR_EACH (eltP, b.data) {
+      int i = eltP->index;
+      int size = supportList[i].size();
+      if (size < minSupportSize) {
+	minSupportSize = size;
+	minSupportIndex = i;
+      }
     }
+    assert(-1 != minSupportIndex);
+    planesToCheck = &supportList[minSupportIndex];
+  } else {
+    planesToCheck = &planes;
   }
-  assert(-1 != minSupportIndex);
-  const PlaneSet& planesToCheck = supportList[minSupportIndex];
-#else
-  const PlaneSet& planesToCheck = planes;
-#endif
 
   double val;
   LBPlane* ret = currPlane;
   double maxval = inner_prod(currPlane->alpha, b);
 
-  FOR_EACH (pr, planesToCheck) {
+  FOR_EACH (pr, *planesToCheck) {
     LBPlane* al = *pr;
 #if USE_CONVEX_CACHE
     if (al->numBackupsAtCreation < lastSetPlaneNumBackups) continue;
@@ -263,12 +267,12 @@ void MaxPlanesLowerBound::addLBPlane(LBPlane* av)
 {
   planes.push_back(av);
 
-#if USE_CONVEX_SUPPORT_LIST
-  // add new plane to supportList
-  FOR_EACH (ai, av->mask.data) {
-    supportList[ai->index].push_back(av);
+  if (useConvexSupportList) {
+    // add new plane to supportList
+    FOR_EACH (ai, av->mask.data) {
+      supportList[ai->index].push_back(av);
+    }
   }
-#endif
 }
 
 void MaxPlanesLowerBound::prunePlanes(int numBackups)
@@ -345,18 +349,18 @@ void MaxPlanesLowerBound::maybePrune(int numBackups)
 
 void MaxPlanesLowerBound::deleteAndForward(LBPlane* victim, LBPlane* dominator)
 {
-#if USE_CONVEX_SUPPORT_LIST
-  // remove victim from supportList
-  FOR_EACH (ai, victim->mask.data) {
-    PlaneSet& pi = supportList[ai->index];
-    FOR_EACH (eltP, pi) {
-      if (victim == *eltP) {
-	eraseElement(pi, eltP);
-	break;
+  if (useConvexSupportList) {
+    // remove victim from supportList
+    FOR_EACH (ai, victim->mask.data) {
+      PlaneSet& pi = supportList[ai->index];
+      FOR_EACH (eltP, pi) {
+	if (victim == *eltP) {
+	  eraseElement(pi, eltP);
+	  break;
+	}
       }
     }
   }
-#endif
 #if USE_CONVEX_CACHE
   // forward backPointers from victim to dominator
   FOR_EACH (bpP, victim->backPointers) {
@@ -526,6 +530,9 @@ void MaxPlanesLowerBound::readFromFile(const std::string& inFileName)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.17  2006/08/08 21:17:20  trey
+ * fixed a bug in LB backPointers code; added USE_REF_COUNT_PRUNE
+ *
  * Revision 1.16  2006/08/04 22:31:50  trey
  * MaxPlanes policy reading works again; it was broken when support lists were introduced
  *

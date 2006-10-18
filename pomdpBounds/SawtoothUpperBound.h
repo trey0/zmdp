@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.7 $  $Author: trey $  $Date: 2006-07-26 20:22:10 $
+ $Revision: 1.8 $  $Author: trey $  $Date: 2006-10-18 18:07:13 $
    
  @file    SawtoothUpperBound.h
  @brief   No brief
@@ -25,6 +25,7 @@
 
 #include <list>
 
+#include "zmdpConfig.h"
 #include "MatrixUtils.h"
 #include "AbstractBound.h"
 #include "Pomdp.h"
@@ -53,11 +54,11 @@ public:
   int lastPruneNumBackups;
   BVList pts;
   sla::dvector cornerPts;
-#if USE_CONVEX_SUPPORT_LIST
   std::vector<BVList> supportList;
-#endif
+  bool useConvexSupportList;
 
-  SawtoothUpperBound(const MDP* _pomdp);
+  SawtoothUpperBound(const MDP* _pomdp,
+		     const ZMDPConfig& config);
   ~SawtoothUpperBound(void);
 
   // performs any computation necessary to initialize the bound
@@ -91,6 +92,9 @@ public:
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.7  2006/07/26 20:22:10  trey
+ * new implementation of USE_CONVEX_CACHE; during pruning, now skip comparison of points if they were compared during last pruning cycle
+ *
  * Revision 1.6  2006/07/24 17:08:02  trey
  * added USE_CONVEX_SUPPORT_LIST
  *
