@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.8 $  $Author: trey $  $Date: 2006-10-16 05:48:19 $
+ $Revision: 1.9 $  $Author: trey $  $Date: 2006-10-18 18:05:56 $
    
  @file    solverUtils.h
  @brief   No brief
@@ -107,7 +107,9 @@ struct SolverObjects {
   AbstractSim* sim;
 };
 
-void constructSolverObjects(SolverObjects& obj, const SolverParams& p);
+void constructSolverObjects(SolverObjects& obj,
+			    const SolverParams& p,
+			    const ZMDPConfig& config);
 
 }; // namespace zmdp
 
@@ -116,6 +118,9 @@ void constructSolverObjects(SolverObjects& obj, const SolverParams& p);
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.8  2006/10/16 05:48:19  trey
+ * moved BenchmarkParams fields into SolverParams
+ *
  * Revision 1.7  2006/10/15 23:45:30  trey
  * switched to new config mechanism
  *

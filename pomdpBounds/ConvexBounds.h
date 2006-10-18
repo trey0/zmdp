@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.9 $  $Author: trey $  $Date: 2006-10-17 19:14:53 $
+ $Revision: 1.10 $  $Author: trey $  $Date: 2006-10-18 18:06:54 $
    
  @file    ConvexBounds.h
  @brief   No brief
@@ -62,7 +62,7 @@ struct ConvexBounds : public IncrementalBounds {
 
   // implementations of virtual functions declared in IncrementalBounds
   void initialize(const MDP* _pomdp,
-		  double _targetPrecision);
+		  const ZMDPConfig& config);
   MDPNode* getRootNode(void);
   MDPNode* getNode(const state_vector& s);
   void expand(MDPNode& cn);
@@ -81,6 +81,9 @@ struct ConvexBounds : public IncrementalBounds {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.9  2006/10/17 19:14:53  trey
+ * moved root and lookup members to IncrementalBounds parent class
+ *
  * Revision 1.8  2006/08/08 21:17:20  trey
  * fixed a bug in LB backPointers code; added USE_REF_COUNT_PRUNE
  *

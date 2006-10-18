@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.9 $  $Author: trey $  $Date: 2006-10-16 17:32:41 $
+ $Revision: 1.10 $  $Author: trey $  $Date: 2006-10-18 18:05:56 $
 
  @file    zmdpBenchmark.cc
  @brief   No brief
@@ -35,13 +35,13 @@ using namespace std;
 using namespace MatrixUtils;
 using namespace zmdp;
 
-void doBenchmark(const SolverParams& p)
+void doBenchmark(const ZMDPConfig& config, SolverParams& p)
 {
   init_matrix_utils();
 
   printf("reading input files\n");
   SolverObjects so;
-  constructSolverObjects(so, p);
+  constructSolverObjects(so, p, config);
 
   if (NULL != p.policyOutputFile) {
     if (!so.bounds->getSupportsPolicyOutput()) {
@@ -53,7 +53,8 @@ void doBenchmark(const SolverParams& p)
   }
 
   TestDriver x;
-  x.batchTestIncremental(/* numIterations = */ p.evaluationTrialsPerEpoch,
+  x.batchTestIncremental(config,
+			 /* numIterations = */ p.evaluationTrialsPerEpoch,
 			 so,
 			 /* numSteps = */ p.evaluationMaxStepsPerTrial,
 			 /* targetPrecision = */ p.terminateRegretBound,
@@ -214,14 +215,12 @@ int main(int argc, char **argv) {
     config.setString("policyOutputFile", "none");
   }
 
-  // translate from config key/value table to params struct
-  p.setValues(config);
-
   printf("CFLAGS = %s\n", CFLAGS);
   printf("ARGS = %s\n", outs.str().c_str());
   fflush(stdout);
 
-  doBenchmark(p);
+  p.setValues(config);
+  doBenchmark(config, p);
 
   // signal we are done -- an external batch process that runs zmdpBenchmark
   // can check for completion by polling for existence of this file
@@ -237,6 +236,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.9  2006/10/16 17:32:41  trey
+ * bug fixes related to new config system
+ *
  * Revision 1.8  2006/10/16 05:50:11  trey
  * switched zmdpBenchmark to use new config mechanism
  *

@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.15 $  $Author: trey $  $Date: 2006-08-08 21:17:20 $
+ $Revision: 1.16 $  $Author: trey $  $Date: 2006-10-18 18:06:54 $
    
  @file    ConvexBounds.cc
  @brief   No brief
@@ -373,17 +373,18 @@ double ConvexBounds::getUBForNode(MDPNode& cn)
 }
 
 void ConvexBounds::initialize(const MDP* _pomdp,
-			      double _targetPrecision)
+			      const ZMDPConfig& config)
 {
   pomdp = (const Pomdp*) _pomdp;
-  targetPrecision = CB_INITIALIZATION_PRECISION_FACTOR * _targetPrecision;
+  targetPrecision = CB_INITIALIZATION_PRECISION_FACTOR
+    * config.getDouble("terminateRegretBound");
 
   if (keepLowerBound) {
-    lowerBound = new MaxPlanesLowerBound(pomdp);
+    lowerBound = new MaxPlanesLowerBound(pomdp, config);
     lowerBound->initialize(targetPrecision);
   }
 
-  upperBound = new SawtoothUpperBound(pomdp);
+  upperBound = new SawtoothUpperBound(pomdp, config);
   upperBound->initialize(targetPrecision);
 
   lookup = new MDPHash();
@@ -546,6 +547,9 @@ void ConvexBounds::writePolicy(const std::string& outFileName)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.15  2006/08/08 21:17:20  trey
+ * fixed a bug in LB backPointers code; added USE_REF_COUNT_PRUNE
+ *
  * Revision 1.14  2006/07/26 20:20:41  trey
  * new implementation of USE_CONVEX_CACHE
  *

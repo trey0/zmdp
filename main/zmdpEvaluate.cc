@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.6 $  $Author: trey $  $Date: 2006-10-16 17:32:17 $
+ $Revision: 1.7 $  $Author: trey $  $Date: 2006-10-18 18:05:56 $
 
  @file    zmdpEvaluate.cc
  @brief   Use to evaluate a POMDP policy in simulation.
@@ -48,7 +48,7 @@ const char* sourceModelFileNameG = NULL;
 const char* simModelFileNameG = NULL;
 const char* plannerModelFileNameG = NULL;
 
-void doit(const SolverParams& p)
+void doit(const ZMDPConfig& config, SolverParams& p)
 {
   // seeds random number generator
   init_matrix_utils();
@@ -65,7 +65,7 @@ void doit(const SolverParams& p)
       exit(EXIT_FAILURE);
     }
     MaxPlanesLowerBoundExec* em = new MaxPlanesLowerBoundExec();
-    em->init(plannerModelFileNameG, p.useFastPomdpParser, policyFileNameG);
+    em->init(plannerModelFileNameG, p.useFastPomdpParser, policyFileNameG, config);
     e = em;
   } else if (0 == strcmp(policyTypeG, "lspath")) {
     if (NULL == sourceModelFileNameG) {
@@ -299,10 +299,9 @@ int main(int argc, char **argv) {
     config.setString("policyOutputFile", "none");
   }
 
-  // translate from config key/value table to params struct
   p.setValues(config);
 
-  doit(p);
+  doit(config, p);
 
   return EXIT_SUCCESS;
 }
@@ -310,6 +309,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.6  2006/10/16 17:32:17  trey
+ * switched zmdpEvaluate to use new config system
+ *
  * Revision 1.5  2006/09/21 17:26:06  trey
  * renamed output field
  *

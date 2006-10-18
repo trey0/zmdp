@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.15 $  $Author: trey $  $Date: 2006-10-03 03:18:59 $
+ $Revision: 1.16 $  $Author: trey $  $Date: 2006-10-18 18:06:37 $
   
  @file    Pomdp.cc
  @brief   No brief
@@ -154,14 +154,14 @@ double Pomdp::getReward(const belief_vector& b, int a) const
   return inner_prod_column( R, a, b );
 }
 
-AbstractBound* Pomdp::newLowerBound(void) const
+AbstractBound* Pomdp::newLowerBound(const ZMDPConfig& config) const
 {
-  return new MaxPlanesLowerBound(this);
+  return new MaxPlanesLowerBound(this, config);
 }
 
-AbstractBound* Pomdp::newUpperBound(void) const
+AbstractBound* Pomdp::newUpperBound(const ZMDPConfig& config) const
 {
-  return new SawtoothUpperBound(this);
+  return new SawtoothUpperBound(this, config);
 }
 
 bool Pomdp::getIsTerminalState(const state_vector& s) const
@@ -433,6 +433,9 @@ void Pomdp::debugDensity(void) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.15  2006/10/03 03:18:59  trey
+ * added maxHorizon parameter
+ *
  * Revision 1.14  2006/07/25 19:42:20  trey
  * deleted some old unused code; modified density calculation to avoid int overflow
  *

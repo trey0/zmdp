@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.11 $  $Author: trey $  $Date: 2006-04-28 17:57:41 $
+ $Revision: 1.12 $  $Author: trey $  $Date: 2006-10-18 18:05:20 $
    
  @file    Solver.h
  @brief   No brief
@@ -24,6 +24,7 @@
 #define INCSolver_h
 
 #include "MDP.h"
+#include "zmdpConfig.h"
 
 namespace zmdp {
 
@@ -33,7 +34,7 @@ public:
 
   // sets up the problem
   virtual void planInit(const MDP* problem,
-			double targetPrecision) = 0;
+			const ZMDPConfig& config) = 0;
 
   // plan for a fixed amount of time.  if maxTimeSeconds < 0,
   //   the amount of time is chosen by the solver to optimize
@@ -60,6 +61,9 @@ public:
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.11  2006/04/28 17:57:41  trey
+ * changed to use apache license
+ *
  * Revision 1.10  2006/02/15 16:21:37  trey
  * added targetPrecision argument to planInit()
  *

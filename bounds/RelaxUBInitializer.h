@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2006-04-28 17:57:41 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2006-10-18 18:05:02 $
    
  @file    RelaxUBInitializer.h
  @brief   No brief
@@ -35,8 +35,9 @@ struct RelaxUBInitializer : public AbstractBound {
   MDPHash* lookup;
   AbstractBound* initLowerBound;
   AbstractBound* initUpperBound;
+  const ZMDPConfig& config;
 
-  RelaxUBInitializer(const MDP* _problem);
+  RelaxUBInitializer(const MDP* _problem, const ZMDPConfig& _config);
   virtual ~RelaxUBInitializer(void) {}
 
   MDPNode* getNode(const state_vector& s);
@@ -60,6 +61,9 @@ struct RelaxUBInitializer : public AbstractBound {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2006/04/28 17:57:41  trey
+ * changed to use apache license
+ *
  * Revision 1.2  2006/04/06 04:09:45  trey
  * finished renaming RelaxBound -> RelaxUBInitializer
  *

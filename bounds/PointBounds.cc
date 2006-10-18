@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.5 $  $Author: trey $  $Date: 2006-04-28 17:57:41 $
+ $Revision: 1.6 $  $Author: trey $  $Date: 2006-10-18 18:05:02 $
    
  @file    PointBounds.cc
  @brief   No brief
@@ -131,10 +131,10 @@ void PointBounds::setBounds(AbstractBound* _initLowerBound,
 }
 
 void PointBounds::initialize(const MDP* _problem,
-			     double _targetPrecision)
+			     const ZMDPConfig& config)
 {
   problem = _problem;
-  targetPrecision = _targetPrecision;
+  targetPrecision = config.getDouble("terminateRegretBound");
 
   if (NULL != initLowerBound) {
     initLowerBound->initialize(targetPrecision);
@@ -316,6 +316,9 @@ ValueInterval PointBounds::getValueAt(const state_vector& s) const
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.5  2006/04/28 17:57:41  trey
+ * changed to use apache license
+ *
  * Revision 1.4  2006/04/10 20:25:08  trey
  * added forceUpperBoundActionSelection
  *

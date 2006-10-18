@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.10 $  $Author: trey $  $Date: 2006-04-28 17:57:41 $
+ $Revision: 1.11 $  $Author: trey $  $Date: 2006-10-18 18:06:06 $
   
  @file    RaceTrack.cc
  @brief   No brief
@@ -593,12 +593,12 @@ double RaceTrack::getReward(const state_vector& s, int a) const
   return -cost;
 }
 
-AbstractBound* RaceTrack::newLowerBound(void) const
+AbstractBound* RaceTrack::newLowerBound(const ZMDPConfig& config) const
 {
   return new RTLowerBound(this);
 }
 
-AbstractBound* RaceTrack::newUpperBound(void) const
+AbstractBound* RaceTrack::newUpperBound(const ZMDPConfig& config) const
 {
   return new RTUpperBound(this);
 }
@@ -608,6 +608,9 @@ AbstractBound* RaceTrack::newUpperBound(void) const
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.10  2006/04/28 17:57:41  trey
+ * changed to use apache license
+ *
  * Revision 1.9  2006/02/19 22:19:25  trey
  * added high-uncertainty "wind" version of the problem
  *

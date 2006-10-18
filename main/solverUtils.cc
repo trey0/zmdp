@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.8 $  $Author: trey $  $Date: 2006-10-17 19:18:39 $
+ $Revision: 1.9 $  $Author: trey $  $Date: 2006-10-18 18:05:56 $
 
  @file    solverUtils.cc
  @brief   No brief
@@ -164,7 +164,8 @@ void SolverParams::inferMissingValues(void)
   }
 }
 
-void constructSolverObjects(SolverObjects& obj, const SolverParams& p)
+void constructSolverObjects(SolverObjects& obj, const SolverParams& p,
+			    const ZMDPConfig& config)
 {
   switch (p.modelType) {
   case T_RACETRACK:
@@ -207,11 +208,11 @@ void constructSolverObjects(SolverObjects& obj, const SolverParams& p)
     AbstractBound *initLowerBound, *initUpperBound;
 
     pb = new PointBounds();
-    initLowerBound = keepLowerBound ? obj.problem->newLowerBound() : NULL;
+    initLowerBound = keepLowerBound ? obj.problem->newLowerBound(config) : NULL;
     if (p.useWeakUpperBoundHeuristic && T_POMDP == p.modelType) {
-      initUpperBound = obj.problem->newUpperBound();
+      initUpperBound = obj.problem->newUpperBound(config);
     } else {
-      initUpperBound = new RelaxUBInitializer(obj.problem);
+      initUpperBound = new RelaxUBInitializer(obj.problem, config);
     }
     pb->setBounds(initLowerBound, initUpperBound, p.forceUpperBoundRunTimeActionSelection);
     obj.bounds = pb;
@@ -230,6 +231,9 @@ void constructSolverObjects(SolverObjects& obj, const SolverParams& p)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.8  2006/10/17 19:18:39  trey
+ * centralized proper handling of negative terminateWallclockSeconds values
+ *
  * Revision 1.7  2006/10/16 05:48:19  trey
  * moved BenchmarkParams fields into SolverParams
  *

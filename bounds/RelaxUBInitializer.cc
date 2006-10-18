@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2006-04-28 17:57:41 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2006-10-18 18:05:02 $
    
  @file    RelaxUBInitializer.cc
  @brief   No brief
@@ -42,16 +42,17 @@ using namespace MatrixUtils;
 
 namespace zmdp {
 
-RelaxUBInitializer::RelaxUBInitializer(const MDP* _problem) :
+RelaxUBInitializer::RelaxUBInitializer(const MDP* _problem, const ZMDPConfig& _config) :
   problem(_problem),
-  root(NULL)
+  root(NULL),
+  config(_config)
 {}
 
 void RelaxUBInitializer::setup(double targetPrecision)
 {
-  initLowerBound = problem->newLowerBound();
+  initLowerBound = problem->newLowerBound(config);
   initLowerBound->initialize(targetPrecision);
-  initUpperBound = problem->newUpperBound();
+  initUpperBound = problem->newUpperBound(config);
   initUpperBound->initialize(targetPrecision);
 
   lookup = new MDPHash();
@@ -261,6 +262,9 @@ double RelaxUBInitializer::getValue(const state_vector& s) const
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2006/04/28 17:57:41  trey
+ * changed to use apache license
+ *
  * Revision 1.2  2006/04/06 04:09:45  trey
  * finished renaming RelaxBound -> RelaxUBInitializer
  *

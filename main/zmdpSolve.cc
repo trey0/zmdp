@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.12 $  $Author: trey $  $Date: 2006-10-17 19:18:47 $
+ $Revision: 1.13 $  $Author: trey $  $Date: 2006-10-18 18:05:56 $
 
  @file    zmdpSolve.cc
  @brief   No brief
@@ -58,16 +58,15 @@ void setSignalHandler(int sig, void (*handler)(int)) {
   }
 }
 
-void doSolve(const SolverParams& p)
+void doSolve(const ZMDPConfig& config, SolverParams& p)
 {
-  StopWatch run;
-
   init_matrix_utils();
+  StopWatch run;
 
   printf("%05d reading model file and allocating data structures\n",
 	 (int) run.elapsedTime());
   SolverObjects so;
-  constructSolverObjects(so, p);
+  constructSolverObjects(so, p, config);
 
   if (!so.bounds->getSupportsPolicyOutput()) {
     cerr << "ERROR: with selected options, policy output is not supported:" << endl;
@@ -79,7 +78,7 @@ void doSolve(const SolverParams& p)
   // initialize the solver
   printf("%05d calculating initial heuristics\n",
 	 (int) run.elapsedTime());
-  so.solver->planInit(so.sim->getModel(), p.terminateRegretBound);
+  so.solver->planInit(so.sim->getModel(), config);
   printf("%05d finished initialization, beginning to improve policy\n",
 	 (int) run.elapsedTime());
   
@@ -283,16 +282,14 @@ int main(int argc, char **argv) {
     config.setString("policyOutputFile", "out.policy");
   }
 
-  // translate from config key/value table to params struct
-  p.setValues(config);
-
 #if USE_DEBUG_PRINT
   printf("CFLAGS = %s\n", CFLAGS);
   printf("ARGS = %s\n", outs.str().c_str());
   fflush(stdout);
 #endif
 
-  doSolve(p);
+  p.setValues(config);
+  doSolve(config, p);
 
   return 0;
 }
@@ -300,6 +297,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.12  2006/10/17 19:18:47  trey
+ * centralized proper handling of negative terminateWallclockSeconds values
+ *
  * Revision 1.11  2006/10/16 17:33:04  trey
  * removed obsolete OutputParams struct
  *

@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.7 $  $Author: trey $  $Date: 2006-10-17 19:16:56 $
+ $Revision: 1.8 $  $Author: trey $  $Date: 2006-10-18 18:05:02 $
    
  @file    PointBounds.h
  @brief   No brief
@@ -53,7 +53,7 @@ struct PointBounds : public IncrementalBounds {
 
   // implementations of virtual functions declared in IncrementalBounds
   void initialize(const MDP* _problem,
-		  double _targetPrecision);
+		  const ZMDPConfig& config);
 
   MDPNode* getRootNode(void);
   MDPNode* getNode(const state_vector& s);
@@ -70,6 +70,9 @@ struct PointBounds : public IncrementalBounds {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.7  2006/10/17 19:16:56  trey
+ * moved root and lookup members to IncrementalBounds parent class
+ *
  * Revision 1.6  2006/04/28 17:57:41  trey
  * changed to use apache license
  *

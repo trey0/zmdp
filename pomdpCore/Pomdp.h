@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.7 $  $Author: trey $  $Date: 2006-10-03 03:18:59 $
+ $Revision: 1.8 $  $Author: trey $  $Date: 2006-10-18 18:06:37 $
    
  @file    Pomdp.h
  @brief   No brief
@@ -27,8 +27,6 @@
 #include <string>
 #include <vector>
 
-#include "zmdpCommonDefs.h"
-#include "zmdpCommonTypes.h"
 #include "MDP.h"
 
 using namespace sla;
@@ -83,8 +81,8 @@ public:
   // returns the expected immediate reward when from belief b action a is selected
   double getReward(const belief_vector& b, int a) const;
 
-  AbstractBound* newLowerBound(void) const;
-  AbstractBound* newUpperBound(void) const;
+  AbstractBound* newLowerBound(const ZMDPConfig& config) const;
+  AbstractBound* newUpperBound(const ZMDPConfig& config) const;
 
   // POMDP-as-belief-MDP aliases for functions implemented in MDP
   int getBeliefSize(void) const { return getNumStateDimensions(); }
@@ -116,6 +114,9 @@ protected:
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.7  2006/10/03 03:18:59  trey
+ * added maxHorizon parameter
+ *
  * Revision 1.6  2006/04/28 17:57:41  trey
  * changed to use apache license
  *

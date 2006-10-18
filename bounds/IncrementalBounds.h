@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.6 $  $Author: trey $  $Date: 2006-10-17 19:15:22 $
+ $Revision: 1.7 $  $Author: trey $  $Date: 2006-10-18 18:05:02 $
    
  @file    IncrementalBounds.h
  @brief   No brief
@@ -48,7 +48,7 @@ struct IncrementalBounds {
   virtual ~IncrementalBounds(void) {}
 
   virtual void initialize(const MDP* _problem,
-			  double _targetPrecision) = 0;
+			  const ZMDPConfig& config) = 0;
 
   virtual MDPNode* getRootNode(void) = 0;
   virtual MDPNode* getNode(const state_vector& s) = 0;
@@ -75,6 +75,9 @@ struct IncrementalBounds {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.6  2006/10/17 19:15:22  trey
+ * moved root and lookup members from derived classes to IncrementalBounds
+ *
  * Revision 1.5  2006/04/28 17:57:41  trey
  * changed to use apache license
  *

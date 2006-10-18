@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.7 $  $Author: trey $  $Date: 2006-04-28 17:57:41 $
+ $Revision: 1.8 $  $Author: trey $  $Date: 2006-10-18 18:05:20 $
    
  @file    MDP.h
  @brief   No brief
@@ -29,6 +29,7 @@
 
 #include "zmdpCommonDefs.h"
 #include "zmdpCommonTypes.h"
+#include "zmdpConfig.h"
 
 using namespace sla;
 
@@ -77,8 +78,8 @@ struct MDP {
   // * some types of MDP might not define one of these bounds, which
   //   could be signaled by returning NULL.  so far this hasn't been
   //   explored.
-  virtual AbstractBound* newLowerBound(void) const = 0;
-  virtual AbstractBound* newUpperBound(void) const = 0;
+  virtual AbstractBound* newLowerBound(const ZMDPConfig& config) const = 0;
+  virtual AbstractBound* newUpperBound(const ZMDPConfig& config) const = 0;
 };
 
 }; // namespace zmdp
@@ -88,6 +89,9 @@ struct MDP {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.7  2006/04/28 17:57:41  trey
+ * changed to use apache license
+ *
  * Revision 1.6  2006/04/05 21:36:16  trey
  * moved OBS_IS_ZERO_EPS from MDP.h to zmdpCommonDefs.h
  *

@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2006-06-15 16:09:47 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2006-10-18 18:05:56 $
    
  @file    TestDriver.h
  @brief   No brief
@@ -42,7 +42,8 @@ public:
     }
   }
 
-  void interleave(int numIterations,
+  void interleave(const ZMDPConfig& config,
+		  int numIterations,
 		  AbstractSim* _sim,
 		  Solver& solver,
 		  int numSteps,
@@ -52,7 +53,8 @@ public:
 		  const std::string& boundsFileNameFmt,
 		  const std::string& simFileNameFmt);
   double getReward(void) { return sim->rewardSoFar; }
-  void batchTestIncremental(int numIterations,
+  void batchTestIncremental(const ZMDPConfig& config,
+			    int numIterations,
 			    SolverObjects& so,
 			    int numSteps,
 			    double minPrecision,
@@ -72,6 +74,9 @@ public:
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2006/06/15 16:09:47  trey
+ * restructured so zmdpBenchmark can output policies
+ *
  * Revision 1.2  2006/04/28 17:57:41  trey
  * changed to use apache license
  *

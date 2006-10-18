@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.17 $  $Author: trey $  $Date: 2006-04-28 17:57:41 $
+ $Revision: 1.18 $  $Author: trey $  $Date: 2006-10-18 18:06:26 $
    
  @file    RTDPCore.cc
  @brief   Common code used by multiple RTDP variants found in this
@@ -53,11 +53,9 @@ void RTDPCore::setBounds(IncrementalBounds* _bounds)
   bounds = _bounds;
 }
 
-void RTDPCore::init(double _targetPrecision)
+void RTDPCore::init(void)
 {
-  targetPrecision = _targetPrecision;
-
-  bounds->initialize(problem, targetPrecision);
+  bounds->initialize(problem, *config);
 
   previousElapsedTime = secondsToTimeval(0.0);
   lastPrintTime = 0;
@@ -82,14 +80,17 @@ void RTDPCore::init(double _targetPrecision)
 }
 
 void RTDPCore::planInit(const MDP* _problem,
-			double _targetPrecision)
+			const ZMDPConfig& _config)
 {
+  config = &_config;
   problem = _problem;
   initialized = false;
+  targetPrecision = config->getDouble("terminateRegretBound");
+  bool useTimeWithoutHeuristic = config->getBool("useTimeWithoutHeuristic");
 
-#if USE_TIME_WITHOUT_HEURISTIC
-  init(_targetPrecision);
-#endif
+  if (useTimeWithoutHeuristic) {
+    init();
+  }
 }
 
 bool RTDPCore::planFixedTime(const state_vector& s,
@@ -100,7 +101,7 @@ bool RTDPCore::planFixedTime(const state_vector& s,
 
   if (!initialized) {
     boundsStartTime = getTime();
-    init(_targetPrecision);
+    init();
   }
 
   // disable this termination check for now
@@ -151,6 +152,9 @@ ValueInterval RTDPCore::getValueAt(const state_vector& s) const
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.17  2006/04/28 17:57:41  trey
+ * changed to use apache license
+ *
  * Revision 1.16  2006/04/07 19:43:26  trey
  * now initialize with a single IncrementalBounds object rather than a pair of AbstractBound objects for the upper and lower bounds
  *

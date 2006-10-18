@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.12 $  $Author: trey $  $Date: 2006-04-28 17:57:41 $
+ $Revision: 1.13 $  $Author: trey $  $Date: 2006-10-18 18:06:26 $
    
  @file    RTDPCore.h
  @brief   Common code used by multiple RTDP variants found in this
@@ -82,11 +82,12 @@ struct RTDPCore : public Solver {
   std::ostream* boundsFile;
   bool initialized;
   double targetPrecision;
+  const ZMDPConfig* config;
 
   RTDPCore(void);
 
   void setBounds(IncrementalBounds* _bounds);
-  void init(double _targetPrecision);
+  void init(void);
 
   // different derived classes (RTDP variants) will implement these
   // in varying ways
@@ -95,7 +96,7 @@ struct RTDPCore : public Solver {
   virtual void derivedClassInit(void) {}
 
   // virtual functions from Solver that constitute the external api
-  void planInit(const MDP* problem, double _targetPrecision);
+  void planInit(const MDP* problem, const ZMDPConfig& _config);
   bool planFixedTime(const state_vector& s,
 		     double maxTimeSeconds,
 		     double _targetPrecision);
@@ -111,6 +112,9 @@ struct RTDPCore : public Solver {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.12  2006/04/28 17:57:41  trey
+ * changed to use apache license
+ *
  * Revision 1.11  2006/04/07 19:43:26  trey
  * now initialize with a single IncrementalBounds object rather than a pair of AbstractBound objects for the upper and lower bounds
  *

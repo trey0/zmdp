@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.5 $  $Author: trey $  $Date: 2006-10-16 05:49:12 $
+ $Revision: 1.6 $  $Author: trey $  $Date: 2006-10-18 18:05:56 $
 
  @file    TestDriver.cc
  @brief   No brief
@@ -44,7 +44,8 @@ namespace zmdp {
 
 #define NUM_SIM_ITERATIONS_TO_LOG (1)
 
-void TestDriver::interleave(int numIterations,
+void TestDriver::interleave(const ZMDPConfig& config,
+			    int numIterations,
 			    AbstractSim* _sim,
 			    Solver& solver,
 			    int numSteps,
@@ -76,7 +77,7 @@ void TestDriver::interleave(int numIterations,
     cout << "=-=-=-=-= interleave: trial " << (i+1) << " / " << numIterations << endl;
 
     // reset the planner
-    solver.planInit(sim->getModel(), minPrecision);
+    solver.planInit(sim->getModel(), config);
 
     // set up a new bounds file and sim file for each iteration
     snprintf( boundsFileName, sizeof(boundsFileName), boundsFileNameFmt.c_str(), i );
@@ -140,7 +141,8 @@ void TestDriver::interleave(int numIterations,
   scatterFile.close();
 }
 
-void TestDriver::batchTestIncremental(int numIterations,
+void TestDriver::batchTestIncremental(const ZMDPConfig& config,
+				      int numIterations,
 				      SolverObjects& so,
 				      int numSteps,
 				      double minPrecision,
@@ -181,7 +183,7 @@ void TestDriver::batchTestIncremental(int numIterations,
   }
 
   printf("initializing solver (includes calculating initial bounds)\n");
-  so.solver->planInit(sim->getModel(), minPrecision);
+  so.solver->planInit(sim->getModel(), config);
 
   printf("entering solver main loop\n");
   double timeSoFar = 1e-20;
@@ -310,6 +312,9 @@ void TestDriver::printRewards(void) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.5  2006/10/16 05:49:12  trey
+ * replaced minOrder, maxOrder with more intuitive parameters
+ *
  * Revision 1.4  2006/07/24 17:06:37  trey
  * added more debug output
  *
