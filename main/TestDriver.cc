@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.8 $  $Author: trey $  $Date: 2006-10-18 18:30:51 $
+ $Revision: 1.9 $  $Author: trey $  $Date: 2006-10-18 18:46:47 $
 
  @file    TestDriver.cc
  @brief   No brief
@@ -233,7 +233,7 @@ void TestDriver::batchTestIncremental(const ZMDPConfig& config,
       FOR (i, numIterations) {
 	cout << "#-#-#-#-#-#-# batchTest " << (i+1) << " / " << numIterations;
 	cout.flush();
-	if (i >= simulationTracesToLogPerEpoch) {
+	if (((int)i) >= simulationTracesToLogPerEpoch) {
 	  sim->simOutFile = NULL; // stop logging
 	}
 	sim->restart();
@@ -315,6 +315,9 @@ void TestDriver::printRewards(void) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.8  2006/10/18 18:30:51  trey
+ * NUM_SIM_ITERATIONS_TO_LOG changed to a run-time parameter simulationTracesToLogPerEpoch
+ *
  * Revision 1.7  2006/10/18 18:30:13  trey
  * NUM_SIM_ITERATIONS_TO_LOG changed to a run-time parameter simulationTracesToLogPerEpoch
  *
