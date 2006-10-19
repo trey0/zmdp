@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.12 $  $Author: trey $  $Date: 2006-10-18 18:05:20 $
+ $Revision: 1.13 $  $Author: trey $  $Date: 2006-10-19 19:32:33 $
    
  @file    Solver.h
  @brief   No brief
@@ -52,6 +52,8 @@ public:
   // sets the minimum safety value, for a solver that understands safety
   virtual void setMinSafety(double _minSafety) {}
   
+  // outputs a log of backups, if the solver uses backups
+  virtual void logBackups(void) {}
 };
 
 }; // namespace zmdp
@@ -61,6 +63,9 @@ public:
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.12  2006/10/18 18:05:20  trey
+ * now propagating config data structure to lower levels so config fields can be used to control more parts of the system
+ *
  * Revision 1.11  2006/04/28 17:57:41  trey
  * changed to use apache license
  *
