@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.10 $  $Author: trey $  $Date: 2006-10-18 18:05:56 $
+ $Revision: 1.11 $  $Author: trey $  $Date: 2006-10-19 19:33:41 $
 
  @file    zmdpBenchmark.cc
  @brief   No brief
@@ -65,8 +65,6 @@ void doBenchmark(const ZMDPConfig& config, SolverParams& p)
 			 /* boundsFileName = */ p.boundsOutputFile,
 			 /* simFileName = */ p.simulationTraceOutputFile,
 			 /* policyOutputFile = */ p.policyOutputFile);
-
-  MDPNodeHashLogger::logToFile("nodes.plot", so.bounds->lookup);
 
   x.printRewards();
 }
@@ -236,6 +234,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.10  2006/10/18 18:05:56  trey
+ * now propagating config data structure to lower levels so config fields can be used to control more parts of the system
+ *
  * Revision 1.9  2006/10/16 17:32:41  trey
  * bug fixes related to new config system
  *
