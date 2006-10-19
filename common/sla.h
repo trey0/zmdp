@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.23 $  $Author: trey $  $Date: 2006-07-26 20:22:58 $
+ $Revision: 1.24 $  $Author: trey $  $Date: 2006-10-19 19:32:52 $
    
  @file    sla.h
  @brief   No brief
@@ -103,6 +103,7 @@ namespace sla {
     void resize(unsigned int _size, unsigned int _non_zeros = 0);
     void push_back(unsigned int index, double value);
     void canonicalize(void) {}
+    void clear(void) { data.clear(); }
 
     void read(std::istream& in);
   };
@@ -1281,6 +1282,9 @@ typedef sla::dvector obs_prob_vector;
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.23  2006/07/26 20:22:58  trey
+ * added important comment about performance
+ *
  * Revision 1.22  2006/07/04 23:15:30  trey
  * improved speed of mult(cmatrix,cvector) operation for very sparse operands
  *
