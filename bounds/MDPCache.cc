@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-10-17 19:16:39 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-10-19 19:34:32 $
    
  @file    MDPCache.cc
  @brief   No brief
@@ -38,31 +38,13 @@ using namespace MatrixUtils;
 
 namespace zmdp {
 
-void MDPNodeHashLogger::logToFile(FILE* logFile, MDPHash* nodes)
-{
-  EXT_NAMESPACE::hash<std::string> h;
-
-  FOR_EACH (pr, *nodes) {
-    fprintf(logFile, "%010u\n", (unsigned int) h(pr->first));
-  }
-}
-
-void MDPNodeHashLogger::logToFile(const std::string& logFileName, MDPHash* nodes)
-{
-  FILE* logFile = fopen(logFileName.c_str(), "w");
-  if (!logFile) {
-    fprintf(stderr, "ERROR: couldn't open %s for reading: %s\n",
-	    logFileName.c_str(), strerror(errno));
-    exit(EXIT_FAILURE);
-  }
-  logToFile(logFile, nodes);
-  fclose(logFile);
-}
-
 }; // namespace zmdp
 
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/10/17 19:16:39  trey
+ * initial check-in
+ *
  *
  ***************************************************************************/

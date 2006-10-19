@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2006-10-17 19:16:15 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2006-10-19 19:34:31 $
    
  @file    MDPCache.h
  @brief   Data structures for caching the explicit search graph
@@ -67,11 +67,6 @@ struct MDPNode {
 
 typedef EXT_NAMESPACE::hash_map<std::string, MDPNode*> MDPHash;
 
-struct MDPNodeHashLogger {
-  static void logToFile(FILE* logFile, MDPHash* nodes);
-  static void logToFile(const std::string& logFileName, MDPHash* nodes);
-};
-
 }; // namespace zmdp
 
 #endif // INCMDPCache_h
@@ -79,6 +74,9 @@ struct MDPNodeHashLogger {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2006/10/17 19:16:15  trey
+ * added MDPNodeHashLogger, to be used for new kinds of performance plots in zmdpBenchmark
+ *
  * Revision 1.2  2006/04/28 17:57:41  trey
  * changed to use apache license
  *
