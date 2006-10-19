@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.9 $  $Author: trey $  $Date: 2006-10-18 18:46:47 $
+ $Revision: 1.10 $  $Author: trey $  $Date: 2006-10-19 19:33:57 $
 
  @file    TestDriver.cc
  @brief   No brief
@@ -191,11 +191,11 @@ void TestDriver::batchTestIncremental(const ZMDPConfig& config,
   printf("entering solver main loop\n");
   double timeSoFar = 1e-20;
   double logLastSimTime = -99;
-  bool achieved_precision = false;
+  bool solverFinished = false;
   bool achieved_terminal_state;
-  while (!achieved_precision && timeSoFar < terminateWallclockSeconds) {
+  while (!solverFinished && timeSoFar < terminateWallclockSeconds) {
     timeval plan_start = getTime();
-    achieved_precision =
+    solverFinished =
       so.solver->planFixedTime(sim->getModel()->getInitialState(),
 			       /* maxTime = */ -1, minPrecision);
     double deltaTime = timevalToSeconds(getTime() - plan_start);
@@ -207,8 +207,8 @@ void TestDriver::batchTestIncremental(const ZMDPConfig& config,
 	 && log(timeSoFar) - logLastSimTime > ::log(10) / ticksPerOrder)
 	// ensure we do a simulation after the last iteration
 	|| timeSoFar >= terminateWallclockSeconds
-	// or when the run ends because we achieved the desired precision
-	|| achieved_precision) {
+	// or when the run ends because the solver signaled it is done
+	|| solverFinished) {
       logLastSimTime = ::log(timeSoFar);
 
       // write output policy at each evaluation epoch if that was requested
@@ -297,6 +297,8 @@ void TestDriver::batchTestIncremental(const ZMDPConfig& config,
   out.close();
   boundsFile.close();
   simOutFile.close();
+
+  so.solver->logBackups();
 }
   
 void TestDriver::printRewards(void) {
@@ -315,6 +317,9 @@ void TestDriver::printRewards(void) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.9  2006/10/18 18:46:47  trey
+ * fixed spurious warning
+ *
  * Revision 1.8  2006/10/18 18:30:51  trey
  * NUM_SIM_ITERATIONS_TO_LOG changed to a run-time parameter simulationTracesToLogPerEpoch
  *

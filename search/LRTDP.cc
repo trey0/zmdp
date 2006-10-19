@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.11 $  $Author: trey $  $Date: 2006-04-28 17:57:41 $
+ $Revision: 1.12 $  $Author: trey $  $Date: 2006-10-19 19:31:16 $
    
  @file    LRTDP.cc
  @brief   Implementation of Bonet and Geffner's LRTDP algorithm.
@@ -82,6 +82,7 @@ void LRTDP::cacheQ(MDPNode& cn)
   double oldUBVal = cn.ubVal;
   // bounds->update() changes both Q values and cn.ubVal
   bounds->update(cn, NULL);
+  trackBackup(cn);
   // keep the changes to Q but undo the change to cn.ubVal
   cn.ubVal = oldUBVal;
 }
@@ -169,6 +170,7 @@ bool LRTDP::trialRecurse(MDPNode& cn, int depth)
   // cached Q values must be up to date for subsequent calls
   int maxUBAction;
   bounds->update(cn, &maxUBAction);
+  trackBackup(cn);
 
   int simulatedOutcome = bounds->getSimulatedOutcome(cn, maxUBAction);
 
@@ -211,6 +213,9 @@ void LRTDP::derivedClassInit(void)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.11  2006/04/28 17:57:41  trey
+ * changed to use apache license
+ *
  * Revision 1.10  2006/04/07 19:41:45  trey
  * removed initLowerBound, initUpperBound arguments to constructor
  *

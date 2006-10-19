@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.11 $  $Author: trey $  $Date: 2006-06-14 00:22:40 $
+ $Revision: 1.12 $  $Author: trey $  $Date: 2006-10-19 19:31:16 $
    
  @file    HDP.cc
  @brief   Implementation of Bonet and Geffner's HDP algorithm.
@@ -101,6 +101,7 @@ void HDP::cacheQ(MDPNode& cn)
   double oldUBVal = cn.ubVal;
   // bounds->update() changes both Q values and cn.ubVal
   bounds->update(cn, NULL);
+  trackBackup(cn);
   // keep the changes to Q but undo the change to cn.ubVal
   cn.ubVal = oldUBVal;
 }
@@ -178,6 +179,7 @@ bool HDP::trialRecurse(MDPNode& cn, int depth)
   // update if necessary
   if (flag) {
     bounds->update(cn, NULL);
+    trackBackup(cn);
     return true;
   }
 
@@ -231,6 +233,9 @@ void HDP::derivedClassInit(void)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.11  2006/06/14 00:22:40  trey
+ * fixed printf format warning
+ *
  * Revision 1.10  2006/05/20 03:50:54  trey
  * fixed printf format to avoid warning
  *

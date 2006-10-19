@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2006-04-28 17:57:41 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2006-10-19 19:31:16 $
    
  @file    HSVI.cc
  @brief   No brief
@@ -80,6 +80,7 @@ void HSVI::update(MDPNode& cn, int depth, HSVIUpdateResult& r)
 {
   double oldUBVal = cn.ubVal;
   bounds->update(cn, &r.maxUBAction);
+  trackBackup(cn);
   
   r.ubResidual = oldUBVal - r.maxUBVal;
 
@@ -193,6 +194,9 @@ bool HSVI::doTrial(MDPNode& cn)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2006/04/28 17:57:41  trey
+ * changed to use apache license
+ *
  * Revision 1.1  2006/04/27 20:18:08  trey
  * renamed WRTDP to HSVI, maybe less confusing this way
  *

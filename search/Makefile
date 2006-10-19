@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.14 2006-06-03 10:57:13 trey Exp $
+# $Id: Makefile,v 1.15 2006-10-19 19:32:17 trey Exp $
 #
 # Copyright (c) 2006, Trey Smith. All rights reserved.
 #
@@ -38,7 +38,8 @@ INSTALLHEADERS_HEADERS := \
 	LRTDP.h \
 	HDP.h \
 	HSVI.h \
-	FRTDP.h
+	FRTDP.h \
+	StateLog.h
 include $(BUILD_DIR)/installheaders.mak
 
 BUILDLIB_TARGET := libzmdpSearch.a
@@ -48,7 +49,8 @@ BUILDLIB_SRCS := \
 	LRTDP.cc \
 	HDP.cc \
 	HSVI.cc \
-	FRTDP.cc
+	FRTDP.cc \
+	StateLog.cc
 include $(BUILD_DIR)/buildlib.mak
 
 ifneq (,$(TEST))
@@ -62,6 +64,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.14  2006/06/03 10:57:13  trey
+# changed directory name rtdp -> search in maininstall rule
+#
 # Revision 1.13  2006/04/28 22:33:41  trey
 # renamed zmdpRtdp -> zmdpSearch
 #

@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.13 $  $Author: trey $  $Date: 2006-10-18 18:06:26 $
+ $Revision: 1.14 $  $Author: trey $  $Date: 2006-10-19 19:31:16 $
    
  @file    RTDPCore.h
  @brief   Common code used by multiple RTDP variants found in this
@@ -83,6 +83,12 @@ struct RTDPCore : public Solver {
   bool initialized;
   double targetPrecision;
   const ZMDPConfig* config;
+  int terminateNumBackups;
+
+  bool useLogBackups;
+  std::string stateIndexOutputFile;
+  std::string backupsOutputFile;
+  std::vector<const MDPNode*> backedUpNodes;
 
   RTDPCore(void);
 
@@ -103,6 +109,8 @@ struct RTDPCore : public Solver {
   int chooseAction(const state_vector& s);
   void setBoundsFile(std::ostream* boundsFile);
   ValueInterval getValueAt(const state_vector& s) const;
+  void trackBackup(const MDPNode& backedUpNode);
+  void logBackups(void);
 };
 
 }; // namespace zmdp
@@ -112,6 +120,9 @@ struct RTDPCore : public Solver {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.13  2006/10/18 18:06:26  trey
+ * now propagating config data structure to lower levels so config fields can be used to control more parts of the system
+ *
  * Revision 1.12  2006/04/28 17:57:41  trey
  * changed to use apache license
  *

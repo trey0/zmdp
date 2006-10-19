@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.13 $  $Author: trey $  $Date: 2006-04-28 17:57:41 $
+ $Revision: 1.14 $  $Author: trey $  $Date: 2006-10-19 19:31:26 $
    
  @file    RTDP.cc
  @brief   Implementation of Barto, Bradke, and Singh's RTDP algorithm.
@@ -74,6 +74,7 @@ void RTDP::trialRecurse(MDPNode& cn, int depth)
   // cached Q values must be up to date for subsequent calls
   int maxUBAction;
   bounds->update(cn, &maxUBAction);
+  trackBackup(cn);
 
   int simulatedOutcome = bounds->getSimulatedOutcome(cn, maxUBAction);
 
@@ -87,6 +88,7 @@ void RTDP::trialRecurse(MDPNode& cn, int depth)
   trialRecurse(cn.getNextState(maxUBAction, simulatedOutcome), depth+1);
 
   bounds->update(cn, NULL);
+  trackBackup(cn);
 }
 
 bool RTDP::doTrial(MDPNode& cn)
@@ -106,6 +108,9 @@ bool RTDP::doTrial(MDPNode& cn)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.13  2006/04/28 17:57:41  trey
+ * changed to use apache license
+ *
  * Revision 1.12  2006/04/07 19:42:42  trey
  * removed initUpperBound argument to constructor
  *

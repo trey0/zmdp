@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.18 $  $Author: trey $  $Date: 2006-10-18 18:06:26 $
+ $Revision: 1.19 $  $Author: trey $  $Date: 2006-10-19 19:31:16 $
    
  @file    RTDPCore.cc
  @brief   Common code used by multiple RTDP variants found in this
@@ -36,6 +36,7 @@
 #include "Pomdp.h"
 #include "RTDPCore.h"
 #include "PointBounds.h"
+#include "StateLog.h"
 
 using namespace std;
 using namespace sla;
@@ -86,7 +87,16 @@ void RTDPCore::planInit(const MDP* _problem,
   problem = _problem;
   initialized = false;
   targetPrecision = config->getDouble("terminateRegretBound");
+  terminateNumBackups = config->getInt("terminateNumBackups");
+  if (terminateNumBackups < 0) {
+    terminateNumBackups = INT_MAX;
+  }
   bool useTimeWithoutHeuristic = config->getBool("useTimeWithoutHeuristic");
+
+  // backup logging setup
+  useLogBackups = config->getBool("useLogBackups");
+  stateIndexOutputFile = config->getString("stateIndexOutputFile");
+  backupsOutputFile = config->getString("backupsOutputFile");
 
   if (useTimeWithoutHeuristic) {
     init();
@@ -107,6 +117,7 @@ bool RTDPCore::planFixedTime(const state_vector& s,
   // disable this termination check for now
   //if (root->ubVal - root->lbVal < targetPrecision) return true;
   bool done = doTrial(*bounds->getRootNode());
+  done = done || (bounds->numBackups >= terminateNumBackups);
 
   previousElapsedTime = getTime() - boundsStartTime;
 
@@ -147,11 +158,35 @@ ValueInterval RTDPCore::getValueAt(const state_vector& s) const
   return bounds->getValueAt(s);
 }
 
+void RTDPCore::trackBackup(const MDPNode& backedUpNode)
+{
+  if (useLogBackups) {
+    backedUpNodes.push_back(&backedUpNode);
+  }
+}
+
+void RTDPCore::logBackups(void)
+{
+  if (!useLogBackups) return;
+
+  StateIndex index(problem->getNumStateDimensions());
+  StateLog log(&index);
+  FOR_EACH (node, backedUpNodes) {
+    log.addState((*node)->s);
+  }
+
+  index.writeToFile(stateIndexOutputFile);
+  log.writeToFile(backupsOutputFile);
+}
+
 }; // namespace zmdp
 
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.18  2006/10/18 18:06:26  trey
+ * now propagating config data structure to lower levels so config fields can be used to control more parts of the system
+ *
  * Revision 1.17  2006/04/28 17:57:41  trey
  * changed to use apache license
  *
