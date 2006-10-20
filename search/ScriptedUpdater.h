@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-10-20 04:58:08 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-10-20 17:10:32 $
    
  @file    ScriptedUpdater.h
  @brief   No brief
@@ -29,12 +29,13 @@
 namespace zmdp {
 
 struct ScriptedUpdater : public RTDPCore {
-  StateIndex stateIndex;
-  StateLog backupsLog;
+  bool filesRead;
+  StateIndex* stateIndex;
+  StateLog* backupsLog;
   int currentLogEntry;
 
   ScriptedUpdater(void);
-  void init(void);
+  void readFiles(void);
   bool doTrial(MDPNode& cn);
 };
 
@@ -45,5 +46,8 @@ struct ScriptedUpdater : public RTDPCore {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/10/20 04:58:08  trey
+ * initial check-in
+ *
  *
  ***************************************************************************/

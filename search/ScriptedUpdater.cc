@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-10-20 04:58:08 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-10-20 17:10:32 $
    
  @file    ScriptedUpdater.cc
  @brief   No brief
@@ -42,11 +42,12 @@ using namespace MatrixUtils;
 namespace zmdp {
 
 ScriptedUpdater::ScriptedUpdater(void) :
-  stateIndex(problem->getNumStateDimensions()),
-  backupsLog(&stateIndex)
+  filesRead(false),
+  stateIndex(NULL),
+  backupsLog(NULL)
 {}
 
-void ScriptedUpdater::init(void)
+void ScriptedUpdater::readFiles(void)
 {
   std::string backupScriptInputDir = config->getString("backupScriptInputDir");
   if (backupScriptInputDir == "undefined") {
@@ -58,8 +59,12 @@ void ScriptedUpdater::init(void)
   std::string backupsInputFile =
     backupScriptInputDir + "/" + config->getString("backupsOutputFile");
 
-  stateIndex.readFromFile(stateIndexInputFile);
-  backupsLog.readFromFile(backupsInputFile);
+  stateIndex = new StateIndex(problem->getNumStateDimensions());
+  stateIndex->readFromFile(stateIndexInputFile);
+
+  backupsLog = new StateLog(stateIndex);
+  backupsLog->readFromFile(backupsInputFile);
+
   currentLogEntry = 0;
 }
 
@@ -69,15 +74,16 @@ bool ScriptedUpdater::doTrial(MDPNode& cn)
   printf("-*- doTrial: trial %d\n", (numTrials+1));
 #endif
 
-  if (!initialized) {
-    init();
+  if (!filesRead) {
+    readFiles();
+    filesRead = true;
   }
 
   bool firstInTrial = true;
   int dummy;
-  while (currentLogEntry < (int)backupsLog.size()) {
-    int id = backupsLog.getLogEntry(currentLogEntry++);
-    const state_vector& s = *stateIndex.entries[id];
+  while (currentLogEntry < (int)backupsLog->size()) {
+    int id = backupsLog->getLogEntry(currentLogEntry++);
+    const state_vector& s = *stateIndex->entries[id];
 
     MDPNode& cn = *bounds->getNode(s);
 
@@ -103,5 +109,8 @@ bool ScriptedUpdater::doTrial(MDPNode& cn)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/10/20 04:58:08  trey
+ * initial check-in
+ *
  *
  ***************************************************************************/
