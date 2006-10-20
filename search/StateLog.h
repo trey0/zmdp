@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2006-10-20 04:57:51 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2006-10-20 20:03:44 $
    
  @file    StateLog.h
  @brief   No brief
@@ -29,6 +29,7 @@
 
 #include "zmdpCommonDefs.h"
 #include "zmdpCommonTypes.h"
+#include "IncrementalBounds.h"
 
 using namespace sla;
 
@@ -44,6 +45,9 @@ struct StateIndex {
   int getStateId(const state_vector& s);
   void writeToFile(const std::string& outFile) const;
   void readFromFile(const std::string& inFile);
+
+  void writeBoundValuesToFile(const std::string& outFile,
+			      const IncrementalBounds& bounds) const;
 };
 
 struct StateLog {
@@ -66,6 +70,9 @@ struct StateLog {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2006/10/20 04:57:51  trey
+ * added size() and getLogEntry() methods to StateLog
+ *
  * Revision 1.1  2006/10/19 19:32:08  trey
  * initial check-in
  *

@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2006-10-20 17:10:06 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2006-10-20 20:03:44 $
    
  @file    StateLog.cc
  @brief   No brief
@@ -103,8 +103,6 @@ void StateIndex::writeToFile(const std::string& outFile) const
     }
   }
 
-  out.close();
-
   printf("wrote index of %d states to %s\n", (int)entries.size(), outFile.c_str());
 }
 
@@ -151,7 +149,40 @@ void StateIndex::readFromFile(const std::string& inFile)
     }
   }
 
+  // fold in last state
+  if (accum.filled() > 0) {
+    accum.canonicalize();
+    getStateId(accum);
+    accum.clear();
+  }
+
   printf("read index of %d states from %s\n", (int)entries.size(), inFile.c_str());
+}
+
+void StateIndex::writeBoundValuesToFile(const std::string& outFile,
+					const IncrementalBounds& bounds) const
+{
+  std::ofstream out(outFile.c_str());
+  if (!out) {
+    fprintf(stderr, "ERROR: couldn't open %s for writing: %s\n",
+	    outFile.c_str(), strerror(errno));
+    exit(EXIT_FAILURE);
+  }
+
+  out << "# This file is a list of bound values for states.  Each line is in the form\n"
+      << "# '<id> <lower> <upper>', where <id> is the id for a state in the state index\n"
+      << "# file, <lower> is the lower bound value (or -1 if the lower bound is not being\n"
+      << "# maintained), and <upper> is the upper bound value (or -1 if the upper bound is\n"
+      << "# not being maintained).\n";
+
+  FOR (i, entries.size()) {
+    ValueInterval intv = bounds.getValueAt(*entries[i]);
+    out << i << " "
+	<< setprecision(20) << intv.l << " "
+	<< setprecision(20) << intv.u << endl;
+  }
+
+  printf("wrote bound values for %d states to %s\n", (int)entries.size(), outFile.c_str());
 }
 
 StateLog::StateLog(StateIndex* _index) :
@@ -180,8 +211,6 @@ void StateLog::writeToFile(const std::string& outFile) const
   FOR_EACH (e, entries) {
     out << (*e) << endl;
   }
-
-  out.close();
 
   printf("wrote log of %d backups to %s\n", (int)entries.size(), outFile.c_str());
 }
@@ -231,6 +260,9 @@ int StateLog::getLogEntry(int i) const
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2006/10/20 17:10:06  trey
+ * added debug print statements
+ *
  * Revision 1.2  2006/10/20 04:57:51  trey
  * added size() and getLogEntry() methods to StateLog
  *
