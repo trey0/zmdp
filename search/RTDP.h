@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.10 $  $Author: trey $  $Date: 2006-04-28 17:57:41 $
+ $Revision: 1.11 $  $Author: trey $  $Date: 2006-10-20 04:56:15 $
    
  @file    RTDP.h
  @brief   No brief
@@ -30,7 +30,6 @@ namespace zmdp {
 struct RTDP : public RTDPCore {
   RTDP(void);
 
-  bool getUseLowerBound(void) const { return false; }
   void trialRecurse(MDPNode& cn, int depth);
   bool doTrial(MDPNode& cn);
 };
@@ -42,6 +41,9 @@ struct RTDP : public RTDPCore {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.10  2006/04/28 17:57:41  trey
+ * changed to use apache license
+ *
  * Revision 1.9  2006/04/07 19:42:42  trey
  * removed initUpperBound argument to constructor
  *

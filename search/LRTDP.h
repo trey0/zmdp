@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.8 $  $Author: trey $  $Date: 2006-04-28 17:57:41 $
+ $Revision: 1.9 $  $Author: trey $  $Date: 2006-10-20 04:55:49 $
    
  @file    LRTDP.h
  @brief   Implementation of Bonet and Geffner's LRTDP algorithm.
@@ -41,7 +41,6 @@ struct LRTDP : public RTDPCore {
   double residual(MDPNode& cn);
   bool checkSolved(MDPNode& cn);
 
-  bool getUseLowerBound(void) const { return false; }
   void updateInternal(MDPNode& cn);
   bool trialRecurse(MDPNode& cn, int depth);
   bool doTrial(MDPNode& cn);
@@ -55,6 +54,9 @@ struct LRTDP : public RTDPCore {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.8  2006/04/28 17:57:41  trey
+ * changed to use apache license
+ *
  * Revision 1.7  2006/04/07 19:41:45  trey
  * removed initLowerBound, initUpperBound arguments to constructor
  *

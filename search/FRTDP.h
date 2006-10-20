@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.13 $  $Author: trey $  $Date: 2006-04-28 17:57:41 $
+ $Revision: 1.14 $  $Author: trey $  $Date: 2006-10-20 04:55:49 $
    
  @file    FRTDP.h
  @brief   No brief
@@ -48,8 +48,6 @@ struct FRTDP : public RTDPCore {
 
   FRTDP(void);
 
-  bool getUseLowerBound(void) const { return true; }
-
   void getNodeHandler(MDPNode& cn);
   static void staticGetNodeHandler(MDPNode& cn, void* handlerData);
   static double& getPrio(const MDPNode& cn);
@@ -67,6 +65,9 @@ struct FRTDP : public RTDPCore {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.13  2006/04/28 17:57:41  trey
+ * changed to use apache license
+ *
  * Revision 1.12  2006/04/26 18:44:00  trey
  * removed variable r.maxUBVal that is no longer used
  *

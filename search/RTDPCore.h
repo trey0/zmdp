@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.14 $  $Author: trey $  $Date: 2006-10-19 19:31:16 $
+ $Revision: 1.15 $  $Author: trey $  $Date: 2006-10-20 04:56:07 $
    
  @file    RTDPCore.h
  @brief   Common code used by multiple RTDP variants found in this
@@ -97,7 +97,6 @@ struct RTDPCore : public Solver {
 
   // different derived classes (RTDP variants) will implement these
   // in varying ways
-  virtual bool getUseLowerBound(void) const = 0;
   virtual bool doTrial(MDPNode& cn) = 0;
   virtual void derivedClassInit(void) {}
 
@@ -120,6 +119,9 @@ struct RTDPCore : public Solver {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.14  2006/10/19 19:31:16  trey
+ * added support for backup logging
+ *
  * Revision 1.13  2006/10/18 18:06:26  trey
  * now propagating config data structure to lower levels so config fields can be used to control more parts of the system
  *

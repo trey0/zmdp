@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.7 $  $Author: trey $  $Date: 2006-04-28 17:57:41 $
+ $Revision: 1.8 $  $Author: trey $  $Date: 2006-10-20 04:55:49 $
    
  @file    HDP.h
  @brief   Implementation of Bonet and Geffner's HDP algorithm
@@ -49,11 +49,6 @@ struct HDP : public RTDPCore {
   void cacheQ(MDPNode& cn);
   double residual(MDPNode& cn);
 
-#if USE_HDP_LOWER_BOUND
-  bool getUseLowerBound(void) const { return true; }
-#else
-  bool getUseLowerBound(void) const { return false; }
-#endif
   void updateInternal(MDPNode& cn);
   bool trialRecurse(MDPNode& cn, int depth);
   bool doTrial(MDPNode& cn);
@@ -67,6 +62,9 @@ struct HDP : public RTDPCore {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.7  2006/04/28 17:57:41  trey
+ * changed to use apache license
+ *
  * Revision 1.6  2006/04/07 19:41:30  trey
  * removed initLowerBound, initUpperBound arguments to constructor
  *
