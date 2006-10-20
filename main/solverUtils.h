@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.9 $  $Author: trey $  $Date: 2006-10-18 18:05:56 $
+ $Revision: 1.10 $  $Author: trey $  $Date: 2006-10-20 04:59:18 $
    
  @file    solverUtils.h
  @brief   No brief
@@ -28,11 +28,12 @@
 #include "zmdpConfig.h"
 
 // search strategies
+#include "FRTDP.h"
+#include "HSVI.h"
 #include "RTDP.h"
 #include "LRTDP.h"
 #include "HDP.h"
-#include "FRTDP.h"
-#include "HSVI.h"
+#include "ScriptedUpdater.h"
 
 // problem types
 #include "RaceTrack.h"
@@ -55,11 +56,12 @@ struct EnumEntry {
 };
 
 enum StrategiesEnum {
+  S_FRTDP,
+  S_HSVI,
   S_RTDP,
   S_LRTDP,
   S_HDP,
-  S_HSVI,
-  S_FRTDP
+  S_SCRIPT
 };
 
 enum ProbTypesEnum {
@@ -85,8 +87,9 @@ struct SolverParams {
   double terminateWallclockSeconds;
   int maxHorizon;
   bool useWeakUpperBoundHeuristic;
-  bool forceMaintainLowerBound;
-  bool forceUpperBoundRunTimeActionSelection;
+  int maintainLowerBound;
+  bool maintainUpperBound;
+  int useUpperBoundRunTimeActionSelection;
   int evaluationTrialsPerEpoch;
   int evaluationMaxStepsPerTrial;
   double evaluationFirstEpochWallclockSeconds;
@@ -108,7 +111,7 @@ struct SolverObjects {
 };
 
 void constructSolverObjects(SolverObjects& obj,
-			    const SolverParams& p,
+			    SolverParams& p,
 			    const ZMDPConfig& config);
 
 }; // namespace zmdp
@@ -118,6 +121,9 @@ void constructSolverObjects(SolverObjects& obj,
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.9  2006/10/18 18:05:56  trey
+ * now propagating config data structure to lower levels so config fields can be used to control more parts of the system
+ *
  * Revision 1.8  2006/10/16 05:48:19  trey
  * moved BenchmarkParams fields into SolverParams
  *

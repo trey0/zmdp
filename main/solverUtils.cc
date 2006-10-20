@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.9 $  $Author: trey $  $Date: 2006-10-18 18:05:56 $
+ $Revision: 1.10 $  $Author: trey $  $Date: 2006-10-20 04:59:18 $
 
  @file    solverUtils.cc
  @brief   No brief
@@ -49,11 +49,12 @@ namespace zmdp {
  **********************************************************************/
 
 static EnumEntry strategiesG[] = {
-  {"rtdp",  S_RTDP},
-  {"lrtdp", S_LRTDP},
-  {"hdp",   S_HDP},
-  {"hsvi",  S_HSVI},
-  {"frtdp", S_FRTDP},
+  {"frtdp",  S_FRTDP},
+  {"hsvi",   S_HSVI},
+  {"rtdp",   S_RTDP},
+  {"lrtdp",  S_LRTDP},
+  {"hdp",    S_HDP},
+  {"script", S_SCRIPT},
   {NULL, -1}
 };
 
@@ -71,16 +72,35 @@ static EnumEntry valueReprsG[] = {
   {NULL, -1}
 };
 
+static EnumEntry maintainValsG[] = {
+  {"-", -1},
+  {"0", 0},
+  {"1", 1},
+  {NULL, -1}
+};
+
+static EnumEntry actionSelValsG[] = {
+  {"-",     -1},
+  {"lower", 0},
+  {"upper", 1},
+  {NULL, -1}
+};
+
 int getEnum(const std::string& key, EnumEntry* table, const char* cmdName, const char *opt)
 {
-  EnumEntry* i = table;
-  for (; NULL != i->key; i++) {
+  EnumEntry* i;
+  for (i = table; NULL != i->key; i++) {
     if (key == i->key) {
       return i->val;
     }
   }
-  fprintf(stderr, "ERROR: invalid value %s for config field %s\n\n", key.c_str(), opt);
-  usage(cmdName);
+  fprintf(stderr, "ERROR: invalid value %s for config field %s, expected one of ",
+	  key.c_str(), opt);
+  for (i = table; NULL != i->key; i++) {
+    fprintf(stderr, "'%s' ", i->key);
+  }
+  fprintf(stderr, "\n");
+  
   exit(EXIT_FAILURE);
 }
 
@@ -121,8 +141,12 @@ void SolverParams::setValues(const ZMDPConfig& config)
   }
   maxHorizon = config.getInt("maxHorizon");
   useWeakUpperBoundHeuristic = config.getBool("useWeakUpperBoundHeuristic");
-  forceMaintainLowerBound = config.getBool("forceMaintainLowerBound");
-  forceUpperBoundRunTimeActionSelection = config.getBool("forceUpperBoundRunTimeActionSelection");
+  maintainLowerBound = getEnum(config.getString("maintainLowerBound"),
+			       maintainValsG, cmdName, "maintainLowerBound");
+  maintainUpperBound = config.getBool("maintainUpperBound");
+  useUpperBoundRunTimeActionSelection =
+    getEnum(config.getString("runTimeActionSelection"),
+	    actionSelValsG, cmdName, "runTimeActionSelection");
   evaluationTrialsPerEpoch = config.getInt("evaluationTrialsPerEpoch");
   evaluationMaxStepsPerTrial = config.getInt("evaluationMaxStepsPerTrial");
   evaluationFirstEpochWallclockSeconds = config.getDouble("evaluationFirstEpochWallclockSeconds");
@@ -143,9 +167,8 @@ void SolverParams::inferMissingValues(void)
     } else if (endsWith(probName, ".pomdp")) {
       modelType = T_POMDP;
     } else {
-      fprintf(stderr, "ERROR: couldn't infer problem type from model filename %s (use --type option)\n\n",
+      fprintf(stderr, "ERROR: couldn't infer problem type from model filename %s (use -t option, -h for help)\n",
 	      probName);
-      usage(cmdName);
       exit(EXIT_FAILURE);
     }
   }
@@ -159,12 +182,13 @@ void SolverParams::inferMissingValues(void)
 
   // error check
   if (V_CONVEX == valueFunctionRepresentation && T_POMDP != modelType) {
-    fprintf(stderr, "ERROR: '-v convex' can only be used with '-t pomdp'\n\n");
-    usage(cmdName);
+    fprintf(stderr, "ERROR: '-v convex' can only be used with '-t pomdp' (-h for help)\n");
+    exit(EXIT_FAILURE);
   }
 }
 
-void constructSolverObjects(SolverObjects& obj, const SolverParams& p,
+void constructSolverObjects(SolverObjects& obj,
+			    SolverParams& p,
 			    const ZMDPConfig& config)
 {
   switch (p.modelType) {
@@ -180,45 +204,116 @@ void constructSolverObjects(SolverObjects& obj, const SolverParams& p,
     assert(0); // never reach this point
   }
 
+  bool lowerBoundRequired;
+  bool upperBoundRequired;
+
   switch (p.searchStrategy) {
-  case S_RTDP:
-    obj.solver = new RTDP();
-    break;
-  case S_LRTDP:
-    obj.solver = new LRTDP();
-   break;
-  case S_HDP:
-    obj.solver = new HDP();
-    break;
   case S_FRTDP:
     obj.solver = new FRTDP();
+    lowerBoundRequired = true;
+    upperBoundRequired = true;
     break;
   case S_HSVI:
     obj.solver = new HSVI();
+    lowerBoundRequired = true;
+    upperBoundRequired = true;
+    break;
+  case S_RTDP:
+    obj.solver = new RTDP();
+    lowerBoundRequired = false;
+    upperBoundRequired = true;
+    break;
+  case S_LRTDP:
+    obj.solver = new LRTDP();
+    lowerBoundRequired = false;
+    upperBoundRequired = true;
+   break;
+  case S_HDP:
+    obj.solver = new HDP();
+    lowerBoundRequired = false;
+    upperBoundRequired = true;
+    break;
+  case S_SCRIPT:
+    obj.solver = new ScriptedUpdater();
+    lowerBoundRequired = false;
+    upperBoundRequired = false;
     break;
   default:
     assert(0); // never reach this point
   };
 
-  bool keepLowerBound = p.forceMaintainLowerBound
-    || ((RTDPCore *) obj.solver)->getUseLowerBound();
+  switch (p.maintainLowerBound) {
+  case -1:
+    p.maintainLowerBound = lowerBoundRequired;
+    break;
+  case 0:
+    if (lowerBoundRequired) {
+      fprintf(stderr, "ERROR: maintainLowerBound=0 is incompatible with searchStrategy='%s' (-h for help)\n",
+	      config.getString("searchStrategy").c_str());
+      exit(EXIT_FAILURE);
+    }
+    break;
+  case 1:
+    // keep current value
+    break;
+  default:
+    assert(0); // never reach this point
+  }
+
+  if (!p.maintainUpperBound && upperBoundRequired) {
+    fprintf(stderr, "ERROR: maintainUpperBound=0 is incompatible with searchStrategy='%s' (-h for help)\n",
+	    config.getString("searchStrategy").c_str());
+    exit(EXIT_FAILURE);
+  }
+
+  if (! (p.maintainLowerBound || p.maintainUpperBound)) {
+    fprintf(stderr, "ERROR: at least one bound must be maintained, lower or upper (-h for help)\n");
+    exit(EXIT_FAILURE);
+  }
+
+  switch (p.useUpperBoundRunTimeActionSelection) {
+  case -1:
+    p.useUpperBoundRunTimeActionSelection = !p.maintainLowerBound;
+    break;
+  case 0:
+    if (!p.maintainLowerBound) {
+      fprintf(stderr, "ERROR: cannot specify runTimeActionSelection='lower' if lower bound is not maintained (-h for help)\n");
+      exit(EXIT_FAILURE);
+    }
+    break;
+  case 1:
+    if (!p.maintainUpperBound) {
+      fprintf(stderr, "ERROR: cannot specify runTimeActionSelection='upper' if upper bound is not maintained (-h for help)\n");
+      exit(EXIT_FAILURE);
+    }
+    break;
+  default:
+    assert(0); // never reach this point
+  }
+
   switch (p.valueFunctionRepresentation) {
   case V_POINT:
     PointBounds* pb;
     AbstractBound *initLowerBound, *initUpperBound;
 
     pb = new PointBounds();
-    initLowerBound = keepLowerBound ? obj.problem->newLowerBound(config) : NULL;
-    if (p.useWeakUpperBoundHeuristic && T_POMDP == p.modelType) {
-      initUpperBound = obj.problem->newUpperBound(config);
+    initLowerBound = p.maintainLowerBound ? obj.problem->newLowerBound(config) : NULL;
+    if (p.maintainUpperBound) {
+      if (p.useWeakUpperBoundHeuristic && T_POMDP == p.modelType) {
+	initUpperBound = obj.problem->newUpperBound(config);
+      } else {
+	initUpperBound = new RelaxUBInitializer(obj.problem, config);
+      }
     } else {
-      initUpperBound = new RelaxUBInitializer(obj.problem, config);
+      initUpperBound = NULL;
     }
-    pb->setBounds(initLowerBound, initUpperBound, p.forceUpperBoundRunTimeActionSelection);
+    pb->setBounds(initLowerBound, initUpperBound, p.useUpperBoundRunTimeActionSelection);
     obj.bounds = pb;
     break;
   case V_CONVEX:
-    obj.bounds = new ConvexBounds(keepLowerBound, p.forceUpperBoundRunTimeActionSelection);
+    obj.bounds = new ConvexBounds(p.maintainLowerBound,
+				  p.maintainUpperBound,
+				  p.useUpperBoundRunTimeActionSelection);
     break;
   default:
     assert(0); // never reach this point
@@ -231,6 +326,9 @@ void constructSolverObjects(SolverObjects& obj, const SolverParams& p,
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.9  2006/10/18 18:05:56  trey
+ * now propagating config data structure to lower levels so config fields can be used to control more parts of the system
+ *
  * Revision 1.8  2006/10/17 19:18:39  trey
  * centralized proper handling of negative terminateWallclockSeconds values
  *
