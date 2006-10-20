@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.10 $  $Author: trey $  $Date: 2006-10-18 18:06:54 $
+ $Revision: 1.11 $  $Author: trey $  $Date: 2006-10-20 05:00:10 $
    
  @file    ConvexBounds.h
  @brief   No brief
@@ -39,12 +39,14 @@ struct ConvexBounds : public IncrementalBounds {
   const Pomdp* pomdp;
   MaxPlanesLowerBound* lowerBound;
   SawtoothUpperBound* upperBound;
-  bool keepLowerBound;
+  bool maintainLowerBound;
+  bool maintainUpperBound;
   double targetPrecision;
-  bool forceUpperBoundActionSelection;
+  bool useUpperBoundActionSelection;
 
-  ConvexBounds(bool _keepLowerBound,
-	       bool _forceUpperBoundActionSelection);
+  ConvexBounds(bool _maintainLowerBound,
+	       bool _maintainUpperBound,
+	       bool _useUpperBoundActionSelection);
 
   // helper functions
   void getNewLBPlaneQ(LBPlane& result, MDPNode& cn, int a);
@@ -81,6 +83,9 @@ struct ConvexBounds : public IncrementalBounds {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.10  2006/10/18 18:06:54  trey
+ * now propagating config data structure to lower levels so config fields can be used to control more parts of the system
+ *
  * Revision 1.9  2006/10/17 19:14:53  trey
  * moved root and lookup members to IncrementalBounds parent class
  *

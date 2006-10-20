@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.16 $  $Author: trey $  $Date: 2006-10-18 18:06:54 $
+ $Revision: 1.17 $  $Author: trey $  $Date: 2006-10-20 05:00:10 $
    
  @file    ConvexBounds.cc
  @brief   No brief
@@ -48,12 +48,14 @@ using namespace MatrixUtils;
 
 namespace zmdp {
 
-ConvexBounds::ConvexBounds(bool _keepLowerBound,
-			   bool _forceUpperBoundActionSelection) :
+ConvexBounds::ConvexBounds(bool _maintainLowerBound,
+			   bool _maintainUpperBound,
+			   bool _useUpperBoundActionSelection) :
   lowerBound(NULL),
   upperBound(NULL),
-  keepLowerBound(_keepLowerBound),
-  forceUpperBoundActionSelection(_forceUpperBoundActionSelection)
+  maintainLowerBound(_maintainLowerBound),
+  maintainUpperBound(_maintainUpperBound),
+  useUpperBoundActionSelection(_useUpperBoundActionSelection)
 {}
 
 #if USE_CONVEX_CACHE
@@ -379,13 +381,15 @@ void ConvexBounds::initialize(const MDP* _pomdp,
   targetPrecision = CB_INITIALIZATION_PRECISION_FACTOR
     * config.getDouble("terminateRegretBound");
 
-  if (keepLowerBound) {
+  if (maintainLowerBound) {
     lowerBound = new MaxPlanesLowerBound(pomdp, config);
     lowerBound->initialize(targetPrecision);
   }
 
-  upperBound = new SawtoothUpperBound(pomdp, config);
-  upperBound->initialize(targetPrecision);
+  if (maintainUpperBound) {
+    upperBound = new SawtoothUpperBound(pomdp, config);
+    upperBound->initialize(targetPrecision);
+  }
 
   lookup = new MDPHash();
   root = NULL;
@@ -420,12 +424,7 @@ MDPNode* ConvexBounds::getNode(const state_vector& s)
     bdata->bestPlane = NULL;
     cn.boundsData = bdata;
 #endif
-    if (cn.isTerminal) {
-      setUBForNode(cn, 0, true);
-    } else {
-      setUBForNode(cn, upperBound->getValue(s), false);
-    }
-    if (keepLowerBound) {
+    if (maintainLowerBound) {
       // note: this should also do the right thing if cn is terminal;
       // at least one of the planes from initialization should give an
       // lbVal of 0 for cn in that case.
@@ -433,6 +432,15 @@ MDPNode* ConvexBounds::getNode(const state_vector& s)
       setPlaneForNode(cn, &lowerBound->getBestLBPlane(s));
     } else {
       cn.lbVal = -1; // n/a
+    }
+    if (maintainUpperBound) {
+      if (cn.isTerminal) {
+	setUBForNode(cn, 0, true);
+      } else {
+	setUBForNode(cn, upperBound->getValue(s), false);
+      }
+    } else {
+      cn.ubVal = -1; // n/a
     }
     cn.searchData = NULL;
     (*lookup)[hs] = &cn;
@@ -481,10 +489,12 @@ void ConvexBounds::update(MDPNode& cn, int* maxUBActionP)
   if (cn.isFringe()) {
     expand(cn);
   }
-  if (keepLowerBound) {
+  if (maintainLowerBound) {
     updateLowerBound(cn);
   }
-  updateUpperBound(cn, maxUBActionP);
+  if (maintainUpperBound) {
+    updateUpperBound(cn, maxUBActionP);
+  }
 
   numBackups++;
 }
@@ -494,7 +504,7 @@ void ConvexBounds::update(MDPNode& cn, int* maxUBActionP)
 // simulation testing in the middle of a run.
 int ConvexBounds::chooseAction(const state_vector& s) const
 {
-  if (!forceUpperBoundActionSelection && keepLowerBound) {
+  if (!useUpperBoundActionSelection) {
     // 'direct' policy as opposed to 'lookahead' policy
     return lowerBound->getBestLBPlane(s).action;
   }
@@ -526,13 +536,13 @@ int ConvexBounds::chooseAction(const state_vector& s) const
 
 ValueInterval ConvexBounds::getValueAt(const state_vector& s) const
 {
-  return ValueInterval(keepLowerBound ? lowerBound->getValue(s) : -1,
-		       upperBound->getValue(s));
+  return ValueInterval(maintainLowerBound ? lowerBound->getValue(s) : -1,
+		       maintainUpperBound ? upperBound->getValue(s) : -1);
 }
 
 bool ConvexBounds::getSupportsPolicyOutput(void) const
 {
-  return keepLowerBound;
+  return maintainLowerBound;
 }
 
 void ConvexBounds::writePolicy(const std::string& outFileName)
@@ -547,6 +557,9 @@ void ConvexBounds::writePolicy(const std::string& outFileName)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.16  2006/10/18 18:06:54  trey
+ * now propagating config data structure to lower levels so config fields can be used to control more parts of the system
+ *
  * Revision 1.15  2006/08/08 21:17:20  trey
  * fixed a bug in LB backPointers code; added USE_REF_COUNT_PRUNE
  *
