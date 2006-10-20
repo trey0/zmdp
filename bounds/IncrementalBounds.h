@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.7 $  $Author: trey $  $Date: 2006-10-18 18:05:02 $
+ $Revision: 1.8 $  $Author: trey $  $Date: 2006-10-20 19:58:57 $
    
  @file    IncrementalBounds.h
  @brief   No brief
@@ -28,6 +28,7 @@
 #include <vector>
 
 #include "MDPCache.h"
+#include "MDP.h"
 
 using namespace sla;
 
@@ -75,6 +76,9 @@ struct IncrementalBounds {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.7  2006/10/18 18:05:02  trey
+ * now propagating config data structure to lower levels so config fields can be used to control more parts of the system
+ *
  * Revision 1.6  2006/10/17 19:15:22  trey
  * moved root and lookup members from derived classes to IncrementalBounds
  *
