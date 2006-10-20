@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-10-19 19:32:08 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-10-20 04:57:51 $
    
  @file    StateLog.cc
  @brief   No brief
@@ -213,10 +213,18 @@ void StateLog::readFromFile(const std::string& inFile)
   }
 }
 
+int StateLog::getLogEntry(int i) const
+{
+  return entries[i];
+}
+
 }; // namespace zmdp
 
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/10/19 19:32:08  trey
+ * initial check-in
+ *
  *
  ***************************************************************************/

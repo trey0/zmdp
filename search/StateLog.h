@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-10-19 19:32:08 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-10-20 04:57:51 $
    
  @file    StateLog.h
  @brief   No brief
@@ -53,7 +53,10 @@ struct StateLog {
   StateLog(StateIndex* _index);
   void addState(const state_vector& s);
   void writeToFile(const std::string& outFile) const;
+
   void readFromFile(const std::string& inFile);
+  size_t size(void) const { return entries.size(); }
+  int getLogEntry(int i) const;
 };
 
 }; // namespace zmdp
@@ -63,6 +66,9 @@ struct StateLog {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/10/19 19:32:08  trey
+ * initial check-in
+ *
  *
  ***************************************************************************/
 
