@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.15 $  $Author: trey $  $Date: 2006-10-20 04:56:07 $
+ $Revision: 1.16 $  $Author: trey $  $Date: 2006-10-20 20:03:14 $
    
  @file    RTDPCore.h
  @brief   Common code used by multiple RTDP variants found in this
@@ -88,6 +88,7 @@ struct RTDPCore : public Solver {
   bool useLogBackups;
   std::string stateIndexOutputFile;
   std::string backupsOutputFile;
+  std::string boundValuesOutputFile;
   std::vector<const MDPNode*> backedUpNodes;
 
   RTDPCore(void);
@@ -119,6 +120,9 @@ struct RTDPCore : public Solver {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.15  2006/10/20 04:56:07  trey
+ * removed obsolete getUseLowerBound() function
+ *
  * Revision 1.14  2006/10/19 19:31:16  trey
  * added support for backup logging
  *

@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.19 $  $Author: trey $  $Date: 2006-10-19 19:31:16 $
+ $Revision: 1.20 $  $Author: trey $  $Date: 2006-10-20 20:03:14 $
    
  @file    RTDPCore.cc
  @brief   Common code used by multiple RTDP variants found in this
@@ -97,6 +97,7 @@ void RTDPCore::planInit(const MDP* _problem,
   useLogBackups = config->getBool("useLogBackups");
   stateIndexOutputFile = config->getString("stateIndexOutputFile");
   backupsOutputFile = config->getString("backupsOutputFile");
+  boundValuesOutputFile = config->getString("boundValuesOutputFile");
 
   if (useTimeWithoutHeuristic) {
     init();
@@ -177,6 +178,7 @@ void RTDPCore::logBackups(void)
 
   index.writeToFile(stateIndexOutputFile);
   log.writeToFile(backupsOutputFile);
+  index.writeBoundValuesToFile(boundValuesOutputFile, *bounds);
 }
 
 }; // namespace zmdp
@@ -184,6 +186,9 @@ void RTDPCore::logBackups(void)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.19  2006/10/19 19:31:16  trey
+ * added support for backup logging
+ *
  * Revision 1.18  2006/10/18 18:06:26  trey
  * now propagating config data structure to lower levels so config fields can be used to control more parts of the system
  *

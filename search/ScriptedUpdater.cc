@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2006-10-20 17:10:32 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2006-10-20 20:04:19 $
    
  @file    ScriptedUpdater.cc
  @brief   No brief
@@ -50,7 +50,7 @@ ScriptedUpdater::ScriptedUpdater(void) :
 void ScriptedUpdater::readFiles(void)
 {
   std::string backupScriptInputDir = config->getString("backupScriptInputDir");
-  if (backupScriptInputDir == "undefined") {
+  if (backupScriptInputDir == "none") {
     fprintf(stderr, "ERROR: when using searchStrategy='script' you must specify backupScriptInputDir (-h for help)\n");
     exit(EXIT_FAILURE);
   }
@@ -66,6 +66,8 @@ void ScriptedUpdater::readFiles(void)
   backupsLog->readFromFile(backupsInputFile);
 
   currentLogEntry = 0;
+
+  boundValuesOutputFile = config->getString("boundValuesOutputFile");
 }
 
 bool ScriptedUpdater::doTrial(MDPNode& cn)
@@ -101,6 +103,7 @@ bool ScriptedUpdater::doTrial(MDPNode& cn)
 
   // ran out of backups in script, return and note we are finished
   numTrials++;
+  stateIndex->writeBoundValuesToFile(boundValuesOutputFile, *bounds);
   return true;
 }
 
@@ -109,6 +112,9 @@ bool ScriptedUpdater::doTrial(MDPNode& cn)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2006/10/20 17:10:32  trey
+ * corrected some problems with initialization
+ *
  * Revision 1.1  2006/10/20 04:58:08  trey
  * initial check-in
  *

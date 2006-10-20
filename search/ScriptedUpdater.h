@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2006-10-20 17:10:32 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2006-10-20 20:04:19 $
    
  @file    ScriptedUpdater.h
  @brief   No brief
@@ -33,6 +33,7 @@ struct ScriptedUpdater : public RTDPCore {
   StateIndex* stateIndex;
   StateLog* backupsLog;
   int currentLogEntry;
+  std::string boundValuesOutputFile;
 
   ScriptedUpdater(void);
   void readFiles(void);
@@ -46,6 +47,9 @@ struct ScriptedUpdater : public RTDPCore {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2006/10/20 17:10:32  trey
+ * corrected some problems with initialization
+ *
  * Revision 1.1  2006/10/20 04:58:08  trey
  * initial check-in
  *
