@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.6 $  $Author: trey $  $Date: 2006-10-18 18:05:02 $
+ $Revision: 1.7 $  $Author: trey $  $Date: 2006-10-20 19:59:30 $
    
  @file    PointBounds.cc
  @brief   No brief
@@ -42,8 +42,44 @@ using namespace MatrixUtils;
 
 namespace zmdp {
 
-PointBounds::PointBounds(void)
+PointBounds::PointBounds(bool _maintainLowerBound,
+			 bool _maintainUpperBound,
+			 bool _useUpperBoundRunTimeActionSelection) :
+  maintainLowerBound(_maintainLowerBound),
+  maintainUpperBound(_maintainUpperBound),
+  useUpperBoundRunTimeActionSelection(_useUpperBoundRunTimeActionSelection)
 {}
+
+void PointBounds::updateValuesLB(MDPNode& cn)
+{
+  double lbVal;
+  double maxLBVal = -99e+20;
+
+  FOR (a, cn.getNumActions()) {
+    MDPQEntry& Qa = cn.Q[a];
+    lbVal = 0;
+    FOR (o, Qa.getNumOutcomes()) {
+      MDPEdge* e = Qa.outcomes[o];
+      if (NULL != e) {
+	MDPNode& sn = *e->nextState;
+	double oprob = e->obsProb;
+	lbVal += oprob * sn.lbVal;
+      }
+    }
+    lbVal = Qa.immediateReward + problem->getDiscount() * lbVal;
+    Qa.lbVal = lbVal;
+
+    maxLBVal = std::max(maxLBVal, lbVal);
+  }
+#if 1
+  // this check may be helpful when there is round-off error or if the
+  // LB is not uniformly improvable, but normally maxLBVal will always
+  // be larger
+  cn.lbVal = std::max(cn.lbVal, maxLBVal);
+#else
+  cn.lbVal = maxLBVal;
+#endif
+}
 
 void PointBounds::updateValuesUB(MDPNode& cn, int* maxUBActionP)
 {
@@ -71,6 +107,9 @@ void PointBounds::updateValuesUB(MDPNode& cn, int* maxUBActionP)
     }
   }
 #if 1
+  // this check may be helpful when there is round-off error or if the
+  // UB is not uniformly improvable, but normally maxUBVal will always
+  // be smaller
   cn.ubVal = std::min(cn.ubVal, maxUBVal);
 #else
   cn.ubVal = maxUBVal;
@@ -79,6 +118,8 @@ void PointBounds::updateValuesUB(MDPNode& cn, int* maxUBActionP)
   if (NULL != maxUBActionP) *maxUBActionP = maxUBAction;
 }
 
+// updateValuesBoth() combines updateValuesLB() and updateValuesUB() using
+// a single loop, should be faster than running them separately
 void PointBounds::updateValuesBoth(MDPNode& cn, int* maxUBActionP)
 {
   double lbVal, ubVal;
@@ -122,12 +163,10 @@ void PointBounds::updateValuesBoth(MDPNode& cn, int* maxUBActionP)
 }
 
 void PointBounds::setBounds(AbstractBound* _initLowerBound,
-			    AbstractBound* _initUpperBound,
-			    bool _forceUpperBoundActionSelection)
+			    AbstractBound* _initUpperBound)
 {
   initLowerBound = _initLowerBound;
   initUpperBound = _initUpperBound;
-  forceUpperBoundActionSelection = _forceUpperBoundActionSelection;
 }
 
 void PointBounds::initialize(const MDP* _problem,
@@ -136,10 +175,12 @@ void PointBounds::initialize(const MDP* _problem,
   problem = _problem;
   targetPrecision = config.getDouble("terminateRegretBound");
 
-  if (NULL != initLowerBound) {
+  if (maintainLowerBound) {
     initLowerBound->initialize(targetPrecision);
   }
-  initUpperBound->initialize(targetPrecision);
+  if (maintainUpperBound) {
+    initUpperBound->initialize(targetPrecision);
+  }
 
   lookup = new MDPHash();
   root = NULL;
@@ -169,19 +210,23 @@ MDPNode* PointBounds::getNode(const state_vector& s)
     MDPNode& cn = *(new MDPNode);
     cn.s = s;
     cn.isTerminal = problem->getIsTerminalState(s);
-    if (cn.isTerminal) {
-      cn.ubVal = 0;
+    if (maintainUpperBound) {
+      if (cn.isTerminal) {
+	cn.ubVal = 0;
+      } else {
+	cn.ubVal = initUpperBound->getValue(s);
+      }
     } else {
-      cn.ubVal = initUpperBound->getValue(s);
+      cn.ubVal = -1; // n/a
     }
-    if (NULL == initLowerBound) {
-      cn.lbVal = -1; // n/a
-    } else {
+    if (maintainLowerBound) {
       if (cn.isTerminal) {
 	cn.lbVal = 0;
       } else {
 	cn.lbVal = initLowerBound->getValue(s);
       }
+    } else {
+      cn.lbVal = -1; // n/a
     }
     cn.searchData = NULL;
     cn.boundsData = NULL;
@@ -230,10 +275,15 @@ void PointBounds::update(MDPNode& cn, int* maxUBActionP)
   if (cn.isFringe()) {
     expand(cn);
   }
-  if (NULL == initLowerBound) {
-    updateValuesUB(cn, maxUBActionP);
-  } else {
+  if (maintainLowerBound && maintainUpperBound) {
     updateValuesBoth(cn, maxUBActionP);
+  } else {
+    if (maintainLowerBound) {
+      updateValuesLB(cn);
+    }
+    if (maintainUpperBound) {
+      updateValuesUB(cn, maxUBActionP);
+    }
   }
 
   numBackups++;
@@ -248,8 +298,7 @@ int PointBounds::chooseAction(const state_vector& s) const
   state_vector sp;
   int bestAction = -1;
 
-  // if LB is available, use it to choose the action
-  if (!forceUpperBoundActionSelection && NULL != initLowerBound) {
+  if (!useUpperBoundRunTimeActionSelection) {
     double lbVal;
     double maxVal = -99e+20;
     double minVal = 99e+20;
@@ -303,8 +352,8 @@ ValueInterval PointBounds::getValueAt(const state_vector& s) const
 {
   typeof(lookup->begin()) pr = lookup->find(hashable(s));
   if (lookup->end() == pr) {
-    return ValueInterval((NULL == initLowerBound) ? -1 : initLowerBound->getValue(s),
-			 initUpperBound->getValue(s));
+    return ValueInterval(maintainLowerBound ? initLowerBound->getValue(s) : -1,
+			 maintainUpperBound ? initUpperBound->getValue(s) : -1);
   } else {
     const MDPNode& cn = *pr->second;
     return ValueInterval(cn.lbVal, cn.ubVal);
@@ -316,6 +365,9 @@ ValueInterval PointBounds::getValueAt(const state_vector& s) const
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.6  2006/10/18 18:05:02  trey
+ * now propagating config data structure to lower levels so config fields can be used to control more parts of the system
+ *
  * Revision 1.5  2006/04/28 17:57:41  trey
  * changed to use apache license
  *

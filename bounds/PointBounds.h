@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.8 $  $Author: trey $  $Date: 2006-10-18 18:05:02 $
+ $Revision: 1.9 $  $Author: trey $  $Date: 2006-10-20 19:59:30 $
    
  @file    PointBounds.h
  @brief   No brief
@@ -38,18 +38,22 @@ struct PointBounds : public IncrementalBounds {
   AbstractBound* initLowerBound;
   AbstractBound* initUpperBound;
   double targetPrecision;
-  bool forceUpperBoundActionSelection;
+  bool maintainLowerBound;
+  bool maintainUpperBound;
+  bool useUpperBoundRunTimeActionSelection;
 
-  PointBounds(void);
+  PointBounds(bool _maintainLowerBound,
+	      bool _maintainUpperBound,
+	      bool _useUpperBoundRunTimeActionSelection);
 
   // helper functions
+  void updateValuesLB(MDPNode& cn);
   void updateValuesUB(MDPNode& cn, int* maxUBActionP);
   void updateValuesBoth(MDPNode& cn, int* maxUBActionP);
 
   // must be called before initialize()
   void setBounds(AbstractBound* _initLowerBound,
-		 AbstractBound* _initUpperBound,
-		 bool _forceUpperBoundActionSelection);
+		 AbstractBound* _initUpperBound);
 
   // implementations of virtual functions declared in IncrementalBounds
   void initialize(const MDP* _problem,
@@ -70,6 +74,9 @@ struct PointBounds : public IncrementalBounds {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.8  2006/10/18 18:05:02  trey
+ * now propagating config data structure to lower levels so config fields can be used to control more parts of the system
+ *
  * Revision 1.7  2006/10/17 19:16:56  trey
  * moved root and lookup members to IncrementalBounds parent class
  *
