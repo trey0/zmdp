@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: embedFiles.perl,v 1.5 2006-10-17 19:17:57 trey Exp $
+# $Id: embedFiles.perl,v 1.6 2006-10-20 04:58:44 trey Exp $
 #
 # Copyright (c) 1996-2005, Carnegie Mellon University. All rights reserved.
 #
@@ -64,12 +64,12 @@ sub embedFiles {
     my @cppOptions = @_;
 
     $cppOptions = join(" ", map { "'$_'" } @cppOptions);
+    my $cppCmd = "cpp -x c++ $cppOptions -D__EMBEDDING_NOW__=1 $sourceFile";
 
     #print "source file = $sourceFile\n";
     #print "output file = $outputFile\n";
-    #print "cpp options = $cppOptions\n";
+    #print "cpp command = [$cppCmd]\n";
 
-    my $cppCmd = "g++ -E $cppOptions -D__EMBEDDING_NOW__=1 $sourceFile";
     open(CPP_IN, "$cppCmd |") or die "ERROR: couldn't run \"$cppCmd\": $!\n";
 
     if (!$doDependencies) {
@@ -183,6 +183,9 @@ sub main {
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.5  2006/10/17 19:17:57  trey
+# switched pre-processor invocation to use "g++ -E" rather than "cpp" so that e.g. "#include <iostream>" is processed properly
+#
 # Revision 1.4  2006/04/28 17:57:41  trey
 # changed to use apache license
 #
