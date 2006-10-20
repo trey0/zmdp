@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2006-10-20 04:57:51 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2006-10-20 17:10:06 $
    
  @file    StateLog.cc
  @brief   No brief
@@ -104,6 +104,8 @@ void StateIndex::writeToFile(const std::string& outFile) const
   }
 
   out.close();
+
+  printf("wrote index of %d states to %s\n", (int)entries.size(), outFile.c_str());
 }
 
 void StateIndex::readFromFile(const std::string& inFile)
@@ -148,6 +150,8 @@ void StateIndex::readFromFile(const std::string& inFile)
       accum.push_back(id, val);
     }
   }
+
+  printf("read index of %d states from %s\n", (int)entries.size(), inFile.c_str());
 }
 
 StateLog::StateLog(StateIndex* _index) :
@@ -178,6 +182,8 @@ void StateLog::writeToFile(const std::string& outFile) const
   }
 
   out.close();
+
+  printf("wrote log of %d backups to %s\n", (int)entries.size(), outFile.c_str());
 }
 
 void StateLog::readFromFile(const std::string& inFile)
@@ -211,6 +217,8 @@ void StateLog::readFromFile(const std::string& inFile)
     }
     entries.push_back(id);
   }
+
+  printf("read log of %d backups from %s\n", (int)entries.size(), inFile.c_str());
 }
 
 int StateLog::getLogEntry(int i) const
@@ -223,6 +231,9 @@ int StateLog::getLogEntry(int i) const
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2006/10/20 04:57:51  trey
+ * added size() and getLogEntry() methods to StateLog
+ *
  * Revision 1.1  2006/10/19 19:32:08  trey
  * initial check-in
  *
