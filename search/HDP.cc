@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.12 $  $Author: trey $  $Date: 2006-10-19 19:31:16 $
+ $Revision: 1.13 $  $Author: trey $  $Date: 2006-10-20 04:56:35 $
    
  @file    HDP.cc
  @brief   Implementation of Bonet and Geffner's HDP algorithm.
@@ -32,13 +32,6 @@
   theirs in important ways.  They have not signed off on this
   implementation: use at your own risk.  (And please inform me if you
   find any errors!)
-
-  This code also implements my variant HDP+L algorithm [not yet
-  published] when the compile-time flag '-DUSE_HDP_LOWER_BOUND=1' is
-  set.  In addition to the usual upper bound, HDP+L keeps a lower bound
-  and uses that to generate the output policy.  Empirically, this
-  improves anytime performance when the upper and lower bounds have not
-  yet converged.
 
   -Trey Smith, Feb. 2006
  **********************************************************************/
@@ -233,6 +226,9 @@ void HDP::derivedClassInit(void)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.12  2006/10/19 19:31:16  trey
+ * added support for backup logging
+ *
  * Revision 1.11  2006/06/14 00:22:40  trey
  * fixed printf format warning
  *
