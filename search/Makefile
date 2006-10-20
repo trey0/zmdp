@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.15 2006-10-19 19:32:17 trey Exp $
+# $Id: Makefile,v 1.16 2006-10-20 04:56:49 trey Exp $
 #
 # Copyright (c) 2006, Trey Smith. All rights reserved.
 #
@@ -34,22 +34,24 @@ SUBDIRS :=
 
 INSTALLHEADERS_HEADERS := \
 	RTDPCore.h \
+	FRTDP.h \
+	HSVI.h \
 	RTDP.h \
 	LRTDP.h \
 	HDP.h \
-	HSVI.h \
-	FRTDP.h \
+	ScriptedUpdater.h \
 	StateLog.h
 include $(BUILD_DIR)/installheaders.mak
 
 BUILDLIB_TARGET := libzmdpSearch.a
 BUILDLIB_SRCS := \
 	RTDPCore.cc \
+	FRTDP.cc \
+	HSVI.cc \
 	RTDP.cc \
 	LRTDP.cc \
 	HDP.cc \
-	HSVI.cc \
-	FRTDP.cc \
+	ScriptedUpdater.cc \
 	StateLog.cc
 include $(BUILD_DIR)/buildlib.mak
 
@@ -64,6 +66,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.15  2006/10/19 19:32:17  trey
+# added support for backup logging
+#
 # Revision 1.14  2006/06/03 10:57:13  trey
 # changed directory name rtdp -> search in maininstall rule
 #
