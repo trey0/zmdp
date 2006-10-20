@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.10 $  $Author: trey $  $Date: 2006-10-20 04:59:18 $
+ $Revision: 1.11 $  $Author: trey $  $Date: 2006-10-20 20:00:01 $
 
  @file    solverUtils.cc
  @brief   No brief
@@ -296,8 +296,14 @@ void constructSolverObjects(SolverObjects& obj,
     PointBounds* pb;
     AbstractBound *initLowerBound, *initUpperBound;
 
-    pb = new PointBounds();
-    initLowerBound = p.maintainLowerBound ? obj.problem->newLowerBound(config) : NULL;
+    pb = new PointBounds(p.maintainLowerBound,
+			 p.maintainUpperBound,
+			 p.useUpperBoundRunTimeActionSelection);
+    if (p.maintainLowerBound) {
+      initLowerBound = obj.problem->newLowerBound(config);
+    } else {
+      initLowerBound = NULL;
+    }
     if (p.maintainUpperBound) {
       if (p.useWeakUpperBoundHeuristic && T_POMDP == p.modelType) {
 	initUpperBound = obj.problem->newUpperBound(config);
@@ -307,7 +313,7 @@ void constructSolverObjects(SolverObjects& obj,
     } else {
       initUpperBound = NULL;
     }
-    pb->setBounds(initLowerBound, initUpperBound, p.useUpperBoundRunTimeActionSelection);
+    pb->setBounds(initLowerBound, initUpperBound);
     obj.bounds = pb;
     break;
   case V_CONVEX:
@@ -326,6 +332,9 @@ void constructSolverObjects(SolverObjects& obj,
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.10  2006/10/20 04:59:18  trey
+ * made some config options more flexible
+ *
  * Revision 1.9  2006/10/18 18:05:56  trey
  * now propagating config data structure to lower levels so config fields can be used to control more parts of the system
  *
