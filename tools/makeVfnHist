@@ -1,0 +1,45 @@
+#!/usr/bin/perl
+
+# this script generates the value function histogram plot.  run it in a new directory
+# with the command:
+# nohup makeVfnHist >& makeVfnHist_`date +%H_%M_%S`.log &
+
+$root = "~/z";
+$bin = "$root/bin/linux2";
+$prob = "$root/problems.archive/RockSample_5_7.pomdp";
+$scriptArgs = "--searchStrategy script --backupScriptInputDir ../script1k";
+
+sub dosys {
+    my $cmd = shift;
+    print "$cmd\n";
+    system($cmd) && die "ERROR: couldn't execute '$cmd'\n";
+}
+
+if (! -e "gtruth") {
+    &dosys("mkdir gtruth");
+    &dosys("cd gtruth && zmdpBenchmark -f --useLogBackups 1 --maintainLowerBound 1 --maintainUpperBound 1 $prob >& stdout.log");
+}
+
+if (! -e "script1k") {
+    &dosys("mkdir script1k");
+    &dosys("cp gtruth/stateIndex.log script1k");
+    &dosys("grep -v \\# gtruth/backups.log | head -1000 > script1k/backups.log");
+}
+
+for $btype ("b") {
+    if ($btype eq "l") {
+	$bargs = "--maintainLowerBound 1 --maintainUpperBound 0";
+    } elsif ($btype eq "u") {
+	$bargs = "--maintainLowerBound 0 --maintainUpperBound 1";
+    } else {
+	$bargs = "--maintainLowerBound 1 --maintainUpperBound 1";
+    }
+
+    for $vfnType ("point", "convex") {
+	$dir = "${btype}${vfnType}";
+	if (! -e $dir) {
+	    &dosys("mkdir $dir");
+	    &dosys("cd $dir && zmdpBenchmark -v $vfnType -f $scriptArgs $bargs $prob >& stdout.log");
+	}
+    }
+}

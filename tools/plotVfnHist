@@ -1,0 +1,138 @@
+#!/usr/bin/perl
+
+# run this script in the same directory where you run makeVfnHist; it generates the plots
+
+sub dosys {
+    my $cmd = shift;
+    print "$cmd\n";
+    my $ret = system($cmd);
+    if (0 != $ret) {
+	die "ERROR: '$cmd' returned exit status $ret\n";
+    }
+    return $ret;
+}
+
+sub usage {
+    die "usage: plotVfnHist OPTIONS\n".
+	"  -h or --help  Print this help.\n".
+	"  -p            Produce a pdf of the plot instead of displaying it\n";
+}
+
+$doOutput = 0;
+for (@ARGV) {
+    if ($_ eq "-h" or $_ eq "--help") {
+	&usage();
+    } elsif ($_ eq "-p") {
+	$doOutput = 1;
+    } else {
+	die "ERROR: unknown option $_ (-h for help)\n";
+    }
+}
+
+&dosys("rm -rf plotscratch");
+&dosys("mkdir -p plotscratch");
+&dosys("grep -v \\# gtruth/backups.log > plotscratch/backups.log");
+&dosys("head -1000 plotscratch/backups.log > plotscratch/k1.log");
+&dosys("sort -n plotscratch/k1.log | tail -1 > plotscratch/k1Last.log");
+&dosys("head -2000 plotscratch/backups.log | tail -1000 > plotscratch/k2.log");
+&dosys("sort -n plotscratch/k2.log | tail -1 > plotscratch/k2Last.log");
+
+$k1Last = `cat plotscratch/k1Last.log`;
+chop $k1Last;
+$k1Size = $k1Last+1;
+$k2Last = `cat plotscratch/k2Last.log`;
+chop $k2Last;
+$k2Size = $k2Last+1;
+
+
+$octOpts = "--silent ";
+if ($doOutput) {
+    $outputPlot =<<"EOF";
+#############################
+__gnuplot_set__ terminal postscript
+__gnuplot_set__ output "vfnHist.ps"
+#############################
+EOF
+} else {
+    $outputPlot = "";
+}
+
+$octScript =<<"EOF";
+#############################
+g = load("gtruth/boundValues.log");
+p = load("bpoint/boundValues.log");
+c = load("bconvex/boundValues.log");
+setA = 1:$k1Size;
+setB = ($k1Size+1):$k2Size;
+$outputPlot
+
+__gnuplot_set__ key left
+
+bds = [-20,0];
+delta = (range(bds))/20;
+bins = (bds(1):delta:bds(2)) - delta/2;
+
+subplot(2,2,1);
+[py,foo] = hist(p(setA,2) - g(setA,2), bins, 1);
+[cy,foo] = hist(c(setA,2) - g(setA,2), bins, 1);
+plot(bins,py,';point;',bins,cy,';convex;');
+title('lower bound set A');
+#__gnuplot_set__ ('point', 'convex');
+
+bds = [-30,0];
+delta = (range(bds))/20;
+bins = (bds(1):delta:bds(2)) - delta/2;
+
+subplot(2,2,2);
+[py,foo] = hist(p(setB,2) - g(setB,2), bins, 1);
+[cy,foo] = hist(c(setB,2) - g(setB,2), bins, 1);
+plot(bins,py,';point;',bins,cy,';convex;');
+title('lower bound set B');
+
+__gnuplot_set__ key right
+
+bds = [0,3];
+delta = (range(bds))/20;
+bins = (bds(1):delta:bds(2)) + delta/2;
+
+subplot(2,2,3);
+[py,foo] = hist(p(setA,3) - g(setA,3), bins, 1);
+[cy,foo] = hist(c(setA,3) - g(setA,3), bins, 1);
+plot(bins,py,';point;',bins,cy,';convex;');
+title('upper bound set A');
+
+bds = [0,3];
+delta = (range(bds))/20;
+bins = (bds(1):delta:bds(2)) + delta/2;
+
+subplot(2,2,4);
+[py,foo] = hist(p(setB,3) - g(setB,3), bins, 1);
+[cy,foo] = hist(c(setB,3) - g(setB,3), bins, 1);
+plot(bins,py,';point;',bins,cy,';convex;');
+title('upper bound set B');
+
+#############################
+EOF
+
+print "octave $octOpts <<\n$octScript";
+open(OCT, "|octave $octOpts") or die "ERROR: couldn't run octave\n";
+select(OCT);
+$| = 1;
+select(STDOUT);
+print OCT $octScript;
+
+$tmpScript = "plotVfn.m";
+open(SCR,">$tmpScript") or
+    die "ERROR: couldn't open $tmpScript for writing: $!\n";
+print SCR $octScript;
+close(SCR);
+print "[octave script also output to $tmpScript]\n";
+
+if ($doOutput) {
+    close(OCT);
+    &dosys("ps2pdf vfnHist.ps");
+    &dosys("rm -f vfnHist.ps");
+    print "output written to vfnHist.pdf\n";
+} else {
+    sleep(10000);
+}
