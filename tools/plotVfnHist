@@ -68,7 +68,7 @@ $outputPlot
 
 __gnuplot_set__ key left
 
-bds = [-20,0];
+bds = [-30,0];
 delta = (range(bds))/20;
 bins = (bds(1):delta:bds(2)) - delta/2;
 
@@ -79,11 +79,7 @@ plot(bins,py,';point;',bins,cy,';convex;');
 title('lower bound set A');
 #__gnuplot_set__ ('point', 'convex');
 
-bds = [-30,0];
-delta = (range(bds))/20;
-bins = (bds(1):delta:bds(2)) - delta/2;
-
-subplot(2,2,2);
+subplot(2,2,3);
 [py,foo] = hist(p(setB,2) - g(setB,2), bins, 1);
 [cy,foo] = hist(c(setB,2) - g(setB,2), bins, 1);
 plot(bins,py,';point;',bins,cy,';convex;');
@@ -95,15 +91,11 @@ bds = [0,3];
 delta = (range(bds))/20;
 bins = (bds(1):delta:bds(2)) + delta/2;
 
-subplot(2,2,3);
+subplot(2,2,2);
 [py,foo] = hist(p(setA,3) - g(setA,3), bins, 1);
 [cy,foo] = hist(c(setA,3) - g(setA,3), bins, 1);
 plot(bins,py,';point;',bins,cy,';convex;');
 title('upper bound set A');
-
-bds = [0,3];
-delta = (range(bds))/20;
-bins = (bds(1):delta:bds(2)) + delta/2;
 
 subplot(2,2,4);
 [py,foo] = hist(p(setB,3) - g(setB,3), bins, 1);
