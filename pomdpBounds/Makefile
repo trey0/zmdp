@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.5 2006-06-15 16:05:12 trey Exp $
+# $Id: Makefile,v 1.6 2006-10-24 02:13:19 trey Exp $
 #
 # Copyright (c) 2006, Trey Smith. All rights reserved.
 #
@@ -39,8 +39,7 @@ INSTALLHEADERS_HEADERS := \
 	BlindLBInitializer.h \
 	SawtoothUpperBound.h \
 	FullObsUBInitializer.h \
-	FastInfUBInitializer.h \
-	ConvexBounds.h
+	FastInfUBInitializer.h
 include $(BUILD_DIR)/installheaders.mak
 
 BUILDLIB_TARGET := libzmdpPomdpBounds.a
@@ -49,8 +48,7 @@ BUILDLIB_SRCS := \
 	BlindLBInitializer.cc \
 	SawtoothUpperBound.cc \
 	FullObsUBInitializer.cc \
-	FastInfUBInitializer.cc \
-	ConvexBounds.cc
+	FastInfUBInitializer.cc
 include $(BUILD_DIR)/buildlib.mak
 
 ifneq (,$(TEST))
@@ -78,6 +76,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.5  2006/06/15 16:05:12  trey
+# fixed size() information for alpha vectors, had to reorder some libs
+#
 # Revision 1.4  2006/06/14 18:17:33  trey
 # added testReadPolicy.cc
 #
