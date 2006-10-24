@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.13 $  $Author: trey $  $Date: 2006-10-19 19:32:33 $
+ $Revision: 1.14 $  $Author: trey $  $Date: 2006-10-24 02:08:49 $
    
  @file    Solver.h
  @brief   No brief
@@ -34,7 +34,7 @@ public:
 
   // sets up the problem
   virtual void planInit(const MDP* problem,
-			const ZMDPConfig& config) = 0;
+			const ZMDPConfig* config) = 0;
 
   // plan for a fixed amount of time.  if maxTimeSeconds < 0,
   //   the amount of time is chosen by the solver to optimize
@@ -63,6 +63,9 @@ public:
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.13  2006/10/19 19:32:33  trey
+ * added hook for backup logging
+ *
  * Revision 1.12  2006/10/18 18:05:20  trey
  * now propagating config data structure to lower levels so config fields can be used to control more parts of the system
  *

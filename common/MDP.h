@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.8 $  $Author: trey $  $Date: 2006-10-18 18:05:20 $
+ $Revision: 1.9 $  $Author: trey $  $Date: 2006-10-24 02:08:40 $
    
  @file    MDP.h
  @brief   No brief
@@ -78,8 +78,8 @@ struct MDP {
   // * some types of MDP might not define one of these bounds, which
   //   could be signaled by returning NULL.  so far this hasn't been
   //   explored.
-  virtual AbstractBound* newLowerBound(const ZMDPConfig& config) const = 0;
-  virtual AbstractBound* newUpperBound(const ZMDPConfig& config) const = 0;
+  virtual AbstractBound* newLowerBound(const ZMDPConfig* _config) const = 0;
+  virtual AbstractBound* newUpperBound(const ZMDPConfig* _config) const = 0;
 };
 
 }; // namespace zmdp
@@ -89,6 +89,9 @@ struct MDP {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.8  2006/10/18 18:05:20  trey
+ * now propagating config data structure to lower levels so config fields can be used to control more parts of the system
+ *
  * Revision 1.7  2006/04/28 17:57:41  trey
  * changed to use apache license
  *
