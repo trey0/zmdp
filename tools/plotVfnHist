@@ -75,14 +75,14 @@ bins = (bds(1):delta:bds(2)) - delta/2;
 subplot(2,2,1);
 [py,foo] = hist(p(setA,2) - g(setA,2), bins, 1);
 [cy,foo] = hist(c(setA,2) - g(setA,2), bins, 1);
-plot(bins,py,';point;',bins,cy,';convex;');
+plot(bins,py,';point;',bins,cy,';mp+masking+cache;');
 title('lower bound set A');
 #__gnuplot_set__ ('point', 'convex');
 
 subplot(2,2,3);
 [py,foo] = hist(p(setB,2) - g(setB,2), bins, 1);
 [cy,foo] = hist(c(setB,2) - g(setB,2), bins, 1);
-plot(bins,py,';point;',bins,cy,';convex;');
+plot(bins,py,';point;',bins,cy,';mp+masking+cache;');
 title('lower bound set B');
 
 __gnuplot_set__ key right
@@ -94,13 +94,13 @@ bins = (bds(1):delta:bds(2)) + delta/2;
 subplot(2,2,2);
 [py,foo] = hist(p(setA,3) - g(setA,3), bins, 1);
 [cy,foo] = hist(c(setA,3) - g(setA,3), bins, 1);
-plot(bins,py,';point;',bins,cy,';convex;');
+plot(bins,py,';point;',bins,cy,';sawtooth;');
 title('upper bound set A');
 
 subplot(2,2,4);
 [py,foo] = hist(p(setB,3) - g(setB,3), bins, 1);
 [cy,foo] = hist(c(setB,3) - g(setB,3), bins, 1);
-plot(bins,py,';point;',bins,cy,';convex;');
+plot(bins,py,';point;',bins,cy,';sawtooth;');
 title('upper bound set B');
 
 #############################
