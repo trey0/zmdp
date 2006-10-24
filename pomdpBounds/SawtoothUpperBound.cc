@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.12 $  $Author: trey $  $Date: 2006-10-24 02:13:04 $
+ $Revision: 1.13 $  $Author: trey $  $Date: 2006-10-24 19:12:32 $
    
  @file    SawtoothUpperBound.cc
  @brief   No brief
@@ -55,9 +55,9 @@ SawtoothUpperBound::SawtoothUpperBound(const MDP* _pomdp,
   numStates = pomdp->getBeliefSize();
   lastPruneNumPts = 0;
   lastPruneNumBackups = -1;
-  useConvexSupportList = config->getBool("useConvexSupportList");
+  useSawtoothSupportList = config->getBool("useSawtoothSupportList");
 
-  if (useConvexSupportList) {
+  if (useSawtoothSupportList) {
     supportList.resize(pomdp->getBeliefSize());
   }
 }
@@ -175,7 +175,7 @@ bool SawtoothUpperBound::dominates(const BVPair* xPair,
 double SawtoothUpperBound::getValue(const belief_vector& b, const MDPNode* cn) const
 {
   const BVList* ptsToCheck;
-  if (useConvexSupportList) {
+  if (useSawtoothSupportList) {
     ptsToCheck = &supportList[b.data[0].index];
   } else {
     ptsToCheck = &pts;
@@ -193,7 +193,7 @@ double SawtoothUpperBound::getValue(const belief_vector& b, const MDPNode* cn) c
 void SawtoothUpperBound::deleteAndForward(BVPair* victim,
 					  BVPair* dominator)
 {
-  if (useConvexSupportList) {
+  if (useSawtoothSupportList) {
     // remove victim from supportList
     FOR_EACH (bi, victim->b.data) {
       BVList& bvl = supportList[bi->index];
@@ -223,7 +223,7 @@ void SawtoothUpperBound::prune(int numBackups) {
   while (candidateP != pts.end()) {
     BVPair* candidate = *candidateP;
     const BVList* ptsToCheck;
-    if (useConvexSupportList) {
+    if (useSawtoothSupportList) {
       ptsToCheck = &supportList[candidate->b.data[0].index];
     } else {
       ptsToCheck = &pts;
@@ -290,7 +290,7 @@ void SawtoothUpperBound::addPoint(BVPair* bv)
 {
   int wc = whichCornerPoint(bv->b);
   if (-1 == wc) {
-    if (useConvexSupportList) {
+    if (useSawtoothSupportList) {
       // add new point to supportList
       FOR_EACH (bi, bv->b.data) {
 	supportList[bi->index].push_back(bv);
@@ -309,7 +309,7 @@ void SawtoothUpperBound::addPoint(const belief_vector& b, double val)
   if (-1 == wc) {
     BVPair* bv = new BVPair(b,val);
 
-    if (useConvexSupportList) {
+    if (useSawtoothSupportList) {
       // add new point to supportList
       FOR_EACH (bi, b.data) {
 	supportList[bi->index].push_back(bv);
@@ -457,6 +457,9 @@ void SawtoothUpperBound::setUBForNode(MDPNode& cn, double newUB, bool addBV)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.12  2006/10/24 02:13:04  trey
+ * distributed update code from ConvexBounds to SawtoothUpperBound, allows more flexibility
+ *
  * Revision 1.11  2006/10/18 18:07:13  trey
  * USE_TIME_WITHOUT_HEURISTIC is now a run-time config parameter
  *

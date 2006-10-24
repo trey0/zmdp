@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.9 $  $Author: trey $  $Date: 2006-10-24 02:13:04 $
+ $Revision: 1.10 $  $Author: trey $  $Date: 2006-10-24 19:12:32 $
    
  @file    SawtoothUpperBound.h
  @brief   No brief
@@ -57,7 +57,7 @@ struct SawtoothUpperBound : public IncrementalUpperBound {
   BVList pts;
   sla::dvector cornerPts;
   std::vector<BVList> supportList;
-  bool useConvexSupportList;
+  bool useSawtoothSupportList;
 
   SawtoothUpperBound(const MDP* _pomdp,
 		     const ZMDPConfig* _config);
@@ -100,6 +100,9 @@ struct SawtoothUpperBound : public IncrementalUpperBound {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.9  2006/10/24 02:13:04  trey
+ * distributed update code from ConvexBounds to SawtoothUpperBound, allows more flexibility
+ *
  * Revision 1.8  2006/10/18 18:07:13  trey
  * USE_TIME_WITHOUT_HEURISTIC is now a run-time config parameter
  *
