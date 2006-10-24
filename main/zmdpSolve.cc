@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.13 $  $Author: trey $  $Date: 2006-10-18 18:05:56 $
+ $Revision: 1.14 $  $Author: trey $  $Date: 2006-10-24 02:11:20 $
 
  @file    zmdpSolve.cc
  @brief   No brief
@@ -78,7 +78,7 @@ void doSolve(const ZMDPConfig& config, SolverParams& p)
   // initialize the solver
   printf("%05d calculating initial heuristics\n",
 	 (int) run.elapsedTime());
-  so.solver->planInit(so.sim->getModel(), config);
+  so.solver->planInit(so.sim->getModel(), &config);
   printf("%05d finished initialization, beginning to improve policy\n",
 	 (int) run.elapsedTime());
   
@@ -297,6 +297,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.13  2006/10/18 18:05:56  trey
+ * now propagating config data structure to lower levels so config fields can be used to control more parts of the system
+ *
  * Revision 1.12  2006/10/17 19:18:47  trey
  * centralized proper handling of negative terminateWallclockSeconds values
  *
