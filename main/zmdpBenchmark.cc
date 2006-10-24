@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.11 $  $Author: trey $  $Date: 2006-10-19 19:33:41 $
+ $Revision: 1.12 $  $Author: trey $  $Date: 2006-10-24 19:09:52 $
 
  @file    zmdpBenchmark.cc
  @brief   No brief
@@ -42,15 +42,6 @@ void doBenchmark(const ZMDPConfig& config, SolverParams& p)
   printf("reading input files\n");
   SolverObjects so;
   constructSolverObjects(so, p, config);
-
-  if (NULL != p.policyOutputFile) {
-    if (!so.bounds->getSupportsPolicyOutput()) {
-      cerr << "ERROR: -o specified, but with selected options, policy output is not supported:" << endl;
-      cerr << "  in order to enable policy output, problem must be a POMDP; if" << endl;
-      cout << "  it is, try adding the '-v convex' and '--lower-bound' options" << endl;
-      exit(EXIT_FAILURE);
-    }
-  }
 
   TestDriver x;
   x.batchTestIncremental(config,
@@ -123,6 +114,7 @@ int main(int argc, char **argv) {
   ZMDPConfig commandLineConfig;
 
   p.cmdName = argv[0];
+  p.usingBenchmarkFrontEnd = true;
   for (int argi=1; argi < argc; argi++) {
     std::string args = argv[argi];
     if (!argsOnly && '-' == args[0]) {
@@ -234,6 +226,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.11  2006/10/19 19:33:41  trey
+ * removed reference to obsolete MDPNodeHashLogger
+ *
  * Revision 1.10  2006/10/18 18:05:56  trey
  * now propagating config data structure to lower levels so config fields can be used to control more parts of the system
  *

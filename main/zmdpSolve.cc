@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.14 $  $Author: trey $  $Date: 2006-10-24 02:11:20 $
+ $Revision: 1.15 $  $Author: trey $  $Date: 2006-10-24 19:10:28 $
 
  @file    zmdpSolve.cc
  @brief   No brief
@@ -67,13 +67,6 @@ void doSolve(const ZMDPConfig& config, SolverParams& p)
 	 (int) run.elapsedTime());
   SolverObjects so;
   constructSolverObjects(so, p, config);
-
-  if (!so.bounds->getSupportsPolicyOutput()) {
-    cerr << "ERROR: with selected options, policy output is not supported:" << endl;
-    cerr << "  in order to enable policy output, problem must be a POMDP; if" << endl;
-    cout << "  it is, try using '-v convex' and '--forceMaintainLowerBound 1'" << endl;
-    exit(EXIT_FAILURE);
-  }
 
   // initialize the solver
   printf("%05d calculating initial heuristics\n",
@@ -297,6 +290,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.14  2006/10/24 02:11:20  trey
+ * changes to match Solver API change
+ *
  * Revision 1.13  2006/10/18 18:05:56  trey
  * now propagating config data structure to lower levels so config fields can be used to control more parts of the system
  *
