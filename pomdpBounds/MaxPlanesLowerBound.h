@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.12 $  $Author: trey $  $Date: 2006-10-24 02:12:47 $
+ $Revision: 1.13 $  $Author: trey $  $Date: 2006-10-24 19:12:13 $
    
  @file    MaxPlanesLowerBound.h
  @brief   No brief
@@ -81,7 +81,7 @@ struct MaxPlanesLowerBound : public IncrementalLowerBound {
   int lastPruneNumPlanes;
   int lastPruneNumBackups;
   std::vector<PlaneSet> supportList;
-  bool useConvexSupportList;
+  bool useMaxPlanesSupportList;
   
   MaxPlanesLowerBound(const MDP* _pomdp,
 		      const ZMDPConfig* _config);
@@ -118,6 +118,9 @@ struct MaxPlanesLowerBound : public IncrementalLowerBound {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.12  2006/10/24 02:12:47  trey
+ * distributed update code from ConvexBounds to MaxPlanesLowerBound, allows more flexibility
+ *
  * Revision 1.11  2006/10/18 18:07:13  trey
  * USE_TIME_WITHOUT_HEURISTIC is now a run-time config parameter
  *

@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.19 $  $Author: trey $  $Date: 2006-10-24 02:12:47 $
+ $Revision: 1.20 $  $Author: trey $  $Date: 2006-10-24 19:12:13 $
    
  @file    MaxPlanesLowerBound.cc
  @brief   No brief
@@ -152,9 +152,9 @@ MaxPlanesLowerBound::MaxPlanesLowerBound(const MDP* _pomdp,
 {
   lastPruneNumPlanes = 0;
   lastPruneNumBackups = -1;
-  useConvexSupportList = config->getBool("useConvexSupportList");
+  useMaxPlanesSupportList = config->getBool("useMaxPlanesSupportList");
 
-  if (useConvexSupportList) {
+  if (useMaxPlanesSupportList) {
     supportList.resize(pomdp->getBeliefSize());
   }
 }
@@ -282,17 +282,17 @@ void MaxPlanesLowerBound::getNewLBPlane(LBPlane& result, MDPNode& cn)
 
 void MaxPlanesLowerBound::initNodeBound(MDPNode& cn)
 {
-  // note: this should also do the right thing if cn is terminal;
-  // at least one of the planes from initialization should give an
-  // lbVal of 0 for cn in that case.
-  cn.lbVal = -99e+20;
-  setPlaneForNode(cn, &getBestLBPlane(cn.s));
-
 #if USE_CONVEX_CACHE
   MaxPlanesData* bdata = new MaxPlanesData();
   bdata->bestPlane = NULL;
   cn.boundsData = bdata;
 #endif
+
+  // note: this should also do the right thing if cn is terminal;
+  // at least one of the planes from initialization should give an
+  // lbVal of 0 for cn in that case.
+  cn.lbVal = -99e+20;
+  setPlaneForNode(cn, &getBestLBPlane(cn.s));
 }
 
 void MaxPlanesLowerBound::update(MDPNode& cn)
@@ -367,7 +367,7 @@ const LBPlane& MaxPlanesLowerBound::getPlaneForNode(MDPNode& cn)
 const LBPlane& MaxPlanesLowerBound::getBestLBPlaneConst(const belief_vector& b) const
 {
   const PlaneSet* planesToCheck;
-  if (useConvexSupportList) {
+  if (useMaxPlanesSupportList) {
     int minSupportIndex = -1;
     int minSupportSize = INT_MAX;
     FOR_EACH (eltP, b.data) {
@@ -414,7 +414,7 @@ LBPlane& MaxPlanesLowerBound::getBestLBPlaneWithCache(const belief_vector& b,
 						      int lastSetPlaneNumBackups)
 {
   const PlaneSet* planesToCheck;
-  if (useConvexSupportList) {
+  if (useMaxPlanesSupportList) {
     int minSupportIndex = -1;
     int minSupportSize = INT_MAX;
     FOR_EACH (eltP, b.data) {
@@ -457,7 +457,7 @@ void MaxPlanesLowerBound::addLBPlane(LBPlane* av)
 {
   planes.push_back(av);
 
-  if (useConvexSupportList) {
+  if (useMaxPlanesSupportList) {
     // add new plane to supportList
     FOR_EACH (ai, av->mask.data) {
       supportList[ai->index].push_back(av);
@@ -539,7 +539,7 @@ void MaxPlanesLowerBound::maybePrune(int numBackups)
 
 void MaxPlanesLowerBound::deleteAndForward(LBPlane* victim, LBPlane* dominator)
 {
-  if (useConvexSupportList) {
+  if (useMaxPlanesSupportList) {
     // remove victim from supportList
     FOR_EACH (ai, victim->mask.data) {
       PlaneSet& pi = supportList[ai->index];
@@ -720,6 +720,9 @@ void MaxPlanesLowerBound::readFromFile(const std::string& inFileName)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.19  2006/10/24 02:12:47  trey
+ * distributed update code from ConvexBounds to MaxPlanesLowerBound, allows more flexibility
+ *
  * Revision 1.18  2006/10/18 18:07:13  trey
  * USE_TIME_WITHOUT_HEURISTIC is now a run-time config parameter
  *
