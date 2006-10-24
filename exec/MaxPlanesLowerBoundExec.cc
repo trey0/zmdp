@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2006-10-18 18:06:16 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2006-10-24 02:36:12 $
    
  @file    MaxPlanesLowerBoundExec.cc
  @brief   No brief
@@ -64,7 +64,7 @@ void MaxPlanesLowerBoundExec::init(const std::string& modelFileName,
   printf("  (took %.3f seconds)\n",
 	 (tv2.tv_sec - tv1.tv_sec) + 1e-6*(tv2.tv_usec - tv1.tv_usec));
 
-  policy = new MaxPlanesLowerBound(pomdp, config);
+  policy = new MaxPlanesLowerBound(pomdp, &config);
 
   printf("MaxPlanesLowerBoundExec: reading policy\n");
   gettimeofday(&tv1, NULL);
@@ -102,6 +102,9 @@ void MaxPlanesLowerBoundExec::setBelief(const belief_vector& b)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2006/10/18 18:06:16  trey
+ * now propagating config data structure to lower levels so config fields can be used to control more parts of the system
+ *
  * Revision 1.1  2006/06/27 18:19:26  trey
  * initial check-in
  *
