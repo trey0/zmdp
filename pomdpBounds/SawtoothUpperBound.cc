@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.11 $  $Author: trey $  $Date: 2006-10-18 18:07:13 $
+ $Revision: 1.12 $  $Author: trey $  $Date: 2006-10-24 02:13:04 $
    
  @file    SawtoothUpperBound.cc
  @brief   No brief
@@ -47,13 +47,15 @@ using namespace MatrixUtils;
 namespace zmdp {
 
 SawtoothUpperBound::SawtoothUpperBound(const MDP* _pomdp,
-				       const ZMDPConfig& config)
+				       const ZMDPConfig* _config) :
+  pomdp((const Pomdp*) _pomdp),
+  config(_config),
+  core(NULL)
 {
-  pomdp = (const Pomdp*) _pomdp;
   numStates = pomdp->getBeliefSize();
   lastPruneNumPts = 0;
   lastPruneNumBackups = -1;
-  useConvexSupportList = config.getBool("useConvexSupportList");
+  useConvexSupportList = config->getBool("useConvexSupportList");
 
   if (useConvexSupportList) {
     supportList.resize(pomdp->getBeliefSize());
@@ -71,6 +73,21 @@ void SawtoothUpperBound::initialize(double targetPrecision)
 {
   FastInfUBInitializer fib(pomdp, this);
   fib.initialize(targetPrecision);
+}
+
+void SawtoothUpperBound::initNodeBound(MDPNode& cn)
+{
+  if (cn.isTerminal) {
+    setUBForNode(cn, 0, true);
+  } else {
+    setUBForNode(cn, getValue(cn.s, NULL), false);
+  }
+}
+
+void SawtoothUpperBound::update(MDPNode& cn, int* maxUBActionP)
+{
+  double newUBVal = getNewUBValue(cn, maxUBActionP);
+  setUBForNode(cn, newUBVal, true);
 }
 
 // returns the upper bound that the (belief,value) pair c induces on b.
@@ -155,7 +172,7 @@ bool SawtoothUpperBound::dominates(const BVPair* xPair,
   return (xValueAtY < yValueAtY + ZMDP_BOUNDS_PRUNE_EPS);
 }
 
-double SawtoothUpperBound::getValue(const belief_vector& b) const
+double SawtoothUpperBound::getValue(const belief_vector& b, const MDPNode* cn) const
 {
   const BVList* ptsToCheck;
   if (useConvexSupportList) {
@@ -314,9 +331,125 @@ void SawtoothUpperBound::printToStream(ostream& out) const
     const BVPair* pr = *pt;
     out << "    " << sparseRep(pr->b)
 	<< " => " << pr->v
-	<< " (" << getValue(pr->b) << ")" << endl;
+	<< " (" << getValue(pr->b, NULL) << ")" << endl;
   }
   out << "}" << endl;
+}
+
+// upper bound on long-term reward for taking action a
+double SawtoothUpperBound::getNewUBValueQ(MDPNode& cn, int a)
+{
+  double val = 0;
+
+  MDPQEntry& Qa = cn.Q[a];
+  FOR (o, Qa.getNumOutcomes()) {
+    MDPEdge* e = Qa.outcomes[o];
+    if (NULL != e) {
+      val += e->obsProb * getValue(e->nextState->s, NULL);
+    }
+  }
+  val = Qa.immediateReward + pomdp->getDiscount() * val;
+  Qa.ubVal = val;
+
+  return val;
+}
+
+double SawtoothUpperBound::getNewUBValueSimple(MDPNode& cn, int* maxUBActionP)
+{
+#if USE_DEBUG_PRINT
+  timeval startTime = getTime();
+#endif
+
+  double val, maxVal = -99e+20;
+  int maxUBAction = -1;
+  FOR (a, pomdp->getNumActions()) {
+    val = getNewUBValueQ(cn,a);
+    if (val > maxVal) {
+      maxVal = val;
+      maxUBAction = a;
+    }
+  }
+
+  if (NULL != maxUBActionP) *maxUBActionP = maxUBAction;
+  
+#if USE_DEBUG_PRINT
+  cout << "** newUpperBound: elapsed time = "
+       << timevalToSeconds(getTime() - startTime)
+       << endl;
+#endif
+  
+  return maxVal;
+}
+
+double SawtoothUpperBound::getNewUBValueUseCache(MDPNode& cn, int* maxUBActionP)
+{
+#if USE_DEBUG_PRINT
+  timeval startTime = getTime();
+#endif
+
+  // cache upper bound for each action
+  dvector cachedUpperBound(pomdp->getNumActions());
+  FOR (a, pomdp->numActions) {
+    cachedUpperBound(a) = cn.Q[a].ubVal;
+  }
+
+  // remember which Q functions we have updated on this call
+  std::vector<bool> updatedAction(pomdp->getNumActions());
+  FOR (a, pomdp->getNumActions()) {
+    updatedAction[a] = false;
+  }
+
+  double val;
+  int maxUBAction = argmax_elt(cachedUpperBound);
+  while (1) {
+    // do the backup for the best Q
+    val = getNewUBValueQ(cn,maxUBAction);
+    cachedUpperBound(maxUBAction) = val;
+    updatedAction[maxUBAction] = true;
+      
+    // the best action may have changed after updating Q
+    maxUBAction = argmax_elt(cachedUpperBound);
+
+    // if the best action after the update is one that we have already
+    //    updated, we're done
+    if (updatedAction[maxUBAction]) break;
+  }
+
+  double maxVal = cachedUpperBound(maxUBAction);
+  
+  if (NULL != maxUBActionP) *maxUBActionP = maxUBAction;
+
+#if USE_DEBUG_PRINT
+  cout << "** newUpperBound: elapsed time = "
+       << timevalToSeconds(getTime() - startTime)
+       << endl;
+#endif
+
+  return maxVal;
+}
+
+double SawtoothUpperBound::getNewUBValue(MDPNode& cn, int* maxUBActionP)
+{
+  if (BP_QVAL_UNDEFINED == cn.Q[0].ubVal) {
+    return getNewUBValueSimple(cn, maxUBActionP);
+  } else {
+    return getNewUBValueUseCache(cn, maxUBActionP);
+  }
+}
+
+void SawtoothUpperBound::setUBForNode(MDPNode& cn, double newUB, bool addBV)
+{
+  BVPair* newBV = new BVPair();
+  newBV->b = cn.s;
+  newBV->v = newUB;
+  newBV->numBackupsAtCreation = core->numBackups;
+
+  cn.ubVal = newUB;
+
+  if (addBV) {
+    addPoint(newBV);
+    maybePrune(core->numBackups);
+  }
 }
 
 }; // namespace zmdp
@@ -324,6 +457,9 @@ void SawtoothUpperBound::printToStream(ostream& out) const
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.11  2006/10/18 18:07:13  trey
+ * USE_TIME_WITHOUT_HEURISTIC is now a run-time config parameter
+ *
  * Revision 1.10  2006/10/17 19:14:02  trey
  * fixed bad interaction between pruning and support lists; new pruning code is simpler, probably not quite as fast, hopefully bug-free
  *

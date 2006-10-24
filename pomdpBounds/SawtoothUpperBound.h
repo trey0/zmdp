@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.8 $  $Author: trey $  $Date: 2006-10-18 18:07:13 $
+ $Revision: 1.9 $  $Author: trey $  $Date: 2006-10-24 02:13:04 $
    
  @file    SawtoothUpperBound.h
  @brief   No brief
@@ -27,8 +27,9 @@
 
 #include "zmdpConfig.h"
 #include "MatrixUtils.h"
-#include "AbstractBound.h"
 #include "Pomdp.h"
+#include "IncrementalUpperBound.h"
+#include "BoundPairCore.h"
 
 #define PRUNE_EPS (1e-10)
 
@@ -46,9 +47,10 @@ struct BVPair {
 
 typedef std::list<BVPair*> BVList;
 
-class SawtoothUpperBound : public AbstractBound {
-public:
+struct SawtoothUpperBound : public IncrementalUpperBound {
   const Pomdp* pomdp;
+  const ZMDPConfig* config;
+  BoundPairCore* core;
   int numStates;
   int lastPruneNumPts;
   int lastPruneNumBackups;
@@ -58,14 +60,13 @@ public:
   bool useConvexSupportList;
 
   SawtoothUpperBound(const MDP* _pomdp,
-		     const ZMDPConfig& config);
+		     const ZMDPConfig* _config);
   ~SawtoothUpperBound(void);
 
-  // performs any computation necessary to initialize the bound
   void initialize(double targetPrecision);
-
-  // returns the bound value at state s
-  double getValue(const belief_vector& b) const;
+  double getValue(const belief_vector& b, const MDPNode* cn) const;
+  void initNodeBound(MDPNode& cn);
+  void update(MDPNode& cn, int* maxUBActionP);
 
   static double getBVValue(const belief_vector& b,
 			   const BVPair* cPair,
@@ -83,6 +84,13 @@ public:
   void addPoint(const belief_vector& b, double val);
   void addPoint(BVPair* bv);
   void printToStream(std::ostream& out) const;
+
+  double getNewUBValueQ(MDPNode& cn, int a);
+  double getNewUBValueSimple(MDPNode& cn, int* maxUBActionP);
+  double getNewUBValueUseCache(MDPNode& cn, int* maxUBActionP);
+  double getNewUBValue(MDPNode& cn, int* maxUBActionP);
+  void setUBForNode(MDPNode& cn, double newUB, bool addBV);
+  double getUBForNode(MDPNode& cn);
 };
 
 }; // namespace zmdp
@@ -92,6 +100,9 @@ public:
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.8  2006/10/18 18:07:13  trey
+ * USE_TIME_WITHOUT_HEURISTIC is now a run-time config parameter
+ *
  * Revision 1.7  2006/07/26 20:22:10  trey
  * new implementation of USE_CONVEX_CACHE; during pruning, now skip comparison of points if they were compared during last pruning cycle
  *
