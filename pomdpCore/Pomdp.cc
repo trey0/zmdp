@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.16 $  $Author: trey $  $Date: 2006-10-18 18:06:37 $
+ $Revision: 1.17 $  $Author: trey $  $Date: 2006-10-24 02:13:43 $
   
  @file    Pomdp.cc
  @brief   No brief
@@ -154,14 +154,14 @@ double Pomdp::getReward(const belief_vector& b, int a) const
   return inner_prod_column( R, a, b );
 }
 
-AbstractBound* Pomdp::newLowerBound(const ZMDPConfig& config) const
+AbstractBound* Pomdp::newLowerBound(const ZMDPConfig* _config) const
 {
-  return new MaxPlanesLowerBound(this, config);
+  return new MaxPlanesLowerBound(this, _config);
 }
 
-AbstractBound* Pomdp::newUpperBound(const ZMDPConfig& config) const
+AbstractBound* Pomdp::newUpperBound(const ZMDPConfig* _config) const
 {
-  return new SawtoothUpperBound(this, config);
+  return new SawtoothUpperBound(this, _config);
 }
 
 bool Pomdp::getIsTerminalState(const state_vector& s) const
@@ -433,6 +433,9 @@ void Pomdp::debugDensity(void) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.16  2006/10/18 18:06:37  trey
+ * now propagating config data structure to lower levels so config fields can be used to control more parts of the system
+ *
  * Revision 1.15  2006/10/03 03:18:59  trey
  * added maxHorizon parameter
  *

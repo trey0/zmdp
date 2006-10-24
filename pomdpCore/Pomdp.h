@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.8 $  $Author: trey $  $Date: 2006-10-18 18:06:37 $
+ $Revision: 1.9 $  $Author: trey $  $Date: 2006-10-24 02:13:43 $
    
  @file    Pomdp.h
  @brief   No brief
@@ -81,8 +81,8 @@ public:
   // returns the expected immediate reward when from belief b action a is selected
   double getReward(const belief_vector& b, int a) const;
 
-  AbstractBound* newLowerBound(const ZMDPConfig& config) const;
-  AbstractBound* newUpperBound(const ZMDPConfig& config) const;
+  AbstractBound* newLowerBound(const ZMDPConfig* _config) const;
+  AbstractBound* newUpperBound(const ZMDPConfig* _config) const;
 
   // POMDP-as-belief-MDP aliases for functions implemented in MDP
   int getBeliefSize(void) const { return getNumStateDimensions(); }
@@ -114,6 +114,9 @@ protected:
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.8  2006/10/18 18:06:37  trey
+ * now propagating config data structure to lower levels so config fields can be used to control more parts of the system
+ *
  * Revision 1.7  2006/10/03 03:18:59  trey
  * added maxHorizon parameter
  *
