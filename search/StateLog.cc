@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.4 $  $Author: trey $  $Date: 2006-10-20 20:03:44 $
+ $Revision: 1.5 $  $Author: trey $  $Date: 2006-10-24 02:37:05 $
    
  @file    StateLog.cc
  @brief   No brief
@@ -160,7 +160,7 @@ void StateIndex::readFromFile(const std::string& inFile)
 }
 
 void StateIndex::writeBoundValuesToFile(const std::string& outFile,
-					const IncrementalBounds& bounds) const
+					const BoundPairCore& bounds) const
 {
   std::ofstream out(outFile.c_str());
   if (!out) {
@@ -260,6 +260,9 @@ int StateLog::getLogEntry(int i) const
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2006/10/20 20:03:44  trey
+ * fixed bug with reading last state in index file, added writeBoundValuesToFile()
+ *
  * Revision 1.3  2006/10/20 17:10:06  trey
  * added debug print statements
  *

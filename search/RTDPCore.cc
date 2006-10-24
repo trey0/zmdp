@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.20 $  $Author: trey $  $Date: 2006-10-20 20:03:14 $
+ $Revision: 1.21 $  $Author: trey $  $Date: 2006-10-24 02:37:05 $
    
  @file    RTDPCore.cc
  @brief   Common code used by multiple RTDP variants found in this
@@ -35,7 +35,7 @@
 #include "MatrixUtils.h"
 #include "Pomdp.h"
 #include "RTDPCore.h"
-#include "PointBounds.h"
+#include "BoundPairCore.h"
 #include "StateLog.h"
 
 using namespace std;
@@ -49,14 +49,14 @@ RTDPCore::RTDPCore(void) :
   initialized(false)
 {}
 
-void RTDPCore::setBounds(IncrementalBounds* _bounds)
+void RTDPCore::setBounds(BoundPairCore* _bounds)
 {
   bounds = _bounds;
 }
 
 void RTDPCore::init(void)
 {
-  bounds->initialize(problem, *config);
+  bounds->initialize(problem, config);
 
   previousElapsedTime = secondsToTimeval(0.0);
   lastPrintTime = 0;
@@ -81,9 +81,9 @@ void RTDPCore::init(void)
 }
 
 void RTDPCore::planInit(const MDP* _problem,
-			const ZMDPConfig& _config)
+			const ZMDPConfig* _config)
 {
-  config = &_config;
+  config = _config;
   problem = _problem;
   initialized = false;
   targetPrecision = config->getDouble("terminateRegretBound");
@@ -186,6 +186,9 @@ void RTDPCore::logBackups(void)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.20  2006/10/20 20:03:14  trey
+ * added boundValuesOutputFile support
+ *
  * Revision 1.19  2006/10/19 19:31:16  trey
  * added support for backup logging
  *

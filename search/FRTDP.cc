@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.18 $  $Author: trey $  $Date: 2006-10-19 19:31:16 $
+ $Revision: 1.19 $  $Author: trey $  $Date: 2006-10-24 02:37:05 $
    
  @file    FRTDP.cc
  @brief   No brief
@@ -223,7 +223,7 @@ bool FRTDP::doTrial(MDPNode& cn)
 
 void FRTDP::derivedClassInit(void)
 {
-  bounds->setGetNodeHandler(&FRTDP::staticGetNodeHandler, this);
+  bounds->addGetNodeHandler(&FRTDP::staticGetNodeHandler, this);
 }
 
 }; // namespace zmdp
@@ -231,6 +231,9 @@ void FRTDP::derivedClassInit(void)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.18  2006/10/19 19:31:16  trey
+ * added support for backup logging
+ *
  * Revision 1.17  2006/04/28 17:57:41  trey
  * changed to use apache license
  *

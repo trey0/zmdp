@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2006-10-20 20:03:44 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2006-10-24 02:37:05 $
    
  @file    StateLog.h
  @brief   No brief
@@ -47,7 +47,7 @@ struct StateIndex {
   void readFromFile(const std::string& inFile);
 
   void writeBoundValuesToFile(const std::string& outFile,
-			      const IncrementalBounds& bounds) const;
+			      const BoundPairCore& bounds) const;
 };
 
 struct StateLog {
@@ -70,6 +70,9 @@ struct StateLog {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2006/10/20 20:03:44  trey
+ * fixed bug with reading last state in index file, added writeBoundValuesToFile()
+ *
  * Revision 1.2  2006/10/20 04:57:51  trey
  * added size() and getLogEntry() methods to StateLog
  *

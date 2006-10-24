@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.16 $  $Author: trey $  $Date: 2006-10-20 20:03:14 $
+ $Revision: 1.17 $  $Author: trey $  $Date: 2006-10-24 02:37:05 $
    
  @file    RTDPCore.h
  @brief   Common code used by multiple RTDP variants found in this
@@ -28,7 +28,7 @@
 
 #include "MatrixUtils.h"
 #include "Solver.h"
-#include "IncrementalBounds.h"
+#include "BoundPairCore.h"
 
 #define RT_CLEAR_STD_STACK(x) while (!(x).empty()) (x).pop();
 #define RT_IDX_PLUS_INFINITY (INT_MAX)
@@ -74,7 +74,7 @@ struct NodeStack {
 
 struct RTDPCore : public Solver {
   const MDP* problem;
-  IncrementalBounds* bounds;
+  BoundPairCore* bounds;
   timeval boundsStartTime;
   timeval previousElapsedTime;
   int numTrials;
@@ -93,7 +93,7 @@ struct RTDPCore : public Solver {
 
   RTDPCore(void);
 
-  void setBounds(IncrementalBounds* _bounds);
+  void setBounds(BoundPairCore* _bounds);
   void init(void);
 
   // different derived classes (RTDP variants) will implement these
@@ -102,7 +102,7 @@ struct RTDPCore : public Solver {
   virtual void derivedClassInit(void) {}
 
   // virtual functions from Solver that constitute the external api
-  void planInit(const MDP* problem, const ZMDPConfig& _config);
+  void planInit(const MDP* problem, const ZMDPConfig* _config);
   bool planFixedTime(const state_vector& s,
 		     double maxTimeSeconds,
 		     double _targetPrecision);
@@ -120,6 +120,9 @@ struct RTDPCore : public Solver {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.16  2006/10/20 20:03:14  trey
+ * added boundValuesOutputFile support
+ *
  * Revision 1.15  2006/10/20 04:56:07  trey
  * removed obsolete getUseLowerBound() function
  *

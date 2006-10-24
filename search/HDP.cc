@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.13 $  $Author: trey $  $Date: 2006-10-20 04:56:35 $
+ $Revision: 1.14 $  $Author: trey $  $Date: 2006-10-24 02:37:05 $
    
  @file    HDP.cc
  @brief   Implementation of Bonet and Geffner's HDP algorithm.
@@ -218,7 +218,7 @@ bool HDP::doTrial(MDPNode& cn)
 
 void HDP::derivedClassInit(void)
 {
-  bounds->setGetNodeHandler(&HDP::staticGetNodeHandler, this);
+  bounds->addGetNodeHandler(&HDP::staticGetNodeHandler, this);
 }
 
 }; // namespace zmdp
@@ -226,6 +226,9 @@ void HDP::derivedClassInit(void)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.13  2006/10/20 04:56:35  trey
+ * removed obsolete comment
+ *
  * Revision 1.12  2006/10/19 19:31:16  trey
  * added support for backup logging
  *
