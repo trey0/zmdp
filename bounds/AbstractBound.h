@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2006-04-28 17:57:41 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2006-10-24 02:04:35 $
    
  @file    AbstractBound.h
  @brief   No brief
@@ -27,7 +27,7 @@
 #include <string>
 #include <vector>
 
-#include "MDP.h"
+#include "MDPCache.h"
 
 using namespace sla;
 
@@ -40,7 +40,8 @@ struct AbstractBound {
   virtual void initialize(double targetPrecision) = 0;
 
   // returns the bound value at state s
-  virtual double getValue(const state_vector& s) const = 0;
+  virtual double getValue(const state_vector& s,
+			  const MDPNode* cn) const = 0;
 };
 
 }; // namespace zmdp
@@ -50,6 +51,9 @@ struct AbstractBound {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2006/04/28 17:57:41  trey
+ * changed to use apache license
+ *
  * Revision 1.1  2006/04/04 17:20:42  trey
  * moved AbstractBound from common to bounds
  *
