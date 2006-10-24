@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.4 $  $Author: trey $  $Date: 2006-10-24 02:37:05 $
+ $Revision: 1.5 $  $Author: trey $  $Date: 2006-10-24 19:12:53 $
    
  @file    StateLog.h
  @brief   No brief
@@ -29,7 +29,7 @@
 
 #include "zmdpCommonDefs.h"
 #include "zmdpCommonTypes.h"
-#include "IncrementalBounds.h"
+#include "BoundPairCore.h"
 
 using namespace sla;
 
@@ -70,6 +70,9 @@ struct StateLog {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2006/10/24 02:37:05  trey
+ * updated for modified bounds interfaces
+ *
  * Revision 1.3  2006/10/20 20:03:44  trey
  * fixed bug with reading last state in index file, added writeBoundValuesToFile()
  *
