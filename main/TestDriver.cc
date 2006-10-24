@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.10 $  $Author: trey $  $Date: 2006-10-19 19:33:57 $
+ $Revision: 1.11 $  $Author: trey $  $Date: 2006-10-24 02:09:18 $
 
  @file    TestDriver.cc
  @brief   No brief
@@ -75,7 +75,7 @@ void TestDriver::interleave(const ZMDPConfig& config,
     cout << "=-=-=-=-= interleave: trial " << (i+1) << " / " << numIterations << endl;
 
     // reset the planner
-    solver.planInit(sim->getModel(), config);
+    solver.planInit(sim->getModel(), &config);
 
     // set up a new bounds file and sim file for each iteration
     snprintf( boundsFileName, sizeof(boundsFileName), boundsFileNameFmt.c_str(), i );
@@ -186,7 +186,7 @@ void TestDriver::batchTestIncremental(const ZMDPConfig& config,
   }
 
   printf("initializing solver (includes calculating initial bounds)\n");
-  so.solver->planInit(sim->getModel(), config);
+  so.solver->planInit(sim->getModel(), &config);
 
   printf("entering solver main loop\n");
   double timeSoFar = 1e-20;
@@ -317,6 +317,9 @@ void TestDriver::printRewards(void) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.10  2006/10/19 19:33:57  trey
+ * added support for backup logging
+ *
  * Revision 1.9  2006/10/18 18:46:47  trey
  * fixed spurious warning
  *
