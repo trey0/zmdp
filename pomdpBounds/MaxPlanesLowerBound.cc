@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.18 $  $Author: trey $  $Date: 2006-10-18 18:07:13 $
+ $Revision: 1.19 $  $Author: trey $  $Date: 2006-10-24 02:12:47 $
    
  @file    MaxPlanesLowerBound.cc
  @brief   No brief
@@ -46,6 +46,16 @@ using namespace MatrixUtils;
 using namespace sla;
 
 namespace zmdp {
+
+struct MaxPlanesData {
+  LBPlane* bestPlane;
+  int lastSetPlaneNumBackups;
+
+  MaxPlanesData(void) :
+    bestPlane(NULL),
+    lastSetPlaneNumBackups(-1)
+  {}
+};
 
 /**********************************************************************
  * LOCAL HELPER FUNCTIONS
@@ -135,12 +145,14 @@ void LBPlane::write(std::ostream& out) const
  **********************************************************************/
 
 MaxPlanesLowerBound::MaxPlanesLowerBound(const MDP* _pomdp,
-					 const ZMDPConfig& config)
+					 const ZMDPConfig* _config) :
+  pomdp((const Pomdp*) _pomdp),
+  config(_config),
+  core(NULL)
 {
-  pomdp = (const Pomdp*) _pomdp;
   lastPruneNumPlanes = 0;
   lastPruneNumBackups = -1;
-  useConvexSupportList = config.getBool("useConvexSupportList");
+  useConvexSupportList = config->getBool("useConvexSupportList");
 
   if (useConvexSupportList) {
     supportList.resize(pomdp->getBeliefSize());
@@ -167,10 +179,188 @@ void MaxPlanesLowerBound::initialize(double targetPrecision)
 #endif
 }
 
-double MaxPlanesLowerBound::getValue(const belief_vector& b) const
+double MaxPlanesLowerBound::getValue(const belief_vector& b, const MDPNode* cn) const
 {
-  double v = inner_prod( getBestLBPlaneConst(b).alpha, b );
+  double v = inner_prod(getBestLBPlaneConst(b).alpha, b);
   return v;
+}
+
+// lower bound on long-term reward for taking action a (alpha vector)
+void MaxPlanesLowerBound::getNewLBPlaneQ(LBPlane& result, MDPNode& cn, int a)
+{
+  alpha_vector betaA(pomdp->getBeliefSize());
+  const alpha_vector* betaAO;
+  alpha_vector tmp, tmp2;
+#if USE_MASKED_ALPHA
+  alpha_vector tmp3;
+#endif
+
+  set_to_zero(betaA);
+  
+  bool defaultIsSet = false;
+  const alpha_vector* defaultBetaAO = NULL;
+  const MDPQEntry& Qa = cn.Q[a];
+  alpha_vector maskedBeta;
+  FOR (o, Qa.getNumOutcomes()) {
+    MDPEdge* e = Qa.outcomes[o];
+    if (NULL != e) {
+      betaAO = &getPlaneForNode(*e->nextState).alpha;
+#if USE_MASKED_ALPHA
+      // occasionally, even if the nextState belief is sparse, the
+      // corresponding betaAO is one of the dense alpha vectors produced
+      // by the initial blind-policy heuristic.  in that case, we can
+      // speed up the matrix multiplication below by masking betaAO with
+      // the nextState belief (so it becomes much sparser).
+      if (betaAO->filled() > cn.s.filled()) {
+	mask_copy(maskedBeta, *betaAO, e->nextState->s);
+	betaAO = &maskedBeta;
+      }
+#endif
+    } else {
+      // impossible to see this observation, so it doesn't make sense to
+      // pick the alpha that optimizes for the next belief.  plug in a
+      // default alpha (arbitrarily chosen to optimize for cn.s).
+      if (!defaultIsSet) {
+	defaultBetaAO = &getPlaneForNode(cn).alpha;
+	defaultIsSet = true;
+      }
+      betaAO = defaultBetaAO;
+    }
+
+    emult_column( tmp, pomdp->O[a], o, *betaAO );
+#if USE_MASKED_ALPHA
+    mult( tmp3, pomdp->T[a], tmp );
+    mask_copy( tmp2, tmp3, cn.s );
+#else
+    mult( tmp2, tmp, pomdp->Ttr[a] );
+#endif
+    betaA += tmp2;
+  }
+
+  alpha_vector Rxa;
+#if USE_MASKED_ALPHA
+  copy_from_column( tmp, pomdp->R, a );
+  mask_copy( Rxa, tmp, cn.s );
+#else
+  copy_from_column( Rxa, pomdp->R, a );
+#endif
+  betaA *= pomdp->getDiscount();
+  betaA += Rxa;
+  
+  result.alpha = betaA;
+  result.action = a;
+#if USE_MASKED_ALPHA
+  result.mask = cn.s;
+#endif
+  result.numBackupsAtCreation = core->numBackups;
+}
+
+void MaxPlanesLowerBound::getNewLBPlane(LBPlane& result, MDPNode& cn)
+{
+#if USE_DEBUG_PRINT
+  timeval startTime = getTime();
+#endif
+
+  double val, maxVal = -99e+20;
+  LBPlane betaA;
+ 
+  FOR (a, cn.getNumActions()) {
+    getNewLBPlaneQ(betaA, cn, a);
+    val = inner_prod(betaA.alpha, cn.s);
+    cn.Q[a].lbVal = val;
+    if (val > maxVal) {
+      maxVal = val;
+      result = betaA;
+    }
+  }
+#if USE_DEBUG_PRINT
+  cout << "** newLowerBound: elapsed time = "
+       << timevalToSeconds(getTime() - startTime)
+       << endl;
+#endif
+}
+
+void MaxPlanesLowerBound::initNodeBound(MDPNode& cn)
+{
+  // note: this should also do the right thing if cn is terminal;
+  // at least one of the planes from initialization should give an
+  // lbVal of 0 for cn in that case.
+  cn.lbVal = -99e+20;
+  setPlaneForNode(cn, &getBestLBPlane(cn.s));
+
+#if USE_CONVEX_CACHE
+  MaxPlanesData* bdata = new MaxPlanesData();
+  bdata->bestPlane = NULL;
+  cn.boundsData = bdata;
+#endif
+}
+
+void MaxPlanesLowerBound::update(MDPNode& cn)
+{
+  LBPlane* newPlane = new LBPlane();
+  getNewLBPlane(*newPlane, cn);
+
+  setPlaneForNode(cn, newPlane);
+
+  addLBPlane(newPlane);
+  maybePrune(core->numBackups);
+}
+
+void MaxPlanesLowerBound::setPlaneForNode(MDPNode& cn, LBPlane* newPlane)
+{
+  double newLB = inner_prod(newPlane->alpha, cn.s);
+#if USE_CONVEX_CACHE
+  if (newLB < cn.lbVal - ZMDP_BOUNDS_PRUNE_EPS) {
+#if 0
+    // debug
+    LBPlane* oldPlane = ((MaxPlanesLowerBoundData*) cn.boundsData)->bestPlane;
+    printf("setPlaneForNode: ignoring new plane: newLB=%lf cn.lbVal=%lf diff=%lg ip=%lf\n",
+	   newLB, cn.lbVal, (newLB-cn.lbVal), inner_prod(oldPlane->alpha, cn.s));
+    LBPlane* newPlane = &lowerBound->getBestLBPlane(cn.s);
+    printf("setPlaneForNode: newPlane=%p oldPlane=%p\n",
+	   newPlane, oldPlane);
+#endif
+    return;
+  }
+  MaxPlanesData* bdata = (MaxPlanesData*) cn.boundsData;
+  LBPlane* oldPlane = bdata->bestPlane;
+  if (NULL != oldPlane) {
+    // remove &bdata->bestPlane from oldPlane->backPointers
+    std::list<LBPlane**>& backPointers = oldPlane->backPointers;
+    typeof(backPointers.begin()) eraseList =
+      std::remove(backPointers.begin(), backPointers.end(), &bdata->bestPlane);
+    backPointers.erase(eraseList);
+  }
+
+  cn.lbVal = newLB;
+  bdata->bestPlane = newPlane;
+  bdata->lastSetPlaneNumBackups = core->numBackups;
+  newPlane->backPointers.push_back(&bdata->bestPlane);
+#else
+  cn.lbVal = newLB;
+#endif
+}
+
+const LBPlane& MaxPlanesLowerBound::getPlaneForNode(MDPNode& cn)
+{
+#if USE_CONVEX_CACHE
+#if 0
+  // old version, did more harm than good
+  int n = ((MaxPlanesData*) cn.boundsData)->lastSetPlaneNumBackups;
+  if (numBackups > (int) std::max((double) (n + CB_CACHE_INCREMENT), n * CB_CACHE_FACTOR)) {
+    LBPlane& newPlane = lowerBound->getBestLBPlane(cn.s);
+    setPlaneForNode(cn, &newPlane);
+    return newPlane;
+  } else {
+    return *((MaxPlanesData*) cn.boundsData)->bestPlane;
+  }
+#endif
+  MaxPlanesData* bdata = (MaxPlanesData *) cn.boundsData;
+  return getBestLBPlaneWithCache(cn.s, bdata->bestPlane,
+				 bdata->lastSetPlaneNumBackups);
+#else
+  return getBestLBPlane(cn.s);
+#endif
 }
 
 // return the alpha such that alpha * b has the highest value
@@ -530,6 +720,9 @@ void MaxPlanesLowerBound::readFromFile(const std::string& inFileName)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.18  2006/10/18 18:07:13  trey
+ * USE_TIME_WITHOUT_HEURISTIC is now a run-time config parameter
+ *
  * Revision 1.17  2006/08/08 21:17:20  trey
  * fixed a bug in LB backPointers code; added USE_REF_COUNT_PRUNE
  *

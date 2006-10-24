@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.11 $  $Author: trey $  $Date: 2006-10-18 18:07:13 $
+ $Revision: 1.12 $  $Author: trey $  $Date: 2006-10-24 02:12:47 $
    
  @file    MaxPlanesLowerBound.h
  @brief   No brief
@@ -41,7 +41,8 @@
 #if USE_MASKED_ALPHA
 #  include "sla_mask.h"
 #endif
-#include "AbstractBound.h"
+#include "IncrementalLowerBound.h"
+#include "BoundPairCore.h"
 #include "Pomdp.h"
 
 /**********************************************************************
@@ -72,9 +73,10 @@ struct LBPlane {
 
 typedef std::list< LBPlane* > PlaneSet;
 
-class MaxPlanesLowerBound : public AbstractBound {
-public:
+struct MaxPlanesLowerBound : public IncrementalLowerBound {
   const Pomdp* pomdp;
+  const ZMDPConfig* config;
+  BoundPairCore* core;
   PlaneSet planes;
   int lastPruneNumPlanes;
   int lastPruneNumBackups;
@@ -82,21 +84,24 @@ public:
   bool useConvexSupportList;
   
   MaxPlanesLowerBound(const MDP* _pomdp,
-		      const ZMDPConfig& config);
+		      const ZMDPConfig* _config);
   ~MaxPlanesLowerBound(void);
 
-  // performs any computation necessary to initialize the bound
   void initialize(double targetPrecision);
+  double getValue(const belief_vector& b, const MDPNode* cn) const;
+  void initNodeBound(MDPNode& cn);
+  void update(MDPNode& cn);
 
-  // returns the bound value at state s
-  double getValue(const belief_vector& b) const;
+  void getNewLBPlaneQ(LBPlane& result, MDPNode& cn, int a);
+  void getNewLBPlane(LBPlane& result, MDPNode& cn);
+  void updateLowerBound(MDPNode& cn);
+  void setPlaneForNode(MDPNode& cn, LBPlane* newPlane);
+  const LBPlane& getPlaneForNode(MDPNode& cn);
 
   LBPlane& getBestLBPlane(const belief_vector& b);
   const LBPlane& getBestLBPlaneConst(const belief_vector& b) const;
-#if USE_CONVEX_CACHE
   LBPlane& getBestLBPlaneWithCache(const belief_vector& b, LBPlane* currPlane,
 				   int lastSetPlaneNumBackups);
-#endif
   void addLBPlane(LBPlane* av);
   void prunePlanes(int numBackups);
   void maybePrune(int numBackups);
@@ -113,6 +118,9 @@ public:
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.11  2006/10/18 18:07:13  trey
+ * USE_TIME_WITHOUT_HEURISTIC is now a run-time config parameter
+ *
  * Revision 1.10  2006/08/08 21:17:20  trey
  * fixed a bug in LB backPointers code; added USE_REF_COUNT_PRUNE
  *
