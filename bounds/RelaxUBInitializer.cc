@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.4 $  $Author: trey $  $Date: 2006-10-18 18:05:02 $
+ $Revision: 1.5 $  $Author: trey $  $Date: 2006-10-24 02:07:27 $
    
  @file    RelaxUBInitializer.cc
  @brief   No brief
@@ -42,7 +42,7 @@ using namespace MatrixUtils;
 
 namespace zmdp {
 
-RelaxUBInitializer::RelaxUBInitializer(const MDP* _problem, const ZMDPConfig& _config) :
+RelaxUBInitializer::RelaxUBInitializer(const MDP* _problem, const ZMDPConfig* _config) :
   problem(_problem),
   root(NULL),
   config(_config)
@@ -67,8 +67,8 @@ MDPNode* RelaxUBInitializer::getNode(const state_vector& s)
     // create a new fringe node
     MDPNode& cn = *(new MDPNode);
     cn.s = s;
-    cn.lbVal = initLowerBound->getValue(s);
-    cn.ubVal = initUpperBound->getValue(s);
+    cn.lbVal = initLowerBound->getValue(s, NULL);
+    cn.ubVal = initUpperBound->getValue(s, NULL);
     (*lookup)[hs] = &cn;
     return &cn;
   } else {
@@ -247,13 +247,12 @@ void RelaxUBInitializer::initialize(double targetPrecision)
 #endif
 }
 
-double RelaxUBInitializer::getValue(const state_vector& s) const
+double RelaxUBInitializer::getValue(const state_vector& s, const MDPNode* cn) const
 {
-  MDPHash::iterator pr = lookup->find(hashable(s));
-  if (lookup->end() == pr) {
-    return initUpperBound->getValue(s);
+  if (NULL == cn) {
+    return initUpperBound->getValue(s, NULL);
   } else {
-    return pr->second->ubVal;
+    return cn->ubVal;
   }
 }
 
@@ -262,6 +261,9 @@ double RelaxUBInitializer::getValue(const state_vector& s) const
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2006/10/18 18:05:02  trey
+ * now propagating config data structure to lower levels so config fields can be used to control more parts of the system
+ *
  * Revision 1.3  2006/04/28 17:57:41  trey
  * changed to use apache license
  *

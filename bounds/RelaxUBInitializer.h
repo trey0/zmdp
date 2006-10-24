@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.4 $  $Author: trey $  $Date: 2006-10-18 18:05:02 $
+ $Revision: 1.5 $  $Author: trey $  $Date: 2006-10-24 02:07:27 $
    
  @file    RelaxUBInitializer.h
  @brief   No brief
@@ -35,9 +35,9 @@ struct RelaxUBInitializer : public AbstractBound {
   MDPHash* lookup;
   AbstractBound* initLowerBound;
   AbstractBound* initUpperBound;
-  const ZMDPConfig& config;
+  const ZMDPConfig* config;
 
-  RelaxUBInitializer(const MDP* _problem, const ZMDPConfig& _config);
+  RelaxUBInitializer(const MDP* _problem, const ZMDPConfig* _config);
   virtual ~RelaxUBInitializer(void) {}
 
   MDPNode* getNode(const state_vector& s);
@@ -51,7 +51,7 @@ struct RelaxUBInitializer : public AbstractBound {
 
   // implementation of AbstractBound interface
   void initialize(double targetPrecision);
-  double getValue(const state_vector& s) const;
+  double getValue(const state_vector& s, const MDPNode* cn) const;
 };
 
 }; // namespace zmdp
@@ -61,6 +61,9 @@ struct RelaxUBInitializer : public AbstractBound {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2006/10/18 18:05:02  trey
+ * now propagating config data structure to lower levels so config fields can be used to control more parts of the system
+ *
  * Revision 1.3  2006/04/28 17:57:41  trey
  * changed to use apache license
  *
