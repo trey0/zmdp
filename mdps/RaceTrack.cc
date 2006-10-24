@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.11 $  $Author: trey $  $Date: 2006-10-18 18:06:06 $
+ $Revision: 1.12 $  $Author: trey $  $Date: 2006-10-24 02:11:53 $
   
  @file    RaceTrack.cc
  @brief   No brief
@@ -259,10 +259,10 @@ struct RTLowerBound : public AbstractBound {
 
   RTLowerBound(const RaceTrack* _problem) : problem(_problem) {}
   void initialize(double targetPrecision) {}
-  double getValue(const state_vector& s) const;
+  double getValue(const state_vector& s, const MDPNode* cn) const;
 };
 
-double RTLowerBound::getValue(const state_vector& s) const
+double RTLowerBound::getValue(const state_vector& s, const MDPNode* cn) const
 {
   double maxCost;
   if (IS_TERMINAL_STATE(s)) {
@@ -291,7 +291,7 @@ double RTLowerBound::getValue(const state_vector& s) const
 struct RTUpperBound : public AbstractBound {
   RTUpperBound(const RaceTrack* _problem) {}
   void initialize(double targetPrecision) {}
-  double getValue(const state_vector& s) const { return 0; }
+  double getValue(const state_vector& s, const MDPNode* cn) const { return 0; }
 };
 
 #else // if RT_UPPER_TRIVIAL
@@ -304,7 +304,7 @@ struct RTUpperBound : public AbstractBound {
 
   RTUpperBound(const RaceTrack* _problem) : problem(_problem), initialized(false) {}
   void initialize(void);
-  double getValue(const state_vector& s) const;
+  double getValue(const state_vector& s, const MDPNode* cn) const;
 };
 
 void RTUpperBound::initialize(void)
@@ -350,7 +350,7 @@ int rtGetMinTime(int x, int xmin, int xmax, int v)
 }
 
 
-double RTUpperBound::getValue(const state_vector& s) const
+double RTUpperBound::getValue(const state_vector& s, const MDPNode* cn) const
 {
   assert(initialized);
 
@@ -593,12 +593,12 @@ double RaceTrack::getReward(const state_vector& s, int a) const
   return -cost;
 }
 
-AbstractBound* RaceTrack::newLowerBound(const ZMDPConfig& config) const
+AbstractBound* RaceTrack::newLowerBound(const ZMDPConfig* _config) const
 {
   return new RTLowerBound(this);
 }
 
-AbstractBound* RaceTrack::newUpperBound(const ZMDPConfig& config) const
+AbstractBound* RaceTrack::newUpperBound(const ZMDPConfig* _config) const
 {
   return new RTUpperBound(this);
 }
@@ -608,6 +608,9 @@ AbstractBound* RaceTrack::newUpperBound(const ZMDPConfig& config) const
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.11  2006/10/18 18:06:06  trey
+ * now propagating config data structure to lower levels so config fields can be used to control more parts of the system
+ *
  * Revision 1.10  2006/04/28 17:57:41  trey
  * changed to use apache license
  *
