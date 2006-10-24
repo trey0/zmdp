@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.8 $  $Author: trey $  $Date: 2006-10-18 18:30:13 $
+ $Revision: 1.9 $  $Author: trey $  $Date: 2006-10-24 19:10:14 $
 
  @file    zmdpEvaluate.cc
  @brief   Use to evaluate a POMDP policy in simulation.
@@ -38,7 +38,7 @@ using namespace std;
 using namespace MatrixUtils;
 using namespace zmdp;
 
-#define ZE_DEFAULT_POLICY_TYPE ("maxplanes")
+#define ZE_DEFAULT_POLICY_TYPE ("maxPlanes")
 
 const char* policyTypeG = ZE_DEFAULT_POLICY_TYPE;
 const char* policyFileNameG = NULL;
@@ -57,9 +57,9 @@ void doit(const ZMDPConfig& config, SolverParams& p)
 
   // initialize exec
   PomdpExec* e;
-  if (0 == strcmp(policyTypeG, "maxplanes")) {
+  if (0 == strcmp(policyTypeG, "maxPlanes")) {
     if (NULL == policyFileNameG) {
-      fprintf(stderr, "ERROR: maxplanes policy type requires -p argument (-h for help)\n");
+      fprintf(stderr, "ERROR: maxPlanes policy type requires -p argument (-h for help)\n");
       exit(EXIT_FAILURE);
     }
     MaxPlanesLowerBoundExec* em = new MaxPlanesLowerBoundExec();
@@ -104,10 +104,12 @@ void doit(const ZMDPConfig& config, SolverParams& p)
     simulationTracesToLogPerEpoch = INT_MAX;
   }
 
-  ofstream scoresOutFile("scores.plot");
-  if (!scoresOutFile) {
-    fprintf(stderr, "ERROR: couldn't open scores.plot for writing: %s\n",
-	    strerror(errno));
+  std::string scoresOutputFile = config.getString("scoresOutputFile");
+
+  ofstream scoresOut(scoresOutputFile.c_str());
+  if (!scoresOut) {
+    fprintf(stderr, "ERROR: couldn't open %s for writing: %s\n",
+	    scoresOutputFile.c_str(), strerror(errno));
     exit(EXIT_FAILURE);
   }
 
@@ -127,7 +129,7 @@ void doit(const ZMDPConfig& config, SolverParams& p)
       if (sim->terminated) break;
     }
     rewardValues.push_back(sim->rewardSoFar);
-    scoresOutFile << sim->rewardSoFar << endl;
+    scoresOut << sim->rewardSoFar << endl;
     
     if (i%10 == 9) {
       printf(".");
@@ -143,7 +145,7 @@ void doit(const ZMDPConfig& config, SolverParams& p)
   printf("REWARD_MEAN_MEANCONF95 %.3lf %.3lf\n", avg, conf95);
 
   simOutFile.close();
-  scoresOutFile.close();
+  scoresOut.close();
 }
 
 void usage(const char* cmdName) {
@@ -154,9 +156,9 @@ void usage(const char* cmdName) {
     "  -c or --config <file>  Specify a config file to read options from\n"
     "  --genConfig <file>     Generate an example config file and exit\n"
     "\n"
-    "  -t or --policyType     Specifies policy type.  Choices are: lspath, maxplanes\n"
+    "  -t or --policyType     Specifies policy type.  Choices are: lspath, maxPlanes\n"
     "                           [default: " << ZE_DEFAULT_POLICY_TYPE << "]\n"
-    "  -p or --policy         Specify input policy file (required with -t maxplanes)\n"
+    "  -p or --policy         Specify input policy file (required with -t maxPlanes)\n"
     "  -m or --model          Specify planner model (if different from evaluation model)\n"
     "  -s or --sourceModel    Specify source model file (required with -t lspath)\n"
     "\n"
@@ -319,6 +321,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.8  2006/10/18 18:30:13  trey
+ * NUM_SIM_ITERATIONS_TO_LOG changed to a run-time parameter simulationTracesToLogPerEpoch
+ *
  * Revision 1.7  2006/10/18 18:05:56  trey
  * now propagating config data structure to lower levels so config fields can be used to control more parts of the system
  *
