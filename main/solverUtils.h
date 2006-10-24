@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.11 $  $Author: trey $  $Date: 2006-10-24 02:10:01 $
+ $Revision: 1.12 $  $Author: trey $  $Date: 2006-10-24 19:08:04 $
    
  @file    solverUtils.h
  @brief   No brief
@@ -80,7 +80,8 @@ enum ValueReprsEnum {
 
 struct SolverParams {
   const char* cmdName;
-  const char *probName;
+  const char* probName;
+  bool usingBenchmarkFrontEnd;
 
   int searchStrategy;
   int modelType;
@@ -126,6 +127,9 @@ void constructSolverObjects(SolverObjects& obj,
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.11  2006/10/24 02:10:01  trey
+ * major changes to permit more flexibility in matching different lower and upper bounds
+ *
  * Revision 1.10  2006/10/20 04:59:18  trey
  * made some config options more flexible
  *

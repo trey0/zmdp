@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.12 $  $Author: trey $  $Date: 2006-10-24 02:10:01 $
+ $Revision: 1.13 $  $Author: trey $  $Date: 2006-10-24 19:08:04 $
 
  @file    solverUtils.cc
  @brief   No brief
@@ -122,11 +122,11 @@ bool endsWith(const std::string& s,
  * EXPORTED API
  **********************************************************************/
 
-SolverParams::SolverParams(void)
-{
-  cmdName = NULL;
-  probName = NULL;
-}
+SolverParams::SolverParams(void) :
+  cmdName(NULL),
+  probName(NULL),
+  usingBenchmarkFrontEnd(false)
+{}
 
 #define SU_GET_ENUM(FIELD) \
   FIELD = getEnum(config.getString(#FIELD), FIELD##TableG, #FIELD);
@@ -149,9 +149,6 @@ void SolverParams::setValues(const ZMDPConfig& config)
   SU_GET_BOOL(maintainUpperBound);
 
   SU_GET_STRING(policyOutputFile);
-  if (0 == strcmp(policyOutputFile, "none")) {
-    policyOutputFile = NULL;
-  }
 
   SU_GET_BOOL(useFastPomdpParser);
   SU_GET_DOUBLE(terminateRegretBound);
@@ -176,7 +173,12 @@ void SolverParams::setValues(const ZMDPConfig& config)
   SU_GET_STRING(boundsOutputFile);
   SU_GET_STRING(simulationTraceOutputFile);
 
-  inferMissingValues();
+  // if the probName is NULL, we are not solving a planning problem
+  // (e.g., we are running zmdpEvaluate).  skip filling in missing
+  // solver parameters.
+  if (NULL != probName) {
+    inferMissingValues();
+  }
 }
 
 void SolverParams::inferMissingValues(void)
@@ -216,6 +218,27 @@ void SolverParams::inferMissingValues(void)
   if (V_SAWTOOTH == upperBoundRepresentation && T_POMDP != modelType) {
     fprintf(stderr, "ERROR: upperBoundRepresentation='sawtooth' requires modelType='pomdp' (-h for help)\n");
     exit(EXIT_FAILURE);
+  }
+
+  if (0 == strcmp(policyOutputFile, "none")) {
+    policyOutputFile = NULL;
+  }
+  if (0 == strcmp(policyOutputFile, "-")) {
+    if (usingBenchmarkFrontEnd) {
+      // default value with zmdpBenchmark
+      policyOutputFile = NULL;
+    } else {
+      // default value with zmdpSolve
+      policyOutputFile = "out.policy";
+    }
+  }
+  if (NULL != policyOutputFile) {
+    if (lowerBoundRepresentation != V_MAXPLANES) {
+      cerr << "ERROR: config parameters imply an output policy should be written, but\n"
+	   << "  policy writing is currently only possible when\n"
+	   << "  modelType='pomdp' and lowerBoundRepresentation='maxPlanes'" << endl;
+      exit(EXIT_FAILURE);
+    }
   }
 }
 
@@ -383,6 +406,9 @@ void constructSolverObjects(SolverObjects& obj,
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.12  2006/10/24 02:10:01  trey
+ * major changes to permit more flexibility in matching different lower and upper bounds
+ *
  * Revision 1.11  2006/10/20 20:00:01  trey
  * added more flexibility as to which bounds are maintained with -v point (lower or upper or both)
  *
