@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-10-24 02:05:48 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-10-24 19:11:01 $
    
  @file    BoundPair.h
  @brief   No brief
@@ -63,6 +63,7 @@ struct BoundPair : public BoundPairCore {
   void update(MDPNode& cn, int* maxUBActionP);
   int chooseAction(const state_vector& s) const;
   ValueInterval getValueAt(const state_vector& s) const;
+  void writePolicy(const std::string& outFileName);
 };
 
 }; // namespace zmdp
@@ -72,6 +73,9 @@ struct BoundPair : public BoundPairCore {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/10/24 02:05:48  trey
+ * initial check-in
+ *
  *
  ***************************************************************************/
 

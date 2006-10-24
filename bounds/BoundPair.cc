@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-10-24 02:05:48 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-10-24 19:11:01 $
    
  @file    BoundPair.cc
  @brief   No brief
@@ -35,6 +35,7 @@
 #include "Pomdp.h"
 #include "AbstractBound.h"
 #include "BoundPair.h"
+#include "MaxPlanesLowerBound.h"
 
 #define BP_INITIALIZATION_PRECISION_FACTOR (1e-2)
 
@@ -288,10 +289,20 @@ ValueInterval BoundPair::getValueAt(const state_vector& s) const
 		       maintainUpperBound ? upperBound->getValue(s,cn) : -1);
 }
 
+void BoundPair::writePolicy(const std::string& outFileName)
+{
+  MaxPlanesLowerBound* mlb = (MaxPlanesLowerBound*) lowerBound;
+  mlb->prunePlanes(numBackups);
+  mlb->writeToFile(outFileName);
+}
+
 }; // namespace zmdp
 
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/10/24 02:05:48  trey
+ * initial check-in
+ *
  *
  ***************************************************************************/
