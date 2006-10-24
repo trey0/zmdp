@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.10 $  $Author: trey $  $Date: 2006-10-20 04:59:18 $
+ $Revision: 1.11 $  $Author: trey $  $Date: 2006-10-24 02:10:01 $
    
  @file    solverUtils.h
  @brief   No brief
@@ -42,8 +42,11 @@
 #include "PomdpSim.h"
 
 // value function representations
-#include "PointBounds.h"
-#include "ConvexBounds.h"
+#include "PointLowerBound.h"
+#include "PointUpperBound.h"
+#include "MaxPlanesLowerBound.h"
+#include "SawtoothUpperBound.h"
+#include "BoundPair.h"
 
 // initialization code
 #include "RelaxUBInitializer.h"
@@ -71,7 +74,8 @@ enum ProbTypesEnum {
 
 enum ValueReprsEnum {
   V_POINT,
-  V_CONVEX
+  V_MAXPLANES,
+  V_SAWTOOTH
 };
 
 struct SolverParams {
@@ -80,15 +84,16 @@ struct SolverParams {
 
   int searchStrategy;
   int modelType;
-  int valueFunctionRepresentation;
+  int lowerBoundRepresentation;
+  int upperBoundRepresentation;
+  int maintainLowerBound;
+  bool maintainUpperBound;
   const char* policyOutputFile;
   bool useFastPomdpParser;
   double terminateRegretBound;
   double terminateWallclockSeconds;
   int maxHorizon;
   bool useWeakUpperBoundHeuristic;
-  int maintainLowerBound;
-  bool maintainUpperBound;
   int useUpperBoundRunTimeActionSelection;
   int evaluationTrialsPerEpoch;
   int evaluationMaxStepsPerTrial;
@@ -105,7 +110,7 @@ struct SolverParams {
 
 struct SolverObjects {
   Solver* solver;
-  IncrementalBounds* bounds;
+  BoundPair* bounds;
   MDP* problem;
   AbstractSim* sim;
 };
@@ -121,6 +126,9 @@ void constructSolverObjects(SolverObjects& obj,
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.10  2006/10/20 04:59:18  trey
+ * made some config options more flexible
+ *
  * Revision 1.9  2006/10/18 18:05:56  trey
  * now propagating config data structure to lower levels so config fields can be used to control more parts of the system
  *

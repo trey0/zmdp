@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.11 $  $Author: trey $  $Date: 2006-10-20 20:00:01 $
+ $Revision: 1.12 $  $Author: trey $  $Date: 2006-10-24 02:10:01 $
 
  @file    solverUtils.cc
  @brief   No brief
@@ -48,7 +48,7 @@ namespace zmdp {
  * HELPER FUNCTIONS
  **********************************************************************/
 
-static EnumEntry strategiesG[] = {
+static EnumEntry searchStrategyTableG[] = {
   {"frtdp",  S_FRTDP},
   {"hsvi",   S_HSVI},
   {"rtdp",   S_RTDP},
@@ -58,35 +58,42 @@ static EnumEntry strategiesG[] = {
   {NULL, -1}
 };
 
-static EnumEntry modelTypesG[] = {
+static EnumEntry modelTypeTableG[] = {
   {"-",         -1},
   {"racetrack", T_RACETRACK},
   {"pomdp",     T_POMDP},
   {NULL, -1}
 };
 
-static EnumEntry valueReprsG[] = {
+static EnumEntry lowerBoundRepresentationTableG[] = {
   {"-",      -1},
   {"point",  V_POINT},
-  {"convex", V_CONVEX},
+  {"convex", V_MAXPLANES},
   {NULL, -1}
 };
 
-static EnumEntry maintainValsG[] = {
+static EnumEntry upperBoundRepresentationTableG[] = {
+  {"-",        -1},
+  {"point",    V_POINT},
+  {"sawtooth", V_SAWTOOTH},
+  {NULL, -1}
+};
+
+static EnumEntry maintainLowerBoundTableG[] = {
   {"-", -1},
   {"0", 0},
   {"1", 1},
   {NULL, -1}
 };
 
-static EnumEntry actionSelValsG[] = {
+static EnumEntry runTimeActionSelectionTableG[] = {
   {"-",     -1},
   {"lower", 0},
   {"upper", 1},
   {NULL, -1}
 };
 
-int getEnum(const std::string& key, EnumEntry* table, const char* cmdName, const char *opt)
+int getEnum(const std::string& key, EnumEntry* table, const char *opt)
 {
   EnumEntry* i;
   for (i = table; NULL != i->key; i++) {
@@ -121,39 +128,53 @@ SolverParams::SolverParams(void)
   probName = NULL;
 }
 
+#define SU_GET_ENUM(FIELD) \
+  FIELD = getEnum(config.getString(#FIELD), FIELD##TableG, #FIELD);
+#define SU_GET_BOOL(FIELD) \
+  FIELD = config.getBool(#FIELD);
+#define SU_GET_DOUBLE(FIELD) \
+  FIELD = config.getDouble(#FIELD);
+#define SU_GET_STRING(FIELD) \
+  FIELD = config.getString(#FIELD).c_str();
+#define SU_GET_INT(FIELD) \
+  FIELD = config.getInt(#FIELD);
+
 void SolverParams::setValues(const ZMDPConfig& config)
 {
-  searchStrategy = getEnum(config.getString("searchStrategy"),
-			   strategiesG, cmdName, "searchStrategy");
-  modelType = getEnum(config.getString("modelType"),
-		      modelTypesG, cmdName, "modelType");
-  valueFunctionRepresentation = getEnum(config.getString("valueFunctionRepresentation"),
-					valueReprsG, cmdName, "valueFunctionRepresentation");
-  policyOutputFile = config.getString("policyOutputFile").c_str();
+  SU_GET_ENUM(searchStrategy);
+  SU_GET_ENUM(modelType);
+  SU_GET_ENUM(lowerBoundRepresentation);
+  SU_GET_ENUM(upperBoundRepresentation);
+  SU_GET_ENUM(maintainLowerBound);
+  SU_GET_BOOL(maintainUpperBound);
+
+  SU_GET_STRING(policyOutputFile);
   if (0 == strcmp(policyOutputFile, "none")) {
     policyOutputFile = NULL;
   }
-  useFastPomdpParser = config.getBool("useFastPomdpParser");
-  terminateRegretBound = config.getDouble("terminateRegretBound");
-  terminateWallclockSeconds = config.getDouble("terminateWallclockSeconds");
+
+  SU_GET_BOOL(useFastPomdpParser);
+  SU_GET_DOUBLE(terminateRegretBound);
+
+  SU_GET_DOUBLE(terminateWallclockSeconds);
   if (terminateWallclockSeconds <= 0.0) {
     terminateWallclockSeconds = 99e+20;
   }
-  maxHorizon = config.getInt("maxHorizon");
-  useWeakUpperBoundHeuristic = config.getBool("useWeakUpperBoundHeuristic");
-  maintainLowerBound = getEnum(config.getString("maintainLowerBound"),
-			       maintainValsG, cmdName, "maintainLowerBound");
-  maintainUpperBound = config.getBool("maintainUpperBound");
+
+  SU_GET_INT(maxHorizon);
+  SU_GET_BOOL(useWeakUpperBoundHeuristic);
+  SU_GET_ENUM(maintainLowerBound);
   useUpperBoundRunTimeActionSelection =
     getEnum(config.getString("runTimeActionSelection"),
-	    actionSelValsG, cmdName, "runTimeActionSelection");
-  evaluationTrialsPerEpoch = config.getInt("evaluationTrialsPerEpoch");
-  evaluationMaxStepsPerTrial = config.getInt("evaluationMaxStepsPerTrial");
-  evaluationFirstEpochWallclockSeconds = config.getDouble("evaluationFirstEpochWallclockSeconds");
-  evaluationEpochsPerMagnitude = config.getDouble("evaluationEpochsPerMagnitude");
-  evaluationOutputFile = config.getString("evaluationOutputFile").c_str();
-  boundsOutputFile = config.getString("boundsOutputFile").c_str();
-  simulationTraceOutputFile = config.getString("simulationTraceOutputFile").c_str();
+	    runTimeActionSelectionTableG, "runTimeActionSelection");
+
+  SU_GET_INT(evaluationTrialsPerEpoch);
+  SU_GET_INT(evaluationMaxStepsPerTrial);
+  SU_GET_DOUBLE(evaluationFirstEpochWallclockSeconds);
+  SU_GET_DOUBLE(evaluationEpochsPerMagnitude);
+  SU_GET_STRING(evaluationOutputFile);
+  SU_GET_STRING(boundsOutputFile);
+  SU_GET_STRING(simulationTraceOutputFile);
 
   inferMissingValues();
 }
@@ -172,17 +193,28 @@ void SolverParams::inferMissingValues(void)
       exit(EXIT_FAILURE);
     }
   }
-  if (-1 == valueFunctionRepresentation) {
+  if (-1 == lowerBoundRepresentation) {
     if (T_POMDP == modelType) {
-      valueFunctionRepresentation = V_CONVEX;
+      lowerBoundRepresentation = V_MAXPLANES;
     } else {
-      valueFunctionRepresentation = V_POINT;
+      lowerBoundRepresentation = V_POINT;
+    }
+  }
+  if (-1 == upperBoundRepresentation) {
+    if (T_POMDP == modelType) {
+      upperBoundRepresentation = V_SAWTOOTH;
+    } else {
+      upperBoundRepresentation = V_POINT;
     }
   }
 
   // error check
-  if (V_CONVEX == valueFunctionRepresentation && T_POMDP != modelType) {
-    fprintf(stderr, "ERROR: '-v convex' can only be used with '-t pomdp' (-h for help)\n");
+  if (V_MAXPLANES == lowerBoundRepresentation && T_POMDP != modelType) {
+    fprintf(stderr, "ERROR: lowerBoundRepresentation='maxPlanes' requires modelType='pomdp' (-h for help)\n");
+    exit(EXIT_FAILURE);
+  }
+  if (V_SAWTOOTH == upperBoundRepresentation && T_POMDP != modelType) {
+    fprintf(stderr, "ERROR: upperBoundRepresentation='sawtooth' requires modelType='pomdp' (-h for help)\n");
     exit(EXIT_FAILURE);
   }
 }
@@ -277,13 +309,13 @@ void constructSolverObjects(SolverObjects& obj,
     break;
   case 0:
     if (!p.maintainLowerBound) {
-      fprintf(stderr, "ERROR: cannot specify runTimeActionSelection='lower' if lower bound is not maintained (-h for help)\n");
+      fprintf(stderr, "ERROR: runTimeActionSelection='lower' incompatible with maintainLowerBound=0 (-h for help)\n");
       exit(EXIT_FAILURE);
     }
     break;
   case 1:
     if (!p.maintainUpperBound) {
-      fprintf(stderr, "ERROR: cannot specify runTimeActionSelection='upper' if upper bound is not maintained (-h for help)\n");
+      fprintf(stderr, "ERROR: runTimeActionSelection='upper' incompatible with maintainUpperBound=0 (-h for help)\n");
       exit(EXIT_FAILURE);
     }
     break;
@@ -291,39 +323,58 @@ void constructSolverObjects(SolverObjects& obj,
     assert(0); // never reach this point
   }
 
-  switch (p.valueFunctionRepresentation) {
-  case V_POINT:
-    PointBounds* pb;
-    AbstractBound *initLowerBound, *initUpperBound;
+  bool dualPointBounds =
+    p.maintainLowerBound && p.maintainUpperBound &&
+    (V_POINT == p.lowerBoundRepresentation) &&
+    (V_POINT == p.upperBoundRepresentation);
+    
+  obj.bounds = new BoundPair(p.maintainLowerBound,
+			     p.maintainUpperBound,
+			     p.useUpperBoundRunTimeActionSelection,
+			     dualPointBounds);
+  
+  PointLowerBound* plb;
+  MaxPlanesLowerBound* mlb;
+  if (p.maintainLowerBound) {
+    switch (p.lowerBoundRepresentation) {
+    case V_POINT:
+      plb = new PointLowerBound(obj.problem, &config, obj.bounds);
+      plb->initBound = obj.problem->newLowerBound(&config);
+      obj.bounds->lowerBound = plb;
+    break;
+    case V_MAXPLANES:
+      mlb = new MaxPlanesLowerBound(obj.problem, &config);
+      mlb->core = obj.bounds;
+      obj.bounds->lowerBound = mlb;
+      break;
+    default:
+      assert(0); // never reach this point
+    }
+  }
 
-    pb = new PointBounds(p.maintainLowerBound,
-			 p.maintainUpperBound,
-			 p.useUpperBoundRunTimeActionSelection);
-    if (p.maintainLowerBound) {
-      initLowerBound = obj.problem->newLowerBound(config);
-    } else {
-      initLowerBound = NULL;
-    }
-    if (p.maintainUpperBound) {
-      if (p.useWeakUpperBoundHeuristic && T_POMDP == p.modelType) {
-	initUpperBound = obj.problem->newUpperBound(config);
+  PointUpperBound* pub;
+  SawtoothUpperBound* sub;
+  if (p.maintainUpperBound) {
+    switch (p.upperBoundRepresentation) {
+    case V_POINT:
+      pub = new PointUpperBound(obj.problem, &config, obj.bounds);
+      if (p.useWeakUpperBoundHeuristic) {
+	pub->initBound = obj.problem->newUpperBound(&config);
       } else {
-	initUpperBound = new RelaxUBInitializer(obj.problem, config);
+	pub->initBound = new RelaxUBInitializer(obj.problem, &config);
       }
-    } else {
-      initUpperBound = NULL;
+      pub->initBound = obj.problem->newUpperBound(&config);
+      obj.bounds->upperBound = pub;
+    break;
+    case V_SAWTOOTH:
+      sub = new SawtoothUpperBound(obj.problem, &config);
+      sub->core = obj.bounds;
+      obj.bounds->upperBound = sub;
+      break;
+    default:
+      assert(0); // never reach this point
     }
-    pb->setBounds(initLowerBound, initUpperBound);
-    obj.bounds = pb;
-    break;
-  case V_CONVEX:
-    obj.bounds = new ConvexBounds(p.maintainLowerBound,
-				  p.maintainUpperBound,
-				  p.useUpperBoundRunTimeActionSelection);
-    break;
-  default:
-    assert(0); // never reach this point
-  };
+  }
   ((RTDPCore*) obj.solver)->setBounds(obj.bounds);
 }
 
@@ -332,6 +383,9 @@ void constructSolverObjects(SolverObjects& obj,
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.11  2006/10/20 20:00:01  trey
+ * added more flexibility as to which bounds are maintained with -v point (lower or upper or both)
+ *
  * Revision 1.10  2006/10/20 04:59:18  trey
  * made some config options more flexible
  *
