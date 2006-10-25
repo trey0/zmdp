@@ -46,7 +46,7 @@ print "\n";
 $numErrors = $numTestsToRun - $numPassed;
 if ($numErrors > 0) {
     print "**********************************************************************\n";
-    print "* REGRESSION TESTING FAILED                                          *\n";
+    print "* ERROR: SOME REGRESSION TESTS FAILED                                *\n";
     print "**********************************************************************\n";
     print "There were $numErrors failed tests out of $numTestsToRun total.\n";
     print "\n";
@@ -54,7 +54,7 @@ if ($numErrors > 0) {
     print "script 'src/tests/test<n>'.\n";
 } else {
     print "**********************************************************************\n";
-    print "* ALL REGRESSION TESTS SUCCESSFUL                                    *\n";
+    print "* OK: ALL REGRESSION TESTS PASSED                                    *\n";
     print "**********************************************************************\n";
     print "Passed all $numTestsToRun tests.\n";
 }
