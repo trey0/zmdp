@@ -1,0 +1,60 @@
+#!/usr/bin/perl
+
+sub dosys {
+    my $cmd = shift;
+    print "$cmd\n";
+    my $ret = system($cmd);
+    if (0 != $ret) {
+	die "ERROR: '$cmd' returned exit status $ret\n";
+    }
+    return $ret;
+}
+
+sub runTest {
+    my $num = shift;
+
+    my $n = sprintf("%02d", $num);
+
+    print "  test$n... ";
+    
+    open(IN, "./test$n 2>&1 |") or die "ERROR: couldn't run ./test$n: $!\n";
+    my $lastLine;
+    while (<IN>) {
+	$lastLine = $_;
+    }
+    close(IN);
+
+    if ($lastLine =~ /^passed$/) {
+	print "passed\n";
+	return 1;
+    } else {
+	print "failed\n";
+	return 0;
+    }
+}
+
+$| = 1;
+$numTestsToRun = 3;
+
+print "Executing ZMDP regression test suite, $numTestsToRun total tests\n";
+$numPassed = 0;
+for (0..($numTestsToRun-1)) {
+    $numPassed += &runTest($_);
+}
+print "\n";
+
+$numErrors = $numTestsToRun - $numPassed;
+if ($numErrors > 0) {
+    print "**********************************************************************\n";
+    print "* REGRESSION TESTING FAILED                                          *\n";
+    print "**********************************************************************\n";
+    print "There were $numErrors failed tests out of $numTestsToRun total.\n";
+    print "\n";
+    print "If test <n> failed, you can get the details by running the corresponding\n";
+    print "script 'src/tests/test<n>'.\n";
+} else {
+    print "**********************************************************************\n";
+    print "* ALL REGRESSION TESTS SUCCESSFUL                                    *\n";
+    print "**********************************************************************\n";
+    print "Passed all $numTestsToRun tests.\n";
+}
