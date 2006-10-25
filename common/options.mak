@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: options.mak,v 1.60 2006-10-18 18:56:44 trey Exp $
+# $Id: options.mak,v 1.61 2006-10-25 02:44:45 trey Exp $
 #
 # Copyright (c) 2002-2006, Trey Smith. All rights reserved.
 #
@@ -16,7 +16,7 @@
 # permissions and limitations under the License.
 ######################################################################
 
-CFLAGS += -DZMDP_VERSION=0.6.0
+CFLAGS += -DZMDP_VERSION=0.6.1
 
 # algorithm configuration options
 
@@ -36,6 +36,9 @@ CFLAGS += -DCFLAGS="\"$(XCFLAGS)\""
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.60  2006/10/18 18:56:44  trey
+# USE_CONVEX_SUPPORT_LIST is now a run-time config parameter
+#
 # Revision 1.59  2006/10/18 18:05:38  trey
 # USE_TIME_WITHOUT_HEURISTIC is now a run-time config parameter
 #
