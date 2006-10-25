@@ -1,5 +1,7 @@
 #!/usr/bin/perl
 
+$numTestsToRun = 6;
+
 sub dosys {
     my $cmd = shift;
     print "$cmd\n";
@@ -34,9 +36,8 @@ sub runTest {
 }
 
 $| = 1;
-$numTestsToRun = 4;
 
-print "Executing ZMDP regression test suite, $numTestsToRun total tests\n";
+print "Executing ZMDP regression test suite, $numTestsToRun total tests:\n";
 $numPassed = 0;
 for (0..($numTestsToRun-1)) {
     $numPassed += &runTest($_);
