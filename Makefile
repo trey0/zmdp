@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.19 2006-07-26 21:04:17 trey Exp $
+# $Id: Makefile,v 1.20 2006-10-25 02:12:22 trey Exp $
 #
 # Copyright (c) 2002-2005, Trey Smith.  All rights reserved.
 #
@@ -31,6 +31,9 @@ SUBDIRS = common mdps bounds search pomdpParser pomdpCore pomdpBounds pomdpModel
 
 include $(BUILD_DIR)/toplevel.mak
 
+test:
+	cd tests && ./testAll
+
 ######################################################################
 # DO NOT MODIFY BELOW THIS POINT
 
@@ -38,6 +41,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.19  2006/07/26 21:04:17  trey
+# added build in pomdpModels
+#
 # Revision 1.18  2006/06/15 16:07:49  trey
 # added pomdpExec
 #
