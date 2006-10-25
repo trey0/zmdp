@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.6 $  $Author: trey $  $Date: 2006-10-03 03:18:36 $
+ $Revision: 1.7 $  $Author: trey $  $Date: 2006-10-25 18:32:21 $
    
  @file    BlindLBInitializer.cc
  @brief   No brief
@@ -75,7 +75,12 @@ void BlindLBInitializer::initBlindWorstCase(alpha_vector& weakAlpha)
 
   double longTermFactor = POMDP_LONG_TERM_UNBOUNDED;
   if (pomdp->getDiscount() < 1.0) {
-    longTermFactor = std::min(longTermFactor, 1.0 / (1.0 - pomdp->getDiscount()));
+    if (pomdp->maxHorizon != -1) {
+      longTermFactor = (1.0 - pow(pomdp->getDiscount(), pomdp->maxHorizon+1))
+	/ (1.0 - pomdp->getDiscount());
+    } else {
+      longTermFactor = 1.0 / (1.0 - pomdp->getDiscount());
+    }
   }
   if (pomdp->maxHorizon != -1) {
     longTermFactor = std::min(longTermFactor, (double) pomdp->maxHorizon);
@@ -153,6 +158,9 @@ void BlindLBInitializer::initBlind(double targetPrecision)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.6  2006/10/03 03:18:36  trey
+ * added support for maxHorizon parameter of pomdp
+ *
  * Revision 1.5  2006/07/14 15:08:34  trey
  * removed belief argument to addLBPlane()
  *
