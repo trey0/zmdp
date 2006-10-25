@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.13 $  $Author: trey $  $Date: 2006-10-24 19:08:04 $
+ $Revision: 1.14 $  $Author: trey $  $Date: 2006-10-25 02:07:06 $
 
  @file    solverUtils.cc
  @brief   No brief
@@ -220,10 +220,10 @@ void SolverParams::inferMissingValues(void)
     exit(EXIT_FAILURE);
   }
 
-  if (0 == strcmp(policyOutputFile, "none")) {
+  if (NULL != policyOutputFile && 0 == strcmp(policyOutputFile, "none")) {
     policyOutputFile = NULL;
   }
-  if (0 == strcmp(policyOutputFile, "-")) {
+  if (NULL != policyOutputFile && 0 == strcmp(policyOutputFile, "-")) {
     if (usingBenchmarkFrontEnd) {
       // default value with zmdpBenchmark
       policyOutputFile = NULL;
@@ -406,6 +406,9 @@ void constructSolverObjects(SolverObjects& obj,
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.13  2006/10/24 19:08:04  trey
+ * bug fixes related to recent changes in available parameters
+ *
  * Revision 1.12  2006/10/24 02:10:01  trey
  * major changes to permit more flexibility in matching different lower and upper bounds
  *
