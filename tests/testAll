@@ -34,7 +34,7 @@ sub runTest {
 }
 
 $| = 1;
-$numTestsToRun = 3;
+$numTestsToRun = 4;
 
 print "Executing ZMDP regression test suite, $numTestsToRun total tests\n";
 $numPassed = 0;
