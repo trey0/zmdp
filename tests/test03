@@ -1,0 +1,13 @@
+#!/usr/bin/perl
+
+require "testLibrary.perl";
+&testZmdpBenchmark(cmd => "$zmdpBenchmark --lowerBoundRepresentation point $pomdpsDir/three_state.pomdp",
+		   expectedLB => 20.8260,
+		   expectedUB => 20.8269,
+		   testTolerance => 0.01,
+		   outFiles => ["bounds.plot", "inc.plot", "sim.plot"]);
+&testZmdpBenchmark(cmd => "$zmdpBenchmark --upperBoundRepresentation point $pomdpsDir/three_state.pomdp",
+		   expectedLB => 20.8260,
+		   expectedUB => 20.8269,
+		   testTolerance => 0.01,
+		   outFiles => ["bounds.plot", "inc.plot", "sim.plot"]);
