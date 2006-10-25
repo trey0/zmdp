@@ -48,16 +48,18 @@ src/pomdpParser  POMDP problem parsing code (thanks to Tony Cassandra!)
 src/pomdpCore    Basic POMDP operations and simulation
 src/pomdpBounds  Value function bounds representations specific to POMDPs
 src/pomdpModels  Some example POMDP problems
-src/pomdpExec    Interface you can use to execute policies output by zmdp.
+src/pomdpExec    Interface you can use to execute policies output by zmdp
 src/main         Glue code for invoking algorithms from the shell
-src/tools        Tools for scripting multiple runs and plotting performance.
+src/tools        Tools for scripting multiple runs and plotting performance
+src/tests        Regression testing suite
 
 ==========================================================
 REQUIREMENTS
 
-Tested operating systems: Linux kernel 2.6.x (Fedora Core 2 and 4)
-                          Mac OS X 10.4.4
-Tested compilers:         gcc 3.2.2, 3.2.3, 4.0
+Tested operating systems: Linux:    kernel 2.6.x, Fedora Core 2 and 4
+                          Mac OS X: 10.4.8
+
+Tested compilers:         gcc 3.2.2, 3.2.3, 4.0.1
 
 Build system tested with:
 * GNU Make 3.80
@@ -68,31 +70,42 @@ Build system tested with:
 Performance plotting scripts in tools directory tested with:
 * gnuplot 4.0
 * GNU gprof 2.15.94.0.2.2
+* GNU Octave 2.1.73
+
+(Note: I don't frequently update this section, so the known-good version
+information for the tools may get out of date as I upgrade my testing
+machines.  Sorry.)
 
 ========================================================================
 INSTALLATION INSTRUCTIONS
 
 * Unpack the tarball to generate the zmdp directory:
 
-  tar xvfz zmdp-0.6.0.tgz
+  tar xvfz zmdp-VERSION.tgz
 
 * Build:
 
-  cd zmdp-0.6.0/src
+  cd zmdp-VERSION/src
   make install
-  (generates binaries in zmdp-0.6.0/bin/<os_name>/, <os_name> = linux2 or darwin8)
+  (generates binaries in zmdp-VERSION/bin/<os_name>/, <os_name> = linux2 or darwin8)
 
-* Do a test run:
+* Test:
 
-  mkdir zmdp-0.6.0/results/
-  cd zmdp-0.6.0/results
+  cd zmdp-VERSION/src
+  make test
+  (runs a suite of regression tests)
+
+* Try solving an example problem:
+
+  mkdir zmdp-VERSION/results/
+  cd zmdp-VERSION/results
   ../bin/<os_name>/zmdpSolve ../src/pomdpModels/three_state.pomdp
   (look at results in 'out.policy')
 
-* If you wish to test with one of the included RockSample problem
+* If you want to solve one of the included RockSample problem
   instances, generate it.
 
-  cd zmdp-0.6.0/src/pomdpModels
+  cd zmdp-VERSION/src/pomdpModels
   ./gen_RockSample_5_7
   (generates RockSample_5_7.pomdp)
 
@@ -102,8 +115,8 @@ USAGE INSTRUCTIONS
 The installation process creates binaries in the bin/<os_name>/ directory:
 
 zmdpSolve
-  zmdpSolve generates an output policy for a solution algorithm and
-  problem you select.  It runs the solution algorithm in an anytime
+  zmdpSolve generates an output policy for a search strategy and
+  problem you select.  It runs the search strategy in an anytime
   fashion, periodically printing bounds on the value of the initial
   state to console so that you can monitor progress.  When the run ends,
   the final policy is output to the file you specify.  There are several
@@ -115,8 +128,8 @@ zmdpSolve
   Run 'zmdpSolve -h' for a summary of the options and some examples.
 
 zmdpBenchmark
-  zmdpBenchmark tests performance for a solution algorithm and problem
-  you select.  As the solution algorithm progresses, various statistics
+  zmdpBenchmark tests performance for a search strategy and problem
+  you select.  As the search strategy progresses, various statistics
   are logged, such as the algorithm's bounds on the value of the initial
   state, the number of backups so far, and periodic measurements of the
   solution quality in simulation.  The plotting tools in the src/tools
@@ -130,6 +143,15 @@ zmdpBenchmark
                    qualitative sense of how the policy changes
 
   Run 'zmdpBenchmark -h' for a summary of the options and some examples.
+
+zmdpEvaluate
+  zmdpEvaluate evaluates a policy output by zmdpSolve or zmdpBenchmark.
+  The policy is evaluated by executing a number of trials in simulation;
+  the output is mean reward and a 95% confidence interval for the estimate
+  of the mean under the (not necessarily correct) assumption that the
+  per-trial reward is normally distributed.  Sorry, statisticians may wince...
+
+  Run 'zmdpEvaluate -h' for a summary of the options and some examples.
 
 ========================================================================
 PLOTTING PERFORMANCE
@@ -212,6 +234,16 @@ REFERENCES
 
 ========================================================================
 RELEASE NOTES
+
+Changes from 0.6.0 to 0.6.1 (24 Oct 2006)
+
+* Old 'valueFunctionRepresentation' parameter now split into separate
+  'lowerBoundRepresentation' and 'upperBoundRepresentation' parameters
+  for more flexibility (0.6.1).
+
+* Added regression tests: run with 'make test' (0.6.1).
+
+* Fixed bug with zmdpEvaluate crashing (0.6.1).
 
 Changes from 0.5.5 to 0.6.0 (17 Oct 2006)
 
@@ -331,4 +363,4 @@ zpomdp 0.1.0 (28 Oct 2005)
 * Initial release.
 
 ==========================================================
-$Id: README,v 1.23 2006-10-17 19:29:14 trey Exp $
+$Id: README,v 1.24 2006-10-25 02:45:51 trey Exp $
