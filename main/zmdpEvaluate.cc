@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.9 $  $Author: trey $  $Date: 2006-10-24 19:10:14 $
+ $Revision: 1.10 $  $Author: trey $  $Date: 2006-10-25 02:07:24 $
 
  @file    zmdpEvaluate.cc
  @brief   Use to evaluate a POMDP policy in simulation.
@@ -277,7 +277,6 @@ int main(int argc, char **argv) {
 	}
       }
     } else {
-      cout << "args = " << args << endl;
       if (NULL == simModelFileNameG) {
 	simModelFileNameG = argv[argi];
       } else {
@@ -321,6 +320,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.9  2006/10/24 19:10:14  trey
+ * changed maxplanes -> maxPlanes for consistency
+ *
  * Revision 1.8  2006/10/18 18:30:13  trey
  * NUM_SIM_ITERATIONS_TO_LOG changed to a run-time parameter simulationTracesToLogPerEpoch
  *

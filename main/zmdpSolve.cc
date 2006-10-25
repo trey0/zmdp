@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.15 $  $Author: trey $  $Date: 2006-10-24 19:10:28 $
+ $Revision: 1.16 $  $Author: trey $  $Date: 2006-10-25 02:07:30 $
 
  @file    zmdpSolve.cc
  @brief   No brief
@@ -241,7 +241,6 @@ int main(int argc, char **argv) {
 	}
       }
     } else {
-      cout << "args = " << args << endl;
       if (NULL == p.probName) {
 	p.probName = argv[argi];
       } else {
@@ -290,6 +289,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.15  2006/10/24 19:10:28  trey
+ * moved some parameter logic to solverUtils
+ *
  * Revision 1.14  2006/10/24 02:11:20  trey
  * changes to match Solver API change
  *
