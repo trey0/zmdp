@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.13 $  $Author: trey $  $Date: 2006-10-24 19:12:13 $
+ $Revision: 1.14 $  $Author: trey $  $Date: 2006-10-25 19:13:01 $
    
  @file    MaxPlanesLowerBound.h
  @brief   No brief
@@ -38,9 +38,7 @@
 #include "zmdpCommonDefs.h"
 #include "zmdpCommonTypes.h"
 #include "zmdpConfig.h"
-#if USE_MASKED_ALPHA
-#  include "sla_mask.h"
-#endif
+#include "sla_mask.h"
 #include "IncrementalLowerBound.h"
 #include "BoundPairCore.h"
 #include "Pomdp.h"
@@ -54,21 +52,13 @@ namespace zmdp {
 struct LBPlane {
   alpha_vector alpha;
   int action;
-#if USE_MASKED_ALPHA
   sla::mvector mask;
-#endif
   int numBackupsAtCreation;
-#if USE_CONVEX_CACHE
   std::list<LBPlane**> backPointers;
-#endif
 
   LBPlane(void);
-#if USE_MASKED_ALPHA
   LBPlane(const alpha_vector& _alpha, int _action, const sla::mvector& _mask);
-#else
-  LBPlane(const alpha_vector& _alpha, int _action);
-#endif
-  void write(std::ostream& out) const;
+  void write(std::ostream& out, bool useMaxPlanesMasking) const;
 };
 
 typedef std::list< LBPlane* > PlaneSet;
@@ -81,7 +71,10 @@ struct MaxPlanesLowerBound : public IncrementalLowerBound {
   int lastPruneNumPlanes;
   int lastPruneNumBackups;
   std::vector<PlaneSet> supportList;
+  bool useMaxPlanesMasking;
   bool useMaxPlanesSupportList;
+  bool useMaxPlanesCache;
+  bool useMaxPlanesExtraPruning;
   
   MaxPlanesLowerBound(const MDP* _pomdp,
 		      const ZMDPConfig* _config);
@@ -118,6 +111,9 @@ struct MaxPlanesLowerBound : public IncrementalLowerBound {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.13  2006/10/24 19:12:13  trey
+ * replaced useConvexSupportList with useMaxPlanesSupportList
+ *
  * Revision 1.12  2006/10/24 02:12:47  trey
  * distributed update code from ConvexBounds to MaxPlanesLowerBound, allows more flexibility
  *

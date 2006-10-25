@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.7 $  $Author: trey $  $Date: 2006-10-25 18:32:21 $
+ $Revision: 1.8 $  $Author: trey $  $Date: 2006-10-25 19:12:53 $
    
  @file    BlindLBInitializer.cc
  @brief   No brief
@@ -113,11 +113,13 @@ void BlindLBInitializer::initBlind(double targetPrecision)
   alpha_vector nextAl, tmp, diff;
   alpha_vector weakAl;
   double maxResidual;
-#if USE_MASKED_ALPHA
-  alpha_vector full_mask;
+  alpha_vector default_mask;
 
-  mask_set_all( full_mask, pomdp->numStates );
-#endif
+  if (bound->useMaxPlanesMasking) {
+    mask_set_all( default_mask, pomdp->numStates );
+  } else {
+    // mask will not be used; we can leave it empty
+  }
 
   initBlindWorstCase(weakAl);
   bound->planes.clear();
@@ -145,11 +147,7 @@ void BlindLBInitializer::initBlind(double targetPrecision)
     cout << "initLowerBoundBlind: a=" << a << " al=" << sparseRep(al) << endl;
 #endif
 
-#if USE_MASKED_ALPHA
-    bound->addLBPlane(new LBPlane(al, a, full_mask));
-#else 
-    bound->addLBPlane(new LBPlane(al, a));
-#endif
+    bound->addLBPlane(new LBPlane(al, a, default_mask));
   }
 }
 
@@ -158,6 +156,9 @@ void BlindLBInitializer::initBlind(double targetPrecision)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.7  2006/10/25 18:32:21  trey
+ * for kicks, now calculate a smaller value for longTermFactor when both discount < 1 and maxHorizon is defined
+ *
  * Revision 1.6  2006/10/03 03:18:36  trey
  * added support for maxHorizon parameter of pomdp
  *

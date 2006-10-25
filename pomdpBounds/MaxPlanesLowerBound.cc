@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.20 $  $Author: trey $  $Date: 2006-10-24 19:12:13 $
+ $Revision: 1.21 $  $Author: trey $  $Date: 2006-10-25 19:13:01 $
    
  @file    MaxPlanesLowerBound.cc
  @brief   No brief
@@ -73,15 +73,15 @@ static std::string stripWhiteSpace(const std::string& s)
   }
 }
 
-static bool dominates(const LBPlane* a, const LBPlane* b)
+static bool dominates(const LBPlane* a, const LBPlane* b, bool useMaxPlanesMasking)
 {
-#if USE_MASKED_ALPHA
-  return mask_dominates(a->alpha, b->alpha,
-			ZMDP_BOUNDS_PRUNE_EPS,
-			a->mask, b->mask);
-#else
-  return dominates(a->alpha, b->alpha, ZMDP_BOUNDS_PRUNE_EPS);
-#endif
+  if (useMaxPlanesMasking) {
+    return mask_dominates(a->alpha, b->alpha,
+			  ZMDP_BOUNDS_PRUNE_EPS,
+			  a->mask, b->mask);
+  } else {
+    return dominates(a->alpha, b->alpha, ZMDP_BOUNDS_PRUNE_EPS);
+  }
 }
 
 /**********************************************************************
@@ -91,50 +91,43 @@ static bool dominates(const LBPlane* a, const LBPlane* b)
 LBPlane::LBPlane(void) {}
 
 
-#if USE_MASKED_ALPHA
 LBPlane::LBPlane(const alpha_vector& _alpha, int _action, const sla::mvector& _mask) :
   alpha(_alpha),
   action(_action),
   mask(_mask)
 {}  
-#else
-LBPlane::LBPlane(const alpha_vector& _alpha, int _action) :
-  alpha(_alpha),
-  action(_action)
-{}  
-#endif
 
-void LBPlane::write(std::ostream& out) const
+void LBPlane::write(std::ostream& out, bool useMaxPlanesMasking) const
 {
   out << "    {" << endl;
   out << "      action => " << action << "," << endl;
 
-#if USE_MASKED_ALPHA
-  out << "      numEntries => " << mask.filled() << "," << endl;
-#else
-  out << "      numEntries => " << alpha.size() << "," << endl;
-#endif
+  if (useMaxPlanesMasking) {
+    out << "      numEntries => " << mask.filled() << "," << endl;
+  } else {
+    out << "      numEntries => " << alpha.size() << "," << endl;
+  }
 
   out << "      entries => [" << endl;
 
-#if USE_MASKED_ALPHA
-  bool firstEntry = true;
-  FOR_CV (mask) {
-    if (!firstEntry) {
-      out << "," << endl;
+  if (useMaxPlanesMasking) {
+    bool firstEntry = true;
+    FOR_CV (mask) {
+      if (!firstEntry) {
+	out << "," << endl;
+      }
+      int i = CV_INDEX(mask);
+      out << "        " << i << ", " << alpha(i) << "";
+      firstEntry = false;
     }
-    int i = CV_INDEX(mask);
-    out << "        " << i << ", " << alpha(i) << "";
-    firstEntry = false;
+    out << endl;
+  } else {
+    int n = alpha.size();
+    FOR (i, n-1) {
+      out << "        " << i << ", " << alpha(i) << "," << endl;
+    }
+    out << "        " << (n-1) << ", " << alpha(n-1) << endl;
   }
-  out << endl;
-#else
-  int n = alpha.size();
-  FOR (i, n-1) {
-    out << "        " << i << ", " << alpha(i) << "," << endl;
-  }
-  out << "        " << (n-1) << ", " << alpha(n-1) << endl;
-#endif
 
   out << "      ]" << endl;
   out << "    }";
@@ -152,7 +145,10 @@ MaxPlanesLowerBound::MaxPlanesLowerBound(const MDP* _pomdp,
 {
   lastPruneNumPlanes = 0;
   lastPruneNumBackups = -1;
+  useMaxPlanesMasking = config->getBool("useMaxPlanesMasking");
   useMaxPlanesSupportList = config->getBool("useMaxPlanesSupportList");
+  useMaxPlanesCache = config->getBool("useMaxPlanesCache");
+  useMaxPlanesExtraPruning = config->getBool("useMaxPlanesExtraPruning");
 
   if (useMaxPlanesSupportList) {
     supportList.resize(pomdp->getBeliefSize());
@@ -171,12 +167,12 @@ void MaxPlanesLowerBound::initialize(double targetPrecision)
   BlindLBInitializer blb(pomdp, this);
   blb.initialize(targetPrecision);
 
-#if USE_CONVEX_CACHE
-  // planes from initialization should have their 'age' set appropriately
-  FOR_EACH (planeP, planes) {
-    (*planeP)->numBackupsAtCreation = 0;
+  if (useMaxPlanesCache) {
+    // planes from initialization should have their 'age' set appropriately
+    FOR_EACH (planeP, planes) {
+      (*planeP)->numBackupsAtCreation = 0;
+    }
   }
-#endif
 }
 
 double MaxPlanesLowerBound::getValue(const belief_vector& b, const MDPNode* cn) const
@@ -190,10 +186,7 @@ void MaxPlanesLowerBound::getNewLBPlaneQ(LBPlane& result, MDPNode& cn, int a)
 {
   alpha_vector betaA(pomdp->getBeliefSize());
   const alpha_vector* betaAO;
-  alpha_vector tmp, tmp2;
-#if USE_MASKED_ALPHA
-  alpha_vector tmp3;
-#endif
+  alpha_vector tmp, tmp2, tmp3;
 
   set_to_zero(betaA);
   
@@ -205,17 +198,17 @@ void MaxPlanesLowerBound::getNewLBPlaneQ(LBPlane& result, MDPNode& cn, int a)
     MDPEdge* e = Qa.outcomes[o];
     if (NULL != e) {
       betaAO = &getPlaneForNode(*e->nextState).alpha;
-#if USE_MASKED_ALPHA
-      // occasionally, even if the nextState belief is sparse, the
-      // corresponding betaAO is one of the dense alpha vectors produced
-      // by the initial blind-policy heuristic.  in that case, we can
-      // speed up the matrix multiplication below by masking betaAO with
-      // the nextState belief (so it becomes much sparser).
-      if (betaAO->filled() > cn.s.filled()) {
-	mask_copy(maskedBeta, *betaAO, e->nextState->s);
-	betaAO = &maskedBeta;
+      if (useMaxPlanesMasking) {
+	// occasionally, even if the nextState belief is sparse, the
+	// corresponding betaAO is one of the dense alpha vectors produced
+	// by the initial blind-policy heuristic.  in that case, we can
+	// speed up the matrix multiplication below by masking betaAO with
+	// the nextState belief (so it becomes much sparser).
+	if (betaAO->filled() > cn.s.filled()) {
+	  mask_copy(maskedBeta, *betaAO, e->nextState->s);
+	  betaAO = &maskedBeta;
+	}
       }
-#endif
     } else {
       // impossible to see this observation, so it doesn't make sense to
       // pick the alpha that optimizes for the next belief.  plug in a
@@ -228,30 +221,30 @@ void MaxPlanesLowerBound::getNewLBPlaneQ(LBPlane& result, MDPNode& cn, int a)
     }
 
     emult_column( tmp, pomdp->O[a], o, *betaAO );
-#if USE_MASKED_ALPHA
-    mult( tmp3, pomdp->T[a], tmp );
-    mask_copy( tmp2, tmp3, cn.s );
-#else
-    mult( tmp2, tmp, pomdp->Ttr[a] );
-#endif
+    if (useMaxPlanesMasking) {
+      mult( tmp3, pomdp->T[a], tmp );
+      mask_copy( tmp2, tmp3, cn.s );
+    } else {
+      mult( tmp2, tmp, pomdp->Ttr[a] );
+    }
     betaA += tmp2;
   }
 
   alpha_vector Rxa;
-#if USE_MASKED_ALPHA
-  copy_from_column( tmp, pomdp->R, a );
-  mask_copy( Rxa, tmp, cn.s );
-#else
-  copy_from_column( Rxa, pomdp->R, a );
-#endif
+  if (useMaxPlanesMasking) {
+    copy_from_column( tmp, pomdp->R, a );
+    mask_copy( Rxa, tmp, cn.s );
+  } else {
+    copy_from_column( Rxa, pomdp->R, a );
+  }
   betaA *= pomdp->getDiscount();
   betaA += Rxa;
   
   result.alpha = betaA;
   result.action = a;
-#if USE_MASKED_ALPHA
-  result.mask = cn.s;
-#endif
+  if (useMaxPlanesMasking) {
+    result.mask = cn.s;
+  }
   result.numBackupsAtCreation = core->numBackups;
 }
 
@@ -282,11 +275,11 @@ void MaxPlanesLowerBound::getNewLBPlane(LBPlane& result, MDPNode& cn)
 
 void MaxPlanesLowerBound::initNodeBound(MDPNode& cn)
 {
-#if USE_CONVEX_CACHE
-  MaxPlanesData* bdata = new MaxPlanesData();
-  bdata->bestPlane = NULL;
-  cn.boundsData = bdata;
-#endif
+  if (useMaxPlanesCache) {
+    MaxPlanesData* bdata = new MaxPlanesData();
+    bdata->bestPlane = NULL;
+    cn.boundsData = bdata;
+  }
 
   // note: this should also do the right thing if cn is terminal;
   // at least one of the planes from initialization should give an
@@ -309,58 +302,58 @@ void MaxPlanesLowerBound::update(MDPNode& cn)
 void MaxPlanesLowerBound::setPlaneForNode(MDPNode& cn, LBPlane* newPlane)
 {
   double newLB = inner_prod(newPlane->alpha, cn.s);
-#if USE_CONVEX_CACHE
-  if (newLB < cn.lbVal - ZMDP_BOUNDS_PRUNE_EPS) {
+  if (useMaxPlanesCache) {
+    if (newLB < cn.lbVal - ZMDP_BOUNDS_PRUNE_EPS) {
 #if 0
-    // debug
-    LBPlane* oldPlane = ((MaxPlanesLowerBoundData*) cn.boundsData)->bestPlane;
-    printf("setPlaneForNode: ignoring new plane: newLB=%lf cn.lbVal=%lf diff=%lg ip=%lf\n",
-	   newLB, cn.lbVal, (newLB-cn.lbVal), inner_prod(oldPlane->alpha, cn.s));
-    LBPlane* newPlane = &lowerBound->getBestLBPlane(cn.s);
-    printf("setPlaneForNode: newPlane=%p oldPlane=%p\n",
-	   newPlane, oldPlane);
+      // debug
+      LBPlane* oldPlane = ((MaxPlanesLowerBoundData*) cn.boundsData)->bestPlane;
+      printf("setPlaneForNode: ignoring new plane: newLB=%lf cn.lbVal=%lf diff=%lg ip=%lf\n",
+	     newLB, cn.lbVal, (newLB-cn.lbVal), inner_prod(oldPlane->alpha, cn.s));
+      LBPlane* newPlane = &lowerBound->getBestLBPlane(cn.s);
+      printf("setPlaneForNode: newPlane=%p oldPlane=%p\n",
+	     newPlane, oldPlane);
 #endif
-    return;
+      return;
+    }
+    MaxPlanesData* bdata = (MaxPlanesData*) cn.boundsData;
+    LBPlane* oldPlane = bdata->bestPlane;
+    if (NULL != oldPlane) {
+      // remove &bdata->bestPlane from oldPlane->backPointers
+      std::list<LBPlane**>& backPointers = oldPlane->backPointers;
+      typeof(backPointers.begin()) eraseList =
+	std::remove(backPointers.begin(), backPointers.end(), &bdata->bestPlane);
+      backPointers.erase(eraseList);
+    }
+    
+    cn.lbVal = newLB;
+    bdata->bestPlane = newPlane;
+    bdata->lastSetPlaneNumBackups = core->numBackups;
+    newPlane->backPointers.push_back(&bdata->bestPlane);
+  } else {
+    cn.lbVal = newLB;
   }
-  MaxPlanesData* bdata = (MaxPlanesData*) cn.boundsData;
-  LBPlane* oldPlane = bdata->bestPlane;
-  if (NULL != oldPlane) {
-    // remove &bdata->bestPlane from oldPlane->backPointers
-    std::list<LBPlane**>& backPointers = oldPlane->backPointers;
-    typeof(backPointers.begin()) eraseList =
-      std::remove(backPointers.begin(), backPointers.end(), &bdata->bestPlane);
-    backPointers.erase(eraseList);
-  }
-
-  cn.lbVal = newLB;
-  bdata->bestPlane = newPlane;
-  bdata->lastSetPlaneNumBackups = core->numBackups;
-  newPlane->backPointers.push_back(&bdata->bestPlane);
-#else
-  cn.lbVal = newLB;
-#endif
 }
 
 const LBPlane& MaxPlanesLowerBound::getPlaneForNode(MDPNode& cn)
 {
-#if USE_CONVEX_CACHE
+  if (useMaxPlanesCache) {
 #if 0
-  // old version, did more harm than good
-  int n = ((MaxPlanesData*) cn.boundsData)->lastSetPlaneNumBackups;
-  if (numBackups > (int) std::max((double) (n + CB_CACHE_INCREMENT), n * CB_CACHE_FACTOR)) {
-    LBPlane& newPlane = lowerBound->getBestLBPlane(cn.s);
-    setPlaneForNode(cn, &newPlane);
-    return newPlane;
+    // old version, did more harm than good
+    int n = ((MaxPlanesData*) cn.boundsData)->lastSetPlaneNumBackups;
+    if (numBackups > (int) std::max((double) (n + CB_CACHE_INCREMENT), n * CB_CACHE_FACTOR)) {
+      LBPlane& newPlane = lowerBound->getBestLBPlane(cn.s);
+      setPlaneForNode(cn, &newPlane);
+      return newPlane;
+    } else {
+      return *((MaxPlanesData*) cn.boundsData)->bestPlane;
+    }
+#endif
+    MaxPlanesData* bdata = (MaxPlanesData *) cn.boundsData;
+    return getBestLBPlaneWithCache(cn.s, bdata->bestPlane,
+				   bdata->lastSetPlaneNumBackups);
   } else {
-    return *((MaxPlanesData*) cn.boundsData)->bestPlane;
+    return getBestLBPlane(cn.s);
   }
-#endif
-  MaxPlanesData* bdata = (MaxPlanesData *) cn.boundsData;
-  return getBestLBPlaneWithCache(cn.s, bdata->bestPlane,
-				 bdata->lastSetPlaneNumBackups);
-#else
-  return getBestLBPlane(cn.s);
-#endif
 }
 
 // return the alpha such that alpha * b has the highest value
@@ -388,9 +381,9 @@ const LBPlane& MaxPlanesLowerBound::getBestLBPlaneConst(const belief_vector& b) 
   const LBPlane* ret = NULL;
   FOR_EACH (pr, *planesToCheck) {
     const LBPlane* al = *pr;
-#if USE_MASKED_ALPHA
-    if (!mask_subset( b, al->mask )) continue;
-#endif
+    if (useMaxPlanesMasking) {
+      if (!mask_subset( b, al->mask )) continue;
+    }
     val = inner_prod( al->alpha, b );
     if (val > maxval) {
       maxval = val;
@@ -407,7 +400,6 @@ LBPlane& MaxPlanesLowerBound::getBestLBPlane(const belief_vector& b)
   return (LBPlane&) getBestLBPlaneConst(b);
 }
 
-#if USE_CONVEX_CACHE
 // return the alpha such that alpha * b has the highest value
 LBPlane& MaxPlanesLowerBound::getBestLBPlaneWithCache(const belief_vector& b,
 						      LBPlane* currPlane,
@@ -437,12 +429,10 @@ LBPlane& MaxPlanesLowerBound::getBestLBPlaneWithCache(const belief_vector& b,
 
   FOR_EACH (pr, *planesToCheck) {
     LBPlane* al = *pr;
-#if USE_CONVEX_CACHE
     if (al->numBackupsAtCreation < lastSetPlaneNumBackups) continue;
-#endif
-#if USE_MASKED_ALPHA
-    if (!mask_subset( b, al->mask )) continue;
-#endif
+    if (useMaxPlanesMasking) {
+      if (!mask_subset( b, al->mask )) continue;
+    }
     val = inner_prod( al->alpha, b );
     if (val > maxval) {
       maxval = val;
@@ -451,7 +441,6 @@ LBPlane& MaxPlanesLowerBound::getBestLBPlaneWithCache(const belief_vector& b,
   }
   return *ret;
 }
-#endif // USE_CONVEX_CACHE
 
 void MaxPlanesLowerBound::addLBPlane(LBPlane* av)
 {
@@ -469,25 +458,23 @@ void MaxPlanesLowerBound::prunePlanes(int numBackups)
 {
 #if USE_DEBUG_PRINT
   int oldNum = planes.size();
-#if USE_REF_COUNT_PRUNE
   int numRefCountDeletions = 0;
-#endif
 #endif
   typeof(planes.begin()) candidateP, memberP;
 
   candidateP = planes.begin();
   while (candidateP != planes.end()) {
     LBPlane* candidate = *candidateP;
-#if USE_REF_COUNT_PRUNE
-    if (candidate->backPointers.empty()) {
-      deleteAndForward(candidate, NULL);
-      candidateP = eraseElement(planes, candidateP);
+    if (useMaxPlanesExtraPruning) {
+      if (candidate->backPointers.empty()) {
+	deleteAndForward(candidate, NULL);
+	candidateP = eraseElement(planes, candidateP);
 #if USE_DEBUG_PRINT
-      numRefCountDeletions++;
+	numRefCountDeletions++;
 #endif
-      continue;
+	continue;
+      }
     }
-#endif
     memberP = planes.begin();
     while (memberP != candidateP) {
       LBPlane* member = *memberP;
@@ -495,12 +482,12 @@ void MaxPlanesLowerBound::prunePlanes(int numBackups)
 	  && member->numBackupsAtCreation <= lastPruneNumBackups) {
 	// candidate and member were compared the last time we pruned
 	// and neither dominates the other; leave them both in
-      } else if (dominates(candidate, member)) {
+      } else if (dominates(candidate, member, useMaxPlanesMasking)) {
 	// memberP is pruned
 	deleteAndForward(member, candidate);
 	memberP = eraseElement(planes, memberP);
 	continue;
-      } else if (dominates(member, candidate)) {
+      } else if (dominates(member, candidate, useMaxPlanesMasking)) {
 	// candidate is pruned
 	deleteAndForward(candidate, member);
 	candidateP = eraseElement(planes, candidateP);
@@ -517,10 +504,10 @@ void MaxPlanesLowerBound::prunePlanes(int numBackups)
 
 #if USE_DEBUG_PRINT
   cout << "... pruned # planes from " << oldNum << " down to " << planes.size() << endl;
-#if USE_REF_COUNT_PRUNE
-  printf("[lower bound] refCount was used for %d of %d deletions\n",
-	 numRefCountDeletions, (oldNum - planes.size()));
-#endif
+  if (useMaxPlanesExtraPruning) {
+    printf("[lower bound] refCount was used for %d of %d deletions\n",
+	   numRefCountDeletions, (oldNum - planes.size()));
+  }
 #endif
   lastPruneNumPlanes = planes.size();
   lastPruneNumBackups = numBackups;
@@ -551,14 +538,14 @@ void MaxPlanesLowerBound::deleteAndForward(LBPlane* victim, LBPlane* dominator)
       }
     }
   }
-#if USE_CONVEX_CACHE
-  // forward backPointers from victim to dominator
-  FOR_EACH (bpP, victim->backPointers) {
-    LBPlane** bp = *bpP;
-    *bp = dominator;
-    dominator->backPointers.push_back(bp);
+  if (useMaxPlanesCache) {
+    // forward backPointers from victim to dominator
+    FOR_EACH (bpP, victim->backPointers) {
+      LBPlane** bp = *bpP;
+      *bp = dominator;
+      dominator->backPointers.push_back(bp);
+    }
   }
-#endif
 
   delete victim;
 }
@@ -602,12 +589,12 @@ void MaxPlanesLowerBound::writeToFile(const std::string& outFileName) const
 
   PlaneSet::const_iterator pi = planes.begin();
   FOR (i, planes.size()-1) {
-    (*pi)->write(out);
+    (*pi)->write(out, useMaxPlanesMasking);
     out << "," << endl;
     pi++;
   }
   if (planes.size() > 0) {
-    (*pi)->write(out);
+    (*pi)->write(out, useMaxPlanesMasking);
   }
   out << endl;
 
@@ -720,6 +707,9 @@ void MaxPlanesLowerBound::readFromFile(const std::string& inFileName)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.20  2006/10/24 19:12:13  trey
+ * replaced useConvexSupportList with useMaxPlanesSupportList
+ *
  * Revision 1.19  2006/10/24 02:12:47  trey
  * distributed update code from ConvexBounds to MaxPlanesLowerBound, allows more flexibility
  *
