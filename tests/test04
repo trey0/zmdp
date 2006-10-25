@@ -1,0 +1,8 @@
+#!/usr/bin/perl
+
+require "testLibrary.perl";
+&testZmdpBenchmark(cmd => "$zmdpBenchmark ../test04.pomdp",
+		   expectedLB => 51.6905,
+		   expectedUB => 51.6905,
+		   testTolerance => 0.01,
+		   outFiles => ["bounds.plot", "inc.plot", "sim.plot"]);
