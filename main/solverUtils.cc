@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.14 $  $Author: trey $  $Date: 2006-10-25 02:07:06 $
+ $Revision: 1.15 $  $Author: trey $  $Date: 2006-10-25 18:30:59 $
 
  @file    solverUtils.cc
  @brief   No brief
@@ -259,6 +259,11 @@ void constructSolverObjects(SolverObjects& obj,
     assert(0); // never reach this point
   }
 
+  if (T_POMDP == p.modelType && obj.problem->getDiscount() >= 1.0 && -1 == p.maxHorizon) {
+    cerr << "ERROR: with modelType='pomdp', you must have either discount < 1 or maxHorizon defined (i.e. non-negative) in order to generate initial bounds" << endl;
+    exit(EXIT_FAILURE);
+  }
+
   bool lowerBoundRequired;
   bool upperBoundRequired;
 
@@ -406,6 +411,9 @@ void constructSolverObjects(SolverObjects& obj,
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.14  2006/10/25 02:07:06  trey
+ * added guards in case policyOutputFile==NULL
+ *
  * Revision 1.13  2006/10/24 19:08:04  trey
  * bug fixes related to recent changes in available parameters
  *
