@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.12 $  $Author: trey $  $Date: 2006-10-24 19:09:52 $
+ $Revision: 1.13 $  $Author: trey $  $Date: 2006-10-25 02:44:28 $
 
  @file    zmdpBenchmark.cc
  @brief   No brief
@@ -68,9 +68,12 @@ void usage(const char* cmdName) {
     "  -c or --config <file>  Specify a config file to read options from\n"
     "  --genConfig <file>     Generate an example config file and exit\n"
     "\n"
-    "  zmdpBenchmark is the advanced front-end to the ZMDP library.  While running a\n"
-    "  solution algorithm, it keeps a number of log files that can be used (along\n"
-    "  with scripts in the src/tools directory) to plot performance.\n"
+    "  zmdpBenchmark tests performance for a search strategy and problem\n"
+    "  you select.  As the solution algorithm progresses, various statistics\n"
+    "  are logged, such as the algorithm's bounds on the value of the initial\n"
+    "  state, the number of backups so far, and periodic measurements of the\n"
+    "  solution quality in simulation.  The plotting tools in the src/tools\n"
+    "  directory can be used to plot performance based on the logs.\n"
     "\n"
     "  ZMDP gets configuration information from three places: (1) Default values\n"
     "  are embedded in the binary at compile time.  (2) If you specify a config file\n"
@@ -85,7 +88,6 @@ void usage(const char* cmdName) {
     "For convenience, there are also some abbreviations:\n"
     "  -s = --searchStrategy\n"
     "  -t = --modelType\n"
-    "  -v = --valueFunctionRepresentation\n"
     "  -o = --policyOutputFile\n"
     "  -f = --useFastPomdpParser 1\n"
     "  -p = --terminateRegretBound\n"
@@ -94,7 +96,7 @@ void usage(const char* cmdName) {
     "Examples:\n"
     "  " << cmdName << " RockSample_4_4.pomdp\n"
     "  " << cmdName << " large-b.racetrack\n"
-    "  " << cmdName << " -s lrtdp -v point RockSample_4_4.pomdp\n"
+    "  " << cmdName << " -s lrtdp RockSample_4_4.pomdp\n"
     "  " << cmdName << " -f RockSample_5_7.pomdp\n"
 ;
   exit(-1);
@@ -145,8 +147,6 @@ int main(int argc, char **argv) {
 	  args = "--searchStrategy";
 	} else if (args == "-t") {
 	  args = "--modelType";
-	} else if (args == "-v") {
-	  args = "--valueFunctionRepresentation";
 	} else if (args == "-f") {
 	  commandLineConfig.setBool("useFastPomdpParser", true);
 	  continue;
@@ -226,6 +226,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.12  2006/10/24 19:09:52  trey
+ * moved some parameter logic to solverUtils
+ *
  * Revision 1.11  2006/10/19 19:33:41  trey
  * removed reference to obsolete MDPNodeHashLogger
  *

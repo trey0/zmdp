@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.16 $  $Author: trey $  $Date: 2006-10-25 02:07:30 $
+ $Revision: 1.17 $  $Author: trey $  $Date: 2006-10-25 02:44:28 $
 
  @file    zmdpSolve.cc
  @brief   No brief
@@ -135,11 +135,15 @@ void usage(const char* cmdName) {
     "  -c or --config <file>  Specify a config file to read options from\n"
     "  --genConfig <file>     Generate an example config file and exit\n"
     "\n"
-    "  zmdpSolve is the simplified front-end to the ZMDP library.  Give it a model,\n"
-    "  it runs for a while and writes out a policy.  You can then use zmdpEvaluate to\n"
-    "  read in and evaluate the policy or execute the policy with your own executive.\n"
-    "  If you want to monitor performance as the solution algorithm is running, use\n"
-    "  zmdpBenchmark instead of zmdpSolve.\n"
+    "  zmdpSolve generates an output policy for a search strategy and\n"
+    "  problem you select.  It runs the search strategy in an anytime\n"
+    "  fashion, periodically printing bounds on the value of the initial\n"
+    "  state to console so that you can monitor progress.  When the run ends,\n"
+    "  the final policy is output to the file you specify.  There are several\n"
+    "  options for how to end the run: you can specify a desired regret bound\n"
+    "  for the output solution, specify a fixed timeout, or just use ctrl-C to\n"
+    "  interrupt the algorithm when you are satisfied (it will output the final\n"
+    "  policy before exiting).\n"
     "\n"
     "  ZMDP gets configuration information from three places: (1) Default values\n"
     "  are embedded in the binary at compile time.  (2) If you specify a config file\n"
@@ -154,7 +158,6 @@ void usage(const char* cmdName) {
     "For convenience, there are also some abbreviations:\n"
     "  -s = --searchStrategy\n"
     "  -t = --modelType\n"
-    "  -v = --valueFunctionRepresentation\n"
     "  -o = --policyOutputFile\n"
     "  -f = --useFastPomdpParser 1\n"
     "  -p = --terminateRegretBound\n"
@@ -163,7 +166,7 @@ void usage(const char* cmdName) {
     "  " << cmdName << " RockSample_4_4.pomdp\n"
     "  " << cmdName << " large-b.racetrack\n"
     "  " << cmdName << " -t 60 -o my.policy RockSample_4_4.pomdp\n"
-    "  " << cmdName << " -s lrtdp -v point RockSample_4_4.pomdp\n"
+    "  " << cmdName << " -s lrtdp RockSample_4_4.pomdp\n"
     "  " << cmdName << " -f RockSample_5_7.pomdp\n"
     "\n"
 ;
@@ -216,8 +219,6 @@ int main(int argc, char **argv) {
 	  args = "--searchStrategy";
 	} else if (args == "-t") {
 	  args = "--modelType";
-	} else if (args == "-v") {
-	  args = "--valueFunctionRepresentation";
 	} else if (args == "-f") {
 	  commandLineConfig.setBool("useFastPomdpParser", true);
 	  continue;
@@ -289,6 +290,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.16  2006/10/25 02:07:30  trey
+ * removed old debug statement
+ *
  * Revision 1.15  2006/10/24 19:10:28  trey
  * moved some parameter logic to solverUtils
  *
