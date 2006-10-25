@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: options.mak,v 1.61 2006-10-25 02:44:45 trey Exp $
+# $Id: options.mak,v 1.62 2006-10-25 19:12:01 trey Exp $
 #
 # Copyright (c) 2002-2006, Trey Smith. All rights reserved.
 #
@@ -18,11 +18,10 @@
 
 CFLAGS += -DZMDP_VERSION=0.6.1
 
-# algorithm configuration options
+# algorithm configuration options (most of the options that used to be
+# in this file are now run-time configuration parameters; see
+# src/main/zmdp.config)
 
-CFLAGS += -DUSE_MASKED_ALPHA=1
-CFLAGS += -DUSE_CONVEX_CACHE=1
-CFLAGS += -DUSE_REF_COUNT_PRUNE=1
 #CFLAGS += -DUSE_HSVI_ADAPTIVE_DEPTH=1
 
 # debug/optimization options
@@ -36,6 +35,9 @@ CFLAGS += -DCFLAGS="\"$(XCFLAGS)\""
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.61  2006/10/25 02:44:45  trey
+# updated version number
+#
 # Revision 1.60  2006/10/18 18:56:44  trey
 # USE_CONVEX_SUPPORT_LIST is now a run-time config parameter
 #
