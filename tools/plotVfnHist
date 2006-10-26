@@ -59,9 +59,47 @@ EOF
 
 $octScript =<<"EOF";
 #############################
-g = load("gtruth/boundValues.log");
-p = load("bpoint/boundValues.log");
-c = load("bconvex/boundValues.log");
+function cdfs = calcCdfs(gtruth, vals, entries, bins, invert);
+  numLines = size(vals,2);
+  numBins = size(bins,2);
+  cdfs = zeros(numBins,numLines);
+  for i=1:numLines
+    [diffHist,foo] = hist(vals(entries,i) - gtruth(entries), bins, 1);
+    if invert
+      tmp = [0, diffHist(1:(numBins-1))];
+      cdfs(:,i) = max(0, 1 - cumsum(tmp)');
+    else
+      cdfs(:,i) = cumsum(diffHist)';
+    end
+    #cdfs(:,i) = diffHist';
+  end
+end
+
+numBins = 20;
+
+gtruth = load("gtruth/boundValues.log");
+mp = load("mp/boundValues.log");
+mpprune = load("mpprune/boundValues.log");
+mpmask = load("mpmask/boundValues.log");
+mpboth = load("mpboth/boundValues.log");
+saw = load("saw/boundValues.log");
+sawmask = load("sawmask/boundValues.log");
+p = load("point/boundValues.log");
+
+lbgtruth = gtruth(:,2);
+lball = [mp(:,2), mpprune(:,2), mpmask(:,2), mpboth(:,2), p(:,2)];
+LMP = 1;
+LMPPRUNE = 2;
+LMPMASK = 3;
+LMPBOTH = 4;
+LPOINT = 5;
+
+ubgtruth = gtruth(:,3);
+uball = [saw(:,3), sawmask(:,3), p(:,3)];
+USAW = 1;
+USAWMASK = 2;
+UPOINT = 3;
+
 setA = 1:$k1Size;
 setB = ($k1Size+1):$k2Size;
 $outputPlot
@@ -69,39 +107,46 @@ $outputPlot
 __gnuplot_set__ key left
 
 bds = [-30,0];
-delta = (range(bds))/20;
-bins = (bds(1):delta:bds(2)) - delta/2;
+delta = (range(bds))/numBins;
+bins = (bds(1):delta:bds(2)); # - delta/2;
 
 subplot(2,2,1);
-[py,foo] = hist(p(setA,2) - g(setA,2), bins, 1);
-[cy,foo] = hist(c(setA,2) - g(setA,2), bins, 1);
-plot(bins,py,';point;',bins,cy,';mp+masking+cache;');
-title('lower bound set A');
-#__gnuplot_set__ ('point', 'convex');
+cdfs = calcCdfs(lbgtruth, lball, setA, bins, 0);
+plot(bins,cdfs(:,LMP),'-+;mp;',
+     bins,cdfs(:,LMPPRUNE),'-*;mp+prune;',
+     bins,cdfs(:,LMPMASK),'-o;mp+mask;',
+     bins,cdfs(:,LMPBOTH),'-x;mp+both;',
+     bins,cdfs(:,LPOINT),';point;');
+title('Lower Bound, Distribution A');
 
 subplot(2,2,3);
-[py,foo] = hist(p(setB,2) - g(setB,2), bins, 1);
-[cy,foo] = hist(c(setB,2) - g(setB,2), bins, 1);
-plot(bins,py,';point;',bins,cy,';mp+masking+cache;');
-title('lower bound set B');
+cdfs = calcCdfs(lbgtruth, lball, setB, bins, 0);
+plot(bins,cdfs(:,LMP),'-+;mp;',
+     bins,cdfs(:,LMPPRUNE),'-*;mp+prune;',
+     bins,cdfs(:,LMPMASK),'-o;mp+mask;',
+     bins,cdfs(:,LMPBOTH),'-x;mp+both;',
+     bins,cdfs(:,LPOINT),';point;');
+title('Lower Bound, Distribution B');
 
 __gnuplot_set__ key right
 
 bds = [0,3];
-delta = (range(bds))/20;
-bins = (bds(1):delta:bds(2)) + delta/2;
+delta = (range(bds))/numBins;
+bins = (bds(1):delta:bds(2)); # + delta/2;
 
 subplot(2,2,2);
-[py,foo] = hist(p(setA,3) - g(setA,3), bins, 1);
-[cy,foo] = hist(c(setA,3) - g(setA,3), bins, 1);
-plot(bins,py,';point;',bins,cy,';sawtooth;');
-title('upper bound set A');
+cdfs = calcCdfs(ubgtruth, uball, setA, bins, 1);
+plot(bins,cdfs(:,USAW),'-+;saw;',
+     bins,cdfs(:,USAWMASK),'-*;saw+mask;',	
+     bins,cdfs(:,UPOINT),';point;');
+title('Upper Bound, Distribution A');
 
 subplot(2,2,4);
-[py,foo] = hist(p(setB,3) - g(setB,3), bins, 1);
-[cy,foo] = hist(c(setB,3) - g(setB,3), bins, 1);
-plot(bins,py,';point;',bins,cy,';sawtooth;');
-title('upper bound set B');
+cdfs = calcCdfs(ubgtruth, uball, setB, bins, 1);
+plot(bins,cdfs(:,USAW),'-+;saw;',
+     bins,cdfs(:,USAWMASK),'-*;saw+mask;',
+     bins,cdfs(:,UPOINT),';point;');
+title('Upper Bound, Distribution B');
 
 #############################
 EOF

@@ -8,6 +8,7 @@ $root = "~/z";
 $bin = "$root/bin/linux2";
 $prob = "$root/problems.archive/RockSample_5_7.pomdp";
 $scriptArgs = "--searchStrategy script --backupScriptInputDir ../script1k";
+$zmdpBenchmark = "zmdpBenchmark -f -i 2 ";
 
 sub dosys {
     my $cmd = shift;
@@ -15,31 +16,38 @@ sub dosys {
     system($cmd) && die "ERROR: couldn't execute '$cmd'\n";
 }
 
+$n1 = 10000;
+$n2 = $n1/10;
+
 if (! -e "gtruth") {
     &dosys("mkdir gtruth");
-    &dosys("cd gtruth && zmdpBenchmark -f --useLogBackups 1 --maintainLowerBound 1 --maintainUpperBound 1 $prob >& stdout.log");
+    &dosys("cd gtruth && $zmdpBenchmark --useLogBackups 1 --terminateNumBackups $n1 --maintainLowerBound 1 --maintainUpperBound 1 --useMaxPlanesMasking 0 --useMaxPlanesSupportList 0 --useMaxPlanesExtraPruning 0 $prob >& stdout.log");
 }
 
 if (! -e "script1k") {
     &dosys("mkdir script1k");
     &dosys("cp gtruth/stateIndex.log script1k");
-    &dosys("grep -v \\# gtruth/backups.log | head -1000 > script1k/backups.log");
+    &dosys("grep -v \\# gtruth/backups.log | head -$n2 > script1k/backups.log");
 }
 
-for $btype ("b") {
-    if ($btype eq "l") {
-	$bargs = "--maintainLowerBound 1 --maintainUpperBound 0";
-    } elsif ($btype eq "u") {
-	$bargs = "--maintainLowerBound 0 --maintainUpperBound 1";
-    } else {
-	$bargs = "--maintainLowerBound 1 --maintainUpperBound 1";
-    }
+$bb = "--maintainLowerBound 1 --maintainUpperBound 1";
+$lb = "--maintainLowerBound 1 --maintainUpperBound 0";
+$ub = "--maintainLowerBound 0 --maintainUpperBound 1";
 
-    for $vfnType ("point", "convex") {
-	$dir = "${btype}${vfnType}";
-	if (! -e $dir) {
-	    &dosys("mkdir $dir");
-	    &dosys("cd $dir && zmdpBenchmark -v $vfnType -f $scriptArgs $bargs $prob >& stdout.log");
-	}
+my %argTable = ("point" => "$bb --lowerBoundRepresentation point --upperBoundRepresentation point --maintainLowerBound 1",
+		"mp" => "$lb --useMaxPlanesMasking 0 --useMaxPlanesSupportList 0 --useMaxPlanesExtraPruning 0",
+		"mpmask" => "$lb --useMaxPlanesMasking 1 --useMaxPlanesSupportList 1 --useMaxPlanesExtraPruning 0",
+		"mpprune" => "$lb --useMaxPlanesMasking 0 --useMaxPlanesSupportList 0 --useMaxPlanesExtraPruning 1",
+		"mpboth" => "$lb --useMaxPlanesMasking 1 --useMaxPlanesSupportList 1 --useMaxPlanesExtraPruning 1",
+		"saw" => "$ub --useSawtoothSupportList 0",
+		"sawmask" => "$ub --useSawtoothSupportList 1",
+		);
+
+for $vfnType ("point", "mp", "mpmask", "mpprune", "mpboth", "saw", "sawmask") {
+    $dir = "${vfnType}";
+    $vfnArgs = $argTable{$vfnType};
+    if (! -e $dir) {
+	&dosys("mkdir $dir");
+	&dosys("cd $dir && $zmdpBenchmark $vfnArgs $scriptArgs $prob >& stdout.log");
     }
 }
