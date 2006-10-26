@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2006-10-24 19:11:01 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2006-10-26 21:26:19 $
    
  @file    BoundPair.cc
  @brief   No brief
@@ -216,8 +216,12 @@ void BoundPair::update(MDPNode& cn, int* maxUBActionP)
   } else {
     // otherwise fall back to whatever separate update procedures are
     // defined for the two bounds
-    lowerBound->update(cn);
-    upperBound->update(cn, maxUBActionP);
+    if (maintainLowerBound) {
+      lowerBound->update(cn);
+    }
+    if (maintainUpperBound) {
+      upperBound->update(cn, maxUBActionP);
+    }
   }
 
   numBackups++;
@@ -301,6 +305,9 @@ void BoundPair::writePolicy(const std::string& outFileName)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2006/10/24 19:11:01  trey
+ * added writePolicy() from ConvexBounds
+ *
  * Revision 1.1  2006/10/24 02:05:48  trey
  * initial check-in
  *
