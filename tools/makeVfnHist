@@ -4,10 +4,39 @@
 # with the command:
 # nohup makeVfnHist >& makeVfnHist_`date +%H_%M_%S`.log &
 
+sub usage {
+    die "usage: makeVfnHist OPTIONS\n".
+	"  -h or --help   Print this help\n".
+	"  -t <secs>      Use equal time rather than equal backups\n".
+	"  -l             Do lower bound runs only\n".
+	"  -u             Do upper bound runs only\n";
+}
+
+$useEqualTime = 0;
+$lowerOnly = 0;
+$upperOnly = 0;
+while ($_ = shift @ARGV) {
+    if ($_ eq "-h" or $_ eq "--help") {
+	&usage();
+    } elsif ($_ eq "-t") {
+	$useEqualTime = 1;
+	$timeSecs = shift @ARGV;
+	if (!defined $timeSecs) {
+	    die "ERROR: got -t option without argument (-h for help)\n";
+	}
+    } elsif ($_ eq "-l") {
+	$lowerOnly = 1;
+    } elsif ($_ eq "-u") {
+	$upperOnly = 1;
+    } else {
+	die "ERROR: unknown option '$_' (-h for help)\n";
+    }
+}
+
 $root = "~/z";
 $bin = "$root/bin/linux2";
 $prob = "$root/problems.archive/RockSample_5_7.pomdp";
-$scriptArgs = "--searchStrategy script --backupScriptInputDir ../script1k";
+$scriptArgs = "--searchStrategy script --backupScriptInputDir ../script";
 $zmdpBenchmark = "zmdpBenchmark -f -i 2 ";
 
 sub dosys {
@@ -24,17 +53,28 @@ if (! -e "gtruth") {
     &dosys("cd gtruth && $zmdpBenchmark --useLogBackups 1 --terminateNumBackups $n1 --maintainLowerBound 1 --maintainUpperBound 1 --useMaxPlanesMasking 0 --useMaxPlanesSupportList 0 --useMaxPlanesExtraPruning 0 $prob >& stdout.log");
 }
 
-if (! -e "script1k") {
-    &dosys("mkdir script1k");
-    &dosys("cp gtruth/stateIndex.log script1k");
-    &dosys("grep -v \\# gtruth/backups.log | head -$n2 > script1k/backups.log");
+if (! -e "script") {
+    &dosys("mkdir script");
+    &dosys("cp gtruth/stateIndex.log script");
+    if ($useEqualTime) {
+	&dosys("grep -v \\# gtruth/backups.log > script/backups.log");
+    } else {
+	&dosys("grep -v \\# gtruth/backups.log | head -$n2 > script/backups.log");
+    }
+}
+
+if ($useEqualTime) {
+    $termArg = "--terminateWallclockSeconds $timeSecs ";
+} else {
+    $termArg = "";
 }
 
 $bb = "--maintainLowerBound 1 --maintainUpperBound 1";
 $lb = "--maintainLowerBound 1 --maintainUpperBound 0";
 $ub = "--maintainLowerBound 0 --maintainUpperBound 1";
 
-my %argTable = ("point" => "$bb --lowerBoundRepresentation point --upperBoundRepresentation point --maintainLowerBound 1",
+my %argTable = ("lpoint" => "$lb --lowerBoundRepresentation point",
+		"upoint" => "$ub --upperBoundRepresentation point",
 		"mp" => "$lb --useMaxPlanesMasking 0 --useMaxPlanesSupportList 0 --useMaxPlanesExtraPruning 0",
 		"mpmask" => "$lb --useMaxPlanesMasking 1 --useMaxPlanesSupportList 1 --useMaxPlanesExtraPruning 0",
 		"mpprune" => "$lb --useMaxPlanesMasking 0 --useMaxPlanesSupportList 0 --useMaxPlanesExtraPruning 1",
@@ -43,11 +83,22 @@ my %argTable = ("point" => "$bb --lowerBoundRepresentation point --upperBoundRep
 		"sawmask" => "$ub --useSawtoothSupportList 1",
 		);
 
-for $vfnType ("point", "mp", "mpmask", "mpprune", "mpboth", "saw", "sawmask") {
+@lbruns = ("lpoint", "mp", "mpmask", "mpprune", "mpboth");
+@ubruns = ("upoint", "saw", "sawmask");
+
+if ($lowerOnly) {
+    @runs = @lbruns;
+} elsif ($upperOnly) {
+    @runs = @ubruns;
+} else {
+    @runs = (@lbruns, @ubruns);
+}
+
+for $vfnType (@runs) {
     $dir = "${vfnType}";
     $vfnArgs = $argTable{$vfnType};
     if (! -e $dir) {
 	&dosys("mkdir $dir");
-	&dosys("cd $dir && $zmdpBenchmark $vfnArgs $scriptArgs $prob >& stdout.log");
+	&dosys("cd $dir && $zmdpBenchmark $vfnArgs $scriptArgs $termArg $prob >& stdout.log");
     }
 }

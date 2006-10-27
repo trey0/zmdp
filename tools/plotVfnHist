@@ -29,6 +29,14 @@ for (@ARGV) {
     }
 }
 
+sub getNumBackups {
+    my $file = shift;
+    $lastLine = `tail -1 $file`;
+    chop $lastLine;
+    @fields = split(/\s+/, $lastLine);
+    return $fields[6];
+}
+
 &dosys("rm -rf plotscratch");
 &dosys("mkdir -p plotscratch");
 &dosys("grep -v \\# gtruth/backups.log > plotscratch/backups.log");
@@ -44,6 +52,9 @@ $k2Last = `cat plotscratch/k2Last.log`;
 chop $k2Last;
 $k2Size = $k2Last+1;
 
+for ("lpoint", "mp", "mpmask", "mpprune", "mpboth", "upoint", "saw", "sawmask") {
+    eval("\$${_}B = &getNumBackups('$_/bounds.plot');");
+}
 
 $octOpts = "--silent ";
 if ($doOutput) {
@@ -84,10 +95,11 @@ mpmask = load("mpmask/boundValues.log");
 mpboth = load("mpboth/boundValues.log");
 saw = load("saw/boundValues.log");
 sawmask = load("sawmask/boundValues.log");
-p = load("point/boundValues.log");
+lpoint = load("lpoint/boundValues.log");
+upoint = load("upoint/boundValues.log");
 
 lbgtruth = gtruth(:,2);
-lball = [mp(:,2), mpprune(:,2), mpmask(:,2), mpboth(:,2), p(:,2)];
+lball = [mp(:,2), mpprune(:,2), mpmask(:,2), mpboth(:,2), lpoint(:,2)];
 LMP = 1;
 LMPPRUNE = 2;
 LMPMASK = 3;
@@ -95,7 +107,7 @@ LMPBOTH = 4;
 LPOINT = 5;
 
 ubgtruth = gtruth(:,3);
-uball = [saw(:,3), sawmask(:,3), p(:,3)];
+uball = [saw(:,3), sawmask(:,3), upoint(:,3)];
 USAW = 1;
 USAWMASK = 2;
 UPOINT = 3;
@@ -112,20 +124,20 @@ bins = (bds(1):delta:bds(2)); # - delta/2;
 
 subplot(2,2,1);
 cdfs = calcCdfs(lbgtruth, lball, setA, bins, 0);
-plot(bins,cdfs(:,LMP),'-+;mp;',
-     bins,cdfs(:,LMPPRUNE),'-*;mp+prune;',
-     bins,cdfs(:,LMPMASK),'-o;mp+mask;',
-     bins,cdfs(:,LMPBOTH),'-x;mp+both;',
-     bins,cdfs(:,LPOINT),';point;');
+plot(bins,cdfs(:,LMP),'-+;mp ($mpB);',
+     bins,cdfs(:,LMPPRUNE),'-*;mp+prune ($mppruneB);',
+     bins,cdfs(:,LMPMASK),'--o;mp+mask ($mpmaskB);',
+     bins,cdfs(:,LMPBOTH),'--x;mp+both ($mpbothB);',
+     bins,cdfs(:,LPOINT),';point ($lpointB);');
 title('Lower Bound, Distribution A');
 
 subplot(2,2,3);
 cdfs = calcCdfs(lbgtruth, lball, setB, bins, 0);
-plot(bins,cdfs(:,LMP),'-+;mp;',
-     bins,cdfs(:,LMPPRUNE),'-*;mp+prune;',
-     bins,cdfs(:,LMPMASK),'-o;mp+mask;',
-     bins,cdfs(:,LMPBOTH),'-x;mp+both;',
-     bins,cdfs(:,LPOINT),';point;');
+plot(bins,cdfs(:,LMP),'-+;mp ($mpB);',
+     bins,cdfs(:,LMPPRUNE),'-*;mp+prune ($mppruneB);',
+     bins,cdfs(:,LMPMASK),'-o;mp+mask ($mpmaskB);',
+     bins,cdfs(:,LMPBOTH),'-x;mp+both ($mpbothB);',
+     bins,cdfs(:,LPOINT),';point ($lpointB);');
 title('Lower Bound, Distribution B');
 
 __gnuplot_set__ key right
@@ -136,16 +148,16 @@ bins = (bds(1):delta:bds(2)); # + delta/2;
 
 subplot(2,2,2);
 cdfs = calcCdfs(ubgtruth, uball, setA, bins, 1);
-plot(bins,cdfs(:,USAW),'-+;saw;',
-     bins,cdfs(:,USAWMASK),'-*;saw+mask;',	
-     bins,cdfs(:,UPOINT),';point;');
+plot(bins,cdfs(:,USAW),'-+;saw ($sawB);',
+     bins,cdfs(:,USAWMASK),'-*;saw+mask ($sawmaskB);',	
+     bins,cdfs(:,UPOINT),';point ($upointB);');
 title('Upper Bound, Distribution A');
 
 subplot(2,2,4);
 cdfs = calcCdfs(ubgtruth, uball, setB, bins, 1);
-plot(bins,cdfs(:,USAW),'-+;saw;',
-     bins,cdfs(:,USAWMASK),'-*;saw+mask;',
-     bins,cdfs(:,UPOINT),';point;');
+plot(bins,cdfs(:,USAW),'-+;saw ($sawB);',
+     bins,cdfs(:,USAWMASK),'-*;saw+mask ($sawmaskB);',
+     bins,cdfs(:,UPOINT),';point ($upointB);');
 title('Upper Bound, Distribution B');
 
 #############################
