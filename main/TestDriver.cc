@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.11 $  $Author: trey $  $Date: 2006-10-24 02:09:18 $
+ $Revision: 1.12 $  $Author: trey $  $Date: 2006-10-27 18:25:40 $
 
  @file    TestDriver.cc
  @brief   No brief
@@ -298,7 +298,7 @@ void TestDriver::batchTestIncremental(const ZMDPConfig& config,
   boundsFile.close();
   simOutFile.close();
 
-  so.solver->logBackups();
+  so.solver->finishLogging();
 }
   
 void TestDriver::printRewards(void) {
@@ -317,6 +317,9 @@ void TestDriver::printRewards(void) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.11  2006/10/24 02:09:18  trey
+ * changes to match updated Solver interface
+ *
  * Revision 1.10  2006/10/19 19:33:57  trey
  * added support for backup logging
  *
