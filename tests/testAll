@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-$numTestsToRun = 6;
+$numTestsToRun = 10;
 
 sub dosys {
     my $cmd = shift;
@@ -27,10 +27,10 @@ sub runTest {
     close(IN);
 
     if ($lastLine =~ /^passed$/) {
-	print "passed\n";
+	print "ok\n";
 	return 1;
     } else {
-	print "failed\n";
+	print "failed!\n";
 	return 0;
     }
 }
