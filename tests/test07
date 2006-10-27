@@ -1,0 +1,12 @@
+#!/usr/bin/perl
+
+require "testLibrary.perl";
+
+&testZmdpBenchmark(cmd => "$zmdpBenchmark --searchStrategy rtdp --terminateWallclockSeconds 1 $pomdpsDir/term3.pomdp",
+		   expectedUB => 10.5876,
+		   testTolerance => 0.01,
+		   outFiles => ["bounds.plot", "inc.plot", "sim.plot"]);
+&testZmdpBenchmark(cmd => "$zmdpBenchmark --searchStrategy rtdp --terminateWallclockSeconds 5 $mdpsDir/small-b.racetrack",
+		   expectedUB => -13.266,
+		   testTolerance => 0.1,
+		   outFiles => ["bounds.plot", "inc.plot", "sim.plot"]);
