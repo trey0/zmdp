@@ -2,6 +2,7 @@ discount 1.0
 errorProbability 0.1
 useMaxCost 1
 maxCost 1000
+useErrorIsWind 0
 ---
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@fff@
