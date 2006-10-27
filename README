@@ -235,7 +235,10 @@ REFERENCES
 ========================================================================
 RELEASE NOTES
 
-Changes from 0.6.0 to 0.6.1 (24 Oct 2006)
+Changes from 0.6.0 to 0.6.2 (27 Oct 2006)
+
+* Several bug fixes and new regression tests, now properly respects
+  optional speedup flags for POMDP bounds representations (0.6.2).
 
 * Old 'valueFunctionRepresentation' parameter now split into separate
   'lowerBoundRepresentation' and 'upperBoundRepresentation' parameters
@@ -363,4 +366,4 @@ zpomdp 0.1.0 (28 Oct 2005)
 * Initial release.
 
 ==========================================================
-$Id: README,v 1.24 2006-10-25 02:45:51 trey Exp $
+$Id: README,v 1.25 2006-10-27 19:41:51 trey Exp $
