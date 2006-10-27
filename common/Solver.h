@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.14 $  $Author: trey $  $Date: 2006-10-24 02:08:49 $
+ $Revision: 1.15 $  $Author: trey $  $Date: 2006-10-27 18:24:29 $
    
  @file    Solver.h
  @brief   No brief
@@ -52,8 +52,8 @@ public:
   // sets the minimum safety value, for a solver that understands safety
   virtual void setMinSafety(double _minSafety) {}
   
-  // outputs a log of backups, if the solver uses backups
-  virtual void logBackups(void) {}
+  // wraps up logging actions when the run is finished
+  virtual void finishLogging(void) {}
 };
 
 }; // namespace zmdp
@@ -63,6 +63,9 @@ public:
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.14  2006/10/24 02:08:49  trey
+ * changed some functions from pass-by-ref to pass-by-pointer to better match the rest of the system
+ *
  * Revision 1.13  2006/10/19 19:32:33  trey
  * added hook for backup logging
  *

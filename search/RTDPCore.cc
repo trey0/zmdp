@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.21 $  $Author: trey $  $Date: 2006-10-24 02:37:05 $
+ $Revision: 1.22 $  $Author: trey $  $Date: 2006-10-27 18:24:29 $
    
  @file    RTDPCore.cc
  @brief   Common code used by multiple RTDP variants found in this
@@ -166,7 +166,7 @@ void RTDPCore::trackBackup(const MDPNode& backedUpNode)
   }
 }
 
-void RTDPCore::logBackups(void)
+void RTDPCore::maybeLogBackups(void)
 {
   if (!useLogBackups) return;
 
@@ -181,11 +181,19 @@ void RTDPCore::logBackups(void)
   index.writeBoundValuesToFile(boundValuesOutputFile, *bounds);
 }
 
+void RTDPCore::finishLogging(void)
+{
+  maybeLogBackups();
+}
+
 }; // namespace zmdp
 
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.21  2006/10/24 02:37:05  trey
+ * updated for modified bounds interfaces
+ *
  * Revision 1.20  2006/10/20 20:03:14  trey
  * added boundValuesOutputFile support
  *

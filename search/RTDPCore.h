@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.17 $  $Author: trey $  $Date: 2006-10-24 02:37:05 $
+ $Revision: 1.18 $  $Author: trey $  $Date: 2006-10-27 18:24:29 $
    
  @file    RTDPCore.h
  @brief   Common code used by multiple RTDP variants found in this
@@ -110,7 +110,8 @@ struct RTDPCore : public Solver {
   void setBoundsFile(std::ostream* boundsFile);
   ValueInterval getValueAt(const state_vector& s) const;
   void trackBackup(const MDPNode& backedUpNode);
-  void logBackups(void);
+  void maybeLogBackups(void);
+  void finishLogging(void);
 };
 
 }; // namespace zmdp
@@ -120,6 +121,9 @@ struct RTDPCore : public Solver {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.17  2006/10/24 02:37:05  trey
+ * updated for modified bounds interfaces
+ *
  * Revision 1.16  2006/10/20 20:03:14  trey
  * added boundValuesOutputFile support
  *
