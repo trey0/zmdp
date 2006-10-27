@@ -1,8 +1,8 @@
 #!/usr/bin/perl
 
 require "testLibrary.perl";
-&testZmdpBenchmark(cmd => "$zmdpBenchmark $mdpsDir/large-b.racetrack",
-		   expectedLB => -23.252,
-		   expectedUB => -23.251,
+&testZmdpBenchmark(cmd => "$zmdpBenchmark $mdpsDir/small-b.racetrack",
+		   expectedLB => -13.2664,
+		   expectedUB => -13.2654,
 		   testTolerance => 0.01,
 		   outFiles => ["bounds.plot", "inc.plot", "sim.plot"]);
