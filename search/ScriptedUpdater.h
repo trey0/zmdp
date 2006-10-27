@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2006-10-20 20:04:19 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2006-10-27 18:25:15 $
    
  @file    ScriptedUpdater.h
  @brief   No brief
@@ -38,6 +38,7 @@ struct ScriptedUpdater : public RTDPCore {
   ScriptedUpdater(void);
   void readFiles(void);
   bool doTrial(MDPNode& cn);
+  void finishLogging(void);
 };
 
 }; // namespace zmdp
@@ -47,6 +48,9 @@ struct ScriptedUpdater : public RTDPCore {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2006/10/20 20:04:19  trey
+ * added boundValuesOutputFile support
+ *
  * Revision 1.2  2006/10/20 17:10:32  trey
  * corrected some problems with initialization
  *

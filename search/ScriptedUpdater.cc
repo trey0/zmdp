@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2006-10-20 20:04:19 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2006-10-27 18:25:15 $
    
  @file    ScriptedUpdater.cc
  @brief   No brief
@@ -101,10 +101,14 @@ bool ScriptedUpdater::doTrial(MDPNode& cn)
     firstInTrial = false;
   }
 
-  // ran out of backups in script, return and note we are finished
-  numTrials++;
-  stateIndex->writeBoundValuesToFile(boundValuesOutputFile, *bounds);
+  // ran out of backups in script, return true to indicate we are finished
   return true;
+}
+
+void ScriptedUpdater::finishLogging(void)
+{
+  maybeLogBackups();
+  stateIndex->writeBoundValuesToFile(boundValuesOutputFile, *bounds);
 }
 
 }; // namespace zmdp
@@ -112,6 +116,9 @@ bool ScriptedUpdater::doTrial(MDPNode& cn)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2006/10/20 20:04:19  trey
+ * added boundValuesOutputFile support
+ *
  * Revision 1.2  2006/10/20 17:10:32  trey
  * corrected some problems with initialization
  *
