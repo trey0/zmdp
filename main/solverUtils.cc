@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.16 $  $Author: trey $  $Date: 2006-10-30 20:00:15 $
+ $Revision: 1.17 $  $Author: trey $  $Date: 2006-10-30 20:22:44 $
 
  @file    solverUtils.cc
  @brief   No brief
@@ -106,7 +106,7 @@ int getEnum(const std::string& key, EnumEntry* table, const char *opt)
   for (i = table; NULL != i->key; i++) {
     fprintf(stderr, "'%s' ", i->key);
   }
-  fprintf(stderr, "\n");
+  fprintf(stderr, "(-h for help)\n");
   
   exit(EXIT_FAILURE);
 }
@@ -144,6 +144,12 @@ void SolverParams::setValues(const ZMDPConfig& config)
   // set global debug level, used by parts of the codebase that do not
   // depend on ZMDPConfig
   zmdpDebugLevelG = config.getInt("debugLevel");
+
+  if (zmdpDebugLevelG >= 1) {
+    cout << "[params begin]" << endl;
+    config.writeToStream(cout);
+    cout << "[params end]" << endl;
+  }
 
   SU_GET_ENUM(searchStrategy);
   SU_GET_ENUM(modelType);
@@ -190,8 +196,14 @@ void SolverParams::inferMissingValues(void)
   // fill in default and inferred values
   if (-1 == modelType) {
     if (endsWith(probName, ".racetrack")) {
+      if (zmdpDebugLevelG >= 1) {
+	printf("[params] inferred modelType='racetrack' from model filename extension\n");
+      }
       modelType = T_RACETRACK;
     } else if (endsWith(probName, ".pomdp")) {
+      if (zmdpDebugLevelG >= 1) {
+	printf("[params] inferred modelType='pomdp' from model filename extension\n");
+      }
       modelType = T_POMDP;
     } else {
       fprintf(stderr, "ERROR: couldn't infer problem type from model filename %s (use -t option, -h for help)\n",
@@ -202,15 +214,27 @@ void SolverParams::inferMissingValues(void)
   if (-1 == lowerBoundRepresentation) {
     if (T_POMDP == modelType) {
       lowerBoundRepresentation = V_MAXPLANES;
+      if (zmdpDebugLevelG >= 1) {
+	printf("[params] selected lowerBoundRepresentation='maxPlanes' because modelType='pomdp'\n");
+      }
     } else {
       lowerBoundRepresentation = V_POINT;
+      if (zmdpDebugLevelG >= 1) {
+	printf("[params] selected lowerBoundRepresentation='point' because modelType='mdp'\n");
+      }
     }
   }
   if (-1 == upperBoundRepresentation) {
     if (T_POMDP == modelType) {
       upperBoundRepresentation = V_SAWTOOTH;
+      if (zmdpDebugLevelG >= 1) {
+	printf("[params] selected upperBoundRepresentation='sawtooth' because modelType='pomdp'\n");
+      }
     } else {
       upperBoundRepresentation = V_POINT;
+      if (zmdpDebugLevelG >= 1) {
+	printf("[params] selected upperBoundRepresentation='point' because modelType='mdp'\n");
+      }
     }
   }
 
@@ -229,18 +253,24 @@ void SolverParams::inferMissingValues(void)
   }
   if (NULL != policyOutputFile && 0 == strcmp(policyOutputFile, "-")) {
     if (usingBenchmarkFrontEnd) {
-      // default value with zmdpBenchmark
       policyOutputFile = NULL;
+      if (zmdpDebugLevelG >= 1) {
+	printf("[params] selected policyOutputFile='none' because front end is zmdpBenchmark\n");
+      }
     } else {
-      // default value with zmdpSolve
       policyOutputFile = "out.policy";
+      if (zmdpDebugLevelG >= 1) {
+	printf("[params] selected policyOutputFile='%s' because front-end is zmdpSolve\n",
+	       policyOutputFile);
+      }
     }
   }
   if (NULL != policyOutputFile) {
     if (lowerBoundRepresentation != V_MAXPLANES) {
       cerr << "ERROR: config parameters imply an output policy should be written, but\n"
 	   << "  policy writing is currently only possible when\n"
-	   << "  modelType='pomdp' and lowerBoundRepresentation='maxPlanes'" << endl;
+	   << "  modelType='pomdp' and lowerBoundRepresentation='maxPlanes' (-h for help)"
+	   << endl;
       exit(EXIT_FAILURE);
     }
   }
@@ -264,7 +294,9 @@ void constructSolverObjects(SolverObjects& obj,
   }
 
   if (T_POMDP == p.modelType && obj.problem->getDiscount() >= 1.0 && -1 == p.maxHorizon) {
-    cerr << "ERROR: with modelType='pomdp', you must have either discount < 1 or maxHorizon defined (i.e. non-negative) in order to generate initial bounds" << endl;
+    cerr << "ERROR: with modelType='pomdp', you must have either discount < 1\n"
+	 << "  or maxHorizon defined (i.e. non-negative) in order to generate initial\n"
+	 << "  bounds (-h for help)" << endl;
     exit(EXIT_FAILURE);
   }
 
@@ -306,9 +338,18 @@ void constructSolverObjects(SolverObjects& obj,
     assert(0); // never reach this point
   };
 
+  if (zmdpDebugLevelG >= 1) {
+    printf("[params] with requested searchStrategy, lowerBoundRequired=%d, upperBoundRequired=%d\n",
+	   lowerBoundRequired, upperBoundRequired);
+  }
+
   switch (p.maintainLowerBound) {
   case -1:
     p.maintainLowerBound = lowerBoundRequired;
+    if (zmdpDebugLevelG >= 1) {
+      printf("[params] selected maintainLowerBound=%d because lowerBoundRequired=%d\n",
+	     p.maintainLowerBound, lowerBoundRequired);
+    }
     break;
   case 0:
     if (lowerBoundRequired) {
@@ -338,6 +379,10 @@ void constructSolverObjects(SolverObjects& obj,
   switch (p.useUpperBoundRunTimeActionSelection) {
   case -1:
     p.useUpperBoundRunTimeActionSelection = !p.maintainLowerBound;
+    if (zmdpDebugLevelG >= 1) {
+      printf("[params] selected useUpperBoundRunTimeActionSelection=%d because maintainLowerBound=%d\n",
+	     p.useUpperBoundRunTimeActionSelection, p.maintainLowerBound);
+    }
     break;
   case 0:
     if (!p.maintainLowerBound) {
@@ -415,6 +460,9 @@ void constructSolverObjects(SolverObjects& obj,
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.16  2006/10/30 20:00:15  trey
+ * USE_DEBUG_PRINT replaced with a run-time config parameter "debugLevel"
+ *
  * Revision 1.15  2006/10/25 18:30:59  trey
  * added a more informative error message when params are set wrong for pomdp initial bounds to be calculated
  *
