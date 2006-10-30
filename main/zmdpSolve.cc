@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.18 $  $Author: trey $  $Date: 2006-10-30 20:00:15 $
+ $Revision: 1.19 $  $Author: trey $  $Date: 2006-10-30 20:22:19 $
 
  @file    zmdpSolve.cc
  @brief   No brief
@@ -269,12 +269,6 @@ int main(int argc, char **argv) {
   // config step 3: overwrite with values specified on command line
   config.readFromConfig(commandLineConfig);
 
-  // default value of policyOutputFile depends on the front end used;
-  // for zmdpSolve, it is "out.policy"
-  if (config.getString("policyOutputFile") == "-") {
-    config.setString("policyOutputFile", "out.policy");
-  }
-
   if (zmdpDebugLevelG >= 1) {
     printf("CFLAGS = %s\n", CFLAGS);
     printf("ARGS = %s\n", outs.str().c_str());
@@ -290,6 +284,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.18  2006/10/30 20:00:15  trey
+ * USE_DEBUG_PRINT replaced with a run-time config parameter "debugLevel"
+ *
  * Revision 1.17  2006/10/25 02:44:28  trey
  * updated usage summary, removed obsolete -v option
  *
