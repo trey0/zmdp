@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.17 $  $Author: trey $  $Date: 2006-10-30 20:22:44 $
+ $Revision: 1.18 $  $Author: trey $  $Date: 2006-10-30 20:26:56 $
 
  @file    solverUtils.cc
  @brief   No brief
@@ -260,7 +260,7 @@ void SolverParams::inferMissingValues(void)
     } else {
       policyOutputFile = "out.policy";
       if (zmdpDebugLevelG >= 1) {
-	printf("[params] selected policyOutputFile='%s' because front-end is zmdpSolve\n",
+	printf("[params] selected policyOutputFile='%s' because front end is zmdpSolve\n",
 	       policyOutputFile);
       }
     }
@@ -460,6 +460,9 @@ void constructSolverObjects(SolverObjects& obj,
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.17  2006/10/30 20:22:44  trey
+ * added lots of debug output when debugLevel=1
+ *
  * Revision 1.16  2006/10/30 20:00:15  trey
  * USE_DEBUG_PRINT replaced with a run-time config parameter "debugLevel"
  *
