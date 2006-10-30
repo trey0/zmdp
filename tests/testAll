@@ -17,14 +17,18 @@ sub runTest {
 
     my $n = sprintf("%02d", $num);
 
-    print "  test$n... ";
+    print "  test$n ";
     
     open(IN, "./test$n 2>&1 |") or die "ERROR: couldn't run ./test$n: $!\n";
-    my $lastLine;
+    my $firstLine, $lastLine;
+    $firstLine = <IN>;
+    chop $firstLine;
+    printf("[%-60s]... ", $firstLine);
     while (<IN>) {
 	$lastLine = $_;
     }
     close(IN);
+
 
     if ($lastLine =~ /^passed$/) {
 	print "ok\n";

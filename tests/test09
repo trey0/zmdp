@@ -1,5 +1,6 @@
 #!/usr/bin/perl
 
+$TEST_DESCRIPTION = "searchStrategy='hdp' for pomdp, mdp";
 require "testLibrary.perl";
 &testZmdpBenchmark(cmd => "$zmdpBenchmark --searchStrategy hdp $pomdpsDir/term3.pomdp",
 		   expectedUB => 10.5882,

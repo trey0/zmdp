@@ -173,6 +173,8 @@ sub testZmdpEvaluate {
     print "passed\n";
 }
 
+print "$TEST_DESCRIPTION\n";
+
 $OS_SYSNAME = `uname -s | perl -ple 'tr/A-Z/a-z/;'`;
 chop $OS_SYSNAME;
 $OS_RELEASE = `uname -r | perl -ple 's/\\..*\$//;'`;

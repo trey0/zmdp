@@ -1,5 +1,6 @@
 #!/usr/bin/perl
 
+$TEST_DESCRIPTION = "searchStrategy='rtdp' for pomdp, mdp";
 require "testLibrary.perl";
 
 &testZmdpBenchmark(cmd => "$zmdpBenchmark --searchStrategy rtdp --terminateWallclockSeconds 1 $pomdpsDir/term3.pomdp",

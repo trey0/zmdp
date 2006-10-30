@@ -1,5 +1,6 @@
 #!/usr/bin/perl
 
+$TEST_DESCRIPTION = "test04.pomdp, crashed an earlier version of zmdp";
 require "testLibrary.perl";
 &testZmdpBenchmark(cmd => "$zmdpBenchmark ../test04.pomdp",
 		   expectedLB => 51.6905,
