@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.4 $  $Author: trey $  $Date: 2006-06-03 10:59:03 $
+ $Revision: 1.5 $  $Author: trey $  $Date: 2006-10-30 20:00:15 $
    
  @file    FastInfUBInitializer.cc
  @brief   No brief
@@ -65,10 +65,10 @@ void FastInfUBInitializer::initMDP(double targetPrecision)
   alphas.clear();
   alphas.push_back(calpha);
 
-#if USE_DEBUG_PRINT
-  cout << "initUpperBoundMDP: alpha=" << sparseRep(alphas[0]).c_str() << endl;
-  cout << "initUpperBoundMDP: val(b)=" << inner_prod(alphas[0], pomdp->initialBelief) << endl;
-#endif
+  if (zmdpDebugLevelG >= 1) {
+    cout << "initUpperBoundMDP: alpha=" << sparseRep(alphas[0]).c_str() << endl;
+    cout << "initUpperBoundMDP: val(b)=" << inner_prod(alphas[0], pomdp->initialBelief) << endl;
+  }
 }
 
 void FastInfUBInitializer::initFIB(double targetPrecision)
@@ -94,10 +94,10 @@ void FastInfUBInitializer::initFIB(double targetPrecision)
     m.nextAlphaAction(al[a], a);
   }
 
-#if USE_DEBUG_PRINT
-  cout << "starting upper bound FIB iteration";
-  cout.flush();
-#endif
+  if (zmdpDebugLevelG >= 1) {
+    cout << "starting upper bound FIB iteration";
+    cout.flush();
+  }
 
   // iterate FIB update rule to approximate convergence
   do {
@@ -133,16 +133,16 @@ void FastInfUBInitializer::initFIB(double targetPrecision)
       al[a] = nextAl[a];
     }
 
-#if USE_DEBUG_PRINT
-    cout << ".";
-    cout.flush();
-#endif
+    if (zmdpDebugLevelG >= 1) {
+      cout << ".";
+      cout.flush();
+    }
 
   } while ( maxResidual > targetPrecision );
 
-#if USE_DEBUG_PRINT
-  cout << endl;
-#endif
+  if (zmdpDebugLevelG >= 1) {
+    cout << endl;
+  }
 
   dvector dalpha;
   FOR (a, pomdp->numActions) {
@@ -172,6 +172,9 @@ void FastInfUBInitializer::initFIB(double targetPrecision)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2006/06/03 10:59:03  trey
+ * added exact initialization rule for terminal states
+ *
  * Revision 1.3  2006/04/28 17:57:41  trey
  * changed to use apache license
  *

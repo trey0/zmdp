@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2006-10-19 19:31:16 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2006-10-30 20:00:15 $
    
  @file    HSVI.cc
  @brief   No brief
@@ -97,11 +97,11 @@ void HSVI::trialRecurse(MDPNode& cn, double logOcc, int depth)
       || depth > maxDepth
 #endif
       ) {
-#if USE_DEBUG_PRINT
-    printf("  trialRecurse: depth=%d excessUnc=%g (terminating)\n",
-	   depth, excessUnc);
-    printf("  trialRecurse: s=%s\n", sparseRep(cn.s).c_str());
-#endif
+    if (zmdpDebugLevelG >= 1) {
+      printf("  trialRecurse: depth=%d excessUnc=%g (terminating)\n",
+	     depth, excessUnc);
+      printf("  trialRecurse: s=%s\n", sparseRep(cn.s).c_str());
+    }
 
     return;
   }
@@ -121,11 +121,11 @@ void HSVI::trialRecurse(MDPNode& cn, double logOcc, int depth)
   }
 #endif
 
-#if USE_DEBUG_PRINT
-  printf("  trialRecurse: depth=%d [%g .. %g] a=%d o=%d\n",
-	 depth, cn.lbVal, cn.ubVal, r.maxUBAction, r.maxExcessUncOutcome);
-  printf("  trialRecurse: s=%s\n", sparseRep(cn.s).c_str());
-#endif
+  if (zmdpDebugLevelG >= 1) {
+    printf("  trialRecurse: depth=%d [%g .. %g] a=%d o=%d\n",
+	   depth, cn.lbVal, cn.ubVal, r.maxUBAction, r.maxExcessUncOutcome);
+    printf("  trialRecurse: s=%s\n", sparseRep(cn.s).c_str());
+  }
 
   // recurse to successor
   assert(-1 != r.maxExcessUncOutcome);
@@ -140,9 +140,9 @@ void HSVI::trialRecurse(MDPNode& cn, double logOcc, int depth)
 
 bool HSVI::doTrial(MDPNode& cn)
 {
-#if USE_DEBUG_PRINT
-  printf("-*- doTrial: trial %d\n", (numTrials+1));
-#endif
+  if (zmdpDebugLevelG >= 1) {
+    printf("-*- doTrial: trial %d\n", (numTrials+1));
+  }
 
 #if USE_HSVI_ADAPTIVE_DEPTH
   oldQualitySum = 0;
@@ -172,15 +172,15 @@ bool HSVI::doTrial(MDPNode& cn)
   if (updateQualityRatio >= 1.0) {
     oldMaxDepth = maxDepth;
     maxDepth *= HSVI_MAX_DEPTH_ADJUST_RATIO;
-#if USE_DEBUG_PRINT
-    printf("endTrial: updateQualityRatio=%g oldMaxDepth=%g maxDepth=%g\n",
-	   updateQualityRatio, oldMaxDepth, maxDepth);
-#endif
+    if (zmdpDebugLevelG >= 1) {
+      printf("endTrial: updateQualityRatio=%g oldMaxDepth=%g maxDepth=%g\n",
+	     updateQualityRatio, oldMaxDepth, maxDepth);
+    }
   } else {
-#if USE_DEBUG_PRINT
-  printf("endTrial: updateQualityRatio=%g maxDepth=%g (no change)\n",
-	 updateQualityRatio, maxDepth);
-#endif
+    if (zmdpDebugLevelG >= 1) {
+      printf("endTrial: updateQualityRatio=%g maxDepth=%g (no change)\n",
+	     updateQualityRatio, maxDepth);
+    }
   }
 #endif // if USE_HSVI_ADAPTIVE_DEPTH
 
@@ -194,6 +194,9 @@ bool HSVI::doTrial(MDPNode& cn)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2006/10/19 19:31:16  trey
+ * added support for backup logging
+ *
  * Revision 1.2  2006/04/28 17:57:41  trey
  * changed to use apache license
  *

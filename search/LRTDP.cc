@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.13 $  $Author: trey $  $Date: 2006-10-24 02:37:05 $
+ $Revision: 1.14 $  $Author: trey $  $Date: 2006-10-30 20:00:15 $
    
  @file    LRTDP.cc
  @brief   Implementation of Bonet and Geffner's LRTDP algorithm.
@@ -125,9 +125,10 @@ bool LRTDP::checkSolved(MDPNode& cn)
     }
   }
 
-#if USE_DEBUG_PRINT
-  int numClosedStates = closed.size();
-#endif
+  int numClosedStates = -1;
+  if (zmdpDebugLevelG >= 1) {
+    numClosedStates = closed.size();
+  }
   if (rv) {
     // label relevant states
     while (!closed.empty()) {
@@ -142,10 +143,10 @@ bool LRTDP::checkSolved(MDPNode& cn)
     }
   }
 
-#if USE_DEBUG_PRINT
-  printf("  checkSolved: s=[%s] numClosedStates=%d rv=%d\n",
-	 sparseRep(cn.s).c_str(), numClosedStates, rv);
-#endif
+  if (zmdpDebugLevelG >= 1) {
+    printf("  checkSolved: s=[%s] numClosedStates=%d rv=%d\n",
+	   sparseRep(cn.s).c_str(), numClosedStates, rv);
+  }
   return rv;
 }
 
@@ -160,10 +161,10 @@ bool LRTDP::trialRecurse(MDPNode& cn, int depth)
 {
   // check for termination
   if (getIsSolved(cn)) {
-#if USE_DEBUG_PRINT
-    printf("  trialRecurse: depth=%d ubVal=%g solved node (terminating)\n",
-	   depth, cn.ubVal);
-#endif
+    if (zmdpDebugLevelG >= 1) {
+      printf("  trialRecurse: depth=%d ubVal=%g solved node (terminating)\n",
+	     depth, cn.ubVal);
+    }
     return true;
   }
 
@@ -174,11 +175,11 @@ bool LRTDP::trialRecurse(MDPNode& cn, int depth)
 
   int simulatedOutcome = bounds->getSimulatedOutcome(cn, maxUBAction);
 
-#if USE_DEBUG_PRINT
-  printf("  trialRecurse: depth=%d a=%d o=%d ubVal=%g\n",
-	 depth, maxUBAction, simulatedOutcome, cn.ubVal);
-  printf("  trialRecurse: s=%s\n", sparseRep(cn.s).c_str());
-#endif
+  if (zmdpDebugLevelG >= 1) {
+    printf("  trialRecurse: depth=%d a=%d o=%d ubVal=%g\n",
+	   depth, maxUBAction, simulatedOutcome, cn.ubVal);
+    printf("  trialRecurse: s=%s\n", sparseRep(cn.s).c_str());
+  }
 
   // recurse to successor
   bool solvedAtNextDepth =
@@ -193,9 +194,9 @@ bool LRTDP::trialRecurse(MDPNode& cn, int depth)
 
 bool LRTDP::doTrial(MDPNode& cn)
 {
-#if USE_DEBUG_PRINT
-  printf("-*- doTrial: trial %d\n", (numTrials+1));
-#endif
+  if (zmdpDebugLevelG >= 1) {
+    printf("-*- doTrial: trial %d\n", (numTrials+1));
+  }
 
   trialRecurse(cn, 0);
   numTrials++;
@@ -213,6 +214,9 @@ void LRTDP::derivedClassInit(void)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.13  2006/10/24 02:37:05  trey
+ * updated for modified bounds interfaces
+ *
  * Revision 1.12  2006/10/19 19:31:16  trey
  * added support for backup logging
  *

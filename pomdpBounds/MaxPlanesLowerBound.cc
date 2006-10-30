@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.21 $  $Author: trey $  $Date: 2006-10-25 19:13:01 $
+ $Revision: 1.22 $  $Author: trey $  $Date: 2006-10-30 20:00:15 $
    
  @file    MaxPlanesLowerBound.cc
  @brief   No brief
@@ -34,6 +34,7 @@
 #include <fstream>
 
 #include "zmdpCommonDefs.h"
+#include "zmdpCommonTime.h"
 #include "MatrixUtils.h"
 #include "MaxPlanesLowerBound.h"
 #include "BlindLBInitializer.h"
@@ -250,9 +251,10 @@ void MaxPlanesLowerBound::getNewLBPlaneQ(LBPlane& result, MDPNode& cn, int a)
 
 void MaxPlanesLowerBound::getNewLBPlane(LBPlane& result, MDPNode& cn)
 {
-#if USE_DEBUG_PRINT
-  timeval startTime = getTime();
-#endif
+  timeval startTime;
+  if (zmdpDebugLevelG >= 1) {
+    startTime = getTime();
+  }
 
   double val, maxVal = -99e+20;
   LBPlane betaA;
@@ -266,11 +268,11 @@ void MaxPlanesLowerBound::getNewLBPlane(LBPlane& result, MDPNode& cn)
       result = betaA;
     }
   }
-#if USE_DEBUG_PRINT
-  cout << "** newLowerBound: elapsed time = "
-       << timevalToSeconds(getTime() - startTime)
-       << endl;
-#endif
+  if (zmdpDebugLevelG >= 1) {
+    cout << "** newLowerBound: elapsed time = "
+	 << timevalToSeconds(getTime() - startTime)
+	 << endl;
+  }
 }
 
 void MaxPlanesLowerBound::initNodeBound(MDPNode& cn)
@@ -456,10 +458,11 @@ void MaxPlanesLowerBound::addLBPlane(LBPlane* av)
 
 void MaxPlanesLowerBound::prunePlanes(int numBackups)
 {
-#if USE_DEBUG_PRINT
-  int oldNum = planes.size();
+  int oldNum = -1;
   int numRefCountDeletions = 0;
-#endif
+  if (zmdpDebugLevelG >= 1) {
+    oldNum = planes.size();
+  }
   typeof(planes.begin()) candidateP, memberP;
 
   candidateP = planes.begin();
@@ -469,9 +472,9 @@ void MaxPlanesLowerBound::prunePlanes(int numBackups)
       if (candidate->backPointers.empty()) {
 	deleteAndForward(candidate, NULL);
 	candidateP = eraseElement(planes, candidateP);
-#if USE_DEBUG_PRINT
-	numRefCountDeletions++;
-#endif
+	if (zmdpDebugLevelG >= 1) {
+	  numRefCountDeletions++;
+	}
 	continue;
       }
     }
@@ -502,13 +505,13 @@ void MaxPlanesLowerBound::prunePlanes(int numBackups)
   nextCandidate: ;
   }
 
-#if USE_DEBUG_PRINT
-  cout << "... pruned # planes from " << oldNum << " down to " << planes.size() << endl;
-  if (useMaxPlanesExtraPruning) {
-    printf("[lower bound] refCount was used for %d of %d deletions\n",
-	   numRefCountDeletions, (oldNum - planes.size()));
+  if (zmdpDebugLevelG >= 1) {
+    cout << "... pruned # planes from " << oldNum << " down to " << planes.size() << endl;
+    if (useMaxPlanesExtraPruning) {
+      printf("[lower bound] refCount was used for %d of %d deletions\n",
+	     numRefCountDeletions, (oldNum - planes.size()));
+    }
   }
-#endif
   lastPruneNumPlanes = planes.size();
   lastPruneNumBackups = numBackups;
 }
@@ -707,6 +710,9 @@ void MaxPlanesLowerBound::readFromFile(const std::string& inFileName)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.21  2006/10/25 19:13:01  trey
+ * migrated to more run-time config parameters
+ *
  * Revision 1.20  2006/10/24 19:12:13  trey
  * replaced useConvexSupportList with useMaxPlanesSupportList
  *

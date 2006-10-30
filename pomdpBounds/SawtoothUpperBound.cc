@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.13 $  $Author: trey $  $Date: 2006-10-24 19:12:32 $
+ $Revision: 1.14 $  $Author: trey $  $Date: 2006-10-30 20:00:15 $
    
  @file    SawtoothUpperBound.cc
  @brief   No brief
@@ -33,6 +33,7 @@
 #include <list>
 
 #include "zmdpCommonDefs.h"
+#include "zmdpCommonTime.h"
 #include "SawtoothUpperBound.h"
 #include "FastInfUBInitializer.h"
 
@@ -210,9 +211,10 @@ void SawtoothUpperBound::deleteAndForward(BVPair* victim,
 }
 
 void SawtoothUpperBound::prune(int numBackups) {
-#if USE_DEBUG_PRINT
-  int oldNum = pts.size();
-#endif
+  int oldNum = -1;
+  if (zmdpDebugLevelG >= 1) {
+    oldNum = pts.size();
+  }
 
   FOR_EACH (ptP, pts) {
     BVPair* pt = *ptP;
@@ -249,9 +251,9 @@ void SawtoothUpperBound::prune(int numBackups) {
   nextCandidate: ;
   }
 
-#if USE_DEBUG_PRINT
-  cout << "... pruned # pts from " << oldNum << " down to " << pts.size() << endl;
-#endif
+  if (zmdpDebugLevelG >= 1) {
+    cout << "... pruned # pts from " << oldNum << " down to " << pts.size() << endl;
+  }
   lastPruneNumPts = pts.size();
   lastPruneNumBackups = numBackups;
 }
@@ -356,9 +358,10 @@ double SawtoothUpperBound::getNewUBValueQ(MDPNode& cn, int a)
 
 double SawtoothUpperBound::getNewUBValueSimple(MDPNode& cn, int* maxUBActionP)
 {
-#if USE_DEBUG_PRINT
-  timeval startTime = getTime();
-#endif
+  timeval startTime;
+  if (zmdpDebugLevelG >= 1) {
+    startTime = getTime();
+  }
 
   double val, maxVal = -99e+20;
   int maxUBAction = -1;
@@ -372,20 +375,21 @@ double SawtoothUpperBound::getNewUBValueSimple(MDPNode& cn, int* maxUBActionP)
 
   if (NULL != maxUBActionP) *maxUBActionP = maxUBAction;
   
-#if USE_DEBUG_PRINT
-  cout << "** newUpperBound: elapsed time = "
-       << timevalToSeconds(getTime() - startTime)
-       << endl;
-#endif
+  if (zmdpDebugLevelG >= 1) {
+    cout << "** newUpperBound: elapsed time = "
+	 << timevalToSeconds(getTime() - startTime)
+	 << endl;
+  }
   
   return maxVal;
 }
 
 double SawtoothUpperBound::getNewUBValueUseCache(MDPNode& cn, int* maxUBActionP)
 {
-#if USE_DEBUG_PRINT
-  timeval startTime = getTime();
-#endif
+  timeval startTime;
+  if (zmdpDebugLevelG >= 1) {
+    startTime = getTime();
+  }
 
   // cache upper bound for each action
   dvector cachedUpperBound(pomdp->getNumActions());
@@ -419,11 +423,11 @@ double SawtoothUpperBound::getNewUBValueUseCache(MDPNode& cn, int* maxUBActionP)
   
   if (NULL != maxUBActionP) *maxUBActionP = maxUBAction;
 
-#if USE_DEBUG_PRINT
-  cout << "** newUpperBound: elapsed time = "
-       << timevalToSeconds(getTime() - startTime)
-       << endl;
-#endif
+  if (zmdpDebugLevelG >= 1) {
+    cout << "** newUpperBound: elapsed time = "
+	 << timevalToSeconds(getTime() - startTime)
+	 << endl;
+  }
 
   return maxVal;
 }
@@ -457,6 +461,9 @@ void SawtoothUpperBound::setUBForNode(MDPNode& cn, double newUB, bool addBV)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.13  2006/10/24 19:12:32  trey
+ * replaced useConvexSupportList with useSawtoothSupportList
+ *
  * Revision 1.12  2006/10/24 02:13:04  trey
  * distributed update code from ConvexBounds to SawtoothUpperBound, allows more flexibility
  *

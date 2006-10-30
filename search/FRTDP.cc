@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.19 $  $Author: trey $  $Date: 2006-10-24 02:37:05 $
+ $Revision: 1.20 $  $Author: trey $  $Date: 2006-10-30 20:00:15 $
    
  @file    FRTDP.cc
  @brief   No brief
@@ -129,11 +129,11 @@ void FRTDP::trialRecurse(MDPNode& cn, double logOcc, int depth)
 			 ? RT_PRIO_MINUS_INFINITY : log(excessWidth));
 #endif
 
-#if USE_DEBUG_PRINT
-  printf("  trialRecurse: depth=%d [%g .. %g] a=%d o=%d\n",
-	 depth, cn.lbVal, cn.ubVal, r.maxUBAction, r.maxPrioOutcome);
-  printf("  trialRecurse: s=%s\n", sparseRep(cn.s).c_str());
-#endif
+  if (zmdpDebugLevelG >= 1) {
+    printf("  trialRecurse: depth=%d [%g .. %g] a=%d o=%d\n",
+	   depth, cn.lbVal, cn.ubVal, r.maxUBAction, r.maxPrioOutcome);
+    printf("  trialRecurse: s=%s\n", sparseRep(cn.s).c_str());
+  }
 
 #if 0
   printf("  tr: maxUBAction=%d ubResidual=%g\n",
@@ -151,11 +151,11 @@ void FRTDP::trialRecurse(MDPNode& cn, double logOcc, int depth)
   }
 
   if (excessWidth <= 0 || depth > maxDepth) {
-#if USE_DEBUG_PRINT
-    printf("  trialRecurse: depth=%d excessWidth=%g (terminating)\n",
-	   depth, excessWidth);
-    printf("  trialRecurse: s=%s\n", sparseRep(cn.s).c_str());
-#endif
+    if (zmdpDebugLevelG >= 1) {
+      printf("  trialRecurse: depth=%d excessWidth=%g (terminating)\n",
+	     depth, excessWidth);
+      printf("  trialRecurse: s=%s\n", sparseRep(cn.s).c_str());
+    }
 
     return;
   }
@@ -173,9 +173,9 @@ void FRTDP::trialRecurse(MDPNode& cn, double logOcc, int depth)
 
 bool FRTDP::doTrial(MDPNode& cn)
 {
-#if USE_DEBUG_PRINT
-  printf("-*- doTrial: trial %d\n", (numTrials+1));
-#endif
+  if (zmdpDebugLevelG >= 1) {
+    printf("-*- doTrial: trial %d\n", (numTrials+1));
+  }
 
   oldQualitySum = 0;
   oldNumUpdates = 0;
@@ -200,18 +200,18 @@ bool FRTDP::doTrial(MDPNode& cn)
   if (updateQualityRatio >= 1.0) {
     oldMaxDepth = maxDepth;
     maxDepth *= FRTDP_MAX_DEPTH_ADJUST_RATIO;
-#if USE_DEBUG_PRINT
-    printf("endTrial: updateQualityRatio=%g oldMaxDepth=%g maxDepth=%g\n",
-	   updateQualityRatio, oldMaxDepth, maxDepth);
-#endif
+    if (zmdpDebugLevelG >= 1) {
+      printf("endTrial: updateQualityRatio=%g oldMaxDepth=%g maxDepth=%g\n",
+	     updateQualityRatio, oldMaxDepth, maxDepth);
+    }
   } else {
-#if USE_DEBUG_PRINT
-  printf("endTrial: updateQualityRatio=%g maxDepth=%g (no change)\n",
-	 updateQualityRatio, maxDepth);
-#endif
+    if (zmdpDebugLevelG >= 1) {
+      printf("endTrial: updateQualityRatio=%g maxDepth=%g (no change)\n",
+	     updateQualityRatio, maxDepth);
+    }
   }
 
-#if 0 && USE_DEBUG_PRINT
+#if 0
   printf("endTrial: oldQualitySum=%g oldNumUpdates=%d newQualitySum=%g newNumUpdates=%d\n",
 	 oldQualitySum, oldNumUpdates, newQualitySum, newNumUpdates);
 #endif
@@ -231,6 +231,9 @@ void FRTDP::derivedClassInit(void)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.19  2006/10/24 02:37:05  trey
+ * updated for modified bounds interfaces
+ *
  * Revision 1.18  2006/10/19 19:31:16  trey
  * added support for backup logging
  *

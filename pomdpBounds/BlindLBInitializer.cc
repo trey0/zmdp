@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.8 $  $Author: trey $  $Date: 2006-10-25 19:12:53 $
+ $Revision: 1.9 $  $Author: trey $  $Date: 2006-10-30 20:00:15 $
    
  @file    BlindLBInitializer.cc
  @brief   No brief
@@ -102,9 +102,9 @@ void BlindLBInitializer::initBlindWorstCase(alpha_vector& weakAlpha)
   }
 
   copy(weakAlpha, worstCaseDVector);
-#if USE_DEBUG_PRINT
-  cout << "initLowerBoundBlindWorstCase: alpha=" << sparseRep(weakAlpha) << endl;
-#endif
+  if (zmdpDebugLevelG >= 1) {
+    cout << "initLowerBoundBlindWorstCase: alpha=" << sparseRep(weakAlpha) << endl;
+  }
 }
 
 void BlindLBInitializer::initBlind(double targetPrecision)
@@ -143,9 +143,9 @@ void BlindLBInitializer::initBlind(double targetPrecision)
       al = nextAl;
     } while (maxResidual > targetPrecision);
 
-#if USE_DEBUG_PRINT
-    cout << "initLowerBoundBlind: a=" << a << " al=" << sparseRep(al) << endl;
-#endif
+    if (zmdpDebugLevelG >= 1) {
+      cout << "initLowerBoundBlind: a=" << a << " al=" << sparseRep(al) << endl;
+    }
 
     bound->addLBPlane(new LBPlane(al, a, default_mask));
   }
@@ -156,6 +156,9 @@ void BlindLBInitializer::initBlind(double targetPrecision)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.8  2006/10/25 19:12:53  trey
+ * migrated to more run-time config parameters
+ *
  * Revision 1.7  2006/10/25 18:32:21  trey
  * for kicks, now calculate a smaller value for longTermFactor when both discount < 1 and maxHorizon is defined
  *

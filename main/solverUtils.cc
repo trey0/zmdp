@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.15 $  $Author: trey $  $Date: 2006-10-25 18:30:59 $
+ $Revision: 1.16 $  $Author: trey $  $Date: 2006-10-30 20:00:15 $
 
  @file    solverUtils.cc
  @brief   No brief
@@ -141,6 +141,10 @@ SolverParams::SolverParams(void) :
 
 void SolverParams::setValues(const ZMDPConfig& config)
 {
+  // set global debug level, used by parts of the codebase that do not
+  // depend on ZMDPConfig
+  zmdpDebugLevelG = config.getInt("debugLevel");
+
   SU_GET_ENUM(searchStrategy);
   SU_GET_ENUM(modelType);
   SU_GET_ENUM(lowerBoundRepresentation);
@@ -411,6 +415,9 @@ void constructSolverObjects(SolverObjects& obj,
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.15  2006/10/25 18:30:59  trey
+ * added a more informative error message when params are set wrong for pomdp initial bounds to be calculated
+ *
  * Revision 1.14  2006/10/25 02:07:06  trey
  * added guards in case policyOutputFile==NULL
  *

@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2006-04-28 17:57:41 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2006-10-30 20:00:15 $
    
  @file    zmdpCommonTypes.h
  @brief   No brief
@@ -126,11 +126,19 @@ protected:
 
 }; // namespace zmdp
 
+// we'll redundantly declare the debug level here (also declared in
+// zmdpConfig.h) so that files that don't depend anything else in
+// zmdpConfig.h don't need to include it.
+extern int zmdpDebugLevelG;
+
 #endif // INCzmdpCommonTypes_h
 
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2006/04/28 17:57:41  trey
+ * changed to use apache license
+ *
  * Revision 1.1  2006/02/01 01:09:38  trey
  * renamed pomdp namespace -> zmdp
  *

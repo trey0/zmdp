@@ -32,6 +32,11 @@
 
 #include "sparse-matrix.h"
 
+/* This parameter is declared in ZMDP src/common/zmdpConfig.h, but
+   let's not include any ZMDP headers if we can help it.  I've added
+   some more verbose output if zmdpDebugLevelG > 0. -Trey */
+extern int zmdpDebugLevelG;
+
 /* Use this type for a variable that indicated whether we have a 
    POMDP or an MDP.
 */

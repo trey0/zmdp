@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.17 $  $Author: trey $  $Date: 2006-10-24 02:13:43 $
+ $Revision: 1.18 $  $Author: trey $  $Date: 2006-10-30 20:00:15 $
   
  @file    Pomdp.cc
  @brief   No brief
@@ -100,9 +100,9 @@ void Pomdp::readFromFile(const std::string& fileName,
   }
 
   // post-process: calculate isPomdpTerminalState
-#if USE_DEBUG_PRINT
-  printf("Pomdp::readFromFile: marking zero-reward absorbing states as terminal\n");
-#endif
+  if (zmdpDebugLevelG >= 1) {
+    printf("Pomdp::readFromFile: marking zero-reward absorbing states as terminal\n");
+  }
   isPomdpTerminalState.resize(numStates, /* initialValue = */ true);
   FOR (s, numStates) {
     FOR (a, numActions) {
@@ -176,11 +176,11 @@ bool Pomdp::getIsTerminalState(const state_vector& s) const
 }
 
 void Pomdp::readFromFileCassandra(const string& fileName) {
-#if USE_DEBUG_PRINT
   timeval startTime, endTime;
-  cout << "reading problem from " << fileName << endl;
-  gettimeofday(&startTime,0);
-#endif
+  if (zmdpDebugLevelG >= 1) {
+    cout << "reading problem from " << fileName << endl;
+    gettimeofday(&startTime,0);
+  }
 
   PomdpCassandraWrapper p;
   p.readFromFile(fileName);
@@ -218,14 +218,14 @@ void Pomdp::readFromFileCassandra(const string& fileName) {
   }
   copy(initialBelief, initialBeliefD);
 
-#if USE_DEBUG_PRINT
-  gettimeofday(&endTime,0);
-  double numSeconds = (endTime.tv_sec - startTime.tv_sec)
-    + 1e-6 * (endTime.tv_usec - startTime.tv_usec);
-  cout << "[file reading took " << numSeconds << " seconds]" << endl;
-
-  debugDensity();
-#endif
+  if (zmdpDebugLevelG >= 1) {
+    gettimeofday(&endTime,0);
+    double numSeconds = (endTime.tv_sec - startTime.tv_sec)
+      + 1e-6 * (endTime.tv_usec - startTime.tv_usec);
+    cout << "[file reading took " << numSeconds << " seconds]" << endl;
+    
+    debugDensity();
+  }
 }
 
 // this is functionally similar to readFromFile() but much faster.
@@ -240,11 +240,11 @@ void Pomdp::readFromFileFast(const std::string& fileName)
   bool inPreamble = true;
   char *data;
 
-#if USE_DEBUG_PRINT
   timeval startTime, endTime;
-  cout << "reading problem (in fast mode) from " << fileName << endl;
-  gettimeofday(&startTime,0);
-#endif
+  if (zmdpDebugLevelG >= 1) {
+    cout << "reading problem (in fast mode) from " << fileName << endl;
+    gettimeofday(&startTime,0);
+  }
 
   in.open(fileName.c_str());
   if (!in) {
@@ -402,14 +402,14 @@ void Pomdp::readFromFileFast(const std::string& fileName)
     copy( O[a], Ox[a] );
   }
 
-#if USE_DEBUG_PRINT
-  gettimeofday(&endTime,0);
-  double numSeconds = (endTime.tv_sec - startTime.tv_sec)
-    + 1e-6 * (endTime.tv_usec - startTime.tv_usec);
-  cout << "[file reading took " << numSeconds << " seconds]" << endl;
-#endif
+  if (zmdpDebugLevelG >= 1) {
+    gettimeofday(&endTime,0);
+    double numSeconds = (endTime.tv_sec - startTime.tv_sec)
+      + 1e-6 * (endTime.tv_usec - startTime.tv_usec);
+    cout << "[file reading took " << numSeconds << " seconds]" << endl;
 
-  debugDensity();
+    debugDensity();
+  }
 }
 
 void Pomdp::debugDensity(void) {
@@ -433,6 +433,9 @@ void Pomdp::debugDensity(void) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.17  2006/10/24 02:13:43  trey
+ * changes to match new Solver interface
+ *
  * Revision 1.16  2006/10/18 18:06:37  trey
  * now propagating config data structure to lower levels so config fields can be used to control more parts of the system
  *

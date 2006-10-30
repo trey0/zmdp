@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.4 $  $Author: trey $  $Date: 2006-10-27 18:25:15 $
+ $Revision: 1.5 $  $Author: trey $  $Date: 2006-10-30 20:00:15 $
    
  @file    ScriptedUpdater.cc
  @brief   No brief
@@ -72,9 +72,9 @@ void ScriptedUpdater::readFiles(void)
 
 bool ScriptedUpdater::doTrial(MDPNode& cn)
 {
-#if USE_DEBUG_PRINT
-  printf("-*- doTrial: trial %d\n", (numTrials+1));
-#endif
+  if (zmdpDebugLevelG >= 1) {
+    printf("-*- doTrial: trial %d\n", (numTrials+1));
+  }
 
   if (!filesRead) {
     readFiles();
@@ -116,6 +116,9 @@ void ScriptedUpdater::finishLogging(void)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2006/10/27 18:25:15  trey
+ * now call writeBoundValuesToFile() at the end of a run whether or not the run ended because the script ran out
+ *
  * Revision 1.3  2006/10/20 20:04:19  trey
  * added boundValuesOutputFile support
  *

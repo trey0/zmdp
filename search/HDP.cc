@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.14 $  $Author: trey $  $Date: 2006-10-24 02:37:05 $
+ $Revision: 1.15 $  $Author: trey $  $Date: 2006-10-30 20:00:15 $
    
  @file    HDP.cc
  @brief   Implementation of Bonet and Geffner's HDP algorithm.
@@ -115,17 +115,17 @@ void HDP::updateInternal(MDPNode& cn)
 
 bool HDP::trialRecurse(MDPNode& cn, int depth)
 {
-#if USE_DEBUG_PRINT
-  printf("  trialRecurse: depth=%d ubVal=%g\n",
-	 depth, cn.ubVal);
-  printf("  trialRecurse: s=%s\n", sparseRep(cn.s).c_str());
-#endif
+  if (zmdpDebugLevelG >= 1) {
+    printf("  trialRecurse: depth=%d ubVal=%g\n",
+	   depth, cn.ubVal);
+    printf("  trialRecurse: s=%s\n", sparseRep(cn.s).c_str());
+  }
 
   // base case
   if (getIsSolved(cn)) {
-#if USE_DEBUG_PRINT
-    printf("  trialRecurse: solved node (terminating)\n");
-#endif
+    if (zmdpDebugLevelG >= 1) {
+      printf("  trialRecurse: solved node (terminating)\n");
+    }
     return false;
   }
 
@@ -136,9 +136,9 @@ bool HDP::trialRecurse(MDPNode& cn, int depth)
   if (residual(cn) > targetPrecision) {
     cn.ubVal = cn.Q[maxUBAction].ubVal;
 
-#if USE_DEBUG_PRINT
-    printf("  trialRecurse: big residual (terminating)\n");
-#endif
+    if (zmdpDebugLevelG >= 1) {
+      printf("  trialRecurse: big residual (terminating)\n");
+    }
     return true;
   }
 
@@ -197,9 +197,9 @@ bool HDP::doTrial(MDPNode& cn)
     return true;
   }
 
-#if USE_DEBUG_PRINT
-  printf("-*- doTrial: trial %d\n", (numTrials+1));
-#endif
+  if (zmdpDebugLevelG >= 1) {
+    printf("-*- doTrial: trial %d\n", (numTrials+1));
+  }
 
   index = 0;
   trialRecurse(cn, 0);
@@ -226,6 +226,9 @@ void HDP::derivedClassInit(void)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.14  2006/10/24 02:37:05  trey
+ * updated for modified bounds interfaces
+ *
  * Revision 1.13  2006/10/20 04:56:35  trey
  * removed obsolete comment
  *

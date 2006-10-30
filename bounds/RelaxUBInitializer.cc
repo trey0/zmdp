@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.5 $  $Author: trey $  $Date: 2006-10-24 02:07:27 $
+ $Revision: 1.6 $  $Author: trey $  $Date: 2006-10-30 20:00:15 $
    
  @file    RelaxUBInitializer.cc
  @brief   No brief
@@ -168,10 +168,10 @@ void RelaxUBInitializer::trialRecurse(MDPNode& cn, double costSoFar, double altA
   // check for termination
   double actionPrio = costSoFar + cn.ubVal;
   if (altActionPrio > actionPrio) {
-#if USE_DEBUG_PRINT
-    printf("  RB trialRecurse: depth=%d [%g .. %g] costSoFar=%g altActionPrio=%g actionPrio=%g (terminating)\n",
-	   depth, cn.lbVal, cn.ubVal, costSoFar, altActionPrio, actionPrio);
-#endif
+    if (zmdpDebugLevelG >= 1) {
+      printf("  RB trialRecurse: depth=%d [%g .. %g] costSoFar=%g altActionPrio=%g actionPrio=%g (terminating)\n",
+	     depth, cn.lbVal, cn.ubVal, costSoFar, altActionPrio, actionPrio);
+    }
     return;
   }
 
@@ -190,11 +190,11 @@ void RelaxUBInitializer::trialRecurse(MDPNode& cn, double costSoFar, double altA
     }
   }
 
-#if USE_DEBUG_PRINT
-  printf("  RB trialRecurse: depth=%d a=%d o=%d [%g .. %g] altActionPrio=%g actionPrio=%g \n",
-	 depth, maxUBAction, bestOutcome, cn.lbVal, cn.ubVal, altActionPrio, actionPrio);
-  printf("  RB trialRecurse: s=%s\n", sparseRep(cn.s).c_str());
-#endif
+  if (zmdpDebugLevelG >= 1) {
+    printf("  RB trialRecurse: depth=%d a=%d o=%d [%g .. %g] altActionPrio=%g actionPrio=%g \n",
+	   depth, maxUBAction, bestOutcome, cn.lbVal, cn.ubVal, altActionPrio, actionPrio);
+    printf("  RB trialRecurse: s=%s\n", sparseRep(cn.s).c_str());
+  }
 
   // recurse to successor
   double nextCostSoFar = costSoFar + cn.Q[maxUBAction].immediateReward;
@@ -215,9 +215,10 @@ void RelaxUBInitializer::doTrial(MDPNode& cn, double pTarget)
 
 void RelaxUBInitializer::initialize(double targetPrecision)
 {
-#if USE_DEBUG_PRINT
-  timeval startTime = getTime();
-#endif
+  timeval startTime;
+  if (zmdpDebugLevelG >= 1) {
+    startTime = getTime();
+  }
 
   setup(targetPrecision);
 
@@ -225,26 +226,26 @@ void RelaxUBInitializer::initialize(double targetPrecision)
   double width;
   while (1) {
     width = root->ubVal - root->lbVal;
-#if USE_DEBUG_PRINT
-    printf("-*- RB initialize trial=%d width=%g target=%g\n",
-	   trialNum, width, targetPrecision);
-#endif
+    if (zmdpDebugLevelG >= 1) {
+      printf("-*- RB initialize trial=%d width=%g target=%g\n",
+	     trialNum, width, targetPrecision);
+    }
     if (width < targetPrecision) {
-#if USE_DEBUG_PRINT
-    printf("RB initialize width=%g target=%g terminating\n",
-	   width, targetPrecision);
-#endif
+      if (zmdpDebugLevelG >= 1) {
+	printf("RB initialize width=%g target=%g terminating\n",
+	       width, targetPrecision);
+      }
       break;
     }
     doTrial(*root, width * problem->getDiscount());
     trialNum++;
   }
 
-#if USE_DEBUG_PRINT
-  double elapsedTime = timevalToSeconds(getTime() - startTime);
-  printf("--> RB initialization completed after %g seconds\n",
-	 elapsedTime);
-#endif
+  if (zmdpDebugLevelG >= 1) {
+    double elapsedTime = timevalToSeconds(getTime() - startTime);
+    printf("--> RB initialization completed after %g seconds\n",
+	   elapsedTime);
+  }
 }
 
 double RelaxUBInitializer::getValue(const state_vector& s, const MDPNode* cn) const
@@ -261,6 +262,9 @@ double RelaxUBInitializer::getValue(const state_vector& s, const MDPNode* cn) co
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.5  2006/10/24 02:07:27  trey
+ * tweaked args to some functions to match changes elsewhere
+ *
  * Revision 1.4  2006/10/18 18:05:02  trey
  * now propagating config data structure to lower levels so config fields can be used to control more parts of the system
  *

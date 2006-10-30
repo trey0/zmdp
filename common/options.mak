@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: options.mak,v 1.63 2006-10-27 19:42:00 trey Exp $
+# $Id: options.mak,v 1.64 2006-10-30 20:00:15 trey Exp $
 #
 # Copyright (c) 2002-2006, Trey Smith. All rights reserved.
 #
@@ -26,7 +26,6 @@ CFLAGS += -DZMDP_VERSION=0.6.2
 
 # debug/optimization options
 
-#CFLAGS += -DUSE_DEBUG_PRINT=1
 USER_CFLAGS := -O3
 #USER_CFLAGS := -g
 
@@ -35,6 +34,9 @@ CFLAGS += -DCFLAGS="\"$(XCFLAGS)\""
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.63  2006/10/27 19:42:00  trey
+# updated version number
+#
 # Revision 1.62  2006/10/25 19:12:01  trey
 # moved some flags to zmdp.config
 #

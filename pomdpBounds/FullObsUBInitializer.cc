@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.4 $  $Author: trey $  $Date: 2006-04-28 17:57:41 $
+ $Revision: 1.5 $  $Author: trey $  $Date: 2006-10-30 20:00:15 $
    
  @file    FullObsUBInitializer.cc
  @brief   No brief
@@ -110,21 +110,21 @@ void FullObsUBInitializer::valueIteration(const Pomdp* _pomdp, double eps) {
   set_to_zero(alpha);
 
   double residual;
-#if USE_DEBUG_PRINT
-  cout << "using mdp value iteration to generate initial upper bound" << endl
-       << "mdp";
-  cout.flush();
-#endif
+  if (zmdpDebugLevelG >= 1) {
+    cout << "using mdp value iteration to generate initial upper bound" << endl
+	 << "mdp";
+    cout.flush();
+  }
   FOR (i, MDP_MAX_ITERS) {
     residual = valueIterationOneStep();
-#if USE_DEBUG_PRINT
-    cout << ".";
-    cout.flush();
-#endif
+    if (zmdpDebugLevelG >= 1) {
+      cout << ".";
+      cout.flush();
+    }
     if (residual < eps) {
-#if USE_DEBUG_PRINT
-      cout << endl;
-#endif
+      if (zmdpDebugLevelG >= 1) {
+	cout << endl;
+      }
       return;
     }
   }
@@ -139,6 +139,9 @@ void FullObsUBInitializer::valueIteration(const Pomdp* _pomdp, double eps) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2006/04/28 17:57:41  trey
+ * changed to use apache license
+ *
  * Revision 1.3  2006/04/27 23:10:17  trey
  * put some output in USE_DEBUG_PRINT
  *

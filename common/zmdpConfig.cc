@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-10-15 21:41:22 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-10-30 20:00:15 $
    
  @file    zmdpConfig.cc
  @brief   No brief
@@ -174,9 +174,14 @@ void ZMDPConfig::setOverWriteOnlyMode(bool _overWriteOnlyMode)
 
 };
 
+int zmdpDebugLevelG = 0;
+
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/10/15 21:41:22  trey
+ * initial check-in
+ *
  *
  *
  ***************************************************************************/

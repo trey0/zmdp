@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.14 $  $Author: trey $  $Date: 2006-10-19 19:31:26 $
+ $Revision: 1.15 $  $Author: trey $  $Date: 2006-10-30 20:00:15 $
    
  @file    RTDP.cc
  @brief   Implementation of Barto, Bradke, and Singh's RTDP algorithm.
@@ -64,10 +64,10 @@ void RTDP::trialRecurse(MDPNode& cn, int depth)
 {
   // check for termination
   if (cn.isTerminal) {
-#if USE_DEBUG_PRINT
-    printf("trialRecurse: depth=%d ubVal=%g terminal node (terminating)\n",
-	   depth, cn.ubVal);
-#endif
+    if (zmdpDebugLevelG >= 1) {
+      printf("trialRecurse: depth=%d ubVal=%g terminal node (terminating)\n",
+	     depth, cn.ubVal);
+    }
     return;
   }
 
@@ -78,11 +78,11 @@ void RTDP::trialRecurse(MDPNode& cn, int depth)
 
   int simulatedOutcome = bounds->getSimulatedOutcome(cn, maxUBAction);
 
-#if USE_DEBUG_PRINT
-  printf("  trialRecurse: depth=%d a=%d o=%d ubVal=%g\n",
-	 depth, maxUBAction, simulatedOutcome, cn.ubVal);
-  printf("  trialRecurse: s=%s\n", sparseRep(cn.s).c_str());
-#endif
+  if (zmdpDebugLevelG >= 1) {
+    printf("  trialRecurse: depth=%d a=%d o=%d ubVal=%g\n",
+	   depth, maxUBAction, simulatedOutcome, cn.ubVal);
+    printf("  trialRecurse: s=%s\n", sparseRep(cn.s).c_str());
+  }
 
   // recurse to successor
   trialRecurse(cn.getNextState(maxUBAction, simulatedOutcome), depth+1);
@@ -93,9 +93,9 @@ void RTDP::trialRecurse(MDPNode& cn, int depth)
 
 bool RTDP::doTrial(MDPNode& cn)
 {
-#if USE_DEBUG_PRINT
-  printf("-*- doTrial: trial %d\n", (numTrials+1));
-#endif
+  if (zmdpDebugLevelG >= 1) {
+    printf("-*- doTrial: trial %d\n", (numTrials+1));
+  }
 
   trialRecurse(cn, 0);
   numTrials++;
@@ -108,6 +108,9 @@ bool RTDP::doTrial(MDPNode& cn)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.14  2006/10/19 19:31:26  trey
+ * added support for backup logging
+ *
  * Revision 1.13  2006/04/28 17:57:41  trey
  * changed to use apache license
  *

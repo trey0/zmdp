@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.17 $  $Author: trey $  $Date: 2006-10-25 02:44:28 $
+ $Revision: 1.18 $  $Author: trey $  $Date: 2006-10-30 20:00:15 $
 
  @file    zmdpSolve.cc
  @brief   No brief
@@ -176,13 +176,13 @@ void usage(const char* cmdName) {
 int main(int argc, char **argv) {
   SolverParams p;
 
-#if USE_DEBUG_PRINT
-  // save arguments for debug printout later
   ostringstream outs;
-  for (int i=1; i < argc; i++) {
-    outs << argv[i] << " ";
+  if (zmdpDebugLevelG >= 1) {
+    // save arguments for debug printout later
+    for (int i=1; i < argc; i++) {
+      outs << argv[i] << " ";
+    }
   }
-#endif
 
   bool argsOnly = false;
   const char* configFileName = NULL;
@@ -275,11 +275,11 @@ int main(int argc, char **argv) {
     config.setString("policyOutputFile", "out.policy");
   }
 
-#if USE_DEBUG_PRINT
-  printf("CFLAGS = %s\n", CFLAGS);
-  printf("ARGS = %s\n", outs.str().c_str());
-  fflush(stdout);
-#endif
+  if (zmdpDebugLevelG >= 1) {
+    printf("CFLAGS = %s\n", CFLAGS);
+    printf("ARGS = %s\n", outs.str().c_str());
+    fflush(stdout);
+  }
 
   p.setValues(config);
   doSolve(config, p);
@@ -290,6 +290,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.17  2006/10/25 02:44:28  trey
+ * updated usage summary, removed obsolete -v option
+ *
  * Revision 1.16  2006/10/25 02:07:30  trey
  * removed old debug statement
  *
