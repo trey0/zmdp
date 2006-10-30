@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2006-10-30 20:00:15 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2006-10-30 20:23:03 $
    
  @file    zmdpConfig.cc
  @brief   No brief
@@ -36,6 +36,7 @@
 #include <sstream>
 
 #include "zmdpConfig.h"
+#include "zmdpCommonDefs.h"
 
 using namespace std;
 
@@ -172,6 +173,13 @@ void ZMDPConfig::setOverWriteOnlyMode(bool _overWriteOnlyMode)
   overWriteOnlyMode = _overWriteOnlyMode;
 }
 
+void ZMDPConfig::writeToStream(std::ostream& out) const
+{
+  FOR_EACH (pr, cmap) {
+    out << pr->first << " " << pr->second << endl;
+  }
+}
+
 };
 
 int zmdpDebugLevelG = 0;
@@ -179,6 +187,9 @@ int zmdpDebugLevelG = 0;
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2006/10/30 20:00:15  trey
+ * USE_DEBUG_PRINT replaced with a run-time config parameter "debugLevel"
+ *
  * Revision 1.1  2006/10/15 21:41:22  trey
  * initial check-in
  *
