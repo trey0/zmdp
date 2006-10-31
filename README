@@ -56,10 +56,11 @@ src/tests        Regression testing suite
 ==========================================================
 REQUIREMENTS
 
-Tested operating systems: Linux:    kernel 2.6.x, Fedora Core 2 and 4
-                          Mac OS X: 10.4.8
+Tested operating systems: Linux and Mac OS X (details below)
 
-Tested compilers:         gcc 3.2.2, 3.2.3, 4.0.1
+Tested compilers:         gcc/g++ 3.2.2 under Linux Fedora Core 2
+                          gcc/g++ 4.0.1 under Linux Fedora Core 4
+                          gcc/g++ 4.0.1 from XCode 2.4 under Mac OS X 10.4.8
 
 Build system tested with:
 * GNU Make 3.80
@@ -366,4 +367,4 @@ zpomdp 0.1.0 (28 Oct 2005)
 * Initial release.
 
 ==========================================================
-$Id: README,v 1.25 2006-10-27 19:41:51 trey Exp $
+$Id: README,v 1.26 2006-10-31 20:33:20 trey Exp $
