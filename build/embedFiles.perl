@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: embedFiles.perl,v 1.6 2006-10-20 04:58:44 trey Exp $
+# $Id: embedFiles.perl,v 1.7 2006-10-31 20:34:07 trey Exp $
 #
 # Copyright (c) 1996-2005, Carnegie Mellon University. All rights reserved.
 #
@@ -64,7 +64,22 @@ sub embedFiles {
     my @cppOptions = @_;
 
     $cppOptions = join(" ", map { "'$_'" } @cppOptions);
-    my $cppCmd = "cpp -x c++ $cppOptions -D__EMBEDDING_NOW__=1 $sourceFile";
+
+    my $ccVersion = `cc --version`;
+    chop $ccVersion;
+    if ($ccVersion =~ /cc \(GCC\) 3/) {
+	# command that works with gcc 3.2.2 under Linux Fedora Core 2
+	$cpp = "cpp -x c++";
+    } elsif ($ccVersion =~ /powerpc-apple-darwin8-gcc-4/) {
+	# command that works with Xcode 2.4 under Mac OS X 10.4.7
+	$cpp = "g++ -E";
+    } else {
+	# default, may or may not work with other platforms
+	$cpp = "cpp -x c++";
+    }
+
+
+    my $cppCmd = "$cpp $cppOptions -D__EMBEDDING_NOW__=1 $sourceFile";
 
     #print "source file = $sourceFile\n";
     #print "output file = $outputFile\n";
@@ -183,6 +198,9 @@ sub main {
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.6  2006/10/20 04:58:44  trey
+# switched pre-processor command again to avoid warnings under linux
+#
 # Revision 1.5  2006/10/17 19:17:57  trey
 # switched pre-processor invocation to use "g++ -E" rather than "cpp" so that e.g. "#include <iostream>" is processed properly
 #
