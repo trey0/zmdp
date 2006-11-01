@@ -236,7 +236,9 @@ REFERENCES
 ========================================================================
 RELEASE NOTES
 
-Changes from 0.6.0 to 0.6.2 (27 Oct 2006)
+Changes from 0.6.0 to 0.6.3 (31 Oct 2006)
+
+* Fixed compilation problem under Mac OS X (0.6.3).
 
 * Several bug fixes and new regression tests, now properly respects
   optional speedup flags for POMDP bounds representations (0.6.2).
@@ -367,4 +369,4 @@ zpomdp 0.1.0 (28 Oct 2005)
 * Initial release.
 
 ==========================================================
-$Id: README,v 1.26 2006-10-31 20:33:20 trey Exp $
+$Id: README,v 1.27 2006-11-01 00:20:58 trey Exp $
