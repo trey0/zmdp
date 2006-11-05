@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.6 2006-05-27 19:01:43 trey Exp $
+# $Id: Makefile,v 1.7 2006-11-05 03:25:25 trey Exp $
 #
 # Copyright (c) 2002-2005, Trey Smith. All rights reserved.
 #
@@ -25,6 +25,9 @@ include $(CHECKOUT_DIR)/src/build/header.mak
 # PLACE MODIFICATIONS BELOW THIS LINE
 
 include $(SRC_DIR)/common/options.mak
+
+maininstall:
+	$(MAKE) $(MFLAGS) -C .. -fMakefile SUBDIRS='pomdpCore main' install
 
 # ADD ANY SUBDIRS THAT NEED TO BE VISITED DURING A BUILD TO THE SUBDIRS LIST
 SUBDIRS := 
@@ -61,6 +64,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.6  2006/05/27 19:01:43  trey
+# added testPomdpRead
+#
 # Revision 1.5  2006/04/28 21:14:33  trey
 # removed QMDP
 #
