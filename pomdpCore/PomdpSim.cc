@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.5 $  $Author: trey $  $Date: 2006-07-10 03:36:26 $
+ $Revision: 1.6 $  $Author: trey $  $Date: 2006-11-05 03:28:17 $
    
  @file    PomdpSim.cc
  @brief   No brief
@@ -162,13 +162,13 @@ void PomdpSim::performAction(int a) {
   // tau = O(:,o) .* Ta_times_b
   emult_column( tau, pomdp->O[a], o, Ta_times_b );
 
-  tau *= (1.0 / norm_1(tau));
+  tau *= (1.0 / sum(tau));
   currentBelief = tau;
 
 #if 0
   currentBelief = eprod( belief_vector(matrix_column<bmatrix>(pomdp->O[a], o)),
 			 belief_vector(prod( currentBelief, pomdp->T[a] )) );
-  currentBelief /= norm_1(currentBelief);
+  currentBelief /= sum(currentBelief);
 #endif
 
   if (simOutFile) {
@@ -184,6 +184,9 @@ void PomdpSim::performAction(int a) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.5  2006/07/10 03:36:26  trey
+ * added a way to read out observations from PomdpSim
+ *
  * Revision 1.4  2006/04/28 17:57:41  trey
  * changed to use apache license
  *
