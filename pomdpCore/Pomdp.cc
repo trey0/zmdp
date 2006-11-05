@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.18 $  $Author: trey $  $Date: 2006-10-30 20:00:15 $
+ $Revision: 1.19 $  $Author: trey $  $Date: 2006-11-05 03:25:47 $
   
  @file    Pomdp.cc
  @brief   No brief
@@ -41,6 +41,8 @@
 #include "sla_cassandra.h"
 #include "MaxPlanesLowerBound.h"
 #include "SawtoothUpperBound.h"
+
+#define POMDP_READ_ERROR_EPS (1e-10)
 
 using namespace std;
 using namespace MatrixUtils;
@@ -144,7 +146,7 @@ belief_vector& Pomdp::getNextBelief(belief_vector& result,
   emult_column( result, O[a], o, tmp );
 
   // renormalize
-  result *= (1.0/norm_1(result));
+  result *= (1.0/sum(result));
 
   return result;
 }
@@ -264,7 +266,7 @@ void Pomdp::readFromFileFast(const std::string& fileName)
   while (!in.eof()) {
     in.getline(buf,sizeof(buf));
     if (in.fail() && !in.eof()) {
-      cerr << "ERROR: readFromFileFast: line too long for buffer"
+      cerr << "ERROR: " << fileName << ": line " << lineNumber << ": line too long for buffer"
 	   << " (max length " << sizeof(buf) << ")" << endl;
       exit(EXIT_FAILURE);
     }
@@ -276,50 +278,50 @@ void Pomdp::readFromFileFast(const std::string& fileName)
     if (inPreamble) {
       if (PM_PREFIX_MATCHES("discount:")) {
 	if (1 != sscanf(buf,"discount: %lf", &discount)) {
-	  cerr << "ERROR: line " << lineNumber
-	       << ": syntax error in discount statement"
+	  cerr << "ERROR: " << fileName << ": line " << lineNumber
+	       << ": syntax error in 'discount' statement"
 	       << endl;
 	  exit(EXIT_FAILURE);
 	}
       } else if (PM_PREFIX_MATCHES("values:")) {
 	if (1 != sscanf(buf,"values: %s", sbuf)) {
-	  cerr << "ERROR: line " << lineNumber
-	       << ": syntax error in values statement"
+	  cerr << "ERROR: " << fileName << ": line " << lineNumber
+	       << ": syntax error in 'values' statement"
 	       << endl;
 	  exit(EXIT_FAILURE);
 	}
 	if (0 != strcmp(sbuf,"reward")) {
-	  cerr << "ERROR: line " << lineNumber
-	       << ": can only handle values of type reward"
+	  cerr << "ERROR: " << fileName << ": line " << lineNumber
+	       << ": expected 'values: reward', other types not supported by fast parser"
 	       << endl;
 	  exit(EXIT_FAILURE);
 	}
       } else if (PM_PREFIX_MATCHES("actions:")) {
 	if (1 != sscanf(buf,"actions: %d", &numActions)) {
-	  cerr << "ERROR: line " << lineNumber
-	       << ": syntax error in actions statement"
+	  cerr << "ERROR: " << fileName << ": line " << lineNumber
+	       << ": syntax error in 'actions' statement"
 	       << endl;
 	  exit(EXIT_FAILURE);
 	}
 	numSizesSet++;
       } else if (PM_PREFIX_MATCHES("observations:")) {
 	if (1 != sscanf(buf,"observations: %d", &numObservations)) {
-	  cerr << "ERROR: line " << lineNumber
-	       << ": syntax error in observations statement"
+	  cerr << "ERROR: " << fileName << ": line " << lineNumber
+	       << ": syntax error in 'observations' statement"
 	       << endl;
 	  exit(EXIT_FAILURE);
 	}
 	numSizesSet++;
       } else if (PM_PREFIX_MATCHES("states:")) {
 	if (1 != sscanf(buf,"states: %d", &numStates)) {
-	  cerr << "ERROR: line " << lineNumber
-	       << ": syntax error in states statement"
+	  cerr << "ERROR: " << fileName << ": line " << lineNumber
+	       << ": syntax error in 'states' statement"
 	       << endl;
 	  exit(EXIT_FAILURE);
 	}
 	numSizesSet++;
       } else {
-	cerr << "ERROR: line " << lineNumber
+	cerr << "ERROR: " << fileName << ": line " << lineNumber
 	     << ": got unexpected statement type while parsing preamble"
 	     << endl;
 	exit(EXIT_FAILURE);
@@ -350,7 +352,7 @@ void Pomdp::readFromFileFast(const std::string& fileName)
 	int s, a;
 	double reward;
 	if (3 != sscanf(buf,"R: %d : %d : * : * %lf", &a, &s, &reward)) {
-	  cerr << "ERROR: line " << lineNumber
+	  cerr << "ERROR: " << fileName << ": line " << lineNumber
 	       << ": syntax error in R statement"
 	       << endl;
 	  exit(EXIT_FAILURE);
@@ -360,7 +362,7 @@ void Pomdp::readFromFileFast(const std::string& fileName)
 	int s, a, sp;
 	double prob;
 	if (4 != sscanf(buf,"T: %d : %d : %d %lf", &a, &s, &sp, &prob)) {
-	  cerr << "ERROR: line " << lineNumber
+	  cerr << "ERROR: " << fileName << ": line " << lineNumber
 	       << ": syntax error in T statement"
 	       << endl;
 	  exit(EXIT_FAILURE);
@@ -370,14 +372,14 @@ void Pomdp::readFromFileFast(const std::string& fileName)
 	int s, a, o;
 	double prob;
 	if (4 != sscanf(buf,"O: %d : %d : %d %lf", &a, &s, &o, &prob)) {
-	  cerr << "ERROR: line " << lineNumber
+	  cerr << "ERROR: " << fileName << ": line " << lineNumber
 	       << ": syntax error in O statement"
 	       << endl;
 	  exit(EXIT_FAILURE);
 	}
 	kmatrix_set_entry( Ox[a], s, o, prob );
       } else {
-	cerr << "ERROR: line " << lineNumber
+	cerr << "ERROR: " << fileName << ": line " << lineNumber
 	     << ": got unexpected statement type while parsing body"
 	     << endl;
 	exit(EXIT_FAILURE);
@@ -388,6 +390,9 @@ void Pomdp::readFromFileFast(const std::string& fileName)
   }
 
   in.close();
+
+  cvector checkTmp;
+  cmatrix checkObs;
 
   // post-process
   copy( initialBelief, initialBeliefx );
@@ -400,7 +405,43 @@ void Pomdp::readFromFileFast(const std::string& fileName)
     kmatrix_transpose_in_place( Tx[a] );
     copy( Ttr[a], Tx[a] );
     copy( O[a], Ox[a] );
+
+#if 1
+    // extra error checking
+    kmatrix_transpose_in_place(Ox[a]);
+    copy(checkObs, Ox[a]);
+    FOR (s, numStates) {
+      copy_from_column(checkTmp, Ttr[a], s);
+      if (fabs(sum(checkTmp) - 1.0) > POMDP_READ_ERROR_EPS) {
+	fprintf(stderr,
+		"ERROR: %s: outgoing transition probabilities do not sum to 1 for:\n"
+		"  state %d, action %d, transition sum = 1 + %g\n",
+		fileName.c_str(), (int)s, (int)a, sum(checkTmp) - 1.0);
+	exit(EXIT_FAILURE);
+      }
+
+      copy_from_column(checkTmp, checkObs, s);
+      if (fabs(sum(checkTmp) - 1.0) > POMDP_READ_ERROR_EPS) {
+	fprintf(stderr,
+		"ERROR: %s: observation probabilities do not sum to 1 for:\n"
+		"  state %d, action %d, observation sum = 1 + %g\n",
+		fileName.c_str(), (int)s, (int)a, sum(checkTmp) - 1.0);
+	exit(EXIT_FAILURE);
+      }
+    }
+#endif
   }
+
+#if 1
+  // extra error checking
+  if (fabs(sum(initialBelief) - 1.0) > POMDP_READ_ERROR_EPS) {
+    fprintf(stderr,
+	    "ERROR: %s: initial belief entries do not sum to 1:\n"
+	    "  entry sum = 1 + %g\n",
+	    fileName.c_str(), sum(initialBelief) - 1.0);
+    exit(EXIT_FAILURE);
+  }
+#endif
 
   if (zmdpDebugLevelG >= 1) {
     gettimeofday(&endTime,0);
@@ -433,6 +474,9 @@ void Pomdp::debugDensity(void) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.18  2006/10/30 20:00:15  trey
+ * USE_DEBUG_PRINT replaced with a run-time config parameter "debugLevel"
+ *
  * Revision 1.17  2006/10/24 02:13:43  trey
  * changes to match new Solver interface
  *
