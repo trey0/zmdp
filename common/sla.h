@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.24 $  $Author: trey $  $Date: 2006-10-19 19:32:52 $
+ $Revision: 1.25 $  $Author: trey $  $Date: 2006-11-05 03:25:02 $
    
  @file    sla.h
  @brief   No brief
@@ -229,6 +229,8 @@ namespace sla {
   double norm_1(const cvector& x);
   double norm_inf(const cvector& x);
   double norm_inf(const dvector& x);
+  double sum(const cvector& x);
+  double sum(const dvector& x);
 
   // result = A * x
   void mult(dvector& result, const cmatrix& A, const cvector& x);
@@ -743,6 +745,24 @@ namespace sla {
       if (val > max) max = val;
     }
     return max;
+  }
+
+  inline double sum(const cvector& x)
+  {
+    double sum = 0.0;
+    FOR_EACH (xi, x.data) {
+      sum += xi->value;
+    }
+    return sum;
+  }
+
+  inline double sum(const dvector& x)
+  {
+    double sum = 0.0;
+    FOR_EACH (xi, x.data) {
+      sum += *xi;
+    }
+    return sum;
   }
 
   // result = A * x
@@ -1282,6 +1302,9 @@ typedef sla::dvector obs_prob_vector;
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.24  2006/10/19 19:32:52  trey
+ * added cvector clear() method
+ *
  * Revision 1.23  2006/07/26 20:22:58  trey
  * added important comment about performance
  *
