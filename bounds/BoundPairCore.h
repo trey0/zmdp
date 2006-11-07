@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2006-10-24 19:11:38 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2006-11-07 20:06:47 $
    
  @file    BoundPairCore.h
  @brief   No brief
@@ -64,6 +64,7 @@ struct BoundPairCore {
   virtual void update(MDPNode& cn, int* maxUBActionP) = 0;
   virtual int chooseAction(const state_vector& s) const = 0;
   virtual ValueInterval getValueAt(const state_vector& s) const = 0;
+  virtual ValueInterval getQValue(const state_vector& s, int a) const = 0;
 
   virtual void writePolicy(const std::string& outFileName) { assert(0); }
 
@@ -82,6 +83,9 @@ struct BoundPairCore {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2006/10/24 19:11:38  trey
+ * removed getSupportsPolicyOutput(), replaced by logic in solverUtils
+ *
  * Revision 1.1  2006/10/24 02:05:48  trey
  * initial check-in
  *

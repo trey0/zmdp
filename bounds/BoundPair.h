@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2006-10-24 19:11:01 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2006-11-07 20:06:37 $
    
  @file    BoundPair.h
  @brief   No brief
@@ -63,6 +63,7 @@ struct BoundPair : public BoundPairCore {
   void update(MDPNode& cn, int* maxUBActionP);
   int chooseAction(const state_vector& s) const;
   ValueInterval getValueAt(const state_vector& s) const;
+  ValueInterval getQValue(const state_vector& s, int a) const;
   void writePolicy(const std::string& outFileName);
 };
 
@@ -73,6 +74,9 @@ struct BoundPair : public BoundPairCore {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2006/10/24 19:11:01  trey
+ * added writePolicy() from ConvexBounds
+ *
  * Revision 1.1  2006/10/24 02:05:48  trey
  * initial check-in
  *

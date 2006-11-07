@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2006-10-26 21:26:19 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2006-11-07 20:06:38 $
    
  @file    BoundPair.cc
  @brief   No brief
@@ -293,6 +293,35 @@ ValueInterval BoundPair::getValueAt(const state_vector& s) const
 		       maintainUpperBound ? upperBound->getValue(s,cn) : -1);
 }
 
+ValueInterval BoundPair::getQValue(const state_vector& s, int a) const
+{
+  state_vector sp;
+  MDPNode* spn;
+  double lbVal, ubVal;
+  outcome_prob_vector opv;
+
+  lbVal = 0;
+  ubVal = 0;
+  problem->getOutcomeProbVector(opv, s, a);
+  FOR (o, opv.size()) {
+    if (opv(o) > OBS_IS_ZERO_EPS) {
+      problem->getNextState(sp, s, a, o);
+      spn = getNodeOrNull(sp);
+      if (maintainLowerBound) {
+	lbVal += opv(o) * lowerBound->getValue(sp, spn);
+      }
+      if (maintainUpperBound) {
+	ubVal += opv(o) * upperBound->getValue(sp, spn);
+      }
+    }
+  }
+  lbVal = problem->getReward(s,a) + problem->getDiscount() * lbVal;
+  ubVal = problem->getReward(s,a) + problem->getDiscount() * ubVal;
+
+  return ValueInterval(maintainLowerBound ? lbVal : -1,
+		       maintainUpperBound ? ubVal : -1);
+}
+
 void BoundPair::writePolicy(const std::string& outFileName)
 {
   MaxPlanesLowerBound* mlb = (MaxPlanesLowerBound*) lowerBound;
@@ -305,6 +334,9 @@ void BoundPair::writePolicy(const std::string& outFileName)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2006/10/26 21:26:19  trey
+ * fixed problem of crashing when search strategies do not demand maintainLowerBound=1 or maintainUpperBound=1
+ *
  * Revision 1.2  2006/10/24 19:11:01  trey
  * added writePolicy() from ConvexBounds
  *
