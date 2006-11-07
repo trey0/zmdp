@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.18 $  $Author: trey $  $Date: 2006-10-30 20:26:56 $
+ $Revision: 1.19 $  $Author: trey $  $Date: 2006-11-07 20:08:29 $
 
  @file    solverUtils.cc
  @brief   No brief
@@ -60,8 +60,9 @@ static EnumEntry searchStrategyTableG[] = {
 
 static EnumEntry modelTypeTableG[] = {
   {"-",         -1},
-  {"racetrack", T_RACETRACK},
   {"pomdp",     T_POMDP},
+  {"racetrack", T_RACETRACK},
+  {"custom",    T_CUSTOM},
   {NULL, -1}
 };
 
@@ -195,16 +196,21 @@ void SolverParams::inferMissingValues(void)
 {
   // fill in default and inferred values
   if (-1 == modelType) {
-    if (endsWith(probName, ".racetrack")) {
-      if (zmdpDebugLevelG >= 1) {
-	printf("[params] inferred modelType='racetrack' from model filename extension\n");
-      }
-      modelType = T_RACETRACK;
-    } else if (endsWith(probName, ".pomdp")) {
+    if (endsWith(probName, ".pomdp")) {
       if (zmdpDebugLevelG >= 1) {
 	printf("[params] inferred modelType='pomdp' from model filename extension\n");
       }
       modelType = T_POMDP;
+    } else if (endsWith(probName, ".racetrack")) {
+      if (zmdpDebugLevelG >= 1) {
+	printf("[params] inferred modelType='racetrack' from model filename extension\n");
+      }
+      modelType = T_RACETRACK;
+    } else if (0 == strcmp(probName, "custom")) {
+      if (zmdpDebugLevelG >= 1) {
+	printf("[params] inferred modelType='custom' from model filename\n");
+      }
+      modelType = T_CUSTOM;
     } else {
       fprintf(stderr, "ERROR: couldn't infer problem type from model filename %s (use -t option, -h for help)\n",
 	      probName);
@@ -220,7 +226,7 @@ void SolverParams::inferMissingValues(void)
     } else {
       lowerBoundRepresentation = V_POINT;
       if (zmdpDebugLevelG >= 1) {
-	printf("[params] selected lowerBoundRepresentation='point' because modelType='mdp'\n");
+	printf("[params] selected lowerBoundRepresentation='point' because model is an MDP\n");
       }
     }
   }
@@ -233,7 +239,7 @@ void SolverParams::inferMissingValues(void)
     } else {
       upperBoundRepresentation = V_POINT;
       if (zmdpDebugLevelG >= 1) {
-	printf("[params] selected upperBoundRepresentation='point' because modelType='mdp'\n");
+	printf("[params] selected upperBoundRepresentation='point' because model is an MDP\n");
       }
     }
   }
@@ -267,11 +273,11 @@ void SolverParams::inferMissingValues(void)
   }
   if (NULL != policyOutputFile) {
     if (lowerBoundRepresentation != V_MAXPLANES) {
-      cerr << "ERROR: config parameters imply an output policy should be written, but\n"
-	   << "  policy writing is currently only possible when\n"
+      cerr << "WARNING: normally an output policy would be written, but\n"
+	   << "  policy writing is currently only supported when\n"
 	   << "  modelType='pomdp' and lowerBoundRepresentation='maxPlanes' (-h for help)"
 	   << endl;
-      exit(EXIT_FAILURE);
+      policyOutputFile = NULL;
     }
   }
 }
@@ -281,13 +287,17 @@ void constructSolverObjects(SolverObjects& obj,
 			    const ZMDPConfig& config)
 {
   switch (p.modelType) {
+  case T_POMDP:
+    obj.problem = new Pomdp(p.probName, p.useFastPomdpParser, p.maxHorizon);
+    obj.sim = new PomdpSim((Pomdp*) obj.problem);
+    break;
   case T_RACETRACK:
     obj.problem = new RaceTrack(p.probName);
     obj.sim = new MDPSim(obj.problem);
     break;
-  case T_POMDP:
-    obj.problem = new Pomdp(p.probName, p.useFastPomdpParser, p.maxHorizon);
-    obj.sim = new PomdpSim((Pomdp*) obj.problem);
+  case T_CUSTOM:
+    obj.problem = new CustomMDP(config);
+    obj.sim = new MDPSim(obj.problem);
     break;
   default:
     assert(0); // never reach this point
@@ -460,6 +470,9 @@ void constructSolverObjects(SolverObjects& obj,
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.18  2006/10/30 20:26:56  trey
+ * fixed annoying spelling error
+ *
  * Revision 1.17  2006/10/30 20:22:44  trey
  * added lots of debug output when debugLevel=1
  *

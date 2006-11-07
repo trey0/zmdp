@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.12 $  $Author: trey $  $Date: 2006-10-24 19:08:04 $
+ $Revision: 1.13 $  $Author: trey $  $Date: 2006-11-07 20:08:28 $
    
  @file    solverUtils.h
  @brief   No brief
@@ -36,10 +36,11 @@
 #include "ScriptedUpdater.h"
 
 // problem types
-#include "RaceTrack.h"
 #include "Pomdp.h"
-#include "MDPSim.h"
+#include "RaceTrack.h"
+#include "CustomMDP.h"
 #include "PomdpSim.h"
+#include "MDPSim.h"
 
 // value function representations
 #include "PointLowerBound.h"
@@ -68,8 +69,9 @@ enum StrategiesEnum {
 };
 
 enum ProbTypesEnum {
+  T_POMDP,
   T_RACETRACK,
-  T_POMDP
+  T_CUSTOM
 };
 
 enum ValueReprsEnum {
@@ -127,6 +129,9 @@ void constructSolverObjects(SolverObjects& obj,
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.12  2006/10/24 19:08:04  trey
+ * bug fixes related to recent changes in available parameters
+ *
  * Revision 1.11  2006/10/24 02:10:01  trey
  * major changes to permit more flexibility in matching different lower and upper bounds
  *
