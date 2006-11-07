@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.19 $  $Author: trey $  $Date: 2006-10-30 20:22:19 $
+ $Revision: 1.20 $  $Author: trey $  $Date: 2006-11-07 20:09:23 $
 
  @file    zmdpSolve.cc
  @brief   No brief
@@ -118,11 +118,15 @@ void doSolve(const ZMDPConfig& config, SolverParams& p)
 
   // write out a policy
   if (NULL == p.policyOutputFile) {
-    printf("%05d (policy output was not requested)\n", (int) run.elapsedTime());
+    printf("%05d (not outputting policy)\n", (int) run.elapsedTime());
   } else {
     printf("%05d writing policy to '%s'\n", (int) run.elapsedTime(), p.policyOutputFile);
     so.bounds->writePolicy(p.policyOutputFile);
   }
+
+  // finish up logging (if any, according to params specified in the config file)
+  printf("%05d finishing logging (e.g., writing qValuesOutputFile if it was requested)\n");
+  so.solver->finishLogging();
 
   printf("%05d done\n", (int) run.elapsedTime());
 }
@@ -284,6 +288,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.19  2006/10/30 20:22:19  trey
+ * removed redundant setting of policyOutputFile; this is now done in solverUtils.cc
+ *
  * Revision 1.18  2006/10/30 20:00:15  trey
  * USE_DEBUG_PRINT replaced with a run-time config parameter "debugLevel"
  *
