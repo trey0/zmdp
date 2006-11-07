@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.22 $  $Author: trey $  $Date: 2006-10-30 20:00:15 $
+ $Revision: 1.23 $  $Author: trey $  $Date: 2006-11-07 21:08:39 $
    
  @file    MaxPlanesLowerBound.cc
  @brief   No brief
@@ -509,7 +509,7 @@ void MaxPlanesLowerBound::prunePlanes(int numBackups)
     cout << "... pruned # planes from " << oldNum << " down to " << planes.size() << endl;
     if (useMaxPlanesExtraPruning) {
       printf("[lower bound] refCount was used for %d of %d deletions\n",
-	     numRefCountDeletions, (oldNum - planes.size()));
+	     numRefCountDeletions, (int) (oldNum - planes.size()));
     }
   }
   lastPruneNumPlanes = planes.size();
@@ -710,6 +710,9 @@ void MaxPlanesLowerBound::readFromFile(const std::string& inFileName)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.22  2006/10/30 20:00:15  trey
+ * USE_DEBUG_PRINT replaced with a run-time config parameter "debugLevel"
+ *
  * Revision 1.21  2006/10/25 19:13:01  trey
  * migrated to more run-time config parameters
  *
