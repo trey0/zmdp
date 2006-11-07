@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.5 $  $Author: trey $  $Date: 2006-10-24 02:37:05 $
+ $Revision: 1.6 $  $Author: trey $  $Date: 2006-11-07 20:08:06 $
    
  @file    StateLog.cc
  @brief   No brief
@@ -91,7 +91,7 @@ void StateIndex::writeToFile(const std::string& outFile) const
       << "# files.  Each state is given a unique id number in the line of the form\n"
       << "# 'state <id>'.  (Note that the id numbers are guaranteed to appear in order\n"
       << "# starting with 0.)  Subsequent lines after each 'state' line specify the\n"
-      << "# state as a compressed vector.  Each line has the form '<index> <value>'\n"
+      << "# state as a sparse vector.  Each line has the form '<index> <value>'\n"
       << "# specifying one entry of the vector, and entries that do not appear have\n"
       << "# value 0.\n";
 
@@ -103,7 +103,9 @@ void StateIndex::writeToFile(const std::string& outFile) const
     }
   }
 
-  printf("wrote index of %d states to %s\n", (int)entries.size(), outFile.c_str());
+  if (zmdpDebugLevelG >= 1) {
+    printf("wrote index of %d states to %s\n", (int)entries.size(), outFile.c_str());
+  }
 }
 
 void StateIndex::readFromFile(const std::string& inFile)
@@ -156,7 +158,9 @@ void StateIndex::readFromFile(const std::string& inFile)
     accum.clear();
   }
 
-  printf("read index of %d states from %s\n", (int)entries.size(), inFile.c_str());
+  if (zmdpDebugLevelG >= 1) {
+    printf("read index of %d states from %s\n", (int)entries.size(), inFile.c_str());
+  }
 }
 
 void StateIndex::writeBoundValuesToFile(const std::string& outFile,
@@ -182,7 +186,43 @@ void StateIndex::writeBoundValuesToFile(const std::string& outFile,
 	<< setprecision(20) << intv.u << endl;
   }
 
-  printf("wrote bound values for %d states to %s\n", (int)entries.size(), outFile.c_str());
+  if (zmdpDebugLevelG >= 1) {
+    printf("wrote bound values for %d states to %s\n", (int)entries.size(), outFile.c_str());
+  }
+}
+
+void StateIndex::writeQValuesToFile(const std::string& outFile,
+				    const BoundPairCore& bounds,
+				    int numActions) const
+{
+  std::ofstream out(outFile.c_str());
+  if (!out) {
+    fprintf(stderr, "ERROR: couldn't open %s for writing: %s\n",
+	    outFile.c_str(), strerror(errno));
+    exit(EXIT_FAILURE);
+  }
+
+  out <<
+    "# This file is a list of Q values for states.  Each line is in the form\n"
+    "# '<id> <action> <lower> <upper>', where <id> is the id for a state s in the\n"
+    "# state index file, <action> is the number of an action a, <lower> is the lower bound\n"
+    "# on Q(s,a) (or -1 if the lower bound is not being maintained), and <upper> is\n"
+    "# the upper bound on Q(s,a) (or -1 if the upper bound is not being maintained).\n";
+
+  FOR (i, entries.size()) {
+    const state_vector& s = *entries[i];
+    FOR (a, numActions) {
+      ValueInterval intv = bounds.getQValue(s, a);
+      out << i << " "
+	  << a << " "
+	  << setprecision(20) << intv.l << " "
+	  << setprecision(20) << intv.u << endl;
+    }
+  }
+
+  if (zmdpDebugLevelG >= 1) {
+    printf("wrote bound values for %d states to %s\n", (int)entries.size(), outFile.c_str());
+  }
 }
 
 StateLog::StateLog(StateIndex* _index) :
@@ -212,7 +252,9 @@ void StateLog::writeToFile(const std::string& outFile) const
     out << (*e) << endl;
   }
 
-  printf("wrote log of %d backups to %s\n", (int)entries.size(), outFile.c_str());
+  if (zmdpDebugLevelG >= 1) {
+    printf("wrote log of %d backups to %s\n", (int)entries.size(), outFile.c_str());
+  }
 }
 
 void StateLog::readFromFile(const std::string& inFile)
@@ -247,7 +289,9 @@ void StateLog::readFromFile(const std::string& inFile)
     entries.push_back(id);
   }
 
-  printf("read log of %d backups from %s\n", (int)entries.size(), inFile.c_str());
+  if (zmdpDebugLevelG >= 1) {
+    printf("read log of %d backups from %s\n", (int)entries.size(), inFile.c_str());
+  }
 }
 
 int StateLog::getLogEntry(int i) const
@@ -260,6 +304,9 @@ int StateLog::getLogEntry(int i) const
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.5  2006/10/24 02:37:05  trey
+ * updated for modified bounds interfaces
+ *
  * Revision 1.4  2006/10/20 20:03:44  trey
  * fixed bug with reading last state in index file, added writeBoundValuesToFile()
  *

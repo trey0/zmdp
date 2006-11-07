@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.5 $  $Author: trey $  $Date: 2006-10-24 19:12:53 $
+ $Revision: 1.6 $  $Author: trey $  $Date: 2006-11-07 20:08:05 $
    
  @file    StateLog.h
  @brief   No brief
@@ -48,6 +48,9 @@ struct StateIndex {
 
   void writeBoundValuesToFile(const std::string& outFile,
 			      const BoundPairCore& bounds) const;
+  void writeQValuesToFile(const std::string& outFile,
+			  const BoundPairCore& bounds,
+			  int numActions) const;
 };
 
 struct StateLog {
@@ -70,6 +73,9 @@ struct StateLog {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.5  2006/10/24 19:12:53  trey
+ * replaced IncrementalBounds with BoundPairCore
+ *
  * Revision 1.4  2006/10/24 02:37:05  trey
  * updated for modified bounds interfaces
  *
