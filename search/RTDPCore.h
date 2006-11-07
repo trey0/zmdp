@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.18 $  $Author: trey $  $Date: 2006-10-27 18:24:29 $
+ $Revision: 1.19 $  $Author: trey $  $Date: 2006-11-07 20:07:12 $
    
  @file    RTDPCore.h
  @brief   Common code used by multiple RTDP variants found in this
@@ -89,6 +89,7 @@ struct RTDPCore : public Solver {
   std::string stateIndexOutputFile;
   std::string backupsOutputFile;
   std::string boundValuesOutputFile;
+  std::string qValuesOutputFile;
   std::vector<const MDPNode*> backedUpNodes;
 
   RTDPCore(void);
@@ -121,6 +122,9 @@ struct RTDPCore : public Solver {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.18  2006/10/27 18:24:29  trey
+ * replaced logBackups() virtual function with finishLogging(), which provides a more general hook where other search strategies can do their cleanup actions
+ *
  * Revision 1.17  2006/10/24 02:37:05  trey
  * updated for modified bounds interfaces
  *

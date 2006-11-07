@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.22 $  $Author: trey $  $Date: 2006-10-27 18:24:29 $
+ $Revision: 1.23 $  $Author: trey $  $Date: 2006-11-07 20:07:12 $
    
  @file    RTDPCore.cc
  @brief   Common code used by multiple RTDP variants found in this
@@ -98,6 +98,7 @@ void RTDPCore::planInit(const MDP* _problem,
   stateIndexOutputFile = config->getString("stateIndexOutputFile");
   backupsOutputFile = config->getString("backupsOutputFile");
   boundValuesOutputFile = config->getString("boundValuesOutputFile");
+  qValuesOutputFile = config->getString("qValuesOutputFile");
 
   if (useTimeWithoutHeuristic) {
     init();
@@ -168,17 +169,30 @@ void RTDPCore::trackBackup(const MDPNode& backedUpNode)
 
 void RTDPCore::maybeLogBackups(void)
 {
-  if (!useLogBackups) return;
+  if (!useLogBackups && qValuesOutputFile == "none") return;
 
   StateIndex index(problem->getNumStateDimensions());
   StateLog log(&index);
   FOR_EACH (node, backedUpNodes) {
     log.addState((*node)->s);
   }
+  if (qValuesOutputFile != "none") {
+    // make sure the index contains all *queried* states, not just all
+    // backed up states.  (but the log will still have only backed up
+    // states.)
+    FOR_EACH (pr, *(bounds->lookup)) {
+      index.getStateId(pr->second->s);
+    }
+  }
 
   index.writeToFile(stateIndexOutputFile);
-  log.writeToFile(backupsOutputFile);
-  index.writeBoundValuesToFile(boundValuesOutputFile, *bounds);
+  if (useLogBackups) {
+    log.writeToFile(backupsOutputFile);
+    index.writeBoundValuesToFile(boundValuesOutputFile, *bounds);
+  }
+  if (qValuesOutputFile != "none") {
+    index.writeQValuesToFile(qValuesOutputFile, *bounds, problem->getNumActions());
+  }
 }
 
 void RTDPCore::finishLogging(void)
@@ -191,6 +205,9 @@ void RTDPCore::finishLogging(void)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.22  2006/10/27 18:24:29  trey
+ * replaced logBackups() virtual function with finishLogging(), which provides a more general hook where other search strategies can do their cleanup actions
+ *
  * Revision 1.21  2006/10/24 02:37:05  trey
  * updated for modified bounds interfaces
  *
