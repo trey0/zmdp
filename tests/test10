@@ -1,0 +1,9 @@
+#!/usr/bin/perl
+
+$TEST_DESCRIPTION = "solve 'custom' MDP";
+require "testLibrary.perl";
+&testZmdpBenchmark(cmd => "$zmdpBenchmark custom",
+		   expectedLB => -4.4444,
+		   expectedUB => -4.4444,
+		   testTolerance => 0.01,
+		   outFiles => ["bounds.plot", "inc.plot", "sim.plot"]);
