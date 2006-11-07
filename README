@@ -236,7 +236,13 @@ REFERENCES
 ========================================================================
 RELEASE NOTES
 
-Changes from 0.6.0 to 0.6.3 (31 Oct 2006)
+Changes from 0.6.0 to 0.6.4 (31 Oct 2006)
+
+* Added a simple template for implementing your own MDP model, see
+  src/mdps/CustomMDP.{h,cc} (0.6.4).
+
+* Added ability to request a log of Q values for all queried nodes
+  at the end of a run, using the 'qValuesOutputFile' parameter (0.6.4).
 
 * Fixed compilation problem under Mac OS X (0.6.3).
 
@@ -369,4 +375,4 @@ zpomdp 0.1.0 (28 Oct 2005)
 * Initial release.
 
 ==========================================================
-$Id: README,v 1.27 2006-11-01 00:20:58 trey Exp $
+$Id: README,v 1.28 2006-11-07 20:17:23 trey Exp $
