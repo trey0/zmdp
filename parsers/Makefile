@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.9 2006-05-29 05:03:51 trey Exp $
+# $Id: Makefile,v 1.10 2006-11-08 16:42:06 trey Exp $
 #
 # Copyright (c) 2002-2005, Trey Smith. All rights reserved.
 #
@@ -30,14 +30,19 @@ include $(SRC_DIR)/common/options.mak
 SUBDIRS := 
 
 INSTALLHEADERS_HEADERS := \
-	pomdpCassandraWrapper.h \
-	sparse-matrix.h
+	sparse-matrix.h \
+	CassandraModel.h \
+	CassandraParser.h \
+	FastParser.h
 include $(BUILD_DIR)/installheaders.mak
 
 BUILDLIB_TARGET := libzmdpPomdpParser.a
 BUILDLIB_SRCS := pomdp_spec.tab.cc pomdp_spec.yy.cc \
   imm-reward.c decision-tree.c parse_err.c parse_hash.c \
-  sparse-matrix.c mdp.c pomdpCassandraWrapper.cc
+  sparse-matrix.c mdp.c \
+  CassandraModel.cc \
+  CassandraParser.cc \
+  FastParser.cc
 include $(BUILD_DIR)/buildlib.mak
 
 # use 'gmake TEST=1 install' to build the following stuff
@@ -58,6 +63,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.9  2006/05/29 05:03:51  trey
+# added decision-tree.c and testDecisionTree.c; removed testSpec.cc
+#
 # Revision 1.8  2006/05/27 19:04:32  trey
 # now export sparse-matrix because conversion from Cassandra matrix format to sla is performed by code in src/pomdpCore
 #
