@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-10-24 02:06:16 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-11-08 16:32:28 $
    
  @file    PointUpperBound.h
  @brief   No brief
@@ -34,7 +34,7 @@
 #include "zmdpCommonDefs.h"
 #include "zmdpCommonTypes.h"
 #include "zmdpConfig.h"
-#include "MDP.h"
+#include "MDPModel.h"
 #include "IncrementalUpperBound.h"
 #include "BoundPairCore.h"
 
@@ -70,5 +70,8 @@ struct PointUpperBound : public IncrementalUpperBound {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/10/24 02:06:16  trey
+ * initial check-in
+ *
  *
  ***************************************************************************/

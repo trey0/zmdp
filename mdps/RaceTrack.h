@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.9 $  $Author: trey $  $Date: 2006-10-24 02:11:53 $
+ $Revision: 1.10 $  $Author: trey $  $Date: 2006-11-08 16:37:33 $
    
  @file    RaceTrack.h
  @brief   No brief
@@ -27,7 +27,7 @@
 #include <string>
 #include <vector>
 
-#include "MDP.h"
+#include "MDPModel.h"
 #include "AbstractBound.h"
 
 namespace zmdp {
@@ -80,6 +80,9 @@ public:
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.9  2006/10/24 02:11:53  trey
+ * interface changes for better consistency with the rest of the system
+ *
  * Revision 1.8  2006/10/18 18:06:06  trey
  * now propagating config data structure to lower levels so config fields can be used to control more parts of the system
  *

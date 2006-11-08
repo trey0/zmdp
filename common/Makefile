@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.27 2006-10-15 23:44:35 trey Exp $
+# $Id: Makefile,v 1.28 2006-11-08 16:33:14 trey Exp $
 #
 # Copyright (c) 2002-2005, Trey Smith. All rights reserved.
 #
@@ -40,7 +40,7 @@ INSTALLHEADERS_HEADERS := \
 	zmdpCommonTypes.h \
 	slaMatrixUtils.h \
 	MatrixUtils.h \
-	MDP.h \
+	MDPModel.h \
 	AbstractSim.h \
 	MDPSim.h \
 	Solver.h \
@@ -72,6 +72,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.27  2006/10/15 23:44:35  trey
+# now install zmdpConfig.{h,cc} and embedFiles.h
+#
 # Revision 1.26  2006/04/28 21:11:15  trey
 # removed PQueue
 #

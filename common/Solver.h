@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.15 $  $Author: trey $  $Date: 2006-10-27 18:24:29 $
+ $Revision: 1.16 $  $Author: trey $  $Date: 2006-11-08 16:33:14 $
    
  @file    Solver.h
  @brief   No brief
@@ -23,7 +23,7 @@
 #ifndef INCSolver_h
 #define INCSolver_h
 
-#include "MDP.h"
+#include "MDPModel.h"
 #include "zmdpConfig.h"
 
 namespace zmdp {
@@ -63,6 +63,9 @@ public:
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.15  2006/10/27 18:24:29  trey
+ * replaced logBackups() virtual function with finishLogging(), which provides a more general hook where other search strategies can do their cleanup actions
+ *
  * Revision 1.14  2006/10/24 02:08:49  trey
  * changed some functions from pass-by-ref to pass-by-pointer to better match the rest of the system
  *

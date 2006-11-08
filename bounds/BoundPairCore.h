@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2006-11-07 20:06:47 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2006-11-08 16:32:07 $
    
  @file    BoundPairCore.h
  @brief   No brief
@@ -28,7 +28,7 @@
 #include <vector>
 
 #include "MDPCache.h"
-#include "MDP.h"
+#include "MDPModel.h"
 
 #define BP_QVAL_UNDEFINED (-99e+20)
 
@@ -83,6 +83,9 @@ struct BoundPairCore {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2006/11/07 20:06:47  trey
+ * added getQValue() function
+ *
  * Revision 1.2  2006/10/24 19:11:38  trey
  * removed getSupportsPolicyOutput(), replaced by logic in solverUtils
  *

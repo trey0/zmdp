@@ -1,7 +1,7 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.9 $  $Author: trey $  $Date: 2006-10-24 02:08:40 $
+ $Revision: 1.1 $  $Author: trey $  $Date: 2006-11-08 16:33:45 $
    
- @file    MDP.h
+ @file    MDPModel.h
  @brief   No brief
 
  Copyright (c) 2005-2006, Trey Smith. All rights reserved.
@@ -20,8 +20,8 @@
 
  ***************************************************************************/
 
-#ifndef INCMDP_h
-#define INCMDP_h
+#ifndef INCMDPModel_h
+#define INCMDPModel_h
 
 #include <iostream>
 #include <string>
@@ -89,6 +89,9 @@ struct MDP {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.9  2006/10/24 02:08:40  trey
+ * changed some functions from pass-by-ref to pass-by-pointer to better match the rest of the system
+ *
  * Revision 1.8  2006/10/18 18:05:20  trey
  * now propagating config data structure to lower levels so config fields can be used to control more parts of the system
  *

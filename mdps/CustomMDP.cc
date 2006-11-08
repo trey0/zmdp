@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-11-07 20:09:42 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-11-08 16:36:48 $
   
  @file    CustomMDP.cc
  @brief   No brief
@@ -178,6 +178,9 @@ outcome_prob_vector& CustomMDP::getOutcomeProbVector(outcome_prob_vector& result
     }
   }
 
+  // optional sanity check -- probabilities should sum to 1.0
+  assert(fabs(sum(result) - 1.0) < 1e-10);
+
   return result;
 }
 
@@ -317,5 +320,8 @@ AbstractBound* CustomMDP::newUpperBound(const ZMDPConfig* _config) const
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/11/07 20:09:42  trey
+ * initial check-in
+ *
  *
  ***************************************************************************/

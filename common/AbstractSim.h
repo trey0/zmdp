@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2006-04-28 17:57:41 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2006-11-08 16:33:14 $
    
  @file    AbstractSim.h
  @brief   No brief
@@ -23,7 +23,7 @@
 #ifndef INCAbstractSim_h
 #define INCAbstractSim_h
 
-#include "MDP.h"
+#include "MDPModel.h"
 
 namespace zmdp {
 
@@ -48,6 +48,9 @@ public:
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2006/04/28 17:57:41  trey
+ * changed to use apache license
+ *
  * Revision 1.2  2006/02/01 01:09:37  trey
  * renamed pomdp namespace -> zmdp
  *

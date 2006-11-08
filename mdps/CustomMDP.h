@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-11-07 20:09:42 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-11-08 16:36:48 $
    
  @file    CustomMDP.h
  @brief   No brief
@@ -28,7 +28,7 @@
 #include <vector>
 
 #include "zmdpConfig.h"
-#include "MDP.h"
+#include "MDPModel.h"
 #include "AbstractBound.h"
 
 namespace zmdp {
@@ -65,6 +65,9 @@ struct CustomMDP : public MDP {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/11/07 20:09:42  trey
+ * initial check-in
+ *
  *
  ***************************************************************************/
 

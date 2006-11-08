@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.6 $  $Author: trey $  $Date: 2006-10-30 20:00:15 $
+ $Revision: 1.7 $  $Author: trey $  $Date: 2006-11-08 16:32:46 $
    
  @file    RelaxUBInitializer.cc
  @brief   No brief
@@ -31,7 +31,7 @@
 #include "zmdpCommonDefs.h"
 #include "zmdpCommonTime.h"
 #include "MatrixUtils.h"
-#include "MDP.h"
+#include "MDPModel.h"
 #include "RelaxUBInitializer.h"
 
 using namespace std;
@@ -262,6 +262,9 @@ double RelaxUBInitializer::getValue(const state_vector& s, const MDPNode* cn) co
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.6  2006/10/30 20:00:15  trey
+ * USE_DEBUG_PRINT replaced with a run-time config parameter "debugLevel"
+ *
  * Revision 1.5  2006/10/24 02:07:27  trey
  * tweaked args to some functions to match changes elsewhere
  *
