@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.4 2006-11-07 20:09:56 trey Exp $
+# $Id: Makefile,v 1.5 2006-11-08 17:59:05 trey Exp $
 #
 # Copyright (c) 2002-2005, Trey Smith. All rights reserved.
 #
@@ -35,6 +35,7 @@ SUBDIRS :=
 CFLAGS += -I$(CHECKOUT_DIR)/external/boost
 
 INSTALLHEADERS_HEADERS := \
+	GenericDiscreteMDP.h \
 	RaceTrack.h \
 	CustomMDP.h
 include $(BUILD_DIR)/installheaders.mak
@@ -58,6 +59,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.4  2006/11/07 20:09:56  trey
+# added CustomMDP.{h,cc}
+#
 # Revision 1.3  2006/04/28 17:57:41  trey
 # changed to use apache license
 #
