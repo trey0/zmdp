@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.19 $  $Author: trey $  $Date: 2006-11-07 20:08:29 $
+ $Revision: 1.20 $  $Author: trey $  $Date: 2006-11-08 16:35:28 $
 
  @file    solverUtils.cc
  @brief   No brief
@@ -161,7 +161,7 @@ void SolverParams::setValues(const ZMDPConfig& config)
 
   SU_GET_STRING(policyOutputFile);
 
-  SU_GET_BOOL(useFastPomdpParser);
+  SU_GET_BOOL(useFastModelParser);
   SU_GET_DOUBLE(terminateRegretBound);
 
   SU_GET_DOUBLE(terminateWallclockSeconds);
@@ -287,10 +287,12 @@ void constructSolverObjects(SolverObjects& obj,
 			    const ZMDPConfig& config)
 {
   switch (p.modelType) {
-  case T_POMDP:
-    obj.problem = new Pomdp(p.probName, p.useFastPomdpParser, p.maxHorizon);
+  case T_POMDP: {
+    Pomdp* pomdp = new Pomdp(p.probName, &config);
+    obj.problem = pomdp;
     obj.sim = new PomdpSim((Pomdp*) obj.problem);
     break;
+  }
   case T_RACETRACK:
     obj.problem = new RaceTrack(p.probName);
     obj.sim = new MDPSim(obj.problem);
@@ -470,6 +472,9 @@ void constructSolverObjects(SolverObjects& obj,
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.19  2006/11/07 20:08:29  trey
+ * added support for custom problem type
+ *
  * Revision 1.18  2006/10/30 20:26:56  trey
  * fixed annoying spelling error
  *

@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.13 $  $Author: trey $  $Date: 2006-11-07 20:08:28 $
+ $Revision: 1.14 $  $Author: trey $  $Date: 2006-11-08 16:35:28 $
    
  @file    solverUtils.h
  @brief   No brief
@@ -92,7 +92,7 @@ struct SolverParams {
   int maintainLowerBound;
   bool maintainUpperBound;
   const char* policyOutputFile;
-  bool useFastPomdpParser;
+  bool useFastModelParser;
   double terminateRegretBound;
   double terminateWallclockSeconds;
   int maxHorizon;
@@ -129,6 +129,9 @@ void constructSolverObjects(SolverObjects& obj,
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.13  2006/11/07 20:08:28  trey
+ * added support for custom problem type
+ *
  * Revision 1.12  2006/10/24 19:08:04  trey
  * bug fixes related to recent changes in available parameters
  *
