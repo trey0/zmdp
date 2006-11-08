@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2006-06-27 18:20:18 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2006-11-08 16:40:15 $
    
  @file    testPomdpExec.cc
  @brief   No brief
@@ -39,7 +39,7 @@ using namespace std;
 using namespace zmdp;
 
 void doit(const char* modelFileName,
-	  bool useFastParser,
+	  bool useFastModelParser,
 	  const char* policyFileName)
 {
   // seeds random number generator
@@ -47,7 +47,7 @@ void doit(const char* modelFileName,
 
   MaxPlanesLowerBoundExec* em = new MaxPlanesLowerBoundExec();
   printf("initializing\n");
-  em->init(modelFileName, useFastParser, policyFileName);
+  em->init(modelFileName, useFastModelParser, policyFileName);
 
   PomdpExec* e = em;
 
@@ -88,7 +88,7 @@ int main(int argc, char *argv[])
     {NULL,0,0,0}
   };
 
-  bool useFastParser = false;
+  bool useFastModelParser = false;
   while (1) {
     char optchar = getopt_long(argc,argv,shortOptions,longOptions,NULL);
     if (optchar == -1) break;
@@ -99,7 +99,7 @@ int main(int argc, char *argv[])
       break;
 
     case 'f': // help
-      useFastParser = true;
+      useFastModelParser = true;
       break;
 
     case '?': // unknown option
@@ -120,13 +120,16 @@ int main(int argc, char *argv[])
   const char* modelFileName = argv[optind++];
   const char* policyFileName = argv[optind++];
 
-  doit(modelFileName, useFastParser, policyFileName);
+  doit(modelFileName, useFastModelParser, policyFileName);
 }
 
 
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2006/06/27 18:20:18  trey
+ * turned PomdpExec into an abstract class; most of the original implementation is now in the derived class MaxPlanesLowerBoundExec
+ *
  * Revision 1.1  2006/06/24 16:25:28  trey
  * initial check-in
  *

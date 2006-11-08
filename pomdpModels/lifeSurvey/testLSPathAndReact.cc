@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2006-06-30 17:51:08 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2006-11-08 16:42:54 $
    
  @file    testLSPathAndReact.cc
  @brief   No brief
@@ -39,7 +39,7 @@ using namespace std;
 using namespace zmdp;
 
 void doit(const char* modelFileName,
-	  bool useFastParser,
+	  bool useFastModelParser,
 	  const char* lifeSurveyFileName)
 {
   // seeds random number generator
@@ -47,7 +47,7 @@ void doit(const char* modelFileName,
 
   LSPathAndReactExec* em = new LSPathAndReactExec();
   printf("initializing\n");
-  em->init(modelFileName, useFastParser, lifeSurveyFileName);
+  em->init(modelFileName, useFastModelParser, lifeSurveyFileName);
 
   PomdpExec* e = em;
 
@@ -90,7 +90,7 @@ int main(int argc, char *argv[])
     {NULL,0,0,0}
   };
 
-  bool useFastParser = false;
+  bool useFastModelParser = false;
   while (1) {
     char optchar = getopt_long(argc,argv,shortOptions,longOptions,NULL);
     if (optchar == -1) break;
@@ -101,7 +101,7 @@ int main(int argc, char *argv[])
       break;
 
     case 'f': // help
-      useFastParser = true;
+      useFastModelParser = true;
       break;
 
     case '?': // unknown option
@@ -122,13 +122,16 @@ int main(int argc, char *argv[])
   const char* modelFileName = argv[optind++];
   const char* lifeSurveyFileName = argv[optind++];
 
-  doit(modelFileName, useFastParser, lifeSurveyFileName);
+  doit(modelFileName, useFastModelParser, lifeSurveyFileName);
 }
 
 
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2006/06/30 17:51:08  trey
+ * now delete exec at the end of the run
+ *
  * Revision 1.1  2006/06/29 21:39:14  trey
  * initial check-in
  *
