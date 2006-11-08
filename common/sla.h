@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.25 $  $Author: trey $  $Date: 2006-11-05 03:25:02 $
+ $Revision: 1.26 $  $Author: trey $  $Date: 2006-11-08 16:33:24 $
    
  @file    sla.h
  @brief   No brief
@@ -64,6 +64,7 @@ namespace sla {
 
     unsigned int size(void) const { return data.size(); }
     void resize(unsigned int _size, double value = 0.0);
+    void clear(void) { data.clear(); }
 
     void read(std::istream& in);
     void write(std::ostream& out) const;
@@ -122,6 +123,7 @@ namespace sla {
     unsigned int size1(void) const { return size1_; }
     unsigned int size2(void) const { return size2_; }
     void resize(unsigned int _size1, unsigned int _size2, double value = 0.0);
+    void clear(void) { data.clear(); }
   };
 
   /**********************************************************************
@@ -185,6 +187,8 @@ namespace sla {
     // if resize()/push_back() are used to initialize, you must call
     // canonicalize() before performing any operations with the matrix
     void canonicalize(void);
+
+    void clear(void) { data.clear(); }
 
     void read(std::istream& in);
     void write(std::ostream& out) const;
@@ -1302,6 +1306,9 @@ typedef sla::dvector obs_prob_vector;
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.25  2006/11/05 03:25:02  trey
+ * added sum() functions
+ *
  * Revision 1.24  2006/10/19 19:32:52  trey
  * added cvector clear() method
  *
