@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.13 $  $Author: trey $  $Date: 2006-10-25 02:44:28 $
+ $Revision: 1.14 $  $Author: trey $  $Date: 2006-11-08 16:36:16 $
 
  @file    zmdpBenchmark.cc
  @brief   No brief
@@ -89,7 +89,7 @@ void usage(const char* cmdName) {
     "  -s = --searchStrategy\n"
     "  -t = --modelType\n"
     "  -o = --policyOutputFile\n"
-    "  -f = --useFastPomdpParser 1\n"
+    "  -f = --useFastModelParser 1\n"
     "  -p = --terminateRegretBound\n"
     "  -i = --evaluationTrialsPerEpoch\n"
     "\n"
@@ -148,7 +148,7 @@ int main(int argc, char **argv) {
 	} else if (args == "-t") {
 	  args = "--modelType";
 	} else if (args == "-f") {
-	  commandLineConfig.setBool("useFastPomdpParser", true);
+	  commandLineConfig.setBool("useFastModelParser", true);
 	  continue;
 	} else if (args == "-p") {
 	  args = "--terminateRegretBound";
@@ -226,6 +226,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.13  2006/10/25 02:44:28  trey
+ * updated usage summary, removed obsolete -v option
+ *
  * Revision 1.12  2006/10/24 19:09:52  trey
  * moved some parameter logic to solverUtils
  *

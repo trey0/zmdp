@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.10 $  $Author: trey $  $Date: 2006-10-25 02:07:24 $
+ $Revision: 1.11 $  $Author: trey $  $Date: 2006-11-08 16:36:16 $
 
  @file    zmdpEvaluate.cc
  @brief   Use to evaluate a POMDP policy in simulation.
@@ -63,7 +63,7 @@ void doit(const ZMDPConfig& config, SolverParams& p)
       exit(EXIT_FAILURE);
     }
     MaxPlanesLowerBoundExec* em = new MaxPlanesLowerBoundExec();
-    em->init(plannerModelFileNameG, p.useFastPomdpParser, policyFileNameG, config);
+    em->init(plannerModelFileNameG, p.useFastModelParser, policyFileNameG, config);
     e = em;
   } else if (0 == strcmp(policyTypeG, "lspath")) {
     if (NULL == sourceModelFileNameG) {
@@ -71,7 +71,7 @@ void doit(const ZMDPConfig& config, SolverParams& p)
       exit(EXIT_FAILURE);
     }
     LSPathAndReactExec* el = new LSPathAndReactExec();
-    el->init(plannerModelFileNameG, p.useFastPomdpParser, sourceModelFileNameG);
+    el->init(plannerModelFileNameG, sourceModelFileNameG, &config);
     e = el;
   } else {
     fprintf(stderr, "ERROR: unknown policy type '%s' (-h for help)\n",
@@ -84,7 +84,7 @@ void doit(const ZMDPConfig& config, SolverParams& p)
   if (plannerModelFileNameG == simModelFileNameG) {
     simPomdp = e->pomdp;
   } else {
-    simPomdp = new Pomdp(simModelFileNameG, p.useFastPomdpParser);
+    simPomdp = new Pomdp(simModelFileNameG, &config);
   }
   PomdpSim* sim = new PomdpSim(simPomdp);
 
@@ -179,7 +179,7 @@ void usage(const char* cmdName) {
     "  all the parameters), use the '--genConfig <file>' option.\n"
     "\n"
     "For convenience, there are also some abbreviations:\n"
-    "  -f = --useFastPomdpParser 1\n"
+    "  -f = --useFastModelParser 1\n"
     "  -i = --evaluationTrialsPerEpoch\n"
     "\n"
     "Examples:\n"
@@ -257,7 +257,7 @@ int main(int argc, char **argv) {
       } else {
 	// replace abbreviations
 	if (args == "-f") {
-	  commandLineConfig.setBool("useFastPomdpParser", true);
+	  commandLineConfig.setBool("useFastModelParser", true);
 	  continue;
 	} else if (args == "-i") {
 	  args = "--evaluationTrialsPerEpoch";
@@ -320,6 +320,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.10  2006/10/25 02:07:24  trey
+ * removed old debug statement
+ *
  * Revision 1.9  2006/10/24 19:10:14  trey
  * changed maxplanes -> maxPlanes for consistency
  *

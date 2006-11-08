@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.20 $  $Author: trey $  $Date: 2006-11-07 20:09:23 $
+ $Revision: 1.21 $  $Author: trey $  $Date: 2006-11-08 16:36:05 $
 
  @file    zmdpSolve.cc
  @brief   No brief
@@ -125,7 +125,8 @@ void doSolve(const ZMDPConfig& config, SolverParams& p)
   }
 
   // finish up logging (if any, according to params specified in the config file)
-  printf("%05d finishing logging (e.g., writing qValuesOutputFile if it was requested)\n");
+  printf("%05d finishing logging (e.g., writing qValuesOutputFile if it was requested)\n",
+	 (int) run.elapsedTime());
   so.solver->finishLogging();
 
   printf("%05d done\n", (int) run.elapsedTime());
@@ -163,7 +164,7 @@ void usage(const char* cmdName) {
     "  -s = --searchStrategy\n"
     "  -t = --modelType\n"
     "  -o = --policyOutputFile\n"
-    "  -f = --useFastPomdpParser 1\n"
+    "  -f = --useFastModelParser 1\n"
     "  -p = --terminateRegretBound\n"
     "\n"
     "Examples:\n"
@@ -224,7 +225,7 @@ int main(int argc, char **argv) {
 	} else if (args == "-t") {
 	  args = "--modelType";
 	} else if (args == "-f") {
-	  commandLineConfig.setBool("useFastPomdpParser", true);
+	  commandLineConfig.setBool("useFastModelParser", true);
 	  continue;
 	} else if (args == "-p") {
 	  args = "--terminateRegretBound";
@@ -288,6 +289,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.20  2006/11/07 20:09:23  trey
+ * now call finishLogging() in zmdpSolve (not just in zmdpBenchmark)
+ *
  * Revision 1.19  2006/10/30 20:22:19  trey
  * removed redundant setting of policyOutputFile; this is now done in solverUtils.cc
  *
