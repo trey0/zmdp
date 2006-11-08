@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.20 $  $Author: trey $  $Date: 2006-11-08 16:39:14 $
+ $Revision: 1.21 $  $Author: trey $  $Date: 2006-11-08 18:00:03 $
   
  @file    Pomdp.cc
  @brief   No brief
@@ -34,11 +34,9 @@
 #include <fstream>
 
 #include "zmdpCommonDefs.h"
-#include "pomdpCassandraWrapper.h"
 #include "Pomdp.h"
 #include "MatrixUtils.h"
 #include "slaMatrixUtils.h"
-#include "sla_cassandra.h"
 #include "MaxPlanesLowerBound.h"
 #include "SawtoothUpperBound.h"
 #include "FastParser.h"
@@ -132,6 +130,9 @@ bool Pomdp::getIsTerminalState(const state_vector& s) const
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.20  2006/11/08 16:39:14  trey
+ * moved file reading functionality into src/parsers/, in CassandraParser.cc and FastParser.cc
+ *
  * Revision 1.19  2006/11/05 03:25:47  trey
  * improved error checking
  *
