@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2006-07-03 14:30:06 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2006-11-08 16:42:38 $
    
  @file    LSPathAndReactExec.h
  @brief   No brief
@@ -57,8 +57,8 @@ struct LSPathAndReactExec : public PomdpExec {
   LSPathAndReactExec(void);
 
   void init(const std::string& pomdpFileName,
-	    bool useFastParser,
-	    const std::string& lifeSurveyFileName);
+	    const std::string& lifeSurveyFileName,
+	    const ZMDPConfig* config);
 
   // implement PomdpExec virtual methods
   void setToInitialBelief(void);
@@ -85,6 +85,9 @@ struct LSPathAndReactExec : public PomdpExec {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2006/07/03 14:30:06  trey
+ * code no longer makes subtly invalid assumptions about when one path dominates another, so the output path is guaranteed to be optimal (luckily, seems to output the same path as before)
+ *
  * Revision 1.1  2006/06/29 21:37:56  trey
  * initial check-in
  *
