@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.19 $  $Author: trey $  $Date: 2006-11-05 03:25:47 $
+ $Revision: 1.20 $  $Author: trey $  $Date: 2006-11-08 16:39:14 $
   
  @file    Pomdp.cc
  @brief   No brief
@@ -41,6 +41,8 @@
 #include "sla_cassandra.h"
 #include "MaxPlanesLowerBound.h"
 #include "SawtoothUpperBound.h"
+#include "FastParser.h"
+#include "CassandraParser.h"
 
 #define POMDP_READ_ERROR_EPS (1e-10)
 
@@ -49,71 +51,19 @@ using namespace MatrixUtils;
 
 namespace zmdp {
 
-/***************************************************************************
- * STATIC HELPER FUNCTIONS
- ***************************************************************************/
-
-static void readVector(char *data, dvector& b, int numValues)
+Pomdp::Pomdp(const std::string& fileName,
+	     const ZMDPConfig* config)
 {
-  int i;
-  char *inp = data;
-  char *tok;
-  
-  for (i=0; i < numValues; i++) {
-    tok = strtok(inp," ");
-    if (0 == tok) {
-      cout << "ERROR: not enough entries in initial belief distribution"
-	   << endl;
-      exit(EXIT_FAILURE);
-    }
-    inp = 0;
-
-    b(i) = atof(tok);
-  }
-}
-
-static void trimTrailingWhiteSpace(char *s)
-{
-  int n = strlen(s);
-  int i;
-  for (i = n-1; i >= 0; i--) {
-    if (!isspace(s[i])) break;
-  }
-  s[i+1] = '\0';
-}
-
-/***************************************************************************
- * POMDP FUNCTIONS
- ***************************************************************************/
-
-Pomdp::Pomdp(const std::string& fileName, bool useFastParser, int _maxHorizon)
-{
-  readFromFile(fileName, useFastParser);
-  maxHorizon = _maxHorizon;
-}
-
-void Pomdp::readFromFile(const std::string& fileName,
-			 bool useFastParser)
-{
-  if (useFastParser) {
-    readFromFileFast(fileName);
+  bool useFastModelParser = config->getBool("useFastModelParser");
+  if (useFastModelParser) {
+    FastParser parser;
+    parser.readPomdpFromFile(*this, fileName);
   } else {
-    readFromFileCassandra(fileName);
+    CassandraParser parser;
+    parser.readPomdpFromFile(*this, fileName);
   }
 
-  // post-process: calculate isPomdpTerminalState
-  if (zmdpDebugLevelG >= 1) {
-    printf("Pomdp::readFromFile: marking zero-reward absorbing states as terminal\n");
-  }
-  isPomdpTerminalState.resize(numStates, /* initialValue = */ true);
-  FOR (s, numStates) {
-    FOR (a, numActions) {
-      if ((fabs(1.0 - T[a](s,s)) > OBS_IS_ZERO_EPS) || R(s,a) != 0.0) {
-	isPomdpTerminalState[s] = false;
-	break;
-      }
-    }
-  }
+  maxHorizon = config->getInt("maxHorizon");
 }
 
 const belief_vector& Pomdp::getInitialBelief(void) const
@@ -170,303 +120,11 @@ bool Pomdp::getIsTerminalState(const state_vector& s) const
 {
   double nonTerminalSum = 0.0;
   FOR_CV (s) {
-    if (!isPomdpTerminalState[CV_INDEX(s)]) {
+    if (!isTerminalState[CV_INDEX(s)]) {
       nonTerminalSum += CV_VAL(s);
     }
   }
   return (nonTerminalSum < 1e-10);
-}
-
-void Pomdp::readFromFileCassandra(const string& fileName) {
-  timeval startTime, endTime;
-  if (zmdpDebugLevelG >= 1) {
-    cout << "reading problem from " << fileName << endl;
-    gettimeofday(&startTime,0);
-  }
-
-  PomdpCassandraWrapper p;
-  p.readFromFile(fileName);
-  
-  numStates = p.getNumStates();
-  setBeliefSize(numStates);
-  numActions = p.getNumActions();
-  numObservations = p.getNumObservations();
-  discount = p.getDiscount();
-
-  // convert R to sla format
-  kmatrix Rk;
-  copy(Rk, p.getRTranspose(), numStates);
-  kmatrix_transpose_in_place(Rk);
-  copy(R, Rk);
-
-  // convert T, Tr, and O to sla format
-  kmatrix Tk;
-  T.resize(numActions);
-  Ttr.resize(numActions);
-  O.resize(numActions);
-  FOR (a, numActions) {
-    copy(Tk, p.getT(a), numStates);
-    copy(T[a], Tk);
-    kmatrix_transpose_in_place(Tk);
-    copy(Ttr[a], Tk);
-    copy(O[a], p.getO(a), numObservations);
-  }
-
-  // convert initialBelief to sla format
-  dvector initialBeliefD;
-  initialBeliefD.resize(numStates);
-  FOR (s, numStates) {
-    initialBeliefD(s) = p.getInitialBelief(s);
-  }
-  copy(initialBelief, initialBeliefD);
-
-  if (zmdpDebugLevelG >= 1) {
-    gettimeofday(&endTime,0);
-    double numSeconds = (endTime.tv_sec - startTime.tv_sec)
-      + 1e-6 * (endTime.tv_usec - startTime.tv_usec);
-    cout << "[file reading took " << numSeconds << " seconds]" << endl;
-    
-    debugDensity();
-  }
-}
-
-// this is functionally similar to readFromFile() but much faster.
-// the POMDP file must obey a restricted syntax.
-void Pomdp::readFromFileFast(const std::string& fileName)
-{
-  char buf[1<<20];
-  int lineNumber;
-  ifstream in;
-  char sbuf[512];
-  int numSizesSet = 0;
-  bool inPreamble = true;
-  char *data;
-
-  timeval startTime, endTime;
-  if (zmdpDebugLevelG >= 1) {
-    cout << "reading problem (in fast mode) from " << fileName << endl;
-    gettimeofday(&startTime,0);
-  }
-
-  in.open(fileName.c_str());
-  if (!in) {
-    cerr << "ERROR: couldn't open " << fileName << " for reading: "
-	 << strerror(errno) << endl;
-    exit(EXIT_FAILURE);
-  }
-
-  dvector initialBeliefx;
-  kmatrix Rx;
-  std::vector<kmatrix> Tx, Ox;
-
-#define PM_PREFIX_MATCHES(X) \
-  (0 == strncmp(buf,(X),strlen(X)))
-
-  lineNumber = 1;
-  while (!in.eof()) {
-    in.getline(buf,sizeof(buf));
-    if (in.fail() && !in.eof()) {
-      cerr << "ERROR: " << fileName << ": line " << lineNumber << ": line too long for buffer"
-	   << " (max length " << sizeof(buf) << ")" << endl;
-      exit(EXIT_FAILURE);
-    }
-
-    if ('#' == buf[0]) continue;
-    trimTrailingWhiteSpace(buf);
-    if ('\0' == buf[0]) continue;
-    
-    if (inPreamble) {
-      if (PM_PREFIX_MATCHES("discount:")) {
-	if (1 != sscanf(buf,"discount: %lf", &discount)) {
-	  cerr << "ERROR: " << fileName << ": line " << lineNumber
-	       << ": syntax error in 'discount' statement"
-	       << endl;
-	  exit(EXIT_FAILURE);
-	}
-      } else if (PM_PREFIX_MATCHES("values:")) {
-	if (1 != sscanf(buf,"values: %s", sbuf)) {
-	  cerr << "ERROR: " << fileName << ": line " << lineNumber
-	       << ": syntax error in 'values' statement"
-	       << endl;
-	  exit(EXIT_FAILURE);
-	}
-	if (0 != strcmp(sbuf,"reward")) {
-	  cerr << "ERROR: " << fileName << ": line " << lineNumber
-	       << ": expected 'values: reward', other types not supported by fast parser"
-	       << endl;
-	  exit(EXIT_FAILURE);
-	}
-      } else if (PM_PREFIX_MATCHES("actions:")) {
-	if (1 != sscanf(buf,"actions: %d", &numActions)) {
-	  cerr << "ERROR: " << fileName << ": line " << lineNumber
-	       << ": syntax error in 'actions' statement"
-	       << endl;
-	  exit(EXIT_FAILURE);
-	}
-	numSizesSet++;
-      } else if (PM_PREFIX_MATCHES("observations:")) {
-	if (1 != sscanf(buf,"observations: %d", &numObservations)) {
-	  cerr << "ERROR: " << fileName << ": line " << lineNumber
-	       << ": syntax error in 'observations' statement"
-	       << endl;
-	  exit(EXIT_FAILURE);
-	}
-	numSizesSet++;
-      } else if (PM_PREFIX_MATCHES("states:")) {
-	if (1 != sscanf(buf,"states: %d", &numStates)) {
-	  cerr << "ERROR: " << fileName << ": line " << lineNumber
-	       << ": syntax error in 'states' statement"
-	       << endl;
-	  exit(EXIT_FAILURE);
-	}
-	numSizesSet++;
-      } else {
-	cerr << "ERROR: " << fileName << ": line " << lineNumber
-	     << ": got unexpected statement type while parsing preamble"
-	     << endl;
-	exit(EXIT_FAILURE);
-      }
-
-      if (3 == numSizesSet) {
-	// pre-process
-	setBeliefSize(numStates);
-	initialBeliefx.resize(numStates);
-	set_to_zero(initialBeliefx);
-	Rx.resize(numStates, numActions);
-	Tx.resize(numActions);
-	Ox.resize(numActions);
-	FOR (a, numActions) {
-	  Tx[a].resize(numStates, numStates);
-	  Ox[a].resize(numStates, numObservations);
-	}
-
-	inPreamble = false;
-      }
-
-    } else {
-
-      if (PM_PREFIX_MATCHES("start:")) {
-	data = buf + strlen("start: ");
-	readVector(data,initialBeliefx,numStates);
-      } else if (PM_PREFIX_MATCHES("R:")) {
-	int s, a;
-	double reward;
-	if (3 != sscanf(buf,"R: %d : %d : * : * %lf", &a, &s, &reward)) {
-	  cerr << "ERROR: " << fileName << ": line " << lineNumber
-	       << ": syntax error in R statement"
-	       << endl;
-	  exit(EXIT_FAILURE);
-	}
-	kmatrix_set_entry( Rx, s, a, reward );
-      } else if (PM_PREFIX_MATCHES("T:")) {
-	int s, a, sp;
-	double prob;
-	if (4 != sscanf(buf,"T: %d : %d : %d %lf", &a, &s, &sp, &prob)) {
-	  cerr << "ERROR: " << fileName << ": line " << lineNumber
-	       << ": syntax error in T statement"
-	       << endl;
-	  exit(EXIT_FAILURE);
-	}
-	kmatrix_set_entry( Tx[a], s, sp, prob );
-      } else if (PM_PREFIX_MATCHES("O:")) {
-	int s, a, o;
-	double prob;
-	if (4 != sscanf(buf,"O: %d : %d : %d %lf", &a, &s, &o, &prob)) {
-	  cerr << "ERROR: " << fileName << ": line " << lineNumber
-	       << ": syntax error in O statement"
-	       << endl;
-	  exit(EXIT_FAILURE);
-	}
-	kmatrix_set_entry( Ox[a], s, o, prob );
-      } else {
-	cerr << "ERROR: " << fileName << ": line " << lineNumber
-	     << ": got unexpected statement type while parsing body"
-	     << endl;
-	exit(EXIT_FAILURE);
-      }
-    }
-
-    lineNumber++;
-  }
-
-  in.close();
-
-  cvector checkTmp;
-  cmatrix checkObs;
-
-  // post-process
-  copy( initialBelief, initialBeliefx );
-  copy( R, Rx );
-  Ttr.resize(numActions);
-  O.resize(numActions);
-  T.resize(numActions);
-  FOR (a, numActions) {
-    copy( T[a], Tx[a] );
-    kmatrix_transpose_in_place( Tx[a] );
-    copy( Ttr[a], Tx[a] );
-    copy( O[a], Ox[a] );
-
-#if 1
-    // extra error checking
-    kmatrix_transpose_in_place(Ox[a]);
-    copy(checkObs, Ox[a]);
-    FOR (s, numStates) {
-      copy_from_column(checkTmp, Ttr[a], s);
-      if (fabs(sum(checkTmp) - 1.0) > POMDP_READ_ERROR_EPS) {
-	fprintf(stderr,
-		"ERROR: %s: outgoing transition probabilities do not sum to 1 for:\n"
-		"  state %d, action %d, transition sum = 1 + %g\n",
-		fileName.c_str(), (int)s, (int)a, sum(checkTmp) - 1.0);
-	exit(EXIT_FAILURE);
-      }
-
-      copy_from_column(checkTmp, checkObs, s);
-      if (fabs(sum(checkTmp) - 1.0) > POMDP_READ_ERROR_EPS) {
-	fprintf(stderr,
-		"ERROR: %s: observation probabilities do not sum to 1 for:\n"
-		"  state %d, action %d, observation sum = 1 + %g\n",
-		fileName.c_str(), (int)s, (int)a, sum(checkTmp) - 1.0);
-	exit(EXIT_FAILURE);
-      }
-    }
-#endif
-  }
-
-#if 1
-  // extra error checking
-  if (fabs(sum(initialBelief) - 1.0) > POMDP_READ_ERROR_EPS) {
-    fprintf(stderr,
-	    "ERROR: %s: initial belief entries do not sum to 1:\n"
-	    "  entry sum = 1 + %g\n",
-	    fileName.c_str(), sum(initialBelief) - 1.0);
-    exit(EXIT_FAILURE);
-  }
-#endif
-
-  if (zmdpDebugLevelG >= 1) {
-    gettimeofday(&endTime,0);
-    double numSeconds = (endTime.tv_sec - startTime.tv_sec)
-      + 1e-6 * (endTime.tv_usec - startTime.tv_usec);
-    cout << "[file reading took " << numSeconds << " seconds]" << endl;
-
-    debugDensity();
-  }
-}
-
-void Pomdp::debugDensity(void) {
-  // use doubles to avoid int overflow (e.g. T_size is sometimes larger than MAX_INT)
-  double T_size = ((double) T[0].size1()) * T[0].size2() * numActions;
-  double O_size = ((double) O[0].size1()) * O[0].size2() * numActions;
-  double T_filled = 0;
-  double O_filled = 0;
-  FOR (a, numActions) {
-    T_filled += T[a].filled();
-    O_filled += O[a].filled();
-  }
-
-  cout << "T density = " << (T_filled / T_size)
-       << ", O density = " << (O_filled / O_size)
-       << endl;
 }
 
 }; // namespace zmdp
@@ -474,6 +132,9 @@ void Pomdp::debugDensity(void) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.19  2006/11/05 03:25:47  trey
+ * improved error checking
+ *
  * Revision 1.18  2006/10/30 20:00:15  trey
  * USE_DEBUG_PRINT replaced with a run-time config parameter "debugLevel"
  *

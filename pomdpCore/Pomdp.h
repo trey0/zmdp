@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.9 $  $Author: trey $  $Date: 2006-10-24 02:13:43 $
+ $Revision: 1.10 $  $Author: trey $  $Date: 2006-11-08 16:39:14 $
    
  @file    Pomdp.h
  @brief   No brief
@@ -27,43 +27,15 @@
 #include <string>
 #include <vector>
 
-#include "MDP.h"
+#include "CassandraModel.h"
 
 using namespace sla;
 
 namespace zmdp {
 
-class Pomdp : public MDP {
-public:
-  int numStates, numObservations;
-
-  // initialBelief(s)
-  cvector initialBelief;
-  // R(s,a)
-  cmatrix R;
-  // T[a](s,s'), Ttr[a](s',s), O[a](s',o)
-  std::vector<cmatrix> T, Ttr, O;
-  std::vector<bool> isPomdpTerminalState;
-
-  // maxHorizon: if set to a value other than -1, this specifies the
-  // maximum planning horizon we will use with this model.  ideally, the
-  // model will be defined such that it is guaranteed to enter a
-  // zero-reward absorbing state by the time the planning horizon is
-  // reached.  in that case, the maxHorizon value is just a hint used
-  // when calculating initial bounds: we can multiply by maxHorizon if
-  // that gives a tighter bound than dividing by 1-gamma.  you can also
-  // specify a maxHorizon if the model is not guaranteed to terminate,
-  // but in that case the initial bounds are not necessarily uniformly
-  // improvable, so the reported range of policy quality may not be
-  // accurate.  (in practice, it will probably work ok anyway.)
-  int maxHorizon;
-
-  Pomdp(void) {}
-  Pomdp(const std::string& fileName, bool useFastParser = false,
-	int _maxHorizon = -1);
-
-  void readFromFile(const std::string& fileName,
-		    bool useFastParser = false);
+struct Pomdp : public CassandraModel {
+  Pomdp(const std::string& fileName,
+	const ZMDPConfig* _config);
 
   // returns the initial belief
   const belief_vector& getInitialBelief(void) const;
@@ -114,6 +86,9 @@ protected:
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.9  2006/10/24 02:13:43  trey
+ * changes to match new Solver interface
+ *
  * Revision 1.8  2006/10/18 18:06:37  trey
  * now propagating config data structure to lower levels so config fields can be used to control more parts of the system
  *
