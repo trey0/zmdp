@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.9 $  $Author: trey $  $Date: 2006-10-30 20:00:15 $
+ $Revision: 1.10 $  $Author: trey $  $Date: 2006-11-08 16:38:10 $
    
  @file    BlindLBInitializer.cc
  @brief   No brief
@@ -96,7 +96,7 @@ void BlindLBInitializer::initBlindWorstCase(alpha_vector& weakAlpha)
   // is exactly 0, since that is how the lbVal field of terminal
   // nodes is initialized.
   FOR (i, pomdp->numStates) {
-    if (pomdp->isPomdpTerminalState[i]) {
+    if (pomdp->isTerminalState[i]) {
       worstCaseDVector(i) = 0.0;
     }
   }
@@ -156,6 +156,9 @@ void BlindLBInitializer::initBlind(double targetPrecision)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.9  2006/10/30 20:00:15  trey
+ * USE_DEBUG_PRINT replaced with a run-time config parameter "debugLevel"
+ *
  * Revision 1.8  2006/10/25 19:12:53  trey
  * migrated to more run-time config parameters
  *

@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.5 $  $Author: trey $  $Date: 2006-10-30 20:00:15 $
+ $Revision: 1.6 $  $Author: trey $  $Date: 2006-11-08 16:38:10 $
    
  @file    FastInfUBInitializer.cc
  @brief   No brief
@@ -157,7 +157,7 @@ void FastInfUBInitializer::initFIB(double targetPrecision)
   // is exactly 0, since that is how the ubVal field of terminal
   // nodes is initialized.
   FOR (i, pomdp->numStates) {
-    if (pomdp->isPomdpTerminalState[i]) {
+    if (pomdp->isTerminalState[i]) {
       dalpha(i) = 0.0;
     }
   }
@@ -172,6 +172,9 @@ void FastInfUBInitializer::initFIB(double targetPrecision)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.5  2006/10/30 20:00:15  trey
+ * USE_DEBUG_PRINT replaced with a run-time config parameter "debugLevel"
+ *
  * Revision 1.4  2006/06/03 10:59:03  trey
  * added exact initialization rule for terminal states
  *

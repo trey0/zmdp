@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.6 $  $Author: trey $  $Date: 2006-11-05 03:28:17 $
+ $Revision: 1.7 $  $Author: trey $  $Date: 2006-11-08 16:39:31 $
    
  @file    PomdpSim.cc
  @brief   No brief
@@ -144,7 +144,7 @@ void PomdpSim::performAction(int a) {
 
   // we used to check termination *before* the transition to take into account
   // weirdness in the hallway and hallway2 problems; but that's resolved now.
-  if (pomdp->isPomdpTerminalState[state]) {
+  if (pomdp->isTerminalState[state]) {
     terminated = true;
     lastState = state;
     if (simOutFile) {
@@ -184,6 +184,9 @@ void PomdpSim::performAction(int a) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.6  2006/11/05 03:28:17  trey
+ * replaced norm_1() call with sum(), should be a bit more efficient
+ *
  * Revision 1.5  2006/07/10 03:36:26  trey
  * added a way to read out observations from PomdpSim
  *
