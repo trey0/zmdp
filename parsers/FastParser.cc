@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-11-08 16:40:50 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-11-09 20:48:56 $
   
  @file    FastParser.cc
  @brief   No brief
@@ -50,25 +50,6 @@ namespace zmdp {
  * STATIC HELPER FUNCTIONS
  ***************************************************************************/
 
-static void readVector(char *data, dvector& b, int numValues)
-{
-  int i;
-  char *inp = data;
-  char *tok;
-  
-  for (i=0; i < numValues; i++) {
-    tok = strtok(inp," ");
-    if (0 == tok) {
-      cout << "ERROR: not enough entries in initial belief distribution"
-	   << endl;
-      exit(EXIT_FAILURE);
-    }
-    inp = 0;
-
-    b(i) = atof(tok);
-  }
-}
-
 static void trimTrailingWhiteSpace(char *s)
 {
   int n = strlen(s);
@@ -83,17 +64,15 @@ static void trimTrailingWhiteSpace(char *s)
  * POMDP FUNCTIONS
  ***************************************************************************/
 
-void FastParser::readGenericDiscreteMDPFromFile(GenericDiscreteMDP& mdp,
+void FastParser::readGenericDiscreteMDPFromFile(CassandraModel& mdp,
 						const std::string& fileName)
 {
   readModelFromFile(mdp, fileName, /* expectPomdp = */ false);
-  mdp.numStateDimensions = 1;
 }
 
-void FastParser::readPomdpFromFile(Pomdp& pomdp, const std::string& fileName)
+void FastParser::readPomdpFromFile(CassandraModel& pomdp, const std::string& fileName)
 {
   readModelFromFile(pomdp, fileName, /* expectPomdp = */ true);
-  pomdp.numStateDimensions = pomdp.numStates;
 }
 
 void FastParser::readModelFromFile(CassandraModel& problem,
@@ -136,7 +115,6 @@ void FastParser::readModelFromStream(CassandraModel& p,
   int lineNumber;
   char sbuf[512];
   bool inPreamble = true;
-  char *data;
 
   dvector initialBeliefx;
   kmatrix Rx;
@@ -147,6 +125,11 @@ void FastParser::readModelFromStream(CassandraModel& p,
   bool numStatesSet = false;
   bool numActionsSet = false;
   bool numObservationsSet = false;
+  bool startSet = false;
+
+  const char* rFormat = (expectPomdp
+			 ? "R: %d : %d : * : * %lf"
+			 : "R: %d : %d : * %lf");
 
 #define PM_PREFIX_MATCHES(X) \
   (0 == strncmp(buf,(X),strlen(X)))
@@ -196,13 +179,20 @@ void FastParser::readModelFromStream(CassandraModel& p,
 	}
 	numActionsSet = true;
       } else if (PM_PREFIX_MATCHES("observations:")) {
-	if (1 != sscanf(buf,"observations: %d", &p.numObservations)) {
+	if (expectPomdp) {
+	  if (1 != sscanf(buf,"observations: %d", &p.numObservations)) {
+	    cerr << "ERROR: " << fileName << ": line " << lineNumber
+		 << ": syntax error in 'observations' statement"
+		 << endl;
+	    exit(EXIT_FAILURE);
+	  }
+	  numObservationsSet = true;
+	} else {
 	  cerr << "ERROR: " << fileName << ": line " << lineNumber
-	       << ": syntax error in 'observations' statement"
+	       << ": got unexpected 'observations' statement in MDP"
 	       << endl;
 	  exit(EXIT_FAILURE);
 	}
-	numObservationsSet = true;
       } else if (PM_PREFIX_MATCHES("states:")) {
 	if (1 != sscanf(buf,"states: %d", &p.numStates)) {
 	  cerr << "ERROR: " << fileName << ": line " << lineNumber
@@ -211,6 +201,15 @@ void FastParser::readModelFromStream(CassandraModel& p,
 	  exit(EXIT_FAILURE);
 	}
 	numStatesSet = true;
+      } else if (PM_PREFIX_MATCHES("start:")) {
+	if (!numStatesSet) {
+	  cerr << "ERROR: " << fileName << ": line " << lineNumber
+	       << ": got 'start' statement before 'states' statement"
+	       << endl;
+	  exit(EXIT_FAILURE);
+	}
+	readStartVector(p, buf, fileName, expectPomdp);
+	startSet = true;
       } else {
 	// the statement is not one that is expected in the preamble,
 	// check that we are ready to transition to parsing the body
@@ -225,6 +224,7 @@ void FastParser::readModelFromStream(CassandraModel& p,
 	FP_CHECK_SET(valuesSet,     "values");
 	FP_CHECK_SET(numStatesSet,  "states");
 	FP_CHECK_SET(numActionsSet, "actions");
+	FP_CHECK_SET(startSet,      "start");
 	if (expectPomdp) {
 	  FP_CHECK_SET(numObservationsSet, "observations");
 	} else {
@@ -232,8 +232,6 @@ void FastParser::readModelFromStream(CassandraModel& p,
 	}
 	
 	// initialize data structures
-	initialBeliefx.resize(p.numStates);
-	set_to_zero(initialBeliefx);
 	Rx.resize(p.numStates, p.numActions);
 	Tx.resize(p.numActions);
 	if (expectPomdp) {
@@ -252,15 +250,13 @@ void FastParser::readModelFromStream(CassandraModel& p,
     }
 
     if (!inPreamble) {
-      if (PM_PREFIX_MATCHES("start:")) {
-	data = buf + strlen("start: ");
-	readVector(data, initialBeliefx, p.numStates);
-      } else if (PM_PREFIX_MATCHES("R:")) {
+      if (PM_PREFIX_MATCHES("R:")) {
 	int s, a;
 	double reward;
-	if (3 != sscanf(buf,"R: %d : %d : * : * %lf", &a, &s, &reward)) {
+	if (3 != sscanf(buf, rFormat, &a, &s, &reward)) {
 	  cerr << "ERROR: " << fileName << ": line " << lineNumber
-	       << ": syntax error in R statement"
+	       << ": syntax error in R statement\n"
+	       << "  (expected format is '" << rFormat << "')"
 	       << endl;
 	  exit(EXIT_FAILURE);
 	}
@@ -276,16 +272,21 @@ void FastParser::readModelFromStream(CassandraModel& p,
 	}
 	kmatrix_set_entry(Tx[a], s, sp, prob);
       } else if (PM_PREFIX_MATCHES("O:")) {
-	int s, a, o;
-	double prob;
-	if (4 != sscanf(buf,"O: %d : %d : %d %lf", &a, &s, &o, &prob)) {
+	if (expectPomdp) {
+	  int s, a, o;
+	  double prob;
+	  if (4 != sscanf(buf,"O: %d : %d : %d %lf", &a, &s, &o, &prob)) {
+	    cerr << "ERROR: " << fileName << ": line " << lineNumber
+		 << ": syntax error in O statement"
+		 << endl;
+	    exit(EXIT_FAILURE);
+	  }
+	  kmatrix_set_entry(Ox[a], s, o, prob);
+	} else {
 	  cerr << "ERROR: " << fileName << ": line " << lineNumber
-	       << ": syntax error in O statement"
+	       << ": got unexpected 'O' statement in MDP"
 	       << endl;
 	  exit(EXIT_FAILURE);
-	}
-	if (expectPomdp) {
-	  kmatrix_set_entry(Ox[a], s, o, prob);
 	}
       } else {
 	cerr << "ERROR: " << fileName << ": line " << lineNumber
@@ -298,9 +299,6 @@ void FastParser::readModelFromStream(CassandraModel& p,
     lineNumber++;
   }
 
-  cvector checkTmp;
-  cmatrix checkObs;
-
   // post-process
   copy(p.initialBelief, initialBeliefx);
   initialBeliefx.clear();
@@ -308,60 +306,145 @@ void FastParser::readModelFromStream(CassandraModel& p,
   copy(p.R, Rx);
   Rx.clear();
 
-  p.Ttr.resize(p.numActions);
-  p.O.resize(p.numActions);
   p.T.resize(p.numActions);
+  p.Ttr.resize(p.numActions);
+  if (expectPomdp) {
+    p.O.resize(p.numActions);
+  }
   FOR (a, p.numActions) {
     copy(p.T[a], Tx[a]);
     kmatrix_transpose_in_place(Tx[a]);
     copy(p.Ttr[a], Tx[a]);
-    copy(p.O[a], Ox[a]);
 
 #if 1
     // extra error checking
-    kmatrix_transpose_in_place(Ox[a]);
-    copy(checkObs, Ox[a]);
+    cvector checkTmp;
     FOR (s, p.numStates) {
       copy_from_column(checkTmp, p.Ttr[a], s);
       if (fabs(sum(checkTmp) - 1.0) > POMDP_READ_ERROR_EPS) {
 	fprintf(stderr,
 		"ERROR: %s: outgoing transition probabilities do not sum to 1 for:\n"
-		"  state %d, action %d, transition sum = 1 + %g\n",
-		fileName.c_str(), (int)s, (int)a, sum(checkTmp) - 1.0);
-	exit(EXIT_FAILURE);
-      }
-
-      copy_from_column(checkTmp, checkObs, s);
-      if (fabs(sum(checkTmp) - 1.0) > POMDP_READ_ERROR_EPS) {
-	fprintf(stderr,
-		"ERROR: %s: observation probabilities do not sum to 1 for:\n"
-		"  state %d, action %d, observation sum = 1 + %g\n",
-		fileName.c_str(), (int)s, (int)a, sum(checkTmp) - 1.0);
+		"  state %d, action %d, transition sum = %.10lf\n",
+		fileName.c_str(), (int)s, (int)a, sum(checkTmp));
 	exit(EXIT_FAILURE);
       }
     }
 #endif
 
-    // deallocate temporaries as we go along in case memory is tight
     Tx[a].clear();
-    Ox[a].clear();
-  }
+
+    if (expectPomdp) {
+      copy(p.O[a], Ox[a]);
 
 #if 1
-  // extra error checking
-  if (fabs(sum(p.initialBelief) - 1.0) > POMDP_READ_ERROR_EPS) {
-    fprintf(stderr,
-	    "ERROR: %s: initial belief entries do not sum to 1:\n"
-	    "  entry sum = 1 + %g\n",
-	    fileName.c_str(), sum(p.initialBelief) - 1.0);
-    exit(EXIT_FAILURE);
-  }
+      cmatrix checkObs;
+      
+      // extra error checking
+      kmatrix_transpose_in_place(Ox[a]);
+      copy(checkObs, Ox[a]);
+
+      FOR (s, p.numStates) {
+	copy_from_column(checkTmp, checkObs, s);
+	if (fabs(sum(checkTmp) - 1.0) > POMDP_READ_ERROR_EPS) {
+	  fprintf(stderr,
+		  "ERROR: %s: observation probabilities do not sum to 1 for:\n"
+		  "  state %d, action %d, observation sum = %.10lf\n",
+		  fileName.c_str(), (int)s, (int)a, sum(checkTmp));
+	  exit(EXIT_FAILURE);
+	}
+      }
 #endif
+
+      Ox[a].clear();
+    }
+  }
 
   p.checkForTerminalStates();
 
+#if 1
+  // extra error checking
+  if (expectPomdp) {
+    if (fabs(sum(p.initialBelief) - 1.0) > POMDP_READ_ERROR_EPS) {
+      fprintf(stderr,
+	      "ERROR: %s: initial belief entries do not sum to 1:\n"
+	      "  entry sum = %.10lf\n",
+	      fileName.c_str(), sum(p.initialBelief));
+      exit(EXIT_FAILURE);
+    }
+  }
+#endif
+
   if (zmdpDebugLevelG >= 1) {
     p.debugDensity();
+  }
+}
+
+void FastParser::readStartVector(CassandraModel& p,
+				 char *data,
+				 const std::string& fileName,
+				 bool expectPomdp)
+{
+  if (expectPomdp) {
+    // POMDP case
+
+    int i;
+    char *tok;
+
+    p.initialBelief.resize(p.numStates);
+
+    // consume 'start:' token at the beginning of the statement
+    tok = strtok(data, " ");
+
+    for (i=0; i < p.numStates; i++) {
+      if (NULL != tok) {
+	tok = strtok(NULL, " ");
+      }
+      if (NULL == tok) {
+	if (0 == i) {
+	  double startState = atof(tok);
+	  if (startState != floor(startState)) {
+	    cout << "ERROR: " << fileName
+		 << ": POMDP 'start' statement must either contain a single integer "
+		 << "specifying a known start state or a list of the initial probabilities of "
+		 << "all states"
+		 << endl;
+	    exit(EXIT_FAILURE);
+	  }
+	  p.initialBelief.push_back((int)startState, 1.0);
+	  return;
+	} else {
+	  cout << "ERROR: " << fileName
+	       << ": POMDP 'start' statement must either contain a single integer "
+	       << "specifying a known start state or a list of the initial probabilities of "
+	       << "all states"
+	       << endl;
+	  exit(EXIT_FAILURE);
+	}
+      }
+      
+      p.initialBelief.push_back(i, atof(tok));
+    }
+  } else {
+    // MDP case
+
+    double x, y;
+    int ret = sscanf(data, "start: %lf %lf", &x, &y);
+    if ((ret != 1) || (x != floor(x))) {
+      cout << "ERROR: " << fileName
+	   << ": MDP 'start' statement must contain a single integer "
+	   << "specifying a known start state" << endl;
+      exit(EXIT_FAILURE);
+    }
+
+    p.initialState.resize(1);
+    int startState;
+    if (1 != sscanf(data, "start: %d", &startState)) {
+      cout << "ERROR: " << fileName
+	   << ": MDP 'start' statement must contain a single integer "
+	   << "specifying a known start state" << endl;
+      exit(EXIT_FAILURE);
+    }
+    p.initialState.push_back(0, startState);
   }
 }
 
@@ -370,5 +453,8 @@ void FastParser::readModelFromStream(CassandraModel& p,
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/11/08 16:40:50  trey
+ * initial check-in
+ *
  *
  ***************************************************************************/

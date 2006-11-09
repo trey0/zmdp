@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-11-08 16:40:50 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-11-09 20:48:40 $
    
  @file    CassandraParser.h
  @brief   No brief
@@ -28,16 +28,14 @@
 #include <vector>
 
 #include "CassandraModel.h"
-#include "GenericDiscreteMDP.h"
-#include "Pomdp.h"
 
 using namespace sla;
 
 namespace zmdp {
 
 struct CassandraParser {
-  void readGenericDiscreteMDPFromFile(GenericDiscreteMDP& mdp, const std::string& fileName);
-  void readPomdpFromFile(Pomdp& pomdp, const std::string& fileName);
+  void readGenericDiscreteMDPFromFile(CassandraModel& mdp, const std::string& fileName);
+  void readPomdpFromFile(CassandraModel& pomdp, const std::string& fileName);
 
 protected:
   void readModelFromFile(CassandraModel& problem, const std::string& fileName,
@@ -51,6 +49,9 @@ protected:
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/11/08 16:40:50  trey
+ * initial check-in
+ *
  *
  ***************************************************************************/
 

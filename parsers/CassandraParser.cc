@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-11-08 16:40:50 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-11-09 20:48:40 $
   
  @file    CassandraParser.cc
  @brief   No brief
@@ -45,17 +45,15 @@ using namespace MatrixUtils;
 
 namespace zmdp {
 
-void CassandraParser::readGenericDiscreteMDPFromFile(GenericDiscreteMDP& mdp,
-						const std::string& fileName)
+void CassandraParser::readGenericDiscreteMDPFromFile(CassandraModel& mdp,
+						     const std::string& fileName)
 {
   readModelFromFile(mdp, fileName, /* expectPomdp = */ false);
-  mdp.numStateDimensions = 1;
 }
 
-void CassandraParser::readPomdpFromFile(Pomdp& pomdp, const std::string& fileName)
+void CassandraParser::readPomdpFromFile(CassandraModel& pomdp, const std::string& fileName)
 {
   readModelFromFile(pomdp, fileName, /* expectPomdp = */ true);
-  pomdp.numStateDimensions = pomdp.numStates;
 }
 
 // This macro is a pure pass-through. I just use it to make clear
@@ -110,13 +108,19 @@ void CassandraParser::readModelFromFile(CassandraModel& p,
     }
   }
 
-  // convert initialBelief to sla format
-  dvector initialBeliefD;
-  initialBeliefD.resize(p.numStates);
-  FOR (s, p.numStates) {
-    initialBeliefD(s) = CASSANDRA_GLOBAL(gInitialBelief[s]);
+  if (expectPomdp) {
+    // convert initialBelief to sla format
+    dvector initialBeliefD;
+    initialBeliefD.resize(p.numStates);
+    FOR (s, p.numStates) {
+      initialBeliefD(s) = CASSANDRA_GLOBAL(gInitialBelief[s]);
+    }
+    copy(p.initialBelief, initialBeliefD);
+  } else {
+    // convert initialState to sla format
+    p.initialState.resize(1);
+    p.initialState.push_back(0, CASSANDRA_GLOBAL(gInitialState));
   }
-  copy(p.initialBelief, initialBeliefD);
 
   p.checkForTerminalStates();
 
@@ -135,5 +139,8 @@ void CassandraParser::readModelFromFile(CassandraModel& p,
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/11/08 16:40:50  trey
+ * initial check-in
+ *
  *
  ***************************************************************************/
