@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.14 $  $Author: trey $  $Date: 2006-11-08 16:35:28 $
+ $Revision: 1.15 $  $Author: trey $  $Date: 2006-11-09 20:49:26 $
    
  @file    solverUtils.h
  @brief   No brief
@@ -37,6 +37,7 @@
 
 // problem types
 #include "Pomdp.h"
+#include "GenericDiscreteMDP.h"
 #include "RaceTrack.h"
 #include "CustomMDP.h"
 #include "PomdpSim.h"
@@ -70,6 +71,7 @@ enum StrategiesEnum {
 
 enum ProbTypesEnum {
   T_POMDP,
+  T_MDP,
   T_RACETRACK,
   T_CUSTOM
 };
@@ -129,6 +131,9 @@ void constructSolverObjects(SolverObjects& obj,
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.14  2006/11/08 16:35:28  trey
+ * renamed useFastPomdpParser to useFastModelParser; Pomdp constructor now takes different arguments
+ *
  * Revision 1.13  2006/11/07 20:08:28  trey
  * added support for custom problem type
  *

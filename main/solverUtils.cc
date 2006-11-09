@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.20 $  $Author: trey $  $Date: 2006-11-08 16:35:28 $
+ $Revision: 1.21 $  $Author: trey $  $Date: 2006-11-09 20:49:26 $
 
  @file    solverUtils.cc
  @brief   No brief
@@ -61,6 +61,7 @@ static EnumEntry searchStrategyTableG[] = {
 static EnumEntry modelTypeTableG[] = {
   {"-",         -1},
   {"pomdp",     T_POMDP},
+  {"mdp",       T_MDP},
   {"racetrack", T_RACETRACK},
   {"custom",    T_CUSTOM},
   {NULL, -1}
@@ -201,6 +202,11 @@ void SolverParams::inferMissingValues(void)
 	printf("[params] inferred modelType='pomdp' from model filename extension\n");
       }
       modelType = T_POMDP;
+    } else if (endsWith(probName, ".mdp")) {
+      if (zmdpDebugLevelG >= 1) {
+	printf("[params] inferred modelType='mdp' from model filename extension\n");
+      }
+      modelType = T_MDP;
     } else if (endsWith(probName, ".racetrack")) {
       if (zmdpDebugLevelG >= 1) {
 	printf("[params] inferred modelType='racetrack' from model filename extension\n");
@@ -273,9 +279,9 @@ void SolverParams::inferMissingValues(void)
   }
   if (NULL != policyOutputFile) {
     if (lowerBoundRepresentation != V_MAXPLANES) {
-      cerr << "WARNING: normally an output policy would be written, but\n"
-	   << "  policy writing is currently only supported when\n"
-	   << "  modelType='pomdp' and lowerBoundRepresentation='maxPlanes' (-h for help)"
+      cerr << "WARNING: selected options indicate an output policy should be written, but\n"
+	   << "  policy output is currently only supported when modelType='pomdp'\n"
+	   << "  and lowerBoundRepresentation='maxPlanes'; disabling output on this run"
 	   << endl;
       policyOutputFile = NULL;
     }
@@ -287,12 +293,14 @@ void constructSolverObjects(SolverObjects& obj,
 			    const ZMDPConfig& config)
 {
   switch (p.modelType) {
-  case T_POMDP: {
-    Pomdp* pomdp = new Pomdp(p.probName, &config);
-    obj.problem = pomdp;
+  case T_POMDP:
+    obj.problem = new Pomdp(p.probName, &config);
     obj.sim = new PomdpSim((Pomdp*) obj.problem);
     break;
-  }
+  case T_MDP:
+    obj.problem = new GenericDiscreteMDP(p.probName, &config);
+    obj.sim = new MDPSim(obj.problem);
+    break;
   case T_RACETRACK:
     obj.problem = new RaceTrack(p.probName);
     obj.sim = new MDPSim(obj.problem);
@@ -472,6 +480,9 @@ void constructSolverObjects(SolverObjects& obj,
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.20  2006/11/08 16:35:28  trey
+ * renamed useFastPomdpParser to useFastModelParser; Pomdp constructor now takes different arguments
+ *
  * Revision 1.19  2006/11/07 20:08:29  trey
  * added support for custom problem type
  *
