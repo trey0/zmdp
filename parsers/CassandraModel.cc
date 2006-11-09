@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2006-11-09 20:47:46 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2006-11-09 21:01:33 $
   
  @file    CassandraModel.cc
  @brief   No brief
@@ -62,7 +62,8 @@ void CassandraModel::checkForTerminalStates(void)
 
 void CassandraModel::debugDensity(void)
 {
-  double T_size, T_filled, O_size, O_filled;
+  double T_size = -1, T_filled = -1;
+  double O_size = -1, O_filled = -1;
 
   // use doubles to avoid int overflow (e.g. T_size is sometimes larger than MAX_INT)
   T_size = ((double) T[0].size1()) * T[0].size2() * numActions;
@@ -93,6 +94,9 @@ void CassandraModel::debugDensity(void)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2006/11/09 20:47:46  trey
+ * added initialState field for MDPs, fixed a potential problem with accessing undefined observation matrices with MDPs
+ *
  * Revision 1.1  2006/11/08 16:40:50  trey
  * initial check-in
  *
