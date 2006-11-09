@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.26 $  $Author: trey $  $Date: 2006-11-08 16:33:24 $
+ $Revision: 1.27 $  $Author: trey $  $Date: 2006-11-09 20:52:09 $
    
  @file    sla.h
  @brief   No brief
@@ -181,6 +181,7 @@ namespace sla {
     unsigned int size1(void) const { return size1_; }
     unsigned int size2(void) const { return size2_; }
     unsigned int filled(void) const { return data.size(); }
+    unsigned int filled_in_column(unsigned int col) const;
     void resize(unsigned int _size1, unsigned int _size2, unsigned int _non_zeros = 0);
     void push_back(unsigned int row, unsigned int col, double value);
 
@@ -560,6 +561,11 @@ namespace sla {
       }
     }
     return 0.0;
+  }
+
+  inline unsigned int cmatrix::filled_in_column(unsigned int col) const
+  {
+    return col_starts[col+1] - col_starts[col];
   }
 
   inline void cmatrix::resize(unsigned int _size1,
@@ -1306,6 +1312,9 @@ typedef sla::dvector obs_prob_vector;
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.26  2006/11/08 16:33:24  trey
+ * added clear() functions to more data structures
+ *
  * Revision 1.25  2006/11/05 03:25:02  trey
  * added sum() functions
  *
