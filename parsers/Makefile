@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.10 2006-11-08 16:42:06 trey Exp $
+# $Id: Makefile,v 1.11 2006-11-09 20:49:08 trey Exp $
 #
 # Copyright (c) 2002-2005, Trey Smith. All rights reserved.
 #
@@ -28,6 +28,9 @@ include $(SRC_DIR)/common/options.mak
 
 # ADD ANY SUBDIRS THAT NEED TO BE VISITED DURING A BUILD TO THE SUBDIRS LIST
 SUBDIRS := 
+
+maininstall:
+	$(MAKE) $(MFLAGS) -C .. -fMakefile SUBDIRS='parsers main' install
 
 INSTALLHEADERS_HEADERS := \
 	sparse-matrix.h \
@@ -63,6 +66,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.10  2006/11/08 16:42:06  trey
+# added CassandraModel, CassandraParser, and FastParser
+#
 # Revision 1.9  2006/05/29 05:03:51  trey
 # added decision-tree.c and testDecisionTree.c; removed testSpec.cc
 #
