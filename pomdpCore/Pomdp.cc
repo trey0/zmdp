@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.21 $  $Author: trey $  $Date: 2006-11-08 18:00:03 $
+ $Revision: 1.22 $  $Author: trey $  $Date: 2006-11-09 20:52:44 $
   
  @file    Pomdp.cc
  @brief   No brief
@@ -42,8 +42,6 @@
 #include "FastParser.h"
 #include "CassandraParser.h"
 
-#define POMDP_READ_ERROR_EPS (1e-10)
-
 using namespace std;
 using namespace MatrixUtils;
 
@@ -62,6 +60,11 @@ Pomdp::Pomdp(const std::string& fileName,
   }
 
   maxHorizon = config->getInt("maxHorizon");
+
+  // belief vectors are the 'state vectors' of the belief-MDP; the
+  // dimensionality of these vectors is the number of states in
+  // the POMDP
+  numStateDimensions = numStates;
 }
 
 const belief_vector& Pomdp::getInitialBelief(void) const
@@ -130,6 +133,9 @@ bool Pomdp::getIsTerminalState(const state_vector& s) const
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.21  2006/11/08 18:00:03  trey
+ * removed #include of some headers; they were only needed for code that mas moved elsewhere
+ *
  * Revision 1.20  2006/11/08 16:39:14  trey
  * moved file reading functionality into src/parsers/, in CassandraParser.cc and FastParser.cc
  *
