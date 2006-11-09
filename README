@@ -236,6 +236,11 @@ REFERENCES
 ========================================================================
 RELEASE NOTES
 
+Changes from 0.6.4 to 1.0.0 (9 Nov 2006)
+
+* Added ability to specify arbitrary discrete MDPs in the MDP variant
+  of Tony Cassandra's POMDP format.
+
 Changes from 0.6.0 to 0.6.4 (31 Oct 2006)
 
 * Added a simple template for implementing your own MDP model, see
@@ -375,4 +380,4 @@ zpomdp 0.1.0 (28 Oct 2005)
 * Initial release.
 
 ==========================================================
-$Id: README,v 1.29 2006-11-09 20:53:23 trey Exp $
+$Id: README,v 1.30 2006-11-09 21:15:29 trey Exp $
