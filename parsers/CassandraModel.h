@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-11-08 16:40:50 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-11-09 20:47:46 $
    
  @file    CassandraModel.h
  @brief   No brief
@@ -37,7 +37,11 @@ namespace zmdp {
 struct CassandraModel : public MDP {
   int numStates, numObservations;
 
-  // initialBelief(s)
+  CassandraModel(void);
+
+  // initialState -- for MDPs
+  state_vector initialState;
+  // initialBelief(s) -- for POMDPs
   cvector initialBelief;
   // R(s,a)
   cmatrix R;
@@ -60,6 +64,9 @@ struct CassandraModel : public MDP {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/11/08 16:40:50  trey
+ * initial check-in
+ *
  *
  ***************************************************************************/
 

@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-11-08 16:40:50 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2006-11-09 20:47:46 $
   
  @file    CassandraModel.cc
  @brief   No brief
@@ -39,6 +39,11 @@ using namespace std;
 
 namespace zmdp {
 
+CassandraModel::CassandraModel(void) :
+  numStates(-1),
+  numObservations(-1)
+{}
+
 void CassandraModel::checkForTerminalStates(void)
 {
   if (zmdpDebugLevelG >= 1) {
@@ -57,19 +62,30 @@ void CassandraModel::checkForTerminalStates(void)
 
 void CassandraModel::debugDensity(void)
 {
+  double T_size, T_filled, O_size, O_filled;
+
   // use doubles to avoid int overflow (e.g. T_size is sometimes larger than MAX_INT)
-  double T_size = ((double) T[0].size1()) * T[0].size2() * numActions;
-  double O_size = ((double) O[0].size1()) * O[0].size2() * numActions;
-  double T_filled = 0;
-  double O_filled = 0;
+  T_size = ((double) T[0].size1()) * T[0].size2() * numActions;
+  T_filled = 0;
+  if (-1 != numObservations) {
+    O_size = ((double) O[0].size1()) * O[0].size2() * numActions;
+    O_filled = 0;
+  }
   FOR (a, numActions) {
     T_filled += T[a].filled();
-    O_filled += O[a].filled();
+    if (-1 != numObservations) {
+      O_filled += O[a].filled();
+    }
   }
 
-  cout << "T density = " << (T_filled / T_size)
-       << ", O density = " << (O_filled / O_size)
-       << endl;
+  if (-1 == numObservations) {
+    cout << "T density = " << (T_filled / T_size)
+	 << endl;
+  } else {
+    cout << "T density = " << (T_filled / T_size)
+	 << ", O density = " << (O_filled / O_size)
+	 << endl;
+  }
 }
 
 }; // namespace zmdp
@@ -77,5 +93,8 @@ void CassandraModel::debugDensity(void)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/11/08 16:40:50  trey
+ * initial check-in
+ *
  *
  ***************************************************************************/
