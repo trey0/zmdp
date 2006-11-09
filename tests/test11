@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-$TEST_DESCRIPTION = "fast parser";
+$TEST_DESCRIPTION = "read pomdp model with fast parser";
 require "testLibrary.perl";
 &testZmdpBenchmark(cmd => "$zmdpBenchmark -f $pomdpsDir/term3_strict.pomdp",
 		   expectedUB => 10.5882,
