@@ -1,0 +1,16 @@
+#!/usr/bin/perl
+
+$TEST_DESCRIPTION = "read mdp model in cassandra format";
+require "testLibrary.perl";
+
+# (test both normal and fast parser)
+&testZmdpBenchmark(cmd => "$zmdpBenchmark ../test12.mdp",
+		   expectedLB => 15.7891,
+		   expectedUB => 15.7898,
+		   testTolerance => 0.01,
+		   outFiles => ["bounds.plot", "inc.plot", "sim.plot"]);
+&testZmdpBenchmark(cmd => "$zmdpBenchmark -f ../test12.mdp",
+		   expectedLB => 15.7891,
+		   expectedUB => 15.7898,
+		   testTolerance => 0.01,
+		   outFiles => ["bounds.plot", "inc.plot", "sim.plot"]);
