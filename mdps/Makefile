@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.5 2006-11-08 17:59:05 trey Exp $
+# $Id: Makefile,v 1.6 2006-11-09 20:46:41 trey Exp $
 #
 # Copyright (c) 2002-2005, Trey Smith. All rights reserved.
 #
@@ -42,6 +42,7 @@ include $(BUILD_DIR)/installheaders.mak
 
 BUILDLIB_TARGET := libzmdpRaceTrack.a
 BUILDLIB_SRCS := \
+	GenericDiscreteMDP.cc \
 	RaceTrack.cc \
 	CustomMDP.cc
 include $(BUILD_DIR)/buildlib.mak
@@ -59,6 +60,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.5  2006/11/08 17:59:05  trey
+# added GenericDiscreteMDP.h
+#
 # Revision 1.4  2006/11/07 20:09:56  trey
 # added CustomMDP.{h,cc}
 #
