@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2006-11-09 20:48:56 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2006-11-09 21:11:33 $
   
  @file    FastParser.cc
  @brief   No brief
@@ -116,7 +116,6 @@ void FastParser::readModelFromStream(CassandraModel& p,
   char sbuf[512];
   bool inPreamble = true;
 
-  dvector initialBeliefx;
   kmatrix Rx;
   std::vector<kmatrix> Tx, Ox;
 
@@ -300,9 +299,6 @@ void FastParser::readModelFromStream(CassandraModel& p,
   }
 
   // post-process
-  copy(p.initialBelief, initialBeliefx);
-  initialBeliefx.clear();
-
   copy(p.R, Rx);
   Rx.clear();
 
@@ -453,6 +449,9 @@ void FastParser::readStartVector(CassandraModel& p,
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2006/11/09 20:48:56  trey
+ * fixed some MDP vs. POMDP issues
+ *
  * Revision 1.1  2006/11/08 16:40:50  trey
  * initial check-in
  *
