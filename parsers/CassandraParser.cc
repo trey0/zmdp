@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2006-11-09 20:48:40 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2006-11-12 20:51:48 $
   
  @file    CassandraParser.cc
  @brief   No brief
@@ -71,11 +71,14 @@ void CassandraParser::readModelFromFile(CassandraModel& p,
     gettimeofday(&startTime,0);
   }
 
+  // this is the main call to Tony Cassandra's parsing code
   if (! readMDP(const_cast<char *>(fileName.c_str())) ) {
-    //throw InputError();
+    // error messages should already have been printed
     exit(EXIT_FAILURE);
   }
 
+  // from here forward, we're converting the model from the data structures in
+  // Cassandra's library to sla data structures (with the names I'm used to)
   p.discount = CASSANDRA_GLOBAL(gDiscount);
   p.numStates = CASSANDRA_GLOBAL(gNumStates);
   p.numActions = CASSANDRA_GLOBAL(gNumActions);
@@ -132,6 +135,9 @@ void CassandraParser::readModelFromFile(CassandraModel& p,
     
     p.debugDensity();
   }
+
+  // destroy intermediate data structures in Tony Cassandra's library
+  deallocateMDP();
 }
 
 }; // namespace zmdp
@@ -139,6 +145,9 @@ void CassandraParser::readModelFromFile(CassandraModel& p,
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2006/11/09 20:48:40  trey
+ * fixed some MDP vs. POMDP issues
+ *
  * Revision 1.1  2006/11/08 16:40:50  trey
  * initial check-in
  *
