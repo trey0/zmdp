@@ -1,0 +1,83 @@
+# This is a modified version of term3.pomdp with a smaller number of
+# states.  At one point there was a bug in zmdpEvaluate with using
+# distinct models for policy generation and evaluation, which caused
+# a crash in the case when the evaluation model had more states than
+# the policy generation model.  This model is set up to tickle that
+# bug.
+#
+# Copyright (c) 2002-2006, Trey Smith.
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you
+# may not use this file except in compliance with the License. You may
+# obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+# implied. See the License for the specific language governing
+# permissions and limitations under the License.
+
+discount: 0.9
+values: reward
+states: s0 s1 s2
+actions: a0 a1 a2 obs
+observations: p0 p1 p2 pdone
+
+start: 
+0.3333333333 0.33333333333 0.33333333333
+
+T:a0
+0.8 0.1 0.1
+0.1 0.8 0.1
+0.1 0.1 0.8
+
+T:a1
+0.8 0.1 0.1
+0.1 0.8 0.1
+0.1 0.1 0.8
+
+T:a2
+0.8 0.1 0.1
+0.1 0.8 0.1
+0.1 0.1 0.8
+
+T:obs
+0.8 0.1 0.1
+0.1 0.8 0.1
+0.1 0.1 0.8
+
+O:a0
+1 0 0 0
+1 0 0 0
+1 0 0 0
+
+O:a1
+1 0 0 0
+1 0 0 0
+1 0 0 0
+
+O:a2
+1 0 0 0
+1 0 0 0
+1 0 0 0
+
+O:obs
+1 0 0 0
+0 1 0 0
+0 0 1 0
+
+R:a0     : s0    : * : * 3
+R:a0     : s1    : * : * 0
+R:a0     : s2    : * : * 0
+
+R:a1     : s0    : * : * 0
+R:a1     : s1    : * : * 3
+R:a1     : s2    : * : * 0
+
+R:a2     : s0    : * : * 0
+R:a2     : s1    : * : * 0
+R:a2     : s2    : * : * 3
+
+R:obs    : *     : * : * 1
