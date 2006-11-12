@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.11 $  $Author: trey $  $Date: 2006-11-08 16:36:16 $
+ $Revision: 1.12 $  $Author: trey $  $Date: 2006-11-12 21:22:15 $
 
  @file    zmdpEvaluate.cc
  @brief   Use to evaluate a POMDP policy in simulation.
@@ -85,6 +85,13 @@ void doit(const ZMDPConfig& config, SolverParams& p)
     simPomdp = e->pomdp;
   } else {
     simPomdp = new Pomdp(simModelFileNameG, &config);
+
+    if (! ((e->pomdp->getNumActions() == simPomdp->getNumActions())
+	   && (e->pomdp->getNumObservations() == simPomdp->getNumObservations()))) {
+      printf("ERROR: planner model %s and evaluation model %s must have the same number of actions and observations\n",
+	     plannerModelFileNameG, simModelFileNameG);
+      exit(EXIT_FAILURE);
+    }
   }
   PomdpSim* sim = new PomdpSim(simPomdp);
 
@@ -320,6 +327,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.11  2006/11/08 16:36:16  trey
+ * renamed useFastPomdpParser to useFastModelParser
+ *
  * Revision 1.10  2006/10/25 02:07:24  trey
  * removed old debug statement
  *
