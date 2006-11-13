@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.21 $  $Author: trey $  $Date: 2006-11-09 20:49:26 $
+ $Revision: 1.22 $  $Author: trey $  $Date: 2006-11-13 15:09:28 $
 
  @file    solverUtils.cc
  @brief   No brief
@@ -281,7 +281,7 @@ void SolverParams::inferMissingValues(void)
     if (lowerBoundRepresentation != V_MAXPLANES) {
       cerr << "WARNING: selected options indicate an output policy should be written, but\n"
 	   << "  policy output is currently only supported when modelType='pomdp'\n"
-	   << "  and lowerBoundRepresentation='maxPlanes'; disabling output on this run"
+	   << "  and lowerBoundRepresentation='maxPlanes'; disabling policy output on this run"
 	   << endl;
       policyOutputFile = NULL;
     }
@@ -480,6 +480,9 @@ void constructSolverObjects(SolverObjects& obj,
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.21  2006/11/09 20:49:26  trey
+ * added modelType="mdp"
+ *
  * Revision 1.20  2006/11/08 16:35:28  trey
  * renamed useFastPomdpParser to useFastModelParser; Pomdp constructor now takes different arguments
  *
