@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: header.mak,v 1.9 2006-05-20 03:53:22 trey Exp $
+# $Id: header.mak,v 1.10 2006-11-29 21:01:31 trey Exp $
 #
 # Copyright (c) 1996-2005, Carnegie Mellon University. All rights reserved.
 #
@@ -80,8 +80,7 @@ OS_RELEASE := $(shell uname -r | perl -ple 's/\..*$$//;')
 
 OS := $(OS_SYSNAME)$(OS_RELEASE)
 
-
-include $(BUILD_DIR)/Platforms/$(OS).mak
+-include $(BUILD_DIR)/Platforms/$(OS).mak
 
 ######################################################################
 # PICK UP USER-SPECIFIC CONFIGURATION
@@ -181,6 +180,9 @@ $(OBJ_DIR)/%.d: %.cpp
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.9  2006/05/20 03:53:22  trey
+# changed "make" command to build "install" target by default, less confusing for new users
+#
 # Revision 1.8  2006/04/28 17:57:41  trey
 # changed to use apache license
 #
