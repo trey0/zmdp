@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-10-24 02:06:16 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2007-01-13 00:42:02 $
    
  @file    PointUpperBound.cc
  @brief   No brief
@@ -71,6 +71,26 @@ double PointUpperBound::getValue(const state_vector& s,
   }
 }
 
+double PointUpperBound::getNewUBValueQ(MDPNode& cn, int a)
+{
+  double ubVal;
+
+  MDPQEntry& Qa = cn.Q[a];
+  ubVal = 0;
+  FOR (o, Qa.getNumOutcomes()) {
+    MDPEdge* e = Qa.outcomes[o];
+    if (NULL != e) {
+      MDPNode& sn = *e->nextState;
+      double oprob = e->obsProb;
+      ubVal += oprob * sn.ubVal;
+    }
+  }
+  ubVal = Qa.immediateReward + problem->getDiscount() * ubVal;
+  Qa.ubVal = ubVal;
+
+  return ubVal;
+}
+
 void PointUpperBound::initNodeBound(MDPNode& cn)
 {
   if (cn.isTerminal) {
@@ -80,7 +100,7 @@ void PointUpperBound::initNodeBound(MDPNode& cn)
   }
 }
 
-void PointUpperBound::update(MDPNode& cn, int* maxUBActionP)
+void PointUpperBound::updateSimple(MDPNode& cn, int* maxUBActionP)
 {
   double ubVal;
   double maxUBVal = -99e+20;
@@ -117,10 +137,66 @@ void PointUpperBound::update(MDPNode& cn, int* maxUBActionP)
   if (NULL != maxUBActionP) *maxUBActionP = maxUBAction;
 }
 
+void PointUpperBound::updateUseCache(MDPNode& cn, int* maxUBActionP)
+{
+  // cache upper bound for each action
+  dvector cachedUpperBound(problem->getNumActions());
+  FOR (a, problem->getNumActions()) {
+    cachedUpperBound(a) = cn.Q[a].ubVal;
+  }
+
+  // remember which Q functions we have updated on this call
+  std::vector<bool> updatedAction(problem->getNumActions());
+  FOR (a, problem->getNumActions()) {
+    updatedAction[a] = false;
+  }
+
+  double val;
+  int maxUBAction = argmax_elt(cachedUpperBound);
+  while (1) {
+    // do the backup for the best Q
+    val = getNewUBValueQ(cn,maxUBAction);
+    cachedUpperBound(maxUBAction) = val;
+    updatedAction[maxUBAction] = true;
+      
+    // the best action may have changed after updating Q
+    maxUBAction = argmax_elt(cachedUpperBound);
+
+    // if the best action after the update is one that we have already
+    //    updated, we're done
+    if (updatedAction[maxUBAction]) break;
+  }
+
+  double maxUBVal = cachedUpperBound(maxUBAction);
+  
+#if 1
+  // this check may be helpful when there is round-off error or if the
+  // UB is not uniformly improvable, but normally maxUBVal will always
+  // be smaller
+  cn.ubVal = std::min(cn.ubVal, maxUBVal);
+#else
+  cn.ubVal = maxUBVal;
+#endif
+
+  if (NULL != maxUBActionP) *maxUBActionP = maxUBAction;
+}
+
+void PointUpperBound::update(MDPNode& cn, int* maxUBActionP)
+{
+  if (BP_QVAL_UNDEFINED == cn.Q[0].ubVal) {
+    updateSimple(cn, maxUBActionP);
+  } else {
+    updateUseCache(cn, maxUBActionP);
+  }
+}
+
 }; // namespace zmdp
 
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/10/24 02:06:16  trey
+ * initial check-in
+ *
  *
  ***************************************************************************/

@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2006-11-08 16:32:28 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2007-01-13 00:42:02 $
    
  @file    PointUpperBound.h
  @brief   No brief
@@ -59,7 +59,10 @@ struct PointUpperBound : public IncrementalUpperBound {
   void initialize(double _targetPrecision);
   double getValue(const state_vector& s,
 		  const MDPNode* cn) const;
+  double getNewUBValueQ(MDPNode& cn, int a);
   void initNodeBound(MDPNode& cn);
+  void updateSimple(MDPNode& cn, int* maxUBActionP);
+  void updateUseCache(MDPNode& cn, int* maxUBActionP);
   void update(MDPNode& cn, int* maxUBActionP);
 };
 
@@ -70,6 +73,9 @@ struct PointUpperBound : public IncrementalUpperBound {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2006/11/08 16:32:28  trey
+ * renamed MDP.h to MDPModel.h to avoid confusion with mdp.h, stupid case insensitive Mac OS X
+ *
  * Revision 1.1  2006/10/24 02:06:16  trey
  * initial check-in
  *
