@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2006-07-10 19:33:08 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2007-01-13 00:43:20 $
   
  @file    LifeSurvey.cc
  @brief   No brief
@@ -667,7 +667,7 @@ void LSModel::writeToFile(FILE* outFile, bool fullIdentifiers)
     if (0.0 == *sp) {
       fprintf(outFile, "0 ");
     } else {
-      fprintf(outFile, "%lf ", *sp);
+      fprintf(outFile, "%.15lf ", *sp);
     }
   }
   fprintf(outFile, "\n\n");
@@ -682,21 +682,21 @@ void LSModel::writeToFile(FILE* outFile, bool fullIdentifiers)
       getOutcomes(outcomes, reward, s, ai);
       if (reward != 0.0) {
 	if (fullIdentifiers) {
-	  fprintf(outFile, "R: %-5s : %-20s : * : * %lf\n",
+	  fprintf(outFile, "R: %-5s : %-20s : * : * %.15lf\n",
 		  a.toString().c_str(), s.toString().c_str(), reward);
 	} else {
-	  fprintf(outFile, "R: %d : %d : * : * %lf\n",
+	  fprintf(outFile, "R: %d : %d : * : * %.15lf\n",
 		  ai, si, reward);
 	}
       }
       FOR_EACH (op, outcomes) {
 	if (fullIdentifiers) {
 	  LSState sp(op->nextState);
-	  fprintf(outFile, "T: %-5s : %-20s : %-20s %lf\n",
+	  fprintf(outFile, "T: %-5s : %-20s : %-20s %.15lf\n",
 		  a.toString().c_str(), s.toString().c_str(), sp.toString().c_str(),
 		  op->prob);
 	} else {
-	  fprintf(outFile, "T: %d : %d : %d %lf\n",
+	  fprintf(outFile, "T: %d : %d : %d %.15lf\n",
 		  ai, si, op->nextState, op->prob);
 	}
       }
@@ -705,11 +705,11 @@ void LSModel::writeToFile(FILE* outFile, bool fullIdentifiers)
       FOR_EACH (op, obsOutcomes) {
 	if (fullIdentifiers) {
 	  LSObservation o(op->obs);
-	  fprintf(outFile, "O: %-5s : %-20s : %-5s %lf\n",
+	  fprintf(outFile, "O: %-5s : %-20s : %-5s %.15lf\n",
 		  a.toString().c_str(), s.toString().c_str(), o.toString().c_str(),
 		  op->prob);
 	} else {
-	  fprintf(outFile, "O: %d : %d : %d %lf\n",
+	  fprintf(outFile, "O: %d : %d : %d %.15lf\n",
 		  ai, si, op->obs, op->prob);
 	}
       }
@@ -767,6 +767,9 @@ bool LSModel::getInTargetList(const LSPos& pos,
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2006/07/10 19:33:08  trey
+ * added ability to generate a pomdp corresponding to a particular LS target layout, for evaluation purposes
+ *
  * Revision 1.2  2006/06/29 21:38:23  trey
  * added getInitialStateDistribution()
  *
