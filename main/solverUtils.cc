@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.22 $  $Author: trey $  $Date: 2006-11-13 15:09:28 $
+ $Revision: 1.23 $  $Author: trey $  $Date: 2007-01-14 00:53:51 $
 
  @file    solverUtils.cc
  @brief   No brief
@@ -460,7 +460,6 @@ void constructSolverObjects(SolverObjects& obj,
       } else {
 	pub->initBound = new RelaxUBInitializer(obj.problem, &config);
       }
-      pub->initBound = obj.problem->newUpperBound(&config);
       obj.bounds->upperBound = pub;
     break;
     case V_SAWTOOTH:
@@ -480,6 +479,9 @@ void constructSolverObjects(SolverObjects& obj,
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.22  2006/11/13 15:09:28  trey
+ * clarified warning message
+ *
  * Revision 1.21  2006/11/09 20:49:26  trey
  * added modelType="mdp"
  *

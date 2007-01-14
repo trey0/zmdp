@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.12 $  $Author: trey $  $Date: 2006-10-27 18:25:40 $
+ $Revision: 1.13 $  $Author: trey $  $Date: 2007-01-14 00:53:51 $
 
  @file    TestDriver.cc
  @brief   No brief
@@ -158,8 +158,8 @@ void TestDriver::batchTestIncremental(const ZMDPConfig& config,
 
   sim = so.sim;
 
-  ofstream out( incPlotFileName.c_str() );
-  if (! out) {
+  ofstream incPlotFile( incPlotFileName.c_str() );
+  if (! incPlotFile) {
     cerr << "ERROR: couldn't open " << incPlotFileName << " for writing: "
 	 << strerror(errno) << endl;
     exit(EXIT_FAILURE);
@@ -183,6 +183,17 @@ void TestDriver::batchTestIncremental(const ZMDPConfig& config,
   int simulationTracesToLogPerEpoch = config.getInt("simulationTracesToLogPerEpoch");
   if (simulationTracesToLogPerEpoch < 0) {
     simulationTracesToLogPerEpoch = INT_MAX;
+  }
+
+  ofstream* storageOutputFile = NULL;
+  string storageOutputFileName = config.getString("storageOutputFile");
+  if (storageOutputFileName != "none") {
+    storageOutputFile = new ofstream(storageOutputFileName.c_str());
+    if (! storageOutputFile) {
+      cerr << "ERROR: couldn't open " << storageOutputFile << " for writing: "
+	   << strerror(errno) << endl;
+      exit(EXIT_FAILURE);
+    }
   }
 
   printf("initializing solver (includes calculating initial bounds)\n");
@@ -272,7 +283,7 @@ void TestDriver::batchTestIncremental(const ZMDPConfig& config,
 	}
       }
       
-      // collect statistics and write a line to the output file
+      // collect policy evaluation statistics and write a line to the log file
       double avg, stdev;
       calc_avg_stdev_collection(rewardRecord.begin(), rewardRecord.end(), avg, stdev);
       
@@ -281,22 +292,56 @@ void TestDriver::batchTestIncremental(const ZMDPConfig& config,
 #if 0
       ValueInterval val = so.solver.getValueAt(model->getInitialState());
       // for some reason, if i use sqrt() instead of ::sqrt(), it's ambiguous
-      out << timeSoFar << " " << avg << " "
-	  << (stdev/::sqrt(numIterations)*1.96) << " "
-	  << val.l << " " << val.u << " " << success_rate << endl;
+      incPlotFile << timeSoFar << " " << avg << " "
+		  << (stdev/::sqrt(numIterations)*1.96) << " "
+		  << val.l << " " << val.u << " " << success_rate << endl;
 #else
-      out << timeSoFar
-	  << " " << avg
-	  << " " << (stdev/::sqrt(numIterations)*1.96)
-	  << " " << success_rate << endl;
+      incPlotFile << timeSoFar
+		  << " " << avg
+		  << " " << (stdev/::sqrt(numIterations)*1.96)
+		  << " " << success_rate << endl;
 #endif
      
-      out.flush();
+      incPlotFile.flush();
+
+      // record storage space used by the bounds representation
+      if (storageOutputFile) {
+	char sbuf[1024];
+
+	AbstractBound* lb = so.bounds->lowerBound;
+	AbstractBound* ub = so.bounds->upperBound;
+
+	int lbNumElts1    = lb->getStorage(ZMDP_S_NUM_ELTS);
+	int lbNumEntries1 = lb->getStorage(ZMDP_S_NUM_ENTRIES);
+	int lbNumElts2    = lb->getStorage(ZMDP_S_NUM_ELTS_TABULAR);
+	int lbNumEntries2 = lb->getStorage(ZMDP_S_NUM_ENTRIES_TABULAR);
+
+	int ubNumElts1    = ub->getStorage(ZMDP_S_NUM_ELTS);
+	int ubNumEntries1 = ub->getStorage(ZMDP_S_NUM_ENTRIES);
+	int ubNumElts2    = ub->getStorage(ZMDP_S_NUM_ELTS_TABULAR);
+	int ubNumEntries2 = ub->getStorage(ZMDP_S_NUM_ENTRIES_TABULAR);
+
+	int totalEntries = lbNumEntries1 + lbNumEntries2 + ubNumEntries1 + ubNumEntries2;
+	
+	snprintf(sbuf, sizeof(sbuf),
+		 "%10lf %10d %10d %10d %10d %10d %10d %10d %10d %10d",
+		 timeSoFar, totalEntries,
+		 lbNumElts1, lbNumEntries1,
+		 lbNumElts2, lbNumEntries2,
+		 ubNumElts1, ubNumEntries1,
+		 ubNumElts2, ubNumEntries2);
+
+	(*storageOutputFile) << sbuf << endl;
+	storageOutputFile->flush();
+      }
     }
   }
-  out.close();
+  incPlotFile.close();
   boundsFile.close();
   simOutFile.close();
+  if (storageOutputFile) {
+    storageOutputFile->close();
+  }
 
   so.solver->finishLogging();
 }
@@ -317,6 +362,9 @@ void TestDriver::printRewards(void) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.12  2006/10/27 18:25:40  trey
+ * logBackups() replaced with more general finishLogging()
+ *
  * Revision 1.11  2006/10/24 02:09:18  trey
  * changes to match updated Solver interface
  *
