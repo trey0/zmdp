@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2006-10-24 02:04:35 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2007-01-14 00:53:30 $
    
  @file    AbstractBound.h
  @brief   No brief
@@ -33,6 +33,11 @@ using namespace sla;
 
 namespace zmdp {
 
+#define ZMDP_S_NUM_ELTS            (0)
+#define ZMDP_S_NUM_ENTRIES         (1)
+#define ZMDP_S_NUM_ELTS_TABULAR    (2)
+#define ZMDP_S_NUM_ENTRIES_TABULAR (3)
+
 struct AbstractBound {
   virtual ~AbstractBound(void) {}
 
@@ -42,6 +47,14 @@ struct AbstractBound {
   // returns the bound value at state s
   virtual double getValue(const state_vector& s,
 			  const MDPNode* cn) const = 0;
+
+  // returns amount of storage space used by data structure.  whichMetric
+  // selects which metric to return.
+  //   0 = number of "elements", e.g. alpha vectors
+  //   1 = number of "entries", e.g. numbers in vectors
+  //   2 = number of elements in associated tabular data structure (or 0 if n/a)
+  //   3 = number of entries in associated tabular data structure (or 0 if n/a)
+  virtual int getStorage(int whichMetric) const = 0;
 };
 
 }; // namespace zmdp
@@ -51,6 +64,9 @@ struct AbstractBound {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2006/10/24 02:04:35  trey
+ * added MDPNode* argument to getValue; allows optimization in some cases
+ *
  * Revision 1.2  2006/04/28 17:57:41  trey
  * changed to use apache license
  *

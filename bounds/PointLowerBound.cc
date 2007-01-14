@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-10-24 02:06:16 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2007-01-14 00:53:30 $
    
  @file    PointLowerBound.cc
  @brief   No brief
@@ -111,10 +111,29 @@ void PointLowerBound::update(MDPNode& cn)
 #endif
 }
 
+int PointLowerBound::getStorage(int whichMetric) const
+{
+  switch (whichMetric) {
+  case ZMDP_S_NUM_ELTS:
+  case ZMDP_S_NUM_ENTRIES:
+    return initBound->getStorage(whichMetric);
+
+  case ZMDP_S_NUM_ELTS_TABULAR:
+  case ZMDP_S_NUM_ENTRIES_TABULAR:
+    return getNodeCacheStorage(core->lookup, whichMetric);
+
+  default:
+    assert(0); // never reach this point
+  }
+}
+
 }; // namespace zmdp
 
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/10/24 02:06:16  trey
+ * initial check-in
+ *
  *
  ***************************************************************************/

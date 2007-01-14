@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.5 $  $Author: trey $  $Date: 2006-10-24 02:07:27 $
+ $Revision: 1.6 $  $Author: trey $  $Date: 2007-01-14 00:53:30 $
    
  @file    RelaxUBInitializer.h
  @brief   No brief
@@ -52,6 +52,7 @@ struct RelaxUBInitializer : public AbstractBound {
   // implementation of AbstractBound interface
   void initialize(double targetPrecision);
   double getValue(const state_vector& s, const MDPNode* cn) const;
+  int getStorage(int whichMetric) const;
 };
 
 }; // namespace zmdp
@@ -61,6 +62,9 @@ struct RelaxUBInitializer : public AbstractBound {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.5  2006/10/24 02:07:27  trey
+ * tweaked args to some functions to match changes elsewhere
+ *
  * Revision 1.4  2006/10/18 18:05:02  trey
  * now propagating config data structure to lower levels so config fields can be used to control more parts of the system
  *

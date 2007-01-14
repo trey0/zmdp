@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2007-01-13 00:42:02 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2007-01-14 00:53:30 $
    
  @file    PointUpperBound.h
  @brief   No brief
@@ -64,6 +64,7 @@ struct PointUpperBound : public IncrementalUpperBound {
   void updateSimple(MDPNode& cn, int* maxUBActionP);
   void updateUseCache(MDPNode& cn, int* maxUBActionP);
   void update(MDPNode& cn, int* maxUBActionP);
+  int getStorage(int whichMetric) const;
 };
 
 }; // namespace zmdp
@@ -73,6 +74,9 @@ struct PointUpperBound : public IncrementalUpperBound {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2007/01/13 00:42:02  trey
+ * added upper bound caching like sawtooth
+ *
  * Revision 1.2  2006/11/08 16:32:28  trey
  * renamed MDP.h to MDPModel.h to avoid confusion with mdp.h, stupid case insensitive Mac OS X
  *

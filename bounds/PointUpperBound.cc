@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2007-01-13 00:42:02 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2007-01-14 00:53:30 $
    
  @file    PointUpperBound.cc
  @brief   No brief
@@ -190,11 +190,30 @@ void PointUpperBound::update(MDPNode& cn, int* maxUBActionP)
   }
 }
 
+int PointUpperBound::getStorage(int whichMetric) const
+{
+  switch (whichMetric) {
+  case ZMDP_S_NUM_ELTS:
+  case ZMDP_S_NUM_ENTRIES:
+    return initBound->getStorage(whichMetric);
+
+  case ZMDP_S_NUM_ELTS_TABULAR:
+  case ZMDP_S_NUM_ENTRIES_TABULAR:
+    return getNodeCacheStorage(core->lookup, whichMetric);
+
+  default:
+    assert(0); // never reach this point
+  }
+}
+
 }; // namespace zmdp
 
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2007/01/13 00:42:02  trey
+ * added upper bound caching like sawtooth
+ *
  * Revision 1.1  2006/10/24 02:06:16  trey
  * initial check-in
  *

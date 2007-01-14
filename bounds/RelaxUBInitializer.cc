@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.7 $  $Author: trey $  $Date: 2006-11-08 16:32:46 $
+ $Revision: 1.8 $  $Author: trey $  $Date: 2007-01-14 00:53:30 $
    
  @file    RelaxUBInitializer.cc
  @brief   No brief
@@ -257,11 +257,19 @@ double RelaxUBInitializer::getValue(const state_vector& s, const MDPNode* cn) co
   }
 }
 
+int RelaxUBInitializer::getStorage(int whichMetric) const
+{
+  return getNodeCacheStorage(lookup, whichMetric);
+}
+
 }; // namespace zmdp
 
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.7  2006/11/08 16:32:46  trey
+ * renamed MDP.h to MDPModel.h to avoid confusion with mdp.h, stupid case insensitive Mac OS X
+ *
  * Revision 1.6  2006/10/30 20:00:15  trey
  * USE_DEBUG_PRINT replaced with a run-time config parameter "debugLevel"
  *
