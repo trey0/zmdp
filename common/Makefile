@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.28 2006-11-08 16:33:14 trey Exp $
+# $Id: Makefile,v 1.29 2007-01-14 01:24:17 trey Exp $
 #
 # Copyright (c) 2002-2005, Trey Smith. All rights reserved.
 #
@@ -28,8 +28,6 @@ include $(SRC_DIR)/common/options.mak
 
 # ADD ANY SUBDIRS THAT NEED TO BE VISITED DURING A BUILD TO THE SUBDIRS LIST
 SUBDIRS := 
-
-CFLAGS += -I$(CHECKOUT_DIR)/external/boost
 
 INSTALLHEADERS_HEADERS := \
 	zmdpCommonDefs.h \
@@ -72,6 +70,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.28  2006/11/08 16:33:14  trey
+# renamed MDP.h to MDPModel.h to avoid confusion with mdp.h, stupid case insensitive Mac OS X
+#
 # Revision 1.27  2006/10/15 23:44:35  trey
 # now install zmdpConfig.{h,cc} and embedFiles.h
 #

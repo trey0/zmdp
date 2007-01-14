@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.6 2006-10-24 02:13:19 trey Exp $
+# $Id: Makefile,v 1.7 2007-01-14 01:24:36 trey Exp $
 #
 # Copyright (c) 2006, Trey Smith. All rights reserved.
 #
@@ -31,8 +31,6 @@ maininstall:
 
 # ADD ANY SUBDIRS THAT NEED TO BE VISITED DURING A BUILD TO THE SUBDIRS LIST
 SUBDIRS := 
-
-CFLAGS += -I$(CHECKOUT_DIR)/external/boost
 
 INSTALLHEADERS_HEADERS := \
 	MaxPlanesLowerBound.h \
@@ -76,6 +74,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.6  2006/10/24 02:13:19  trey
+# removed ConvexBounds
+#
 # Revision 1.5  2006/06/15 16:05:12  trey
 # fixed size() information for alpha vectors, had to reorder some libs
 #

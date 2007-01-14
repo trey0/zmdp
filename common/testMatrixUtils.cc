@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.4 $  $Author: trey $  $Date: 2006-04-28 17:57:41 $
+ $Revision: 1.5 $  $Author: trey $  $Date: 2007-01-14 01:24:57 $
    
  @file    testMatrixUtils.cc
  @brief   No brief
@@ -23,7 +23,6 @@
 #include "MatrixUtils.h"
 
 using namespace std;
-using namespace boost::numeric::ublas;
 using namespace MatrixUtils;
 
 void set_to_count(bmatrix& m) {
@@ -122,6 +121,9 @@ int main(void) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2006/04/28 17:57:41  trey
+ * changed to use apache license
+ *
  * Revision 1.3  2005/10/28 03:50:32  trey
  * simplified license
  *

@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.5 2006-10-24 02:08:01 trey Exp $
+# $Id: Makefile,v 1.6 2007-01-14 01:23:20 trey Exp $
 #
 # Copyright (c) 2006, Trey Smith. All rights reserved.
 #
@@ -32,8 +32,6 @@ maininstall:
 # ADD ANY SUBDIRS THAT NEED TO BE VISITED DURING A BUILD TO THE SUBDIRS LIST
 SUBDIRS := 
 
-CFLAGS += -I$(CHECKOUT_DIR)/external/boost
-
 INSTALLHEADERS_HEADERS := \
 	AbstractBound.h \
 	MDPCache.h \
@@ -63,6 +61,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.5  2006/10/24 02:08:01  trey
+# much refactoring
+#
 # Revision 1.4  2006/10/17 19:16:25  trey
 # added MDPCache.cc
 #
