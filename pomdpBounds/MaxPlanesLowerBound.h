@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.14 $  $Author: trey $  $Date: 2006-10-25 19:13:01 $
+ $Revision: 1.15 $  $Author: trey $  $Date: 2007-01-14 00:54:10 $
    
  @file    MaxPlanesLowerBound.h
  @brief   No brief
@@ -102,6 +102,7 @@ struct MaxPlanesLowerBound : public IncrementalLowerBound {
 
   void writeToFile(const std::string& outFileName) const;
   void readFromFile(const std::string& inFileName);
+  int getStorage(int whichMetric) const;
 };
 
 }; // namespace zmdp
@@ -111,6 +112,9 @@ struct MaxPlanesLowerBound : public IncrementalLowerBound {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.14  2006/10/25 19:13:01  trey
+ * migrated to more run-time config parameters
+ *
  * Revision 1.13  2006/10/24 19:12:13  trey
  * replaced useConvexSupportList with useMaxPlanesSupportList
  *

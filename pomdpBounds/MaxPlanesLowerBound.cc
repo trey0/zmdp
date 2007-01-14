@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.23 $  $Author: trey $  $Date: 2006-11-07 21:08:39 $
+ $Revision: 1.24 $  $Author: trey $  $Date: 2007-01-14 00:54:10 $
    
  @file    MaxPlanesLowerBound.cc
  @brief   No brief
@@ -705,11 +705,40 @@ void MaxPlanesLowerBound::readFromFile(const std::string& inFileName)
   lastPruneNumBackups = -1;
 }
 
+int MaxPlanesLowerBound::getStorage(int whichMetric) const
+{
+  switch (whichMetric) {
+  case ZMDP_S_NUM_ELTS:
+    // return number of planes
+    return planes.size();
+
+  case ZMDP_S_NUM_ENTRIES: {
+    // return total number of entries in all planes
+    int entryCount = 0;
+    FOR_EACH (planeP, planes) {
+      const LBPlane& p = **planeP;
+      entryCount += p.alpha.filled();
+      if (useMaxPlanesMasking) {
+	entryCount += p.mask.filled();
+      }
+    }
+    return entryCount;
+  }
+
+  default:
+    /* N/A */
+    return 0;
+  }
+}
+
 }; // namespace zmdp
 
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.23  2006/11/07 21:08:39  trey
+ * corrected printf format warning
+ *
  * Revision 1.22  2006/10/30 20:00:15  trey
  * USE_DEBUG_PRINT replaced with a run-time config parameter "debugLevel"
  *

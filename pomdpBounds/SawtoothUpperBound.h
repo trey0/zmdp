@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.10 $  $Author: trey $  $Date: 2006-10-24 19:12:32 $
+ $Revision: 1.11 $  $Author: trey $  $Date: 2007-01-14 00:54:10 $
    
  @file    SawtoothUpperBound.h
  @brief   No brief
@@ -91,6 +91,7 @@ struct SawtoothUpperBound : public IncrementalUpperBound {
   double getNewUBValue(MDPNode& cn, int* maxUBActionP);
   void setUBForNode(MDPNode& cn, double newUB, bool addBV);
   double getUBForNode(MDPNode& cn);
+  int getStorage(int whichMetric) const;
 };
 
 }; // namespace zmdp
@@ -100,6 +101,9 @@ struct SawtoothUpperBound : public IncrementalUpperBound {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.10  2006/10/24 19:12:32  trey
+ * replaced useConvexSupportList with useSawtoothSupportList
+ *
  * Revision 1.9  2006/10/24 02:13:04  trey
  * distributed update code from ConvexBounds to SawtoothUpperBound, allows more flexibility
  *
