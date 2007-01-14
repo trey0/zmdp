@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.4 $  $Author: trey $  $Date: 2007-01-14 00:53:30 $
+ $Revision: 1.5 $  $Author: trey $  $Date: 2007-01-14 01:24:02 $
    
  @file    AbstractBound.h
  @brief   No brief
@@ -48,13 +48,12 @@ struct AbstractBound {
   virtual double getValue(const state_vector& s,
 			  const MDPNode* cn) const = 0;
 
-  // returns amount of storage space used by data structure.  whichMetric
-  // selects which metric to return.
-  //   0 = number of "elements", e.g. alpha vectors
-  //   1 = number of "entries", e.g. numbers in vectors
-  //   2 = number of elements in associated tabular data structure (or 0 if n/a)
-  //   3 = number of entries in associated tabular data structure (or 0 if n/a)
-  virtual int getStorage(int whichMetric) const = 0;
+  // returns amount of storage space used by data structure.
+  // whichMetric selects which metric to return (see ZMDP_S_* macros
+  // above).  we don't require all derived classes to have a method for
+  // tracking storage -- it's only implemented for the bounds
+  // representations we really care about.
+  virtual int getStorage(int whichMetric) const { return 0; }
 };
 
 }; // namespace zmdp
@@ -64,6 +63,9 @@ struct AbstractBound {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2007/01/14 00:53:30  trey
+ * added hooks for plotting storage space during a run
+ *
  * Revision 1.3  2006/10/24 02:04:35  trey
  * added MDPNode* argument to getValue; allows optimization in some cases
  *
