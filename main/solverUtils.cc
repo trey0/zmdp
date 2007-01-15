@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.23 $  $Author: trey $  $Date: 2007-01-14 00:53:51 $
+ $Revision: 1.24 $  $Author: trey $  $Date: 2007-01-15 17:25:24 $
 
  @file    solverUtils.cc
  @brief   No brief
@@ -455,10 +455,12 @@ void constructSolverObjects(SolverObjects& obj,
     switch (p.upperBoundRepresentation) {
     case V_POINT:
       pub = new PointUpperBound(obj.problem, &config, obj.bounds);
-      if (p.useWeakUpperBoundHeuristic) {
-	pub->initBound = obj.problem->newUpperBound(&config);
-      } else {
+      if (T_RACETRACK == p.modelType && !p.useWeakUpperBoundHeuristic) {
+	// stronger upper bound strategy for racetrack MDP
 	pub->initBound = new RelaxUBInitializer(obj.problem, &config);
+      } else {
+	// default upper bound strategy, depends on the MDP type
+	pub->initBound = obj.problem->newUpperBound(&config);
       }
       obj.bounds->upperBound = pub;
     break;
@@ -479,6 +481,9 @@ void constructSolverObjects(SolverObjects& obj,
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.23  2007/01/14 00:53:51  trey
+ * added ability to log storage space during a run
+ *
  * Revision 1.22  2006/11/13 15:09:28  trey
  * clarified warning message
  *
