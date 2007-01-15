@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.15 $  $Author: trey $  $Date: 2007-01-14 00:54:10 $
+ $Revision: 1.16 $  $Author: trey $  $Date: 2007-01-15 17:22:32 $
    
  @file    SawtoothUpperBound.cc
  @brief   No brief
@@ -460,8 +460,8 @@ int SawtoothUpperBound::getStorage(int whichMetric) const
 {
   switch (whichMetric) {
   case ZMDP_S_NUM_ELTS:
-    // return number of belief/value pairs
-    return pts.size();
+    // return number of belief/value pairs -- each corner point counts as 1
+    return pts.size() + cornerPts.size();
 
   case ZMDP_S_NUM_ENTRIES: {
     // return total number of entries in all belief/value pairs
@@ -470,7 +470,8 @@ int SawtoothUpperBound::getStorage(int whichMetric) const
       const BVPair& p = **ptP;
       entryCount += p.b.filled()+1; // (add one for the value)
     }
-    return entryCount;
+    // each corner point counts as one entry
+    return entryCount + cornerPts.size();
   }
 
   default:
@@ -484,6 +485,9 @@ int SawtoothUpperBound::getStorage(int whichMetric) const
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.15  2007/01/14 00:54:10  trey
+ * added hooks for logging storage space during a run
+ *
  * Revision 1.14  2006/10/30 20:00:15  trey
  * USE_DEBUG_PRINT replaced with a run-time config parameter "debugLevel"
  *
