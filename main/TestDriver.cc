@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.15 $  $Author: trey $  $Date: 2007-01-15 20:22:04 $
+ $Revision: 1.16 $  $Author: trey $  $Date: 2007-01-15 21:16:37 $
 
  @file    TestDriver.cc
  @brief   No brief
@@ -231,7 +231,7 @@ void TestDriver::batchTestIncremental(const ZMDPConfig& config,
 	solverFinished = true;
       }
     }
-    if (so.bounds->maintainLowerBound && terminateLowerBoundValue != -999) {
+    if (so.bounds->maintainUpperBound && terminateUpperBoundValue != -999) {
       if (root->ubVal <= terminateUpperBoundValue) {
 	solverFinished = true;
       }
@@ -392,6 +392,9 @@ void TestDriver::printRewards(void) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.15  2007/01/15 20:22:04  trey
+ * added support for terminate{Lower,Upper}BoundValue config parameters
+ *
  * Revision 1.14  2007/01/15 17:24:20  trey
  * avoid crashing in getStorage() call when only one-sided bounds are being kept
  *
