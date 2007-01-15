@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2006-11-09 21:11:33 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2007-01-15 17:23:34 $
   
  @file    FastParser.cc
  @brief   No brief
@@ -385,6 +385,7 @@ void FastParser::readStartVector(CassandraModel& p,
 
     int i;
     char *tok;
+    double val;
 
     p.initialBelief.resize(p.numStates);
 
@@ -418,7 +419,10 @@ void FastParser::readStartVector(CassandraModel& p,
 	}
       }
       
-      p.initialBelief.push_back(i, atof(tok));
+      val = atof(tok);
+      if (val > SPARSE_EPS) {
+	p.initialBelief.push_back(i, val);
+      }
     }
   } else {
     // MDP case
@@ -449,6 +453,9 @@ void FastParser::readStartVector(CassandraModel& p,
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2006/11/09 21:11:33  trey
+ * removed obsolete code referencing variable initialBeliefx
+ *
  * Revision 1.2  2006/11/09 20:48:56  trey
  * fixed some MDP vs. POMDP issues
  *
