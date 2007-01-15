@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.13 $  $Author: trey $  $Date: 2007-01-14 00:53:51 $
+ $Revision: 1.14 $  $Author: trey $  $Date: 2007-01-15 17:24:20 $
 
  @file    TestDriver.cc
  @brief   No brief
@@ -309,17 +309,22 @@ void TestDriver::batchTestIncremental(const ZMDPConfig& config,
 	char sbuf[1024];
 
 	AbstractBound* lb = so.bounds->lowerBound;
+	int lbNumElts1 = 0, lbNumEntries1 = 0, lbNumElts2 = 0, lbNumEntries2 = 0;
+	if (lb) {
+	  lbNumElts1    = lb->getStorage(ZMDP_S_NUM_ELTS);
+	  lbNumEntries1 = lb->getStorage(ZMDP_S_NUM_ENTRIES);
+	  lbNumElts2    = lb->getStorage(ZMDP_S_NUM_ELTS_TABULAR);
+	  lbNumEntries2 = lb->getStorage(ZMDP_S_NUM_ENTRIES_TABULAR);
+	}
+
 	AbstractBound* ub = so.bounds->upperBound;
-
-	int lbNumElts1    = lb->getStorage(ZMDP_S_NUM_ELTS);
-	int lbNumEntries1 = lb->getStorage(ZMDP_S_NUM_ENTRIES);
-	int lbNumElts2    = lb->getStorage(ZMDP_S_NUM_ELTS_TABULAR);
-	int lbNumEntries2 = lb->getStorage(ZMDP_S_NUM_ENTRIES_TABULAR);
-
-	int ubNumElts1    = ub->getStorage(ZMDP_S_NUM_ELTS);
-	int ubNumEntries1 = ub->getStorage(ZMDP_S_NUM_ENTRIES);
-	int ubNumElts2    = ub->getStorage(ZMDP_S_NUM_ELTS_TABULAR);
-	int ubNumEntries2 = ub->getStorage(ZMDP_S_NUM_ENTRIES_TABULAR);
+	int ubNumElts1 = 0, ubNumEntries1 = 0, ubNumElts2 = 0, ubNumEntries2 = 0;
+	if (ub) {
+	  ubNumElts1    = ub->getStorage(ZMDP_S_NUM_ELTS);
+	  ubNumEntries1 = ub->getStorage(ZMDP_S_NUM_ENTRIES);
+	  ubNumElts2    = ub->getStorage(ZMDP_S_NUM_ELTS_TABULAR);
+	  ubNumEntries2 = ub->getStorage(ZMDP_S_NUM_ENTRIES_TABULAR);
+	}
 
 	int totalEntries = lbNumEntries1 + lbNumEntries2 + ubNumEntries1 + ubNumEntries2;
 	
@@ -362,6 +367,9 @@ void TestDriver::printRewards(void) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.13  2007/01/14 00:53:51  trey
+ * added ability to log storage space during a run
+ *
  * Revision 1.12  2006/10/27 18:25:40  trey
  * logBackups() replaced with more general finishLogging()
  *
