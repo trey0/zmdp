@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2007-01-14 00:53:30 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2007-01-15 17:26:10 $
    
  @file    MDPCache.cc
  @brief   No brief
@@ -41,19 +41,23 @@ namespace zmdp {
 
 int getNodeCacheStorage(const MDPHash* lookup, int whichMetric)
 {
+  int eltCount = 0;
+  int entryCount = 0;
+  FOR_EACH (pr, *lookup) {
+    if (!pr->second->isFringe()) {
+      eltCount++;
+      // the number of entries we count for each belief/value pair is
+      // the number of entries in the belief plus one for the value
+      entryCount += pr->second->s.filled() + 1;
+    }
+  }
+  
   switch (whichMetric) {
   case ZMDP_S_NUM_ELTS_TABULAR:
-    // return number of nodes in the cache
-    return lookup->size();
+    return eltCount;
 
-  case ZMDP_S_NUM_ENTRIES_TABULAR: {
-    // return total number of entries in the state vectors for all nodes
-    int entryCount = 0;
-    FOR_EACH (pr, *lookup) {
-      entryCount += pr->second->s.filled() + 1; // (add one for the value)
-    }
+  case ZMDP_S_NUM_ENTRIES_TABULAR:
     return entryCount;
-  }
 
   default:
     /* N/A */
@@ -66,6 +70,9 @@ int getNodeCacheStorage(const MDPHash* lookup, int whichMetric)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2007/01/14 00:53:30  trey
+ * added hooks for plotting storage space during a run
+ *
  * Revision 1.2  2006/10/19 19:34:32  trey
  * removed MDPNodeHashLogger
  *
