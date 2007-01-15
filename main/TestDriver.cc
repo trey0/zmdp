@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.14 $  $Author: trey $  $Date: 2007-01-15 17:24:20 $
+ $Revision: 1.15 $  $Author: trey $  $Date: 2007-01-15 20:22:04 $
 
  @file    TestDriver.cc
  @brief   No brief
@@ -196,8 +196,13 @@ void TestDriver::batchTestIncremental(const ZMDPConfig& config,
     }
   }
 
+  double terminateLowerBoundValue = config.getDouble("terminateLowerBoundValue");
+  double terminateUpperBoundValue = config.getDouble("terminateUpperBoundValue");
+
   printf("initializing solver (includes calculating initial bounds)\n");
   so.solver->planInit(sim->getModel(), &config);
+
+  MDPNode* root = NULL;
 
   printf("entering solver main loop\n");
   double timeSoFar = 1e-20;
@@ -211,6 +216,26 @@ void TestDriver::batchTestIncremental(const ZMDPConfig& config,
 			       /* maxTime = */ -1, minPrecision);
     double deltaTime = timevalToSeconds(getTime() - plan_start);
     timeSoFar += deltaTime;
+
+    if (NULL == root) {
+      root = so.bounds->getRootNode();
+    }
+    if (so.bounds->maintainLowerBound && so.bounds->maintainUpperBound
+	&& minPrecision > 0) {
+      if ((root->ubVal - root->lbVal) <= minPrecision) {
+	solverFinished = true;
+      }
+    }
+    if (so.bounds->maintainLowerBound && terminateLowerBoundValue != -999) {
+      if (root->lbVal >= terminateLowerBoundValue) {
+	solverFinished = true;
+      }
+    }
+    if (so.bounds->maintainLowerBound && terminateLowerBoundValue != -999) {
+      if (root->ubVal <= terminateUpperBoundValue) {
+	solverFinished = true;
+      }
+    }
 
     sim->simOutFile = &simOutFile;
 
@@ -367,6 +392,9 @@ void TestDriver::printRewards(void) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.14  2007/01/15 17:24:20  trey
+ * avoid crashing in getStorage() call when only one-sided bounds are being kept
+ *
  * Revision 1.13  2007/01/14 00:53:51  trey
  * added ability to log storage space during a run
  *
