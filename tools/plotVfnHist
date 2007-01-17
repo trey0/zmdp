@@ -2,6 +2,9 @@
 
 # run this script in the same directory where you run makeVfnHist; it generates the plots
 
+$LBWIDTH = 80;
+$UBWIDTH = 20;
+
 sub dosys {
     my $cmd = shift;
     print "$cmd\n";
@@ -52,7 +55,7 @@ $k2Last = `cat plotscratch/k2Last.log`;
 chop $k2Last;
 $k2Size = $k2Last+1;
 
-for ("lpoint", "mp", "mpmask", "mpprune", "mpboth", "upoint", "saw", "sawmask") {
+for ("ltab", "lcomp", "lmask", "lcompprune", "lmaskprune", "utab", "ucomp", "umask") {
     eval("\$${_}B = &getNumBackups('$_/bounds.plot');");
 }
 
@@ -82,35 +85,36 @@ function cdfs = calcCdfs(gtruth, vals, entries, bins, invert);
     else
       cdfs(:,i) = cumsum(diffHist)';
     end
-    #cdfs(:,i) = diffHist';
   end
 end
 
 numBins = 20;
 
 gtruth = load("gtruth/boundValues.log");
-mp = load("mp/boundValues.log");
-mpprune = load("mpprune/boundValues.log");
-mpmask = load("mpmask/boundValues.log");
-mpboth = load("mpboth/boundValues.log");
-saw = load("saw/boundValues.log");
-sawmask = load("sawmask/boundValues.log");
-lpoint = load("lpoint/boundValues.log");
-upoint = load("upoint/boundValues.log");
+#lcomp = load("lcomp/boundValues.log");
+#lcompprune = load("lcompprune/boundValues.log");
+lcomp = gtruth; # HACK
+lcompprune = gtruth; # HACK
+lmask = load("lmask/boundValues.log");
+lmaskprune = load("lmaskprune/boundValues.log");
+ucomp = load("ucomp/boundValues.log");
+umask = load("umask/boundValues.log");
+ltab = load("ltab/boundValues.log");
+utab = load("utab/boundValues.log");
 
 lbgtruth = gtruth(:,2);
-lball = [mp(:,2), mpprune(:,2), mpmask(:,2), mpboth(:,2), lpoint(:,2)];
-LMP = 1;
-LMPPRUNE = 2;
-LMPMASK = 3;
-LMPBOTH = 4;
-LPOINT = 5;
+lball = [lcomp(:,2), lcompprune(:,2), lmask(:,2), lmaskprune(:,2), ltab(:,2)];
+LCOMP = 1;
+LCOMPPRUNE = 2;
+LMASK = 3;
+LMASKPRUNE = 4;
+LTAB = 5;
 
 ubgtruth = gtruth(:,3);
-uball = [saw(:,3), sawmask(:,3), upoint(:,3)];
-USAW = 1;
-USAWMASK = 2;
-UPOINT = 3;
+uball = [ucomp(:,3), umask(:,3), utab(:,3)];
+UCOMP = 1;
+UMASK = 2;
+UTAB = 3;
 
 setA = 1:$k1Size;
 setB = ($k1Size+1):$k2Size;
@@ -118,46 +122,48 @@ $outputPlot
 
 __gnuplot_set__ key left
 
-bds = [-30,0];
+bds = [-$LBWIDTH,0];
 delta = (range(bds))/numBins;
-bins = (bds(1):delta:bds(2)); # - delta/2;
+bins = (bds(1):delta:bds(2));
 
 subplot(2,2,1);
 cdfs = calcCdfs(lbgtruth, lball, setA, bins, 0);
-plot(bins,cdfs(:,LMP),'-+;mp ($mpB);',
-     bins,cdfs(:,LMPPRUNE),'-*;mp+prune ($mppruneB);',
-     bins,cdfs(:,LMPMASK),'--o;mp+mask ($mpmaskB);',
-     bins,cdfs(:,LMPBOTH),'--x;mp+both ($mpbothB);',
-     bins,cdfs(:,LPOINT),';point ($lpointB);');
+plot(
+#     bins,cdfs(:,LCOMP),'-+;comp ($lcompB);',
+#     bins,cdfs(:,LCOMPPRUNE),'-*;comp/prune ($lcomppruneB);',
+     bins,cdfs(:,LMASK),'--o;mask ($lmaskB);',
+     bins,cdfs(:,LMASKPRUNE),'--x;mask/prune ($lmaskpruneB);',
+     bins,cdfs(:,LTAB),';tab+comp ($ltabB);');
 title('Lower Bound, Distribution A');
 
 subplot(2,2,3);
 cdfs = calcCdfs(lbgtruth, lball, setB, bins, 0);
-plot(bins,cdfs(:,LMP),'-+;mp ($mpB);',
-     bins,cdfs(:,LMPPRUNE),'-*;mp+prune ($mppruneB);',
-     bins,cdfs(:,LMPMASK),'-o;mp+mask ($mpmaskB);',
-     bins,cdfs(:,LMPBOTH),'-x;mp+both ($mpbothB);',
-     bins,cdfs(:,LPOINT),';point ($lpointB);');
+plot(
+#     bins,cdfs(:,LCOMP),'-+;comp ($lcompB);',
+#     bins,cdfs(:,LCOMPPRUNE),'-*;comp/prune ($lcomppruneB);',
+     bins,cdfs(:,LMASK),'-o;mask ($lmaskB);',
+     bins,cdfs(:,LMASKPRUNE),'-x;mask/prune ($lmaskpruneB);',
+     bins,cdfs(:,LTAB),';tab+comp ($ltabB);');
 title('Lower Bound, Distribution B');
 
 __gnuplot_set__ key right
 
-bds = [0,3];
+bds = [0,$UBWIDTH];
 delta = (range(bds))/numBins;
-bins = (bds(1):delta:bds(2)); # + delta/2;
+bins = (bds(1):delta:bds(2));
 
 subplot(2,2,2);
 cdfs = calcCdfs(ubgtruth, uball, setA, bins, 1);
-plot(bins,cdfs(:,USAW),'-+;saw ($sawB);',
-     bins,cdfs(:,USAWMASK),'-*;saw+mask ($sawmaskB);',	
-     bins,cdfs(:,UPOINT),';point ($upointB);');
+plot(bins,cdfs(:,UCOMP),'-+;comp ($ucompB);',
+     bins,cdfs(:,UMASK),'-*;mask ($umaskB);',	
+     bins,cdfs(:,UTAB),';tab+comp ($utabB);');
 title('Upper Bound, Distribution A');
 
 subplot(2,2,4);
 cdfs = calcCdfs(ubgtruth, uball, setB, bins, 1);
-plot(bins,cdfs(:,USAW),'-+;saw ($sawB);',
-     bins,cdfs(:,USAWMASK),'-*;saw+mask ($sawmaskB);',
-     bins,cdfs(:,UPOINT),';point ($upointB);');
+plot(bins,cdfs(:,UCOMP),'-+;comp ($ucompB);',
+     bins,cdfs(:,UMASK),'-*;mask ($umaskB);',
+     bins,cdfs(:,UTAB),';tab+comp ($utabB);');
 title('Upper Bound, Distribution B');
 
 #############################
