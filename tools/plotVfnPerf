@@ -1,0 +1,179 @@
+#!/usr/bin/perl
+
+# run this script in the same directory where you run makeVfnPerf; it generates the plots
+
+$DO_LB_COMP = 0;
+
+sub dosys {
+    my $cmd = shift;
+    print "$cmd\n";
+    my $warnErr = 0;
+    if ($cmd =~ s/^-//) {
+	$warnErr = 1;
+    }
+    my $ret = system($cmd);
+    if (0 != $ret) {
+	if ($warnErr) {
+	    print STDERR "WARNING: '$cmd' returned exit status $ret\n";
+	} else {
+	    die "ERROR: '$cmd' returned exit status $ret\n";
+	}
+    }
+    return $ret;
+}
+
+sub usage {
+    die "usage: plotVfnPerf OPTIONS\n".
+	"  -h or --help  Print this help.\n".
+	"  -p            Produce a pdf of the plot instead of displaying it\n";
+}
+
+$doOutput = 0;
+for (@ARGV) {
+    if ($_ eq "-h" or $_ eq "--help") {
+	&usage();
+    } elsif ($_ eq "-p") {
+	$doOutput = 1;
+    } else {
+	die "ERROR: unknown option $_ (-h for help)\n";
+    }
+}
+
+@dirs = ("ltab", "lcomp", "lmask", "lcompprune", "lmaskprune", "utab", "ucomp", "umask");
+
+&dosys("rm -rf plotscratch");
+&dosys("mkdir -p plotscratch");
+for (@dirs) {
+    &dosys("-grep -v \\# $_/bounds.plot > plotscratch/${_}_bounds.plot");
+}
+
+$octOpts = "--silent ";
+if ($doOutput) {
+    $outputPlot =<<"EOF";
+#############################
+__gnuplot_set__ terminal postscript
+__gnuplot_set__ output "vfnPerf.ps"
+#############################
+EOF
+} else {
+    $outputPlot = "";
+}
+
+$octScript =<<"EOF";
+#############################
+function cdfs = calcCdfs(gtruth, vals, entries, bins, invert);
+  numLines = size(vals,2);
+  numBins = size(bins,2);
+  cdfs = zeros(numBins,numLines);
+  for i=1:numLines
+    [diffHist,foo] = hist(vals(entries,i) - gtruth(entries), bins, 1);
+    if invert
+      tmp = [0, diffHist(1:(numBins-1))];
+      cdfs(:,i) = max(0, 1 - cumsum(tmp)');
+    else
+      cdfs(:,i) = cumsum(diffHist)';
+    end
+  end
+end
+
+if $DO_LB_COMP
+  lcomp = load("plotscratch/lcomp_bounds.plot");
+  lcompprune = load("plotscratch/lcompprune_bounds.plot");
+end
+lmask = load("plotscratch/lmask_bounds.plot");
+lmaskprune = load("plotscratch/lmaskprune_bounds.plot");
+ltab = load("plotscratch/ltab_bounds.plot");
+ucomp = load("plotscratch/ucomp_bounds.plot");
+umask = load("plotscratch/umask_bounds.plot");
+utab = load("plotscratch/utab_bounds.plot");
+
+if $DO_LB_COMP
+  lcompinc = load("lcomp/inc.plot");
+  lcomppruneinc = load("lcompprune/inc.plot");
+end
+lmaskinc = load("lmask/inc.plot");
+lmaskpruneinc = load("lmaskprune/inc.plot");
+ltabinc = load("ltab/inc.plot");
+ucompinc = load("ucomp/inc.plot");
+umaskinc = load("umask/inc.plot");
+utabinc = load("utab/inc.plot");
+
+lxmax = max(ltab(:,1))
+uxmax = max(utab(:,1))
+
+$outputPlot
+
+__gnuplot_set__ key below
+
+subplot(2,2,1);
+if $DO_LB_COMP
+  plot(lcomp(:,1),lcomp(:,2),'-+;comp;',
+       lcompprune(:,1),lcompprune(:,2),'-*;comp/prune;',
+       lmask(:,1),lmask(:,2),'--o;mask;',
+       lmaskprune(:,1),lmaskprune(:,2),'--x;mask/prune;',
+       ltab(:,1),ltab(:,2),';tab+comp;');
+else
+  plot(lmask(:,1),lmask(:,2),'--o;mask;',
+       lmaskprune(:,1),lmaskprune(:,2),'--x;mask/prune;',
+       ltab(:,1),ltab(:,2),';tab+comp;');
+end
+axis([0 lxmax]);
+title('Lower Bound');
+
+subplot(2,2,2);
+plot(ucomp(:,1),ucomp(:,3),'-+;comp;',
+     umask(:,1),umask(:,3),'--o;mask;',
+     utab(:,1),utab(:,3),';tab+comp;');
+axis([0 uxmax]);
+title('Upper Bound');
+
+__gnuplot_set__ nokey
+
+subplot(2,2,3);
+if $DO_LB_COMP
+  plot(lcompinc(:,1),lcompinc(:,2),'-+;comp;',
+       lcomppruneinc(:,1),lcomppruneinc(:,2),'-*;comp/prune;',
+       lmaskinc(:,1),lmaskinc(:,2),'--o;mask;',
+       lmaskpruneinc(:,1),lmaskpruneinc(:,2),'--x;mask/prune;',
+       ltabinc(:,1),ltabinc(:,2),';tab+comp;');
+else
+  plot(lmaskinc(:,1),lmaskinc(:,2),'--o;mask;',
+       lmaskpruneinc(:,1),lmaskpruneinc(:,2),'--x;mask/prune;',
+       ltabinc(:,1),ltabinc(:,2),';tab+comp;');
+end
+axis([0 lxmax]);
+title('Policy Quality (Using Lower Bound)');
+
+subplot(2,2,4);
+plot(ucompinc(:,1),ucompinc(:,2),'-+;comp;',
+     umaskinc(:,1),umaskinc(:,2),'--o;mask;',
+     utabinc(:,1),utabinc(:,2),';tab+comp;');
+axis([0 uxmax]);
+title('Policy Quality (Using Upper Bound)');
+
+
+#############################
+EOF
+
+print "octave $octOpts <<\n$octScript";
+open(OCT, "|octave $octOpts") or die "ERROR: couldn't run octave\n";
+select(OCT);
+$| = 1;
+select(STDOUT);
+print OCT $octScript;
+
+$tmpScript = "plotVfn.m";
+open(SCR,">$tmpScript") or
+    die "ERROR: couldn't open $tmpScript for writing: $!\n";
+print SCR $octScript;
+close(SCR);
+print "[octave script also output to $tmpScript]\n";
+
+if ($doOutput) {
+    close(OCT);
+    &dosys("ps2pdf vfnPerf.ps");
+    &dosys("rm -f vfnPerf.ps");
+    print "output written to vfnPerf.pdf\n";
+} else {
+    sleep(10000);
+}

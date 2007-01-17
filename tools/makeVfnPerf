@@ -1,0 +1,108 @@
+#!/usr/bin/perl
+
+# this script generates the value function histogram plot.  run it in a new directory
+# with the command:
+# nohup makeVfnPerf >& stdout.log &
+
+######################################################################
+# ADJUSTABLE PARAMETERS
+
+#$PROB = "tagAvoid.pomdp";
+#$PROB = "RockSample_5_7.pomdp -f";
+$PROB = "ltv1.pomdp -f";
+
+@lbruns = ("ltab", "lmaskprune", "lmask",
+	   "lcompprune", "lcomp"
+	   );
+
+######################################################################
+
+sub usage {
+    die "usage: makeVfnPerf OPTIONS\n".
+	"  -h or --help   Print this help\n".
+	"  -t <secs>      Use equal time rather than equal backups\n".
+	"  -l             Do lower bound runs only\n".
+	"  -u             Do upper bound runs only\n";
+}
+
+$useEqualTime = 0;
+$lowerOnly = 0;
+$upperOnly = 0;
+while ($_ = shift @ARGV) {
+    if ($_ eq "-h" or $_ eq "--help") {
+	&usage();
+    } elsif ($_ eq "-t") {
+	$useEqualTime = 1;
+	$timeSecs = shift @ARGV;
+	if (!defined $timeSecs) {
+	    die "ERROR: got -t option without argument (-h for help)\n";
+	}
+    } elsif ($_ eq "-l") {
+	$lowerOnly = 1;
+    } elsif ($_ eq "-u") {
+	$upperOnly = 1;
+    } else {
+	die "ERROR: unknown option '$_' (-h for help)\n";
+    }
+}
+
+$root = "~/z";
+$bin = "$root/bin/linux2";
+$prob = "$root/problems.archive/$PROB";
+$scriptArgs = "--searchStrategy script --backupScriptInputDir ../script";
+$zmdpBenchmark = "zmdpBenchmark -i 1000 --storageOutputFile storage.log ";
+
+sub dosys {
+    my $cmd = shift;
+    print "$cmd\n";
+    system($cmd) && die "ERROR: couldn't execute '$cmd'\n";
+}
+
+if (! -e "script") {
+    &dosys("mkdir script");
+    &dosys("cp gtruth/stateIndex.log script");
+    if ($termCondition eq "eqbackups") {
+	&dosys("grep -v \\# gtruth/backups.log | head -$n2 > script/backups.log");
+    } else {
+	&dosys("grep -v \\# gtruth/backups.log > script/backups.log");
+    }
+}
+
+if ($useEqualTime) {
+    $termArg = "--terminateWallclockSeconds $timeSecs ";
+} else {
+    $termArg = "";
+}
+
+$bb = "--maintainLowerBound 1 --maintainUpperBound 1";
+$lb = "--maintainLowerBound 1 --maintainUpperBound 0";
+$ub = "--maintainLowerBound 0 --maintainUpperBound 1";
+
+my %argTable = ("ltab" => "$lb --lowerBoundRepresentation point --useMaxPlanesMasking 0 --useMaxPlanesSupportList 0 --useMaxPlanesExtraPruning 0",
+		"utab" => "$ub --upperBoundRepresentation point --useSawtoothSupportList 0",
+		"lcomp" => "$lb --useMaxPlanesMasking 0 --useMaxPlanesSupportList 0 --useMaxPlanesExtraPruning 0",
+		"lmask" => "$lb --useMaxPlanesMasking 1 --useMaxPlanesSupportList 1 --useMaxPlanesExtraPruning 0",
+		"lcompprune" => "$lb --useMaxPlanesMasking 0 --useMaxPlanesSupportList 0 --useMaxPlanesExtraPruning 1",
+		"lmaskprune" => "$lb --useMaxPlanesMasking 1 --useMaxPlanesSupportList 1 --useMaxPlanesExtraPruning 1",
+		"ucomp" => "$ub --useSawtoothSupportList 0",
+		"umask" => "$ub --useSawtoothSupportList 1",
+		);
+
+@ubruns = ("utab", "umask", "ucomp");
+
+if ($lowerOnly) {
+    @runs = @lbruns;
+} elsif ($upperOnly) {
+    @runs = @ubruns;
+} else {
+    @runs = (@lbruns, @ubruns);
+}
+
+for $vfnType (@runs) {
+    $dir = "${vfnType}";
+    $vfnArgs = $argTable{$vfnType};
+    if (! -e $dir) {
+	&dosys("mkdir $dir");
+	&dosys("cd $dir && $zmdpBenchmark $vfnArgs $scriptArgs $termArg $prob >& stdout.log");
+    }
+}
