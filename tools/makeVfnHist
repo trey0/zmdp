@@ -4,26 +4,60 @@
 # with the command:
 # nohup makeVfnHist >& makeVfnHist_`date +%H_%M_%S`.log &
 
+######################################################################
+# ADJUSTABLE PARAMETERS
+
+$PROB = "RockSample_5_7.pomdp -f";
+$GTRUTH = "--useMaxPlanesMasking 0 --useMaxPlanesSupportList 0 --useMaxPlanesExtraPruning 0 --useSawtoothSupportList 0";
+
+#$PROB = "tagAvoid.pomdp";
+#$GTRUTH = "--useMaxPlanesMasking 0 --useMaxPlanesSupportList 0 --useMaxPlanesExtraPruning 0 --useSawtoothSupportList 0";
+
+#$PROB = "ltv1.pomdp -f";
+#$GTRUTH = "--useMaxPlanesMasking 1 --useMaxPlanesSupportList 1 --useMaxPlanesExtraPruning 0 --useSawtoothSupportList 0";
+
+@lbruns = ("ltab",
+	   #"lmaskprune", "lmask",
+	   #"lcompprune", "lcomp"
+	   );
+@ubruns = ("utab",
+	   #"umask", "ucomp"
+	   );
+
+
+######################################################################
+
 sub usage {
     die "usage: makeVfnHist OPTIONS\n".
 	"  -h or --help   Print this help\n".
 	"  -t <secs>      Use equal time rather than equal backups\n".
+	"  -b <val>       Use equal bounds rather than equal backups (use with -l or -u)\n".
+	"  -s             Just terminate when gtruth script finishes".
 	"  -l             Do lower bound runs only\n".
 	"  -u             Do upper bound runs only\n";
 }
 
-$useEqualTime = 0;
+$termCondition = "eqbackups";
 $lowerOnly = 0;
 $upperOnly = 0;
+$scriptTermination = 0;
 while ($_ = shift @ARGV) {
     if ($_ eq "-h" or $_ eq "--help") {
 	&usage();
     } elsif ($_ eq "-t") {
-	$useEqualTime = 1;
+	$termCondition = "eqtime";
 	$timeSecs = shift @ARGV;
 	if (!defined $timeSecs) {
 	    die "ERROR: got -t option without argument (-h for help)\n";
 	}
+    } elsif ($_ eq "-b") {
+	$termCondition = "eqbounds";
+	$boundVal = shift @ARGV;
+	if (!defined $boundVal) {
+	    die "ERROR: got -b option without argument (-h for help)\n";
+	}
+    } elsif ($_ eq "-s") {
+	$scriptTermination = 1;
     } elsif ($_ eq "-l") {
 	$lowerOnly = 1;
     } elsif ($_ eq "-u") {
@@ -35,9 +69,9 @@ while ($_ = shift @ARGV) {
 
 $root = "~/z";
 $bin = "$root/bin/linux2";
-$prob = "$root/problems.archive/RockSample_5_7.pomdp";
+$prob = "$root/problems.archive/$PROB";
 $scriptArgs = "--searchStrategy script --backupScriptInputDir ../script";
-$zmdpBenchmark = "zmdpBenchmark -f -i 2 ";
+$zmdpBenchmark = "zmdpBenchmark -i 2 --storageOutputFile storage.log ";
 
 sub dosys {
     my $cmd = shift;
@@ -50,22 +84,35 @@ $n2 = $n1/10;
 
 if (! -e "gtruth") {
     &dosys("mkdir gtruth");
-    &dosys("cd gtruth && $zmdpBenchmark --useLogBackups 1 --terminateNumBackups $n1 --maintainLowerBound 1 --maintainUpperBound 1 --useMaxPlanesMasking 0 --useMaxPlanesSupportList 0 --useMaxPlanesExtraPruning 0 $prob >& stdout.log");
+    &dosys("cd gtruth && $zmdpBenchmark --useLogBackups 1 --terminateNumBackups $n1 --maintainLowerBound 1 --maintainUpperBound 1 $GTRUTH $prob >& stdout.log");
 }
 
 if (! -e "script") {
     &dosys("mkdir script");
     &dosys("cp gtruth/stateIndex.log script");
-    if ($useEqualTime) {
-	&dosys("grep -v \\# gtruth/backups.log > script/backups.log");
+    if ($termCondition eq "eqbackups") {
+	if ($scriptTermination) {
+	    &dosys("grep -v \\# gtruth/backups.log > script/backups.log");
+	} else {
+	    &dosys("grep -v \\# gtruth/backups.log | head -$n2 > script/backups.log");
+	}
     } else {
-	&dosys("grep -v \\# gtruth/backups.log | head -$n2 > script/backups.log");
+	&dosys("grep -v \\# gtruth/backups.log > script/backups.log");
     }
 }
 
-if ($useEqualTime) {
+if ($termCondition eq "eqtime") {
     $termArg = "--terminateWallclockSeconds $timeSecs ";
+} elsif ($termCondition eq "eqbounds") {
+    if ($lowerOnly) {
+	$termArg = "--terminateLowerBoundValue $boundVal ";
+    } elsif ($upperOnly) {
+	$termArg = "--terminateUpperBoundValue $boundVal ";
+    } else {
+	die "ERROR: got -b option without -l or -u\n";
+    }
 } else {
+    # eqbackups -- terminates when zmdpBenchmark comes to the end of the script
     $termArg = "";
 }
 
@@ -73,18 +120,15 @@ $bb = "--maintainLowerBound 1 --maintainUpperBound 1";
 $lb = "--maintainLowerBound 1 --maintainUpperBound 0";
 $ub = "--maintainLowerBound 0 --maintainUpperBound 1";
 
-my %argTable = ("lpoint" => "$lb --lowerBoundRepresentation point",
-		"upoint" => "$ub --upperBoundRepresentation point",
-		"mp" => "$lb --useMaxPlanesMasking 0 --useMaxPlanesSupportList 0 --useMaxPlanesExtraPruning 0",
-		"mpmask" => "$lb --useMaxPlanesMasking 1 --useMaxPlanesSupportList 1 --useMaxPlanesExtraPruning 0",
-		"mpprune" => "$lb --useMaxPlanesMasking 0 --useMaxPlanesSupportList 0 --useMaxPlanesExtraPruning 1",
-		"mpboth" => "$lb --useMaxPlanesMasking 1 --useMaxPlanesSupportList 1 --useMaxPlanesExtraPruning 1",
-		"saw" => "$ub --useSawtoothSupportList 0",
-		"sawmask" => "$ub --useSawtoothSupportList 1",
+my %argTable = ("ltab" => "$lb --lowerBoundRepresentation point --useMaxPlanesMasking 0 --useMaxPlanesSupportList 0 --useMaxPlanesExtraPruning 0",
+		"utab" => "$ub --upperBoundRepresentation point --useSawtoothSupportList 0",
+		"lcomp" => "$lb --useMaxPlanesMasking 0 --useMaxPlanesSupportList 0 --useMaxPlanesExtraPruning 0",
+		"lmask" => "$lb --useMaxPlanesMasking 1 --useMaxPlanesSupportList 1 --useMaxPlanesExtraPruning 0",
+		"lcompprune" => "$lb --useMaxPlanesMasking 0 --useMaxPlanesSupportList 0 --useMaxPlanesExtraPruning 1",
+		"lmaskprune" => "$lb --useMaxPlanesMasking 1 --useMaxPlanesSupportList 1 --useMaxPlanesExtraPruning 1",
+		"ucomp" => "$ub --useSawtoothSupportList 0",
+		"umask" => "$ub --useSawtoothSupportList 1",
 		);
-
-@lbruns = ("lpoint", "mp", "mpmask", "mpprune", "mpboth");
-@ubruns = ("upoint", "saw", "sawmask");
 
 if ($lowerOnly) {
     @runs = @lbruns;
