@@ -2,8 +2,8 @@
 
 # run this script in the same directory where you run makeVfnHist; it generates the plots
 
-$LBWIDTH = 80;
-$UBWIDTH = 20;
+$LBWIDTH = 30;
+$UBWIDTH = 3;
 
 sub dosys {
     my $cmd = shift;
@@ -91,10 +91,10 @@ end
 numBins = 20;
 
 gtruth = load("gtruth/boundValues.log");
-#lcomp = load("lcomp/boundValues.log");
-#lcompprune = load("lcompprune/boundValues.log");
-lcomp = gtruth; # HACK
-lcompprune = gtruth; # HACK
+lcomp = load("lcomp/boundValues.log");
+lcompprune = load("lcompprune/boundValues.log");
+#lcomp = gtruth; # HACK
+#lcompprune = gtruth; # HACK
 lmask = load("lmask/boundValues.log");
 lmaskprune = load("lmaskprune/boundValues.log");
 ucomp = load("ucomp/boundValues.log");
@@ -120,7 +120,7 @@ setA = 1:$k1Size;
 setB = ($k1Size+1):$k2Size;
 $outputPlot
 
-__gnuplot_set__ key left
+__gnuplot_set__ key below
 
 bds = [-$LBWIDTH,0];
 delta = (range(bds))/numBins;
@@ -129,40 +129,44 @@ bins = (bds(1):delta:bds(2));
 subplot(2,2,1);
 cdfs = calcCdfs(lbgtruth, lball, setA, bins, 0);
 plot(
-#     bins,cdfs(:,LCOMP),'-+;comp ($lcompB);',
-#     bins,cdfs(:,LCOMPPRUNE),'-*;comp/prune ($lcomppruneB);',
+     bins,cdfs(:,LCOMP),'-+;comp ($lcompB);',
+     bins,cdfs(:,LCOMPPRUNE),'-*;comp/prune ($lcomppruneB);',
      bins,cdfs(:,LMASK),'--o;mask ($lmaskB);',
      bins,cdfs(:,LMASKPRUNE),'--x;mask/prune ($lmaskpruneB);',
      bins,cdfs(:,LTAB),';tab+comp ($ltabB);');
 title('Lower Bound, Distribution A');
 
+__gnuplot_set__ nokey
+
 subplot(2,2,3);
 cdfs = calcCdfs(lbgtruth, lball, setB, bins, 0);
 plot(
-#     bins,cdfs(:,LCOMP),'-+;comp ($lcompB);',
-#     bins,cdfs(:,LCOMPPRUNE),'-*;comp/prune ($lcomppruneB);',
+     bins,cdfs(:,LCOMP),'-+;comp ($lcompB);',
+     bins,cdfs(:,LCOMPPRUNE),'-*;comp/prune ($lcomppruneB);',
      bins,cdfs(:,LMASK),'-o;mask ($lmaskB);',
      bins,cdfs(:,LMASKPRUNE),'-x;mask/prune ($lmaskpruneB);',
      bins,cdfs(:,LTAB),';tab+comp ($ltabB);');
 title('Lower Bound, Distribution B');
 
-__gnuplot_set__ key right
-
 bds = [0,$UBWIDTH];
 delta = (range(bds))/numBins;
 bins = (bds(1):delta:bds(2));
 
+__gnuplot_set__ key below
+
 subplot(2,2,2);
 cdfs = calcCdfs(ubgtruth, uball, setA, bins, 1);
 plot(bins,cdfs(:,UCOMP),'-+;comp ($ucompB);',
-     bins,cdfs(:,UMASK),'-*;mask ($umaskB);',	
+     bins,cdfs(:,UMASK),'--o;mask ($umaskB);',	
      bins,cdfs(:,UTAB),';tab+comp ($utabB);');
 title('Upper Bound, Distribution A');
+
+__gnuplot_set__ nokey
 
 subplot(2,2,4);
 cdfs = calcCdfs(ubgtruth, uball, setB, bins, 1);
 plot(bins,cdfs(:,UCOMP),'-+;comp ($ucompB);',
-     bins,cdfs(:,UMASK),'-*;mask ($umaskB);',
+     bins,cdfs(:,UMASK),'--o;mask ($umaskB);',
      bins,cdfs(:,UTAB),';tab+comp ($utabB);');
 title('Upper Bound, Distribution B');
 
