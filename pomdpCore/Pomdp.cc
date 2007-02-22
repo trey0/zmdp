@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.22 $  $Author: trey $  $Date: 2006-11-09 20:52:44 $
+ $Revision: 1.23 $  $Author: trey $  $Date: 2007-02-22 22:01:57 $
   
  @file    Pomdp.cc
  @brief   No brief
@@ -76,7 +76,7 @@ obs_prob_vector& Pomdp::getObsProbVector(obs_prob_vector& result,
 					 const belief_vector& b,
 					 int a) const
 {
-  dvector tmp;
+  dvector tmp; // FIX: for efficiency, should tmp be a cvector?
   // --- overall: result = O_a' * T_a' * b
   // tmp = T_a' * b
   mult( tmp, Ttr[a], b );
@@ -133,6 +133,9 @@ bool Pomdp::getIsTerminalState(const state_vector& s) const
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.22  2006/11/09 20:52:44  trey
+ * added initialization of numStateDimensions
+ *
  * Revision 1.21  2006/11/08 18:00:03  trey
  * removed #include of some headers; they were only needed for code that mas moved elsewhere
  *
