@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.24 $  $Author: trey $  $Date: 2007-01-14 00:54:10 $
+ $Revision: 1.25 $  $Author: trey $  $Date: 2007-02-22 22:01:28 $
    
  @file    MaxPlanesLowerBound.cc
  @brief   No brief
@@ -363,18 +363,7 @@ const LBPlane& MaxPlanesLowerBound::getBestLBPlaneConst(const belief_vector& b) 
 {
   const PlaneSet* planesToCheck;
   if (useMaxPlanesSupportList) {
-    int minSupportIndex = -1;
-    int minSupportSize = INT_MAX;
-    FOR_EACH (eltP, b.data) {
-      int i = eltP->index;
-      int size = supportList[i].size();
-      if (size < minSupportSize) {
-	minSupportSize = size;
-	minSupportIndex = i;
-      }
-    }
-    assert(-1 != minSupportIndex);
-    planesToCheck = &supportList[minSupportIndex];
+    planesToCheck = &supportList[b.data[0].index];
   } else {
     planesToCheck = &planes;
   }
@@ -409,18 +398,7 @@ LBPlane& MaxPlanesLowerBound::getBestLBPlaneWithCache(const belief_vector& b,
 {
   const PlaneSet* planesToCheck;
   if (useMaxPlanesSupportList) {
-    int minSupportIndex = -1;
-    int minSupportSize = INT_MAX;
-    FOR_EACH (eltP, b.data) {
-      int i = eltP->index;
-      int size = supportList[i].size();
-      if (size < minSupportSize) {
-	minSupportSize = size;
-	minSupportIndex = i;
-      }
-    }
-    assert(-1 != minSupportIndex);
-    planesToCheck = &supportList[minSupportIndex];
+    planesToCheck = &supportList[b.data[0].index];
   } else {
     planesToCheck = &planes;
   }
@@ -736,6 +714,9 @@ int MaxPlanesLowerBound::getStorage(int whichMetric) const
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.24  2007/01/14 00:54:10  trey
+ * added hooks for logging storage space during a run
+ *
  * Revision 1.23  2006/11/07 21:08:39  trey
  * corrected printf format warning
  *
