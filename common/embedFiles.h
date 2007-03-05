@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-10-15 21:41:31 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2007-03-05 08:57:47 $
 
  @file    embedFiles.h
  @brief   Include this header before embedding files using the EMBED_FILE()
@@ -37,7 +37,7 @@ typedef struct {
 #ifdef __EMBEDDING_NOW__
 #define EMBED_FILE(x,y) %%BEGIN%% x %%MIDDLE%% y %%END%%
 #else
-#define EMBED_FILE(x,y) extern const embed_buffer_t x;
+#define EMBED_FILE(x,y) /* extern const embed_buffer_t x; */
 #endif
 
 inline void embedWriteToFile(const char* fileName,
@@ -58,6 +58,9 @@ inline void embedWriteToFile(const char* fileName,
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/10/15 21:41:31  trey
+ * initial check-in
+ *
  *
  ***************************************************************************/
 
