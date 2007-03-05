@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.35 2006-10-16 17:32:17 trey Exp $
+# $Id: Makefile,v 1.36 2007-03-05 08:56:59 trey Exp $
 #
 # Copyright (c) 2002-2005, Trey Smith. All rights reserved.
 #
@@ -31,6 +31,11 @@ maininstall: install
 # ADD ANY SUBDIRS THAT NEED TO BE VISITED DURING A BUILD TO THE SUBDIRS LIST
 SUBDIRS :=
 
+INSTALLHEADERS_HEADERS := \
+	zmdpMainConfig.h \
+	zmdpMainConfig.cc
+include $(BUILD_DIR)/installheaders.mak
+
 MAIN_LIBS := \
 	-lzmdpSearch \
 	-lzmdpPomdpCore \
@@ -45,19 +50,19 @@ EMBEDFILES_SRC := zmdpMainConfig.h
 include $(BUILD_DIR)/embedfiles.mak
 
 BUILDBIN_TARGET := zmdpBenchmark
-BUILDBIN_SRCS := zmdpBenchmark.cc TestDriver.cc solverUtils.cc zmdpMainConfig.cc
+BUILDBIN_SRCS := zmdpBenchmark.cc TestDriver.cc solverUtils.cc
 BUILDBIN_INDEP_LIBS :=
 BUILDBIN_DEP_LIBS := $(MAIN_LIBS)
 include $(BUILD_DIR)/buildbin.mak
 
 BUILDBIN_TARGET := zmdpSolve
-BUILDBIN_SRCS := zmdpSolve.cc solverUtils.cc zmdpMainConfig.cc
+BUILDBIN_SRCS := zmdpSolve.cc solverUtils.cc
 BUILDBIN_INDEP_LIBS :=
 BUILDBIN_DEP_LIBS := $(MAIN_LIBS)
 include $(BUILD_DIR)/buildbin.mak
 
 BUILDBIN_TARGET := zmdpEvaluate
-BUILDBIN_SRCS := zmdpEvaluate.cc solverUtils.cc zmdpMainConfig.cc
+BUILDBIN_SRCS := zmdpEvaluate.cc solverUtils.cc
 BUILDBIN_INDEP_LIBS :=
 BUILDBIN_DEP_LIBS := -lzmdpLifeSurvey -lzmdpPomdpExec $(MAIN_LIBS)
 include $(BUILD_DIR)/buildbin.mak
@@ -69,6 +74,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.35  2006/10/16 17:32:17  trey
+# switched zmdpEvaluate to use new config system
+#
 # Revision 1.34  2006/10/16 05:51:07  trey
 # added zmdpMainConfig.cc
 #

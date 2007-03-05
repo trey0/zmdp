@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.14 $  $Author: trey $  $Date: 2006-11-08 16:36:16 $
+ $Revision: 1.15 $  $Author: trey $  $Date: 2007-03-05 08:57:08 $
 
  @file    zmdpBenchmark.cc
  @brief   No brief
@@ -30,6 +30,8 @@
 #include "solverUtils.h"
 #include "TestDriver.h"
 #include "zmdpMainConfig.h"
+
+#include "zmdpMainConfig.cc" // embed default config file
 
 using namespace std;
 using namespace MatrixUtils;
@@ -226,6 +228,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.14  2006/11/08 16:36:16  trey
+ * renamed useFastPomdpParser to useFastModelParser
+ *
  * Revision 1.13  2006/10/25 02:44:28  trey
  * updated usage summary, removed obsolete -v option
  *

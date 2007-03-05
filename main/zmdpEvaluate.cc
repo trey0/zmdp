@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.12 $  $Author: trey $  $Date: 2006-11-12 21:22:15 $
+ $Revision: 1.13 $  $Author: trey $  $Date: 2007-03-05 08:57:08 $
 
  @file    zmdpEvaluate.cc
  @brief   Use to evaluate a POMDP policy in simulation.
@@ -33,6 +33,8 @@
 #include "LSPathAndReactExec.h"
 #include "solverUtils.h"
 #include "zmdpMainConfig.h"
+
+#include "zmdpMainConfig.cc" // embed default config file
 
 using namespace std;
 using namespace MatrixUtils;
@@ -327,6 +329,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.12  2006/11/12 21:22:15  trey
+ * added better error checking for incompatible planner and evaluation models
+ *
  * Revision 1.11  2006/11/08 16:36:16  trey
  * renamed useFastPomdpParser to useFastModelParser
  *

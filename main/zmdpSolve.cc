@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.21 $  $Author: trey $  $Date: 2006-11-08 16:36:05 $
+ $Revision: 1.22 $  $Author: trey $  $Date: 2007-03-05 08:57:08 $
 
  @file    zmdpSolve.cc
  @brief   No brief
@@ -31,6 +31,8 @@
 #include "zmdpCommonTime.h"
 #include "solverUtils.h"
 #include "zmdpMainConfig.h"
+
+#include "zmdpMainConfig.cc" // embed default config file
 
 using namespace std;
 using namespace MatrixUtils;
@@ -289,6 +291,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.21  2006/11/08 16:36:05  trey
+ * renamed useFastPomdpParser to useFastModelParser
+ *
  * Revision 1.20  2006/11/07 20:09:23  trey
  * now call finishLogging() in zmdpSolve (not just in zmdpBenchmark)
  *
