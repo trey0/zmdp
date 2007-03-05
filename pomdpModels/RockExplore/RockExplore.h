@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2007-03-05 08:58:26 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2007-03-05 23:33:24 $
    
  @file    RockExplore.h
  @brief   The RockExplore problem is closely related to the RockSample problem
@@ -40,12 +40,6 @@ struct RockExplorePos {
   RockExplorePos(int _x, int _y) : x(_x), y(_y) {}
   bool operator==(const RockExplorePos& a) const {
     return (x == a.x) && (y == a.y);
-  }
-  RockExplorePos addDelta(RockExplorePos& deltaPos) {
-    RockExplorePos result;
-    result.x = x + deltaPos.x;
-    result.y = y + deltaPos.y;
-    return result;
   }
 };
 
@@ -100,6 +94,11 @@ struct RockExploreState {
 
   // Vector indicating whether each rock is good
   std::vector<bool> rockIsGood;
+
+  RockExploreState(void) :
+    isTerminalState(false),
+    robotPos(RockExplorePos(-1,-1))
+  {}
 };
 
 enum RockExploreActionTypes {
@@ -120,6 +119,8 @@ struct RockExploreAction {
   int rockIndex;
 
   RockExploreAction(void) {}
+
+  // Generates an action struct given an action index.
   RockExploreAction(int ai) {
     switch (ai) {
     case 0: init(ACT_MOVE,   RockExplorePos( 0, 1), -1); break;
@@ -131,6 +132,16 @@ struct RockExploreAction {
       init(ACT_CHECK, RockExplorePos(0,0), ai-5);
     }
   }
+
+  static const char* getString(int ai) {
+    static const char* actionTable[] = {"amn", "ame", "ams", "amw", "as",
+					"ac0", "ac1", "ac2", "ac3", "ac4",
+					"ac5", "ac6", "ac7", "ac8", "ac9" };
+    assert(ai < 15);
+    return actionTable[ai];
+  }
+
+  // A function for initializing all the fields of an action.
   void init(int _actionType, RockExplorePos _deltaPos, int _rockIndex)
   {
     actionType = _actionType;
@@ -148,32 +159,33 @@ struct RockExploreBeliefEntry {
   RockExploreBeliefEntry(double _prob, int _si) : prob(_prob), si(_si) {}
 };
 
-// A probability distribution over states.
+// A vector representing a probability distribution over states.
 typedef std::vector<RockExploreBeliefEntry> RockExploreBelief;
+
+// A vector representing the marginal probability that each rock is good.
+typedef std::vector<double> RockExploreRockMarginals;
 
 // The implementation of the RockExplore model.
 struct RockExplore {
-  // Parameters of the model
+  // Parameters of the problem
   RockExploreParams params;
 
-  // A mapping from the index of a state to the corresponding variable
-  // values
+  // Maps from the index of a state to the corresponding state struct
   std::vector<RockExploreState> states;
 
-  // A mapping from the string identifier for a state to the state index
+  // Maps from the string identifier for a state to the state index
   std::map<std::string, int> stateLookup;
 
-  // Sets result to be the string identifier for state s.  Returns result.
-  std::string& getStateString(std::string& result, const RockExploreState& s) const;
+  /**********************************************************************/
 
-  // Returns the index for state s.  This includes assigning an index to
-  // state s if it doesn't already have one.
-  int getStateId(const RockExploreState& s);
+  // The constructor -- you must specify the problem params at initialization.
+  RockExplore(const RockExploreParams& _params);
 
-  // Sets result to be the map for state s and belief b.  Returns result.
-  std::string& getMap(std::string& result,
-		      const RockExploreState& s,
-		      const std::vector<double>& probRockIsGood) const;
+  // Sets result to be the initial belief.  Returns result.
+  RockExploreBelief& getInitialBelief(RockExploreBelief& result);
+
+  // Returns the number of distinct actions.
+  int getNumActions(void) const { return params.numRocks + 5; }
 
   // Sets reward to be the reward for applying action ai in state si.
   // Sets outcomes to be the distribution of possible successor states.
@@ -186,7 +198,47 @@ struct RockExplore {
 
   // Returns the probability of seeing observation o if action ai is applied
   // and the system transitions to state si.
-  double getObsProb(int ai, int si, int o);
+  double getObsProb(int ai, int si, int o) const;
+
+  // Outputs a Cassandra-format POMDP model to the given file.
+  void writeCassandraModel(const std::string& outFile);
+
+  // Calculates the marginal probability that each rock is good from the
+  // given belief b.  Sets result to be the vector of marginals.
+  // Returns result.
+  RockExploreRockMarginals& getMarginals(RockExploreRockMarginals& result,
+					 const RockExploreBelief& b) const;
+
+  // Generates a belief in which all the states have the given robotPos
+  // and a distribution of rockIsGood values consistent with the
+  // marginals specified by probRockIsGood.  This is effectively the
+  // inverse of the getMarginals() function.
+  RockExploreBelief& getBelief(RockExploreBelief& result,
+			       const RockExplorePos& robotPos,
+			       const RockExploreRockMarginals& probRockIsGood);
+
+  // Returns the terminal state.
+  static const RockExploreState& getTerminalState(void);
+
+  // Sets result to be the string identifier for state s.  Returns result.
+  std::string& getStateString(std::string& result, const RockExploreState& s) const;
+
+  // Sets result to be the string form for the state with id si. Returns result.
+  std::string& getStateString(std::string& result, int si) const;
+
+  // Returns the index for state s.  This includes assigning an index to
+  // state s if it doesn't already have one.
+  int getStateId(const RockExploreState& s);
+
+  // Sets result to be the map for state s and belief b.  Returns result.
+  std::string& getMap(std::string& result,
+		      const RockExploreState& s,
+		      const RockExploreRockMarginals& probRockIsGood) const;
+
+  // Stochastically selects an outcome state s according to the
+  // probabilities in the belief b.  Returns the state index for s.
+  int chooseStochasticOutcome(const RockExploreBelief& b) const;
+
 };
 
 }; // namespace zmdp
@@ -196,6 +248,9 @@ struct RockExplore {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2007/03/05 08:58:26  trey
+ * initial check-in
+ *
  *
  ***************************************************************************/
 

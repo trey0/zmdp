@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2007-03-05 08:58:26 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2007-03-05 23:33:24 $
 
  @file    zmdpRockExplore.cc
  @brief   No brief
@@ -184,8 +184,7 @@ void usage(const char* cmdName) {
 }
 
 int main(int argc, char **argv) {
-  RockExplore model;
-  RockExploreParams& p = model.params;
+  RockExploreParams p;
 
   p.width = 4;
   p.height = 4;
@@ -205,6 +204,8 @@ int main(int argc, char **argv) {
   p.rockPos.push_back(RockExplorePos(3,1));
   p.rockPos.push_back(RockExplorePos(1,0));
 
+  RockExplore model(p);
+
   RockExploreState s;
   s.isTerminalState = false;
   s.robotPos = p.initPos;
@@ -222,6 +223,8 @@ int main(int argc, char **argv) {
   string rmap;
   model.getMap(rmap, s, probRockIsGood);
   cout << rmap << endl;
+
+  model.writeCassandraModel("RockExplore.pomdp");
 
 #if 0
   SolverParams p;
@@ -335,5 +338,8 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2007/03/05 08:58:26  trey
+ * initial check-in
+ *
  *
  ***************************************************************************/
