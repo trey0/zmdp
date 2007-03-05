@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: embedFiles.perl,v 1.7 2006-10-31 20:34:07 trey Exp $
+# $Id: embedFiles.perl,v 1.8 2007-03-05 08:56:18 trey Exp $
 #
 # Copyright (c) 1996-2005, Carnegie Mellon University. All rights reserved.
 #
@@ -91,12 +91,12 @@ sub embedFiles {
 	open(OUT, "> $outputFile") or
 	    die "ERROR: couldn't open $outputFile for writing: $!\n";
 
-	print OUT << "EOF";
-typedef struct {
-  unsigned int size;
-  char* data;
-} embed_buffer_t;
-EOF
+#	print OUT << "EOF";
+#typedef struct {
+#  unsigned int size;
+#  char* data;
+#} embed_buffer_t;
+#EOF
         &genEscapeTable();
     }
 
@@ -198,6 +198,9 @@ sub main {
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.7  2006/10/31 20:34:07  trey
+# fixed embedding problem when using cpp from gcc 4.0.1, XCode 2.4 under Mac OS X 10.4.8
+#
 # Revision 1.6  2006/10/20 04:58:44  trey
 # switched pre-processor command again to avoid warnings under linux
 #
