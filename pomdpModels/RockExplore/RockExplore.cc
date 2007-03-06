@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.4 $  $Author: trey $  $Date: 2007-03-06 04:32:47 $
+ $Revision: 1.5 $  $Author: trey $  $Date: 2007-03-06 06:37:52 $
   
  @file    RockExplore.cc
  @brief   No brief
@@ -398,6 +398,12 @@ void RockExplore::getUpdatedBelief(RockExploreBelief& bp,
   double reward;
   RockExploreBelief outcomes;
 
+#if 0
+  cout << "getUpd" << endl;
+  for (int i=0; i < (int)b.size(); i++) {
+    cout << "s=" << b[i].index << " prob=" << b[i].prob << endl;
+  }
+#endif
   for (int i=0; i < (int)b.size(); i++) {
     int si = b[i].index;
     getActionResult(reward, outcomes, si, ai);
@@ -414,6 +420,14 @@ void RockExplore::getUpdatedBelief(RockExploreBelief& bp,
 
       // P(sp | b, a, o) = sum_s [ P(s | b) * P(sp | s, a) * P(o | a, sp) ]
       bpMap[sp] += b[i].prob * outcomes[j].prob * getObsProb(ai, sp, o);
+#if 0
+      cout << "sp=" << sp
+	   << " bpMap[sp]=" << bpMap[sp]
+	   << " b[i].prob=" << b[i].prob
+	   << " o[j].prob=" << outcomes[j].prob
+	   << " P(o|a,s)=" << getObsProb(ai, sp, o)
+	   << endl;
+#endif
     }
   }
 
@@ -573,10 +587,16 @@ int RockExplore::chooseStochasticOutcome(const RockExploreBelief& b) const
   double p = ((double) rand()) / RAND_MAX;
 
   // Select an outcome based on p.
+  double maxProb = 0.0;
+  int maxProbIndex = -1;
   for (int i=0; i < (int)b.size(); i++) {
     p -= b[i].prob;
     if (p <= 0) {
       return b[i].index;
+    }
+    if (b[i].prob > maxProb) {
+      maxProb = b[i].prob;
+      maxProbIndex = b[i].index;
     }
   }
 
@@ -585,7 +605,7 @@ int RockExplore::chooseStochasticOutcome(const RockExploreBelief& b) const
   // perfectly normalized, so this fallback case is nice to avoid a
   // crash.
   assert(p < 1e-10);
-  return b[0].index;
+  return maxProbIndex;
 }
 
 // Returns a stochastically selected observation from the distribution obsProbs.
@@ -595,10 +615,16 @@ int RockExplore::chooseStochasticOutcome(const RockExploreObsProbs& obsProbs) co
   double p = ((double) rand()) / RAND_MAX;
 
   // Select an outcome based on p.
+  double maxProb = 0.0;
+  int maxProbO = -1;
   for (int o=0; o < (int)obsProbs.size(); o++) {
     p -= obsProbs[o];
     if (p <= 0) {
       return o;
+    }
+    if (obsProbs[o] > maxProb) {
+      maxProb = obsProbs[o];
+      maxProbO = o;
     }
   }
 
@@ -607,7 +633,7 @@ int RockExplore::chooseStochasticOutcome(const RockExploreObsProbs& obsProbs) co
   // obsProbs may not be perfectly normalized, so this fallback case is
   // nice to avoid a crash.
   assert(p < 1e-10);
-  return 0;
+  return maxProbO;
 }
 
 // Calculates the marginal probability that each rock is good from the
@@ -699,6 +725,9 @@ RockExplore* modelG = NULL;
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2007/03/06 04:32:47  trey
+ * working towards heuristic policies
+ *
  * Revision 1.3  2007/03/06 02:23:08  trey
  * working interactive mode
  *

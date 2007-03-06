@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2007-03-06 04:32:33 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2007-03-06 06:37:52 $
    
  @file    RockExplorePolicy.h
  @brief   The RockExplorePolicy problem is closely related to the RockSample problem
@@ -80,7 +80,7 @@ struct HeuristicPolicy : public PomdpExecCore {
   MDPValueFunction vfn;
   RockExploreBelief b;
 
-  HeuristicPolicy(void);
+  HeuristicPolicy(const MDPValueFunction& _vfn);
 
   // Informs the policy that the system is at the initial belief.
   void setToInitialBelief(void);
@@ -90,21 +90,29 @@ struct HeuristicPolicy : public PomdpExecCore {
 };
 
 struct QMDPPolicy : public HeuristicPolicy {
+  QMDPPolicy(const MDPValueFunction& _vfn) : HeuristicPolicy(_vfn) {}
+
   // Chooses an action according to the QMDP heuristic.
   int chooseAction(void);
 };
 
 struct VotingPolicy : public HeuristicPolicy {
+  VotingPolicy(const MDPValueFunction& _vfn) : HeuristicPolicy(_vfn) {}
+
   // Chooses an action according to the voting heuristic.
   int chooseAction(void);
 };
 
 struct MostLikelyPolicy : public HeuristicPolicy {
+  MostLikelyPolicy(const MDPValueFunction& _vfn) : HeuristicPolicy(_vfn) {}
+
   // Chooses an action according to the most likely state heuristic.
   int chooseAction(void);
 };
 
 struct TwoStepPolicy : public HeuristicPolicy {
+  TwoStepPolicy(const MDPValueFunction& _vfn) : HeuristicPolicy(_vfn) {}
+
   // Chooses an action according to the two-step lookahead heuristic.
   int chooseAction(void);
 };
@@ -122,6 +130,9 @@ extern PomdpExecCore* getPolicy(void);
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2007/03/06 04:32:33  trey
+ * initial check-in
+ *
  *
  ***************************************************************************/
 

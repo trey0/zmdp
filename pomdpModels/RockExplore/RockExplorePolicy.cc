@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2007-03-06 04:32:33 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2007-03-06 06:37:52 $
   
  @file    RockExplorePolicy.cc
  @brief   No brief
@@ -62,6 +62,7 @@ double MDPValueFunction::valueIterationSweep(void) {
     Vp[s] = getUpdatedValue(s);
     maxResidual = std::max(maxResidual, fabs(V[s] - Vp[s]));
   }
+  V = Vp;
   return maxResidual;
 }
 
@@ -88,7 +89,7 @@ double MDPValueFunction::getValue(int s) const
   return V[s];
 }
 
-// Returns the expected value of a belief V(b) = sum_s P(s | b) V(s)
+// Returns the expected value of a belief V(b) = sum_s b(s) V(s)
 double MDPValueFunction::getValue(const RockExploreBelief& b) const
 {
   double expectedValue = 0.0;
@@ -126,8 +127,10 @@ double MDPValueFunction::getUpdatedValue(const RockExploreBelief& b) const
     double val = 0.0;
     for (int o=0; o < modelG->getNumObservations(); o++) {
       RockExploreBelief bp;
-      modelG->getUpdatedBelief(bp, b, a, o);
-      val += obsProbs[o] * getValue(bp);
+      if (obsProbs[o] > 0.0) {
+	modelG->getUpdatedBelief(bp, b, a, o);
+	val += obsProbs[o] * getValue(bp);
+      }
     }
     val = expectedReward + modelG->params.discountFactor * val;
     maxVal = std::max(maxVal, val);
@@ -135,7 +138,9 @@ double MDPValueFunction::getUpdatedValue(const RockExploreBelief& b) const
   return maxVal;
 }
 
-static int getUserAction(void)
+// Chooses an action according to the "user" policy, meaning we
+// just ask the user for an action.
+int UserPolicy::chooseAction(void)
 {
   while (1) {
     cout << "\nChoose action from [";
@@ -153,19 +158,13 @@ static int getUserAction(void)
       }
     }
 
-    printf("\n*** Sorry, I didn't understand that action ***\n");
+    printf("\n*** Sorry, I didn't understand that action. ***\n");
   }
 }
 
-int UserPolicy::chooseAction(void)
-{
-  return getUserAction();
-}
-
-HeuristicPolicy::HeuristicPolicy(void)
-{
-  vfn.valueIterationToResidual(1e-5);
-}
+HeuristicPolicy::HeuristicPolicy(const MDPValueFunction& _vfn) :
+  vfn(_vfn)
+{}
 
 // Informs the policy that the system is at the initial belief.
 void HeuristicPolicy::setToInitialBelief(void)
@@ -184,25 +183,98 @@ void HeuristicPolicy::advanceToNextBelief(int a, int o)
 // Chooses an action according to the QMDP heuristic.
 int QMDPPolicy::chooseAction(void)
 {
-  return 1;
+  int bestAction = -1;
+  double maxQ = -99e+20;
+
+  for (int a=0; a < modelG->getNumActions(); a++) {
+    double Qba = 0.0;
+    for (int i=0; i < (int)b.size(); i++) {
+      int s = b[i].index;
+
+      double Rsa;
+      RockExploreBelief outcomes;
+      modelG->getActionResult(Rsa, outcomes, s, a);
+
+      double nextStateVal = 0.0;
+      for (int j=0; j < (int)outcomes.size(); j++) {
+	int nextState = outcomes[j].index;
+	nextStateVal += outcomes[j].prob * vfn.getValue(nextState);
+      }
+      // Q(s,a) = R(s,a) + discount * sum_s' [ P(s' | s, a) * V(s') ]
+      double Qsa = Rsa + modelG->params.discountFactor * nextStateVal;
+      // Q(b,a) = sum_s [ b(s) * Q(s,a) ]
+      Qba += b[i].prob * Qsa;
+    }
+    if (Qba > maxQ) {
+      // bestAction = arg max_a Q(b,a)
+      bestAction = a;
+      maxQ = Qba;
+    }
+  }
+
+  return bestAction;
 }
 
 // Chooses an action according to the voting heuristic.
 int VotingPolicy::chooseAction(void)
 {
-  return 1;
+  // Initialize votes for each action to 0.
+  std::vector<double> voteTotals(modelG->getNumActions(), 0.0);
+
+  // Each state s votes for the best action to take from that state; the
+  // votes are weighted according to b(s).
+  for (int i=0; i < (int)b.size(); i++) {
+    int s = b[i].index;
+    
+    double bestQsa = -99e+20;
+    int bestActionForS = -1;
+
+    for (int a=0; a < modelG->getNumActions(); a++) {
+      double Rsa;
+      RockExploreBelief outcomes;
+      modelG->getActionResult(Rsa, outcomes, s, a);
+
+      double nextStateVal = 0.0;
+      for (int j=0; j < (int)outcomes.size(); j++) {
+	int nextState = outcomes[j].index;
+	nextStateVal += outcomes[j].prob * vfn.getValue(nextState);
+      }
+      // Q(s,a) = R(s,a) + discount * sum_s' [ P(s' | s, a) * V(s') ]
+      double Qsa = Rsa + modelG->params.discountFactor * nextStateVal;
+
+      if (Qsa > bestQsa) {
+	// bestAction = arg max_a Q(s,a)
+	bestActionForS = a;
+	bestQsa = Qsa;
+      }
+    }
+
+    voteTotals[bestActionForS] += b[i].prob;
+  }
+
+  // Calculate action with most votes
+  int bestAction = -1;
+  double bestVoteTotal = -99e+20;
+  for (int a=0; a < modelG->getNumActions(); a++) {
+    if (voteTotals[a] > bestVoteTotal) {
+      bestAction = a;
+      bestVoteTotal = voteTotals[a];
+    }
+  }
+
+  return bestAction;
 }
 
 // Chooses an action according to the most likely state heuristic.
 int MostLikelyPolicy::chooseAction(void)
 {
-  return 1;
+  return -1;
 }
 
 // Chooses an action according to the two-step lookahead heuristic.
 int TwoStepPolicy::chooseAction(void)
 {
-  return 1;
+  return -1;
 }
 
 enum PolicyTypes {
@@ -225,6 +297,7 @@ int getUserChoice(void)
   return choice;
 }
 
+// Queries the user for their desired policy type
 static int getPolicyType(void)
 {
   while (1) {
@@ -250,23 +323,31 @@ static int getPolicyType(void)
   }
 }
 
+// Queries the user for their desired policy type and returns a policy.
 PomdpExecCore* getPolicy(void)
 {
+  // Only need to run value iteration once even if running multiple policies.
+  static MDPValueFunction* vfn = NULL;
+  if (NULL == vfn) {
+    vfn = new MDPValueFunction();
+    vfn->valueIterationToResidual(1e-3);
+  }
+
   int policyType = getPolicyType();
 
   switch (policyType) {
   case P_QMDP:
-    return new QMDPPolicy();
+    return new QMDPPolicy(*vfn);
   case P_VOTING:
-    return new VotingPolicy();
+    return new VotingPolicy(*vfn);
   case P_MOST_LIKELY:
-    return new MostLikelyPolicy();
+    return new MostLikelyPolicy(*vfn);
   case P_TWO_STEP:
-    return new TwoStepPolicy();
+    return new TwoStepPolicy(*vfn);
   case P_ZMDP: {
     ZMDPConfig* config = new ZMDPConfig();
     config->readFromString("<defaultConfig>", defaultConfig.data);
-    MaxPlanesLowerBoundExec* policy = new MaxPlanesLowerBoundExec;
+    MaxPlanesLowerBoundExec* policy = new MaxPlanesLowerBoundExec();
     policy->init("RockExplore.pomdp",
 		 /* useFastParser = */ false,
 		 "out.policy",
@@ -283,5 +364,8 @@ PomdpExecCore* getPolicy(void)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2007/03/06 04:32:33  trey
+ * initial check-in
+ *
  *
  ***************************************************************************/

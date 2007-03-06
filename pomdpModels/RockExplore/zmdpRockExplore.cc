@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.5 $  $Author: trey $  $Date: 2007-03-06 04:43:06 $
+ $Revision: 1.6 $  $Author: trey $  $Date: 2007-03-06 06:37:52 $
 
  @file    zmdpRockExplore.cc
  @brief   No brief
@@ -58,6 +58,8 @@ struct RockExploreSim {
   PomdpExecCore* policy;
   RockExploreBelief b;
   int si;
+  int timeStep;
+  double totalReward;
 
   RockExploreSim(int _mode, PomdpExecCore* _policy) :
     mode(_mode),
@@ -68,11 +70,17 @@ struct RockExploreSim {
     modelG->getInitialBelief(b);
     si = modelG->chooseStochasticOutcome(b);
     policy->setToInitialBelief();
+    timeStep = 0;
   }
 
-  void takeStep(void) {
+  bool takeStep(void) {
     bool doVisualize = (mode != MODE_EVAL);
     
+    // Check if the selected policy type is implemented.
+    if (0 == timeStep && -1 == policy->chooseAction()) {
+      return false;
+    }
+
     if (doVisualize) {
       // Display current state and belief
       std::string rmap;
@@ -97,13 +105,14 @@ struct RockExploreSim {
     RockExploreBelief outcomes;
     modelG->getActionResult(reward, outcomes, si, ai);
     int sp = modelG->chooseStochasticOutcome(outcomes);
+    totalReward += pow(modelG->params.discountFactor, timeStep) * reward;
 
     RockExploreObsProbs obsProbs;
     modelG->getObsProbs(obsProbs, ai, sp);
     int o = modelG->chooseStochasticOutcome(obsProbs);
 
     if (doVisualize) {
-      printf("Observation = o%d, reward = %lf\n", o, reward);
+      printf("Observation = o%d, immediate reward = %lf\n", o, reward);
     }
 
     RockExploreBelief bp;
@@ -113,21 +122,29 @@ struct RockExploreSim {
     policy->advanceToNextBelief(ai, o);
     si = sp;
     b = bp;
+
+    return true;
   }
 
-  void run(void) {
+  bool run(void) {
     initialize();
 
     while (1) {
-      takeStep();
+      if (!takeStep()) {
+	return false;
+      }
 
       // If state is terminal, end the run
       RockExploreState s = modelG->states[si];
       if (s.isTerminalState) {
-	printf("\nReached terminal state, all done.\n");
+	if (MODE_EVAL != mode) {
+	  printf("\nReached terminal state, total discounted reward = %.3lf.\n",
+		 totalReward);
+	}
 	break;
       }
     }
+    return true;
   }
 };
 
@@ -142,7 +159,9 @@ void doVisualize(void)
 {
   PomdpExecCore* policy = getPolicy();
   RockExploreSim sim(MODE_VISUALIZE, policy);
-  sim.run();
+  if (!sim.run()) {
+    printf("Sorry, that policy type is not yet implemented.\n");
+  }
   delete policy;
 }
 
@@ -184,10 +203,10 @@ int main(int argc, char **argv) {
   while (1) {
     printf("\nMain menu\n"
 	   "\n"
-	   "  1 - Output the RockExplore model in Cassandra format to RockExplore.pomdp\n"
+	   "  1 - Write out the RockExplore model to RockExplore.pomdp\n"
 	   "  2 - Manually control the robot in the simulator\n"
 	   "  3 - Visualize a policy in the simulator\n"
-	   "  4 - Evaluate the quality of a policy\n"
+	   "  4 - Evaluate the quality of all policies\n"
 	   "\n"
 	   "Your choice (ctrl-C to quit): "
 	   );
@@ -223,6 +242,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.5  2007/03/06 04:43:06  trey
+ * debugged missing calls to policy
+ *
  * Revision 1.4  2007/03/06 04:32:47  trey
  * working towards heuristic policies
  *
