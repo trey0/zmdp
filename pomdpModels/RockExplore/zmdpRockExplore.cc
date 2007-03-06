@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.6 $  $Author: trey $  $Date: 2007-03-06 06:37:52 $
+ $Revision: 1.7 $  $Author: trey $  $Date: 2007-03-06 06:52:30 $
 
  @file    zmdpRockExplore.cc
  @brief   No brief
@@ -176,7 +176,9 @@ void doEvaluate(void)
 
 int main(int argc, char **argv) {
   // Initialize the random number generator
-  srand(time(NULL));
+  srand(time(0));
+  // Seems the random number generator needs to "clear its throat" on some systems.
+  rand();
 
   RockExploreParams p;
   p.width = 4;
@@ -242,6 +244,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.6  2007/03/06 06:37:52  trey
+ * implementing heuristics
+ *
  * Revision 1.5  2007/03/06 04:43:06  trey
  * debugged missing calls to policy
  *

@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.5 $  $Author: trey $  $Date: 2007-03-06 06:37:52 $
+ $Revision: 1.6 $  $Author: trey $  $Date: 2007-03-06 06:52:30 $
   
  @file    RockExplore.cc
  @brief   No brief
@@ -584,11 +584,12 @@ void RockExplore::writeCassandraModel(const std::string& outFile)
 int RockExplore::chooseStochasticOutcome(const RockExploreBelief& b) const
 {
   // Generate a random floating point value between 0 and 1.
-  double p = ((double) rand()) / RAND_MAX;
-
+  double p = ((double) std::rand()) / RAND_MAX;
+  
   // Select an outcome based on p.
   double maxProb = 0.0;
   int maxProbIndex = -1;
+
   for (int i=0; i < (int)b.size(); i++) {
     p -= b[i].prob;
     if (p <= 0) {
@@ -612,11 +613,12 @@ int RockExplore::chooseStochasticOutcome(const RockExploreBelief& b) const
 int RockExplore::chooseStochasticOutcome(const RockExploreObsProbs& obsProbs) const
 {
   // Generate a random floating point value between 0 and 1.
-  double p = ((double) rand()) / RAND_MAX;
+  double p = ((double) std::rand()) / RAND_MAX;
 
   // Select an outcome based on p.
   double maxProb = 0.0;
   int maxProbO = -1;
+
   for (int o=0; o < (int)obsProbs.size(); o++) {
     p -= obsProbs[o];
     if (p <= 0) {
@@ -725,6 +727,9 @@ RockExplore* modelG = NULL;
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.5  2007/03/06 06:37:52  trey
+ * implementing heuristics
+ *
  * Revision 1.4  2007/03/06 04:32:47  trey
  * working towards heuristic policies
  *
