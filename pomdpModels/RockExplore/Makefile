@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.2 2007-03-06 04:32:47 trey Exp $
+# $Id: Makefile,v 1.3 2007-03-06 08:46:56 trey Exp $
 #
 # Copyright (c) 2008, Trey Smith.
 #
@@ -32,14 +32,7 @@ maininstall:
 # ADD ANY SUBDIRS THAT NEED TO BE VISITED DURING A BUILD TO THE SUBDIRS LIST
 SUBDIRS := 
 
-BUILDLIB_TARGET := libzmdpRockExplore.a
-BUILDLIB_SRCS := \
-	RockExplore.cc \
-	RockExplorePolicy.cc
-include $(BUILD_DIR)/buildlib.mak
-
 RE_LIBS := \
-	-lzmdpRockExplore \
 	-lzmdpPomdpExec \
 	-lzmdpSearch \
 	-lzmdpPomdpCore \
@@ -50,7 +43,7 @@ RE_LIBS := \
 	-lzmdpCommon
 
 BUILDBIN_TARGET := zmdpRockExplore
-BUILDBIN_SRCS := zmdpRockExplore.cc
+BUILDBIN_SRCS := zmdpRockExplore.cc RockExplore.cc RockExplorePolicy.cc
 BUILDBIN_INDEP_LIBS :=
 BUILDBIN_DEP_LIBS := $(RE_LIBS)
 include $(BUILD_DIR)/buildbin.mak
@@ -69,6 +62,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.2  2007/03/06 04:32:47  trey
+# working towards heuristic policies
+#
 # Revision 1.1  2007/03/05 08:58:26  trey
 # initial check-in
 #

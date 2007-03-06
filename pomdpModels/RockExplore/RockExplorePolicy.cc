@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2007-03-06 07:49:22 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2007-03-06 08:46:56 $
   
  @file    RockExplorePolicy.cc
  @brief   No brief
@@ -47,16 +47,17 @@ using namespace std;
 namespace zmdp {
 
 // Initializes the value function to have zero value for all states.
-void MDPValueFunction::init(void)
+void REValueFunction::init(void)
 {
   V.clear();
   V.resize(modelG->states.size(), 0.0);
+  Vp.clear();
   Vp.resize(modelG->states.size());
 }
 
 // Performs a sweep of value iteration, updating all states.  Returns the
 // maximum residual between the functions before and after the sweep.
-double MDPValueFunction::valueIterationSweep(void) {
+double REValueFunction::valueIterationSweep(void) {
   double maxResidual = 0.0;
   for (int s=0; s < (int)V.size(); s++) {
     Vp[s] = getUpdatedValue(s);
@@ -68,7 +69,7 @@ double MDPValueFunction::valueIterationSweep(void) {
 
 // Performs value iteration until the maximum residual between
 // successive sweeps is smaller than eps. 
-void MDPValueFunction::valueIterationToResidual(double eps)
+void REValueFunction::valueIterationToResidual(double eps)
 {
   printf("Generating MDP value function");
   fflush(stdout);
@@ -83,14 +84,52 @@ void MDPValueFunction::valueIterationToResidual(double eps)
   printf(" done.\n");
 }
 
+// Initializes value function according to blind policy method.
+void REValueFunction::blindPolicyInitToResidual(double eps)
+{
+  printf("Generating blind policy value function");
+  fflush(stdout);
+
+  double bestWorstCaseVal = -99e+20;
+  std::vector<double> bestV;
+
+  for (int a=0; a < modelG->getNumActions(); a++) {
+    init();
+    while (1) {
+      double maxResidual = 0.0;
+      for (int s=0; s < modelG->getNumStates(); s++) {
+	Vp[s] = getQ(s,a);
+	maxResidual = std::max(maxResidual, fabs(V[s] - Vp[s]));
+      }
+      V = Vp;
+      if (maxResidual < eps) break;
+    }
+
+    double worstCaseVal = 99e+20;
+    for (int s=0; s < modelG->getNumStates(); s++) {
+      worstCaseVal = std::min(worstCaseVal, V[s]);
+    }
+    if (worstCaseVal > bestWorstCaseVal) {
+      bestWorstCaseVal = worstCaseVal;
+      bestV = V;
+    }
+
+    printf(".");
+    fflush(stdout);
+  }
+  printf(" done.\n");
+
+  V = bestV;
+}
+
 // Returns the value V(s).
-double MDPValueFunction::getValue(int s) const
+double REValueFunction::getValue(int s) const
 {
   return V[s];
 }
 
 // Returns Q(s,a).
-double MDPValueFunction::getQ(int s, int a) const
+double REValueFunction::getQ(int s, int a) const
 {
   double Rsa;
   RockExploreBelief outcomes;
@@ -99,7 +138,7 @@ double MDPValueFunction::getQ(int s, int a) const
 }
 
 // Returns arg max_a Q(s,a).
-int MDPValueFunction::getMaxQAction(int s) const
+int REValueFunction::getMaxQAction(int s) const
 {
   double maxQsa = -99e+20;
   int maxQAction = -1;
@@ -114,7 +153,7 @@ int MDPValueFunction::getMaxQAction(int s) const
 }
 
 // Returns the value of a belief V(b) = sum_s b(s) V(s)
-double MDPValueFunction::getValue(const RockExploreBelief& b) const
+double REValueFunction::getValue(const RockExploreBelief& b) const
 {
   double expectedValue = 0.0;
   for (int i=0; i < (int)b.size(); i++) {
@@ -125,7 +164,7 @@ double MDPValueFunction::getValue(const RockExploreBelief& b) const
 }
 
 // Returns Q(b,a).
-double MDPValueFunction::getQ(const RockExploreBelief& b, int a) const
+double REValueFunction::getQ(const RockExploreBelief& b, int a) const
 {
   double Rba;
   RockExploreObsProbs obsProbs;
@@ -136,6 +175,7 @@ double MDPValueFunction::getQ(const RockExploreBelief& b, int a) const
     RockExploreBelief nextBelief;
     if (obsProbs[o] > 0.0) {
       modelG->getUpdatedBelief(nextBelief, b, a, o);
+      
       nextStateVal += obsProbs[o] * getValue(nextBelief);
     }
   }
@@ -143,13 +183,13 @@ double MDPValueFunction::getQ(const RockExploreBelief& b, int a) const
 }
 
 // Returns HV(s) = max_a Q(s,a).
-double MDPValueFunction::getUpdatedValue(int s) const
+double REValueFunction::getUpdatedValue(int s) const
 {
   return getQ(s, getMaxQAction(s));
 }
 
 // Returns arg max_a Q(b,a).
-int MDPValueFunction::getMaxQAction(const RockExploreBelief& b) const
+int REValueFunction::getMaxQAction(const RockExploreBelief& b) const
 {
   double maxQba = -99e+20;
   int maxQAction = -1;
@@ -164,7 +204,7 @@ int MDPValueFunction::getMaxQAction(const RockExploreBelief& b) const
 }
 
 // Returns HV(b) = max_a Q(b,a).
-double MDPValueFunction::getUpdatedValue(const RockExploreBelief& b) const
+double REValueFunction::getUpdatedValue(const RockExploreBelief& b) const
 {
   return getQ(b, getMaxQAction(b));
 }
@@ -192,10 +232,6 @@ int UserPolicy::chooseAction(void)
     printf("\n*** Sorry, I didn't understand that action. ***\n");
   }
 }
-
-HeuristicPolicy::HeuristicPolicy(const MDPValueFunction& _vfn) :
-  vfn(_vfn)
-{}
 
 // Informs the policy that the system is at the initial belief.
 void HeuristicPolicy::setToInitialBelief(void)
@@ -262,24 +298,19 @@ int VotingPolicy::chooseAction(void)
 // Chooses an action according to the most likely state heuristic.
 int MostLikelyPolicy::chooseAction(void)
 {
-  // Calculate the most likely state s*.
-  double maxProb = 0.0;
-  int maxProbState = -1;
-  for (int i=0; i < (int)b.size(); i++) {
-    if (b[i].prob > maxProb) {
-      maxProb = b[i].prob;
-      maxProbState = b[i].index;
-    }
-  }
+  // Calculate the most likely state s* and return argmax_a Q(s*, a).
+  return vfn.getMaxQAction(modelG->getMostLikelyState(b));
+}
 
-  // Return argmax_a Q(s*, a).
-  return vfn.getMaxQAction(maxProbState);
+TwoStepPolicy::TwoStepPolicy(void)
+{
+  vfn.blindPolicyInitToResidual(1e-3);
 }
 
 // Chooses an action according to the two-step lookahead heuristic.
 int TwoStepPolicy::chooseAction(void)
 {
-  // Define HQ(b,a) = R(b,a) + discount * sum_o P(o | b,a) HV(b').
+  // Define HQ(b,a) = R(b,a) + discount * sum_o P(o | b,a) HV(tau(b,a,o)).
 
   // Calculate HQ(b,a) values.
   double maxHQba = -99e+20;
@@ -305,6 +336,8 @@ int TwoStepPolicy::chooseAction(void)
       maxHQAction = a;
     }
   }
+
+  //printf("V(b)=%lf maxHQba=%lf\n", vfn.getValue(b), maxHQba);
 
   // Return arg max_a HQ(b,a).
   return maxHQAction;
@@ -360,9 +393,9 @@ static int getPolicyType(void)
 PomdpExecCore* getPolicy(void)
 {
   // Only need to run value iteration once even if running multiple policies.
-  static MDPValueFunction* vfn = NULL;
+  static REValueFunction* vfn = NULL;
   if (NULL == vfn) {
-    vfn = new MDPValueFunction();
+    vfn = new REValueFunction();
     vfn->valueIterationToResidual(1e-3);
   }
 
@@ -376,7 +409,7 @@ PomdpExecCore* getPolicy(void)
   case P_MOST_LIKELY:
     return new MostLikelyPolicy(*vfn);
   case P_TWO_STEP:
-    return new TwoStepPolicy(*vfn);
+    return new TwoStepPolicy();
   case P_ZMDP: {
     ZMDPConfig* config = new ZMDPConfig();
     config->readFromString("<defaultConfig>", defaultConfig.data);
@@ -397,6 +430,9 @@ PomdpExecCore* getPolicy(void)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2007/03/06 07:49:22  trey
+ * refactored, implemented TwoStepPolicy
+ *
  * Revision 1.2  2007/03/06 06:37:52  trey
  * implementing heuristics
  *

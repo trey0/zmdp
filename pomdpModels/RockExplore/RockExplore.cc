@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.8 $  $Author: trey $  $Date: 2007-03-06 07:57:01 $
+ $Revision: 1.9 $  $Author: trey $  $Date: 2007-03-06 08:46:56 $
   
  @file    RockExplore.cc
  @brief   No brief
@@ -303,8 +303,8 @@ double RockExplore::getObsProb(int ai, int sp, int o) const
       0.0, 1.0,
 
       // Matrix for when the robot is at Manhattan distance > 0 from the rock
-      0.8, 0.2,
-      0.2, 0.8
+       0.95, 0.05,
+      0.05, 0.95
     };
 
     // Calculate the Manhattan distance between the robot and the rock
@@ -724,6 +724,9 @@ RockExplore* modelG = NULL;
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.8  2007/03/06 07:57:01  trey
+ * added getMostLikelyState()
+ *
  * Revision 1.7  2007/03/06 07:48:43  trey
  * cleaned up
  *

@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.7 $  $Author: trey $  $Date: 2007-03-06 06:52:30 $
+ $Revision: 1.8 $  $Author: trey $  $Date: 2007-03-06 08:46:56 $
 
  @file    zmdpRockExplore.cc
  @brief   No brief
@@ -183,21 +183,21 @@ int main(int argc, char **argv) {
   RockExploreParams p;
   p.width = 4;
   p.height = 4;
-  p.initPos = RockExplorePos(0,2);
+  p.initPos = RockExplorePos(0,1);
   p.rockGoodPrior = 0.7;
   p.costMove = -1;
   p.costCheck = -1;
   p.costIllegal = -100;
-  p.costSampleBad = -10;
-  p.rewardSampleGood = 10;
-  p.rewardExit = 10;
+  p.costSampleBad = -15;
+  p.rewardSampleGood = 15;
+  p.rewardExit = 15;
   p.discountFactor = 0.95;
 
   p.numRocks = 4;
   p.rockPos.push_back(RockExplorePos(1,3));
   p.rockPos.push_back(RockExplorePos(2,1));
   p.rockPos.push_back(RockExplorePos(3,1));
-  p.rockPos.push_back(RockExplorePos(1,0));
+  p.rockPos.push_back(RockExplorePos(0,0));
 
   RockExplore model(p);
   modelG = &model;
@@ -244,6 +244,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.7  2007/03/06 06:52:30  trey
+ * avoided potential issues with random numbers
+ *
  * Revision 1.6  2007/03/06 06:37:52  trey
  * implementing heuristics
  *

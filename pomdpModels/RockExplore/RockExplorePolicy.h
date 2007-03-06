@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2007-03-06 07:49:31 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2007-03-06 08:46:56 $
    
  @file    RockExplorePolicy.h
  @brief   The RockExplorePolicy problem is closely related to the RockSample problem
@@ -36,7 +36,7 @@
 
 namespace zmdp {
 
-struct MDPValueFunction {
+struct REValueFunction {
   // The value function, represented as a vector of values.
   std::vector<double> V;
 
@@ -53,6 +53,9 @@ struct MDPValueFunction {
   // Performs value iteration until the maximum residual between
   // successive sweeps is smaller than eps. 
   void valueIterationToResidual(double eps);
+
+  // Initializes value function according to blind policy method.
+  void blindPolicyInitToResidual(double eps);
 
   // Returns the value V(s).
   double getValue(int s) const;
@@ -89,10 +92,7 @@ struct UserPolicy : public PomdpExecCore {
 // This is a base policy for all the heuristic policies based on the MDP value
 // function.
 struct HeuristicPolicy : public PomdpExecCore {
-  MDPValueFunction vfn;
   RockExploreBelief b;
-
-  HeuristicPolicy(const MDPValueFunction& _vfn);
 
   // Informs the policy that the system is at the initial belief.
   void setToInitialBelief(void);
@@ -102,28 +102,32 @@ struct HeuristicPolicy : public PomdpExecCore {
 };
 
 struct QMDPPolicy : public HeuristicPolicy {
-  QMDPPolicy(const MDPValueFunction& _vfn) : HeuristicPolicy(_vfn) {}
+  REValueFunction vfn;
+  QMDPPolicy(const REValueFunction& _vfn) : vfn(_vfn) {}
 
   // Chooses an action according to the QMDP heuristic.
   int chooseAction(void);
 };
 
 struct VotingPolicy : public HeuristicPolicy {
-  VotingPolicy(const MDPValueFunction& _vfn) : HeuristicPolicy(_vfn) {}
+  REValueFunction vfn;
+  VotingPolicy(const REValueFunction& _vfn) : vfn(_vfn) {}
 
   // Chooses an action according to the voting heuristic.
   int chooseAction(void);
 };
 
 struct MostLikelyPolicy : public HeuristicPolicy {
-  MostLikelyPolicy(const MDPValueFunction& _vfn) : HeuristicPolicy(_vfn) {}
+  REValueFunction vfn;
+  MostLikelyPolicy(const REValueFunction& _vfn) : vfn(_vfn) {}
 
   // Chooses an action according to the most likely state heuristic.
   int chooseAction(void);
 };
 
 struct TwoStepPolicy : public HeuristicPolicy {
-  TwoStepPolicy(const MDPValueFunction& _vfn) : HeuristicPolicy(_vfn) {}
+  REValueFunction vfn;
+  TwoStepPolicy(void);
 
   // Chooses an action according to the two-step lookahead heuristic.
   int chooseAction(void);
@@ -142,6 +146,9 @@ extern PomdpExecCore* getPolicy(void);
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2007/03/06 07:49:31  trey
+ * refactored, implemented TwoStepPolicy
+ *
  * Revision 1.2  2007/03/06 06:37:52  trey
  * implementing heuristics
  *
