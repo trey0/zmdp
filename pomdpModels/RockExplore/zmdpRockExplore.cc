@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2007-03-06 02:23:08 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2007-03-06 04:32:47 $
 
  @file    zmdpRockExplore.cc
  @brief   No brief
@@ -32,6 +32,7 @@
 #include "zmdpCommonTime.h"
 //#include "solverUtils.h"
 #include "zmdpMainConfig.h"
+#include "RockExplorePolicy.h"
 
 #include "zmdpMainConfig.cc" // embed default config file
 
@@ -39,130 +40,117 @@ using namespace std;
 //using namespace MatrixUtils;
 using namespace zmdp;
 
-RockExplore* modelG = NULL;
-
-enum PolicyTypes {
-  P_QMDP=1,
-  P_VOTING=2,
-  P_MOST_LIKELY=3,
-  P_TWO_STEP=4,
-  P_ZMDP=5
-};
-
-int getUserChoice(void)
+void waitForUser(void)
 {
-  int choice;
+  printf("Press [ENTER] to continue\n");
   char buf[256];
   cin.getline(buf, sizeof(buf));
-  if (1 != sscanf(buf, "%d", &choice)) {
-    return -1;
-  }
-  return choice;
 }
 
-int getUserAction(void)
-{
-  while (1) {
-    cout << "\nChoose action from [";
-    for (int ai=0; ai < modelG->getNumActions(); ai++) {
-      cout << RockExploreAction::getString(ai) << " ";
-    }
-    cout << "]: ";
-    cout.flush();
+enum SimModes {
+  MODE_MANUAL,
+  MODE_VISUALIZE,
+  MODE_EVAL
+};
 
-    std::string as;
-    cin >> as;
-    for (int ai=0; ai < modelG->getNumActions(); ai++) {
-      if (as == RockExploreAction::getString(ai)) {
-	return ai;
-      }
-    }
+struct RockExploreSim {
+  int mode;
+  PomdpExecCore* exec;
+  RockExploreBelief b;
+  int si;
 
-    printf("\n*** Sorry, I didn't understand that action ***\n");
+  RockExploreSim(int _mode, PomdpExecCore* _exec) :
+    mode(_mode),
+    exec(_exec)
+  {}
+
+  void initialize(void) {
+    modelG->getInitialBelief(b);
+    si = modelG->chooseStochasticOutcome(b);
   }
-  
-}
 
-int getPolicyType(void)
-{
-  while (1) {
-    printf("\nPolicy type menu\n"
-	   "\n"
-	   "  1 - QMDP heuristic\n"
-	   "  2 - Voting heuristic\n"
-	   "  3 - Most likely state heuristic\n"
-	   "  4 - Two-step lookahead heuristic\n"
-	   "  5 - Read zmdpSolve-generated policy from out.policy\n"
-	   "\n"
-	   "Your choice: "
-	   );
-    fflush(stdout);
-
-    int choice = getUserChoice();
-
-    if (1 <= choice && choice <= 5) {
-      return choice;
-    } else {
-      printf("\n*** Sorry, I didn't understand that choice ***\n");
+  void takeStep(void) {
+    bool doVisualize = (mode != MODE_EVAL);
+    
+    if (doVisualize) {
+      // Display current state and belief
+      std::string rmap;
+      RockExploreRockMarginals probRockIsGood;
+      modelG->getMarginals(probRockIsGood, b);
+      modelG->getMap(rmap, si, probRockIsGood);
+      printf("Current map is:\n"
+	     "\n"
+	     "%s",
+	     rmap.c_str());
     }
-  }
-}
-
-void doManual(void)
-{
-  RockExploreBelief b, bp;
-  double reward;
-  RockExploreBelief outcomes;
-  RockExploreObsProbs obsProbs;
-  RockExploreRockMarginals probRockIsGood;
-  RockExploreState s;
-  std::string rmap;
-
-  modelG->getInitialBelief(b);
-  int si = modelG->chooseStochasticOutcome(b);
-
-  while (1) {
-    // Display current state and belief
-    modelG->getMarginals(probRockIsGood, b);
-    modelG->getMap(rmap, si, probRockIsGood);
-    printf("Current map is:\n"
-	   "\n"
-	   "%s",
-	   rmap.c_str());
-
-    int ai = getUserAction();
-
+      
+    int ai = exec->chooseAction();
+    if (MODE_VISUALIZE == mode) {
+      /* display action selected by policy and wait for user to continue */
+      printf("Policy selects action %s\n", RockExploreAction::getString(ai));
+      waitForUser();
+    }
+      
     // Calculate results of action
+    double reward;
+    RockExploreBelief outcomes;
     modelG->getActionResult(reward, outcomes, si, ai);
     int sp = modelG->chooseStochasticOutcome(outcomes);
+
+    RockExploreObsProbs obsProbs;
     modelG->getObsProbs(obsProbs, ai, sp);
     int o = modelG->chooseStochasticOutcome(obsProbs);
-    printf("Observation = o%d, reward = %lf\n", o, reward);
-    modelG->getUpdatedBelief(bp, b, ai, o);
 
+    if (doVisualize) {
+      printf("Observation = o%d, reward = %lf\n", o, reward);
+    }
+
+    RockExploreBelief bp;
+    modelG->getUpdatedBelief(bp, b, ai, o);
+      
     // Advance to next state and belief
     si = sp;
     b = bp;
+  }
 
-    // If state is terminal, end the run
-    s = modelG->states[si];
-    if (s.isTerminalState) {
-      printf("\nReached terminal state, all done.\n");
-      break;
+  void run(void) {
+    initialize();
+
+    while (1) {
+      takeStep();
+
+      // If state is terminal, end the run
+      RockExploreState s = modelG->states[si];
+      if (s.isTerminalState) {
+	printf("\nReached terminal state, all done.\n");
+	break;
+      }
     }
   }
+};
+
+void doManual(void)
+{
+  UserPolicy policy;
+  RockExploreSim sim(MODE_MANUAL, &policy);
+  sim.run();
 }
 
 void doVisualize(void)
 {
-  int policyType = getPolicyType();
-  // fill me in
+  PomdpExecCore* policy = getPolicy();
+  RockExploreSim sim(MODE_VISUALIZE, policy);
+  sim.run();
+  delete policy;
 }
 
 void doEvaluate(void)
 {
-  int policyType = getPolicyType();
-  // fill me in
+  PomdpExecCore* policy = getPolicy();
+  RockExploreSim sim(MODE_EVAL, policy);
+  // FIX
+  sim.run();
+  delete policy;
 }
 
 int main(int argc, char **argv) {
@@ -233,6 +221,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2007/03/06 02:23:08  trey
+ * working interactive mode
+ *
  * Revision 1.2  2007/03/05 23:33:24  trey
  * now outputs reasonable Cassandra model
  *

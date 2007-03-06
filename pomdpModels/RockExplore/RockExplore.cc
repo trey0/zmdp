@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2007-03-06 02:23:08 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2007-03-06 04:32:47 $
   
  @file    RockExplore.cc
  @brief   No brief
@@ -51,6 +51,9 @@ RockExplore::RockExplore(const RockExploreParams& _params) :
   // Make sure the terminal state is assigned an id before any other state
   // so that it gets the id 0, handy for debugging.
   getStateId(getTerminalState());
+
+  // Assign indices to all reachable states.
+  generateReachableStates();
 }
 
 // Sets result to be the initial belief.  Returns result.
@@ -429,17 +432,11 @@ void RockExplore::getUpdatedBelief(RockExploreBelief& bp,
   }
 }
 
-// Outputs a Cassandra-format POMDP model to the given file.
-void RockExplore::writeCassandraModel(const std::string& outFile)
+// Uses the transition model to generate all reachable states and assign
+// them index values.  This is called during initialization; before it is
+// called getNumStates() is not valid.
+void RockExplore::generateReachableStates(void)
 {
-  // Open the output file
-  std::ofstream out(outFile.c_str());
-  if (!out) {
-    cerr << "ERROR: couldn't open " << outFile << " for writing: "
-	      << strerror(errno) << endl;
-    exit(EXIT_FAILURE);
-  }
-
   // Initialize the stateQueue to hold the possible initial states from b0.
   RockExploreBelief b0;
   getInitialBelief(b0);
@@ -472,7 +469,21 @@ void RockExplore::writeCassandraModel(const std::string& outFile)
       }
     }
   }
+}
 
+
+// Outputs a Cassandra-format POMDP model to the given file.
+void RockExplore::writeCassandraModel(const std::string& outFile)
+{
+  // Open the output file
+  std::ofstream out(outFile.c_str());
+  if (!out) {
+    cerr << "ERROR: couldn't open " << outFile << " for writing: "
+	      << strerror(errno) << endl;
+    exit(EXIT_FAILURE);
+  }
+
+  //////////////////////////////////////////////////////////////////////
   // Write the preamble.
   out << "discount: " << params.discountFactor << endl;
   out << "values: reward" << endl;
@@ -499,8 +510,10 @@ void RockExplore::writeCassandraModel(const std::string& outFile)
   }
   out << endl;
 
-  // Unpack sparse representation of initial belief into
+  // Generate sparse representation of initial belief and unpack into
   // dense representation.
+  RockExploreBelief b0;
+  getInitialBelief(b0);
   std::vector<double> denseB0(states.size(), 0.0);
   for (int i=0; i < (int)b0.size(); i++) {
     denseB0[b0[i].index] = b0[i].prob;
@@ -513,6 +526,7 @@ void RockExplore::writeCassandraModel(const std::string& outFile)
   }
   out << endl << endl;
 
+  //////////////////////////////////////////////////////////////////////
   // Write the main body.
   char buf[256];
   for (int si=0; si < (int)states.size(); si++) {
@@ -520,6 +534,8 @@ void RockExplore::writeCassandraModel(const std::string& outFile)
     getStateString(ss, si);
 
     for (int ai=0; ai < getNumActions(); ai++) {
+      double reward;
+      RockExploreBelief outcomes;
       getActionResult(reward, outcomes, si, ai);
 
       // Output R line for state=si, action=ai
@@ -676,11 +692,16 @@ RockExplore::getBelief(RockExploreBelief& result,
   return result;
 }
 
+RockExplore* modelG = NULL;
+
 }; // namespace zmdp
 
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2007/03/06 02:23:08  trey
+ * working interactive mode
+ *
  * Revision 1.2  2007/03/05 23:33:24  trey
  * now outputs reasonable Cassandra model
  *

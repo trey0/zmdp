@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2007-03-06 02:23:08 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2007-03-06 04:32:47 $
    
  @file    RockExplore.h
  @brief   The RockExplore problem is closely related to the RockSample problem
@@ -187,6 +187,9 @@ struct RockExplore {
   // Sets result to be the initial belief.  Returns result.
   RockExploreBelief& getInitialBelief(RockExploreBelief& result);
 
+  // Returns the number of states.
+  int getNumStates(void) const { return states.size(); }
+
   // Returns the number of distinct actions.
   int getNumActions(void) const { return params.numRocks + 5; }
 
@@ -221,6 +224,11 @@ struct RockExplore {
   void getUpdatedBelief(RockExploreBelief& bp,
 			const RockExploreBelief& b,
 			int ai, int o);
+
+  // Uses the transition model to generate all reachable states and assign
+  // them index values.  This is called during initialization; before it is
+  // called getNumStates() is not valid.
+  void generateReachableStates(void);
 
   // Outputs a Cassandra-format POMDP model to the given file.
   void writeCassandraModel(const std::string& outFile);
@@ -263,6 +271,8 @@ struct RockExplore {
   int chooseStochasticOutcome(const RockExploreObsProbs& obsProbs) const;
 };
 
+extern RockExplore* modelG;
+
 }; // namespace zmdp
 
 #endif // INCRockExplore_h
@@ -270,6 +280,9 @@ struct RockExplore {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2007/03/06 02:23:08  trey
+ * working interactive mode
+ *
  * Revision 1.2  2007/03/05 23:33:24  trey
  * now outputs reasonable Cassandra model
  *
