@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: embedfiles.mak,v 1.4 2006-04-28 17:57:41 trey Exp $
+# $Id: embedfiles.mak,v 1.5 2007-03-06 17:55:39 trey Exp $
 #
 # Copyright (c) 1996-2005, Carnegie Mellon University. All rights reserved.
 #
@@ -28,11 +28,11 @@
 
 include $(BUILD_DIR)/fixvars.mak # backwards compatibility
 
-EMBEDFILES_OUT := $(LOCAL_INC_DIR)/$(EMBEDFILES_TARGET)
+EMBEDFILES_OUT := $(TARGET_INC_DIR)/$(EMBEDFILES_TARGET)
 EMBEDFILES_DEP := $(EMBEDFILES_TARGET:%.cc=$(OBJ_DIR)/%.d)
 
 $(EMBEDFILES_OUT): $(EMBEDFILES_SRC)
-	@[ -d $(LOCAL_INC_DIR) ] || mkdir -p $(LOCAL_INC_DIR)
+	@[ -d $(TARGET_INC_DIR) ] || mkdir -p $(TARGET_INC_DIR)
 	$(BUILD_DIR)/embedFiles.perl $(CFLAGS) $(EMBEDFILES_SRC) -o $(EMBEDFILES_OUT)
 
 $(EMBEDFILES_DEP): $(EMBEDFILES_SRC)
@@ -52,6 +52,9 @@ endif
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.4  2006/04/28 17:57:41  trey
+# changed to use apache license
+#
 # Revision 1.3  2005/10/28 03:34:41  trey
 # switched to simpler license
 #
