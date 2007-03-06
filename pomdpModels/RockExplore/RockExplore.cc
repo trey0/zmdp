@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.7 $  $Author: trey $  $Date: 2007-03-06 07:48:43 $
+ $Revision: 1.8 $  $Author: trey $  $Date: 2007-03-06 07:57:01 $
   
  @file    RockExplore.cc
  @brief   No brief
@@ -620,6 +620,21 @@ int RockExplore::chooseStochasticOutcome(const RockExploreObsProbs& obsProbs) co
   return maxProbO;
 }
 
+// Returns the most likely state according to the distribution b.
+int RockExplore::getMostLikelyState(const RockExploreBelief& b) const
+{
+  double maxProb = 0.0;
+  int maxProbState = -1;
+  
+  for (int i=0; i < (int)b.size(); i++) {
+    if (b[i].prob > maxProb) {
+      maxProb = b[i].prob;
+      maxProbState = b[i].index;
+    }
+  }
+  return maxProbState;
+}
+
 // Calculates the marginal probability that each rock is good from the
 // given belief b.  Sets result to be the vector of marginals.  Returns
 // result.
@@ -709,6 +724,9 @@ RockExplore* modelG = NULL;
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.7  2007/03/06 07:48:43  trey
+ * cleaned up
+ *
  * Revision 1.6  2007/03/06 06:52:30  trey
  * avoided potential issues with random numbers
  *

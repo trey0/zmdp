@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.4 $  $Author: trey $  $Date: 2007-03-06 04:32:47 $
+ $Revision: 1.5 $  $Author: trey $  $Date: 2007-03-06 07:57:00 $
    
  @file    RockExplore.h
  @brief   The RockExplore problem is closely related to the RockSample problem
@@ -264,6 +264,9 @@ struct RockExplore {
   std::string& getMap(std::string& result, int si,
 		      const RockExploreRockMarginals& probRockIsGood) const;
 
+  // Returns the most likely state according to the distribution b.
+  int getMostLikelyState(const RockExploreBelief& b) const;
+
   // Returns a stochastically selected state index from the distribution b.
   int chooseStochasticOutcome(const RockExploreBelief& b) const;
 
@@ -280,6 +283,9 @@ extern RockExplore* modelG;
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2007/03/06 04:32:47  trey
+ * working towards heuristic policies
+ *
  * Revision 1.3  2007/03/06 02:23:08  trey
  * working interactive mode
  *
