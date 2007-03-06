@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2006-06-27 18:20:18 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2007-03-06 06:57:08 $
    
  @file    PomdpExec.h
  @brief   No brief
@@ -35,18 +35,24 @@
 
 namespace zmdp {
 
-struct PomdpExec {
+struct PomdpExecCore {
+  virtual ~PomdpExecCore(void) {}
+
+  virtual void setToInitialBelief(void) = 0;
+  virtual int chooseAction(void) = 0;
+  virtual void advanceToNextBelief(int a, int o) = 0;
+};
+
+// PomdpExec adds some default class members to PomdpExecCore,
+// makes inheritance easier in some cases.
+struct PomdpExec : public PomdpExecCore {
   Pomdp* pomdp;
   bool currentBeliefInitialized;
   belief_vector currentBelief;
 
   PomdpExec(void);
-  virtual ~PomdpExec(void) {}
 
-  // calls normally made during execution
-  virtual void setToInitialBelief(void) = 0;
-  virtual int chooseAction(void) = 0;
-  virtual void advanceToNextBelief(int a, int o) = 0;
+  // default implementation
   bool getBeliefIsTerminal(void) const;
 
   // helpful for debugging
@@ -61,6 +67,9 @@ struct PomdpExec {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2006/06/27 18:20:18  trey
+ * turned PomdpExec into an abstract class; most of the original implementation is now in the derived class MaxPlanesLowerBoundExec
+ *
  * Revision 1.1  2006/06/24 16:25:28  trey
  * initial check-in
  *
