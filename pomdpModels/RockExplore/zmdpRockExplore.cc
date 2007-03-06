@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.4 $  $Author: trey $  $Date: 2007-03-06 04:32:47 $
+ $Revision: 1.5 $  $Author: trey $  $Date: 2007-03-06 04:43:06 $
 
  @file    zmdpRockExplore.cc
  @brief   No brief
@@ -55,18 +55,19 @@ enum SimModes {
 
 struct RockExploreSim {
   int mode;
-  PomdpExecCore* exec;
+  PomdpExecCore* policy;
   RockExploreBelief b;
   int si;
 
-  RockExploreSim(int _mode, PomdpExecCore* _exec) :
+  RockExploreSim(int _mode, PomdpExecCore* _policy) :
     mode(_mode),
-    exec(_exec)
+    policy(_policy)
   {}
 
   void initialize(void) {
     modelG->getInitialBelief(b);
     si = modelG->chooseStochasticOutcome(b);
+    policy->setToInitialBelief();
   }
 
   void takeStep(void) {
@@ -84,7 +85,7 @@ struct RockExploreSim {
 	     rmap.c_str());
     }
       
-    int ai = exec->chooseAction();
+    int ai = policy->chooseAction();
     if (MODE_VISUALIZE == mode) {
       /* display action selected by policy and wait for user to continue */
       printf("Policy selects action %s\n", RockExploreAction::getString(ai));
@@ -109,6 +110,7 @@ struct RockExploreSim {
     modelG->getUpdatedBelief(bp, b, ai, o);
       
     // Advance to next state and belief
+    policy->advanceToNextBelief(ai, o);
     si = sp;
     b = bp;
   }
@@ -221,6 +223,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2007/03/06 04:32:47  trey
+ * working towards heuristic policies
+ *
  * Revision 1.3  2007/03/06 02:23:08  trey
  * working interactive mode
  *
