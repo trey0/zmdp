@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.36 2007-03-05 08:56:59 trey Exp $
+# $Id: Makefile,v 1.37 2007-03-06 17:56:22 trey Exp $
 #
 # Copyright (c) 2002-2005, Trey Smith. All rights reserved.
 #
@@ -32,8 +32,7 @@ maininstall: install
 SUBDIRS :=
 
 INSTALLHEADERS_HEADERS := \
-	zmdpMainConfig.h \
-	zmdpMainConfig.cc
+	zmdpMainConfig.h
 include $(BUILD_DIR)/installheaders.mak
 
 MAIN_LIBS := \
@@ -74,6 +73,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.36  2007/03/05 08:56:59  trey
+# modified how zmdpMainConfig is used so binaries built in other directories can embed the default config
+#
 # Revision 1.35  2006/10/16 17:32:17  trey
 # switched zmdpEvaluate to use new config system
 #
