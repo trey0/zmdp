@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2007-03-05 23:33:24 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2007-03-06 02:23:08 $
    
  @file    RockExplore.h
  @brief   The RockExplore problem is closely related to the RockSample problem
@@ -153,14 +153,17 @@ struct RockExploreAction {
 // An entry in a probability distribution over states.
 struct RockExploreBeliefEntry {
   double prob;
-  int si;
+  int index;
 
   RockExploreBeliefEntry(void) {}
-  RockExploreBeliefEntry(double _prob, int _si) : prob(_prob), si(_si) {}
+  RockExploreBeliefEntry(double _prob, int _index) : prob(_prob), index(_index) {}
 };
 
-// A vector representing a probability distribution over states.
+// A vector (sparsely) representing a probability distribution over states.
 typedef std::vector<RockExploreBeliefEntry> RockExploreBelief;
+
+// A vector representing a probability distribution over observations.
+typedef std::vector<double> RockExploreObsProbs;
 
 // A vector representing the marginal probability that each rock is good.
 typedef std::vector<double> RockExploreRockMarginals;
@@ -197,8 +200,27 @@ struct RockExplore {
   int getNumObservations(void) const;
 
   // Returns the probability of seeing observation o if action ai is applied
-  // and the system transitions to state si.
-  double getObsProb(int ai, int si, int o) const;
+  // and the system transitions to state sp.
+  double getObsProb(int ai, int sp, int o) const;
+
+  // Sets result to be the distribution of possible observations when
+  // action ai is applied and the system transitions to state sp.
+  // Returns result.
+  RockExploreObsProbs& getObsProbs(RockExploreObsProbs& obsProbs,
+				   int ai, int sp) const;
+
+  // POMDP version of getActionResult.  Sets expectedReward to be the
+  // expected reward and sets obsProbs to be the distribution of
+  // possible observations when from belief b action ai is applied.
+  void getActionResult(double& expectedReward,
+		       RockExploreObsProbs& obsProbs,
+		       const RockExploreBelief& b, int ai);
+
+  // Sets bp to be the updated belief when from belief b action ai is
+  // executed and observation o is received.
+  void getUpdatedBelief(RockExploreBelief& bp,
+			const RockExploreBelief& b,
+			int ai, int o);
 
   // Outputs a Cassandra-format POMDP model to the given file.
   void writeCassandraModel(const std::string& outFile);
@@ -230,15 +252,15 @@ struct RockExplore {
   // state s if it doesn't already have one.
   int getStateId(const RockExploreState& s);
 
-  // Sets result to be the map for state s and belief b.  Returns result.
-  std::string& getMap(std::string& result,
-		      const RockExploreState& s,
+  // Sets result to be the map for state si and belief b.  Returns result.
+  std::string& getMap(std::string& result, int si,
 		      const RockExploreRockMarginals& probRockIsGood) const;
 
-  // Stochastically selects an outcome state s according to the
-  // probabilities in the belief b.  Returns the state index for s.
+  // Returns a stochastically selected state index from the distribution b.
   int chooseStochasticOutcome(const RockExploreBelief& b) const;
 
+  // Returns a stochastically selected observation from the distribution obsProbs.
+  int chooseStochasticOutcome(const RockExploreObsProbs& obsProbs) const;
 };
 
 }; // namespace zmdp
@@ -248,6 +270,9 @@ struct RockExplore {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2007/03/05 23:33:24  trey
+ * now outputs reasonable Cassandra model
+ *
  * Revision 1.1  2007/03/05 08:58:26  trey
  * initial check-in
  *

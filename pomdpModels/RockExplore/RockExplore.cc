@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2007-03-05 23:33:24 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2007-03-06 02:23:08 $
   
  @file    RockExplore.cc
  @brief   No brief
@@ -120,11 +120,12 @@ int RockExplore::getStateId(const RockExploreState& s)
   }
 }
 
-// Sets result to be the map for state s and belief b.  Returns result.
-std::string& RockExplore::getMap(std::string& result,
-				 const RockExploreState& s,
+// Sets result to be the map for belief b.  Returns result.
+std::string& RockExplore::getMap(std::string& result, int si,
 				 const RockExploreRockMarginals& probRockIsGood) const
 {
+  RockExploreState s = states[si];
+
   if (s.isTerminalState) {
     result = "[terminal state]";
   } else {
@@ -141,6 +142,7 @@ std::string& RockExplore::getMap(std::string& result,
       // Left boundary
       outs << "# ";
       for (pos.x=0; pos.x < params.width; pos.x++) {
+	bool isGoodRock = false;
 	if (pos == s.robotPos) {
 	  // Robot marked with '*'
 	  outs << "*";
@@ -148,12 +150,9 @@ std::string& RockExplore::getMap(std::string& result,
 	  bool isRock = false;
 	  for (int r=0; r < params.numRocks; r++) {
 	    if (pos == params.rockPos[r]) {
+	      outs << r;
 	      if (s.rockIsGood[r]) {
-		// Good rocks marked with 'A', 'B', 'C', etc.
-		outs << ((char) ('A'+r));
-	      } else {
-		// Bad rocks marked with 'a', 'b', 'c', etc.
-		outs << ((char) ('a'+r));
+		isGoodRock = true;
 	      }
 	      isRock = true;
 	      break;
@@ -164,7 +163,11 @@ std::string& RockExplore::getMap(std::string& result,
 	    outs << ".";
 	  }
 	}
-	outs << " ";
+	if (isGoodRock) {
+	  outs << "+";
+	} else {
+	  outs << " ";
+	}
       }
       // Right boundary
       outs << "x" << endl;
@@ -177,13 +180,13 @@ std::string& RockExplore::getMap(std::string& result,
     outs << endl;
 
     // Probability of rocks being good
-    outs << "[";
+    outs << "Rock probs: ";
     for (int r=0; r < params.numRocks; r++) {
       char pbuf[20];
       snprintf(pbuf, sizeof(pbuf), "%5.3lf", probRockIsGood[r]);
-      outs << ((char) ('A'+r)) << " " << pbuf << " ";
+      outs << r << "=" << pbuf << " ";
     }
-    outs << "]" << endl;
+    outs << endl;
 
     result = outs.str();
   }
@@ -278,37 +281,151 @@ int RockExplore::getNumObservations(void) const
 }
 
 // Returns the probability of seeing observation o if action ai is applied
-// and the system transitions to state si.
-double RockExplore::getObsProb(int ai, int si, int o) const
+// and the system transitions to state sp.
+double RockExplore::getObsProb(int ai, int sp, int o) const
 {
-  // Translate from state id si to state struct and from action id ai to action
+  // Translate from state id sp to state struct and from action id ai to action
   // struct.
-  RockExploreState s = states[si];
+  RockExploreState s = states[sp];
   RockExploreAction a(ai);
 
   if (a.actionType == ACT_CHECK && !s.isTerminalState) {
-    // If rock is bad (row 0 of the table), the relative probabilities
-    // of observations 0 and 1 are 80/20.  If rock is good (row 1 of the
-    // table), the probabilities are 20/80.
-    static double obsProbTable[] = { 0.8, 0.2,
-				     0.2, 0.8 };
+    // Each matrix in obsProbTable gives observation probabilities.  The
+    // top row is probabilities for when the rock is bad; the bottom row
+    // is for when the rock is good.  Reading from left to right in the
+    // row you get the probabilities for seeing observations 0 and 1.
+    static double obsProbTable[] = {
+      // Matrix for when the robot is in the same cell as the rock
+      1.0, 0.0,
+      0.0, 1.0,
 
-    // This code block calculates the Manhattan distance from the robot
-    // to the rock.  Note that in the basic version of the model the
-    // sensor noise does not depend on the distance.
-    /*
+      // Matrix for when the robot is at Manhattan distance > 0 from the rock
+      0.8, 0.2,
+      0.2, 0.8
+    };
+
+    // Calculate the Manhattan distance between the robot and the rock
+    // it is checking.
     RockExplorePos rockPos = params.rockPos[a.rockIndex];
     int manhattanDistance = std::abs(rockPos.x - s.robotPos.x)
       + std::abs(rockPos.y - s.robotPos.y);
-    */
 
+    // Set up to index into the probability table.
+    int obsProbMatrix = (manhattanDistance > 0) ? 1 : 0;
     int obsProbRow = s.rockIsGood[a.rockIndex] ? 1 : 0;
     int obsProbCol = o;
-    return obsProbTable[2*obsProbRow + obsProbCol];
+
+    return obsProbTable[4*obsProbMatrix + 2*obsProbRow + obsProbCol];
   } else {
     // Actions other than check give no useful information (always
     // return observation 0)
     return (o == 0) ? 1.0 : 0.0;
+  }
+}
+
+// Sets result to be the distribution of possible observations when
+// action ai is applied and the system transitions to state sp.
+// Returns result.
+RockExploreObsProbs& RockExplore::getObsProbs(RockExploreObsProbs& obsProbs,
+					      int ai, int sp) const
+{
+  obsProbs.clear();
+  obsProbs.resize(getNumObservations(), 0.0);
+  for (int o=0; o < getNumObservations(); o++) {
+    obsProbs[o] = getObsProb(ai, sp, o);
+  }
+  return obsProbs;
+}
+
+// POMDP version of getActionResult.  Sets expectedReward to be the
+// expected reward and sets obsProbs to be the distribution of possible
+// observations when from belief b action ai is applied.
+void RockExplore::getActionResult(double& expectedReward,
+				  RockExploreObsProbs& obsProbs,
+				  const RockExploreBelief& b, int ai)
+{
+  obsProbs.clear();
+  obsProbs.resize(getNumObservations(), 0.0);
+
+  expectedReward = 0.0;
+
+  double reward;
+  RockExploreBelief outcomes;
+
+  for (int i=0; i < (int)b.size(); i++) {
+    int si = b[i].index;
+    getActionResult(reward, outcomes, si, ai);
+
+    // E[R | b, a] = sum_s [ P(s) * R(s,a) ]
+    expectedReward += b[i].prob * reward;
+
+    for (int j=0; j < (int)outcomes.size(); j++) {
+      // sp is the index for the outcome state.
+      int sp = outcomes[j].index;
+
+      for (int o=0; o < getNumObservations(); o++) {
+	// P(o | b, a) = sum_{s,sp} [ P(s | b) * P(sp | s, a) * P(o | a, sp) ]
+	obsProbs[o] += b[i].prob * outcomes[j].prob * getObsProb(ai, sp, o);
+      }
+    }
+  }
+
+  // Normalize
+  double sum = 0.0;
+  for (int i=0; i < (int)obsProbs.size(); i++) {
+    sum += obsProbs[i];
+  }
+  assert(sum > 0.0);
+  for (int i=0; i < (int)obsProbs.size(); i++) {
+    obsProbs[i] /= sum;
+  }
+}
+
+// Sets bp to be the updated belief when from belief b action ai is
+// executed and observation o is received.
+void RockExplore::getUpdatedBelief(RockExploreBelief& bp,
+				   const RockExploreBelief& b,
+				   int ai, int o)
+{
+  // This (temporary) map data structure will allow us to efficiently
+  // combine the probabilities of outcomes that arise from different
+  // starting states.
+  std::map<int, double> bpMap;
+
+  double reward;
+  RockExploreBelief outcomes;
+
+  for (int i=0; i < (int)b.size(); i++) {
+    int si = b[i].index;
+    getActionResult(reward, outcomes, si, ai);
+
+    for (int j=0; j < (int)outcomes.size(); j++) {
+      // sp is the index for the outcome state.
+      int sp = outcomes[j].index;
+
+      // Create an entry in bpMap for the probability of sp if
+      // it does not already exist.
+      if (bpMap.find(sp) == bpMap.end()) {
+	bpMap[sp] = 0.0;
+      }
+
+      // P(sp | b, a, o) = sum_s [ P(s | b) * P(sp | s, a) * P(o | a, sp) ]
+      bpMap[sp] += b[i].prob * outcomes[j].prob * getObsProb(ai, sp, o);
+    }
+  }
+
+  // Transform map bpMap into standard vector format bp.
+  bp.clear();
+  double sum = 0.0;
+  for (typeof(bpMap.begin()) mi=bpMap.begin(); mi != bpMap.end(); mi++) {
+    bp.push_back(RockExploreBeliefEntry(mi->second, mi->first));
+    sum += mi->second;
+  }
+
+  // Normalize bp.
+  assert(sum > 0.0);
+  for (int i=0; i < (int)bp.size(); i++) {
+    bp[i].prob /= sum;
   }
 }
 
@@ -328,7 +445,7 @@ void RockExplore::writeCassandraModel(const std::string& outFile)
   getInitialBelief(b0);
   std::queue<int> stateQueue;
   for (int i=0; i < (int)b0.size(); i++) {
-    stateQueue.push(b0[i].si);
+    stateQueue.push(b0[i].index);
   }
 
   // Generate all the reachable states through breadth-first search.
@@ -350,7 +467,7 @@ void RockExplore::writeCassandraModel(const std::string& outFile)
 	getActionResult(reward, outcomes,
 			si, ai);
 	for (int i=0; i < (int)outcomes.size(); i++) {
-	  stateQueue.push(outcomes[i].si);
+	  stateQueue.push(outcomes[i].index);
 	}
       }
     }
@@ -360,22 +477,39 @@ void RockExplore::writeCassandraModel(const std::string& outFile)
   out << "discount: " << params.discountFactor << endl;
   out << "values: reward" << endl;
 
+  // Output "actions" line
   out << "actions: ";
   for (int ai=0; ai < getNumActions(); ai++) {
     out << RockExploreAction::getString(ai) << " ";
   }
   out << endl;
 
+  // Output "observations" line
   out << "observations: ";
   for (int o=0; o < getNumObservations(); o++) {
     out << "o" << o << " ";
   }
   out << endl;
 
+  // Output "states" line
   out << "states: ";
   std::string ss;
   for (int si=0; si < (int)states.size(); si++) {
     out << getStateString(ss,si) << " ";
+  }
+  out << endl;
+
+  // Unpack sparse representation of initial belief into
+  // dense representation.
+  std::vector<double> denseB0(states.size(), 0.0);
+  for (int i=0; i < (int)b0.size(); i++) {
+    denseB0[b0[i].index] = b0[i].prob;
+  }
+
+  // Output "start" line
+  out << "start: ";
+  for (int si=0; si < (int)states.size(); si++) {
+    out << denseB0[si] << " ";
   }
   out << endl << endl;
 
@@ -395,7 +529,7 @@ void RockExplore::writeCassandraModel(const std::string& outFile)
 
       // Output T lines for state=si, action=ai
       for (int i=0; i < (int)outcomes.size(); i++) {
-	getStateString(sps, outcomes[i].si);
+	getStateString(sps, outcomes[i].index);
 	snprintf(buf, sizeof(buf), "T: %-3s : %-10s : %-10s %f",
 		 RockExploreAction::getString(ai), ss.c_str(), sps.c_str(),
 		 outcomes[i].prob);
@@ -416,8 +550,7 @@ void RockExplore::writeCassandraModel(const std::string& outFile)
   out.close();
 }
 
-// Stochastically selects an outcome state s according to the
-// probabilities in the belief b.  Returns the state index for s.
+// Returns a stochastically selected state index from the distribution b.
 int RockExplore::chooseStochasticOutcome(const RockExploreBelief& b) const
 {
   // Generate a random floating point value between 0 and 1.
@@ -427,7 +560,7 @@ int RockExplore::chooseStochasticOutcome(const RockExploreBelief& b) const
   for (int i=0; i < (int)b.size(); i++) {
     p -= b[i].prob;
     if (p <= 0) {
-      return b[i].si;
+      return b[i].index;
     }
   }
 
@@ -436,7 +569,29 @@ int RockExplore::chooseStochasticOutcome(const RockExploreBelief& b) const
   // perfectly normalized, so this fallback case is nice to avoid a
   // crash.
   assert(p < 1e-10);
-  return b[0].si;
+  return b[0].index;
+}
+
+// Returns a stochastically selected observation from the distribution obsProbs.
+int RockExplore::chooseStochasticOutcome(const RockExploreObsProbs& obsProbs) const
+{
+  // Generate a random floating point value between 0 and 1.
+  double p = ((double) rand()) / RAND_MAX;
+
+  // Select an outcome based on p.
+  for (int o=0; o < (int)obsProbs.size(); o++) {
+    p -= obsProbs[o];
+    if (p <= 0) {
+      return o;
+    }
+  }
+
+  // If the probabilities in obsProbs add up to 1.0, we should reach
+  // this point with probability 0.  However, due to roundoff error
+  // obsProbs may not be perfectly normalized, so this fallback case is
+  // nice to avoid a crash.
+  assert(p < 1e-10);
+  return 0;
 }
 
 // Calculates the marginal probability that each rock is good from the
@@ -447,13 +602,14 @@ RockExplore::getMarginals(RockExploreRockMarginals& result,
 			  const RockExploreBelief& b) const
 {
   // Initialize the result vector to all zero values.
+  result.clear();
   result.resize(params.numRocks, 0.0);
 
   // Iterate through the outcomes in the belief vector.
   for (int i=0; i < (int)b.size(); i++) {
-    // Translate from the state index of the outcome, b[i].si, to the
+    // Translate from the state index of the outcome, b[i].index, to the
     // corresponding state struct s.
-    RockExploreState s = states[b[i].si];
+    RockExploreState s = states[b[i].index];
     for (int r=0; r < params.numRocks; r++) {
       // If rock r is good in outcome i, add the probability of
       // outcome i to result[r].
@@ -525,6 +681,9 @@ RockExplore::getBelief(RockExploreBelief& result,
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2007/03/05 23:33:24  trey
+ * now outputs reasonable Cassandra model
+ *
  * Revision 1.1  2007/03/05 08:58:26  trey
  * initial check-in
  *

@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2007-03-05 23:33:24 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2007-03-06 02:23:08 $
 
  @file    zmdpRockExplore.cc
  @brief   No brief
@@ -39,153 +39,137 @@ using namespace std;
 //using namespace MatrixUtils;
 using namespace zmdp;
 
-bool userTerminatedG = false;
+RockExplore* modelG = NULL;
 
-void sigIntHandler(int sig) {
-  userTerminatedG = true;
+enum PolicyTypes {
+  P_QMDP=1,
+  P_VOTING=2,
+  P_MOST_LIKELY=3,
+  P_TWO_STEP=4,
+  P_ZMDP=5
+};
 
-  printf("*** received SIGINT, user pressed control-C ***\n"
-	 "terminating run and writing output policy as soon as the solver returns control\n");
-  fflush(stdout);
-}
-
-void setSignalHandler(int sig, void (*handler)(int)) {
-  struct sigaction act;
-  memset (&act, 0, sizeof(act));
-  act.sa_handler = handler;
-  act.sa_flags = SA_RESTART;
-  if (-1 == sigaction (sig, &act, NULL)) {
-    cerr << "ERROR: unable to set handler for signal "
-         << sig << endl;
-    exit(EXIT_FAILURE);
-  }
-}
-
-#if 0
-void doSolve(const ZMDPConfig& config, SolverParams& p)
+int getUserChoice(void)
 {
-  init_matrix_utils();
-  StopWatch run;
-
-  printf("%05d reading model file and allocating data structures\n",
-	 (int) run.elapsedTime());
-  SolverObjects so;
-  constructSolverObjects(so, p, config);
-
-  // initialize the solver
-  printf("%05d calculating initial heuristics\n",
-	 (int) run.elapsedTime());
-  so.solver->planInit(so.sim->getModel(), &config);
-  printf("%05d finished initialization, beginning to improve policy\n",
-	 (int) run.elapsedTime());
-  
-  setSignalHandler(SIGINT, &sigIntHandler);
-
-  double lastPrintTime = -1000;
-  bool reachedTargetPrecision = false;
-  bool reachedTimeout = false;
-  int numSolverCalls = 0;
-  while (!(reachedTargetPrecision || reachedTimeout || userTerminatedG)) {
-    // make a call to the solver
-    reachedTargetPrecision =
-      so.solver->planFixedTime(so.sim->getModel()->getInitialState(),
-			       /* maxTime = */ -1, p.terminateRegretBound);
-    numSolverCalls++;
-
-    // check timeout
-    double elapsed = run.elapsedTime();
-    if (elapsed >= p.terminateWallclockSeconds) {
-      reachedTimeout = true;
-    }
-
-    // print a progress update every 10 seconds
-    if ((elapsed - lastPrintTime > 10)
-	|| reachedTargetPrecision || reachedTimeout || userTerminatedG) {
-      ValueInterval intv = so.solver->getValueAt(so.sim->getModel()->getInitialState());
-      printf("%05d %6d calls to solver, bounds [%8.4f .. %8.4f], regret <= %g\n",
-	     (int) elapsed, numSolverCalls, intv.l, intv.u, (intv.u - intv.l));
-      lastPrintTime = elapsed;
-    }
+  int choice;
+  char buf[256];
+  cin.getline(buf, sizeof(buf));
+  if (1 != sscanf(buf, "%d", &choice)) {
+    return -1;
   }
-
-  // say why the run ended
-  if (reachedTargetPrecision) {
-    printf("%05d terminating run; reached target regret bound of %g\n",
-	   (int) run.elapsedTime(), p.terminateRegretBound);
-  } else if (reachedTimeout) {
-    printf("%05d terminating run; passed specified timeout of %g seconds\n",
-	   (int) run.elapsedTime(), p.terminateWallclockSeconds);
-  } else {
-    printf("%05d terminating run; caught SIGINT from user\n",
-	   (int) run.elapsedTime());
-  }
-
-  // write out a policy
-  if (NULL == p.policyOutputFile) {
-    printf("%05d (not outputting policy)\n", (int) run.elapsedTime());
-  } else {
-    printf("%05d writing policy to '%s'\n", (int) run.elapsedTime(), p.policyOutputFile);
-    so.bounds->writePolicy(p.policyOutputFile);
-  }
-
-  // finish up logging (if any, according to params specified in the config file)
-  printf("%05d finishing logging (e.g., writing qValuesOutputFile if it was requested)\n",
-	 (int) run.elapsedTime());
-  so.solver->finishLogging();
-
-  printf("%05d done\n", (int) run.elapsedTime());
+  return choice;
 }
-#endif
 
-void usage(const char* cmdName) {
-  cerr <<
-    "usage: " << cmdName << " OPTIONS <model>\n"
-    "  -h or --help           Print this help\n"
-    "  --version              Print version information (CFLAGS used at compilation)\n"
-    "  -c or --config <file>  Specify a config file to read options from\n"
-    "  --genConfig <file>     Generate an example config file and exit\n"
-    "\n"
-    "  zmdpRockExplore generates an output policy for a search strategy and\n"
-    "  problem you select.  It runs the search strategy in an anytime\n"
-    "  fashion, periodically printing bounds on the value of the initial\n"
-    "  state to console so that you can monitor progress.  When the run ends,\n"
-    "  the final policy is output to the file you specify.  There are several\n"
-    "  options for how to end the run: you can specify a desired regret bound\n"
-    "  for the output solution, specify a fixed timeout, or just use ctrl-C to\n"
-    "  interrupt the algorithm when you are satisfied (it will output the final\n"
-    "  policy before exiting).\n"
-    "\n"
-    "  ZMDP gets configuration information from three places: (1) Default values\n"
-    "  are embedded in the binary at compile time.  (2) If you specify a config file\n"
-    "  using the --config option, any fields set in that file override the defaults.\n"
-    "  (3) You can override individual fields in the config file from the command line.\n"
-    "  For instance, if the config file specifies 'searchStrategy frtdp' you can override\n"
-    "  with '--searchStrategy hsvi' at the command line.\n"
-    "\n"
-    "  To generate an example config file (including default values and comments describing\n"
-    "  all the parameters), use the '--genConfig <file>' option.\n"
-    "\n"
-    "For convenience, there are also some abbreviations:\n"
-    "  -s = --searchStrategy\n"
-    "  -t = --modelType\n"
-    "  -o = --policyOutputFile\n"
-    "  -f = --useFastModelParser 1\n"
-    "  -p = --terminateRegretBound\n"
-    "\n"
-    "Examples:\n"
-    "  " << cmdName << " RockSample_4_4.pomdp\n"
-    "  " << cmdName << " large-b.racetrack\n"
-    "  " << cmdName << " -t 60 -o my.policy RockSample_4_4.pomdp\n"
-    "  " << cmdName << " -s lrtdp RockSample_4_4.pomdp\n"
-    "  " << cmdName << " -f RockSample_5_7.pomdp\n"
-    "\n"
-;
-  exit(-1);
+int getUserAction(void)
+{
+  while (1) {
+    cout << "\nChoose action from [";
+    for (int ai=0; ai < modelG->getNumActions(); ai++) {
+      cout << RockExploreAction::getString(ai) << " ";
+    }
+    cout << "]: ";
+    cout.flush();
+
+    std::string as;
+    cin >> as;
+    for (int ai=0; ai < modelG->getNumActions(); ai++) {
+      if (as == RockExploreAction::getString(ai)) {
+	return ai;
+      }
+    }
+
+    printf("\n*** Sorry, I didn't understand that action ***\n");
+  }
+  
+}
+
+int getPolicyType(void)
+{
+  while (1) {
+    printf("\nPolicy type menu\n"
+	   "\n"
+	   "  1 - QMDP heuristic\n"
+	   "  2 - Voting heuristic\n"
+	   "  3 - Most likely state heuristic\n"
+	   "  4 - Two-step lookahead heuristic\n"
+	   "  5 - Read zmdpSolve-generated policy from out.policy\n"
+	   "\n"
+	   "Your choice: "
+	   );
+    fflush(stdout);
+
+    int choice = getUserChoice();
+
+    if (1 <= choice && choice <= 5) {
+      return choice;
+    } else {
+      printf("\n*** Sorry, I didn't understand that choice ***\n");
+    }
+  }
+}
+
+void doManual(void)
+{
+  RockExploreBelief b, bp;
+  double reward;
+  RockExploreBelief outcomes;
+  RockExploreObsProbs obsProbs;
+  RockExploreRockMarginals probRockIsGood;
+  RockExploreState s;
+  std::string rmap;
+
+  modelG->getInitialBelief(b);
+  int si = modelG->chooseStochasticOutcome(b);
+
+  while (1) {
+    // Display current state and belief
+    modelG->getMarginals(probRockIsGood, b);
+    modelG->getMap(rmap, si, probRockIsGood);
+    printf("Current map is:\n"
+	   "\n"
+	   "%s",
+	   rmap.c_str());
+
+    int ai = getUserAction();
+
+    // Calculate results of action
+    modelG->getActionResult(reward, outcomes, si, ai);
+    int sp = modelG->chooseStochasticOutcome(outcomes);
+    modelG->getObsProbs(obsProbs, ai, sp);
+    int o = modelG->chooseStochasticOutcome(obsProbs);
+    printf("Observation = o%d, reward = %lf\n", o, reward);
+    modelG->getUpdatedBelief(bp, b, ai, o);
+
+    // Advance to next state and belief
+    si = sp;
+    b = bp;
+
+    // If state is terminal, end the run
+    s = modelG->states[si];
+    if (s.isTerminalState) {
+      printf("\nReached terminal state, all done.\n");
+      break;
+    }
+  }
+}
+
+void doVisualize(void)
+{
+  int policyType = getPolicyType();
+  // fill me in
+}
+
+void doEvaluate(void)
+{
+  int policyType = getPolicyType();
+  // fill me in
 }
 
 int main(int argc, char **argv) {
-  RockExploreParams p;
+  // Initialize the random number generator
+  srand(time(NULL));
 
+  RockExploreParams p;
   p.width = 4;
   p.height = 4;
   p.initPos = RockExplorePos(0,2);
@@ -205,132 +189,43 @@ int main(int argc, char **argv) {
   p.rockPos.push_back(RockExplorePos(1,0));
 
   RockExplore model(p);
+  modelG = &model;
 
-  RockExploreState s;
-  s.isTerminalState = false;
-  s.robotPos = p.initPos;
-  s.rockIsGood.push_back(true);
-  s.rockIsGood.push_back(false);
-  s.rockIsGood.push_back(false);
-  s.rockIsGood.push_back(true);
-
-  std::vector<double> probRockIsGood;
-  probRockIsGood.push_back(0.8);
-  probRockIsGood.push_back(0.2);
-  probRockIsGood.push_back(0.1);
-  probRockIsGood.push_back(0.9);
-
-  string rmap;
-  model.getMap(rmap, s, probRockIsGood);
-  cout << rmap << endl;
-
-  model.writeCassandraModel("RockExplore.pomdp");
-
-#if 0
-  SolverParams p;
-
-  ostringstream outs;
-  if (zmdpDebugLevelG >= 1) {
-    // save arguments for debug printout later
-    for (int i=1; i < argc; i++) {
-      outs << argv[i] << " ";
-    }
-  }
-
-  bool argsOnly = false;
-  const char* configFileName = NULL;
-  ZMDPConfig commandLineConfig;
-
-  p.cmdName = argv[0];
-  for (int argi=1; argi < argc; argi++) {
-    std::string args = argv[argi];
-    if (!argsOnly && '-' == args[0]) {
-      if (args == "--") {
-	argsOnly = true;
-      } else if (args == "-h" || args == "--help") {
-	usage(argv[0]);
-      } else if (args == "--version") {
-	cout << "CFLAGS = " << CFLAGS << endl;
-	exit(EXIT_SUCCESS);
-      } else if (args == "-c" || args == "--config") {
-	if (++argi == argc) {
-	  fprintf(stderr, "ERROR: found -c option without argument (use -h for help)\n");
-	  exit(EXIT_FAILURE);
-	}
-	configFileName = argv[argi];
-      } else if (args == "--genConfig") {
-	if (++argi == argc) {
-	  fprintf(stderr, "ERROR: found --genConfig option without argument (use -h for help)\n");
-	  exit(EXIT_FAILURE);
-	}
-	embedWriteToFile(argv[argi], defaultConfig);
-	printf("wrote config file with default settings to %s\n", argv[argi]);
-	exit(EXIT_SUCCESS);
-      } else {
-	// replace abbreviations
-	if (args == "-s") {
-	  args = "--searchStrategy";
-	} else if (args == "-t") {
-	  args = "--modelType";
-	} else if (args == "-f") {
-	  commandLineConfig.setBool("useFastModelParser", true);
-	  continue;
-	} else if (args == "-p") {
-	  args = "--terminateRegretBound";
-	} else if (args == "-o") {
-	  args = "--policyOutputFile";
-	}
-
-	if (args.find("--") != 0) {
-	  fprintf(stderr, "ERROR: found unknown option '%s' (use -h for help)\n",
-		  args.c_str());
-	  exit(EXIT_FAILURE);
-	} else {
-	  if (++argi == argc) {
-	    fprintf(stderr, "ERROR: found %s option without argument (-h for help)\n",
-		    args.c_str());
-	    exit(EXIT_FAILURE);
-	  }
-	  commandLineConfig.setString(args.substr(2), argv[argi]);
-	}
-      }
-    } else {
-      if (NULL == p.probName) {
-	p.probName = argv[argi];
-      } else {
-	fprintf(stderr, "ERROR: expected exactly 1 argument (use -h for help)\n");
-	exit(EXIT_FAILURE);
-      }
-    }
-  }
-  if (NULL == p.probName) {
-    fprintf(stderr, "ERROR: expected exactly 1 argument (use -h for help)\n");
-    exit(EXIT_FAILURE);
-  }
-
-  // config step 1: read defaults embedded in binary
-  ZMDPConfig config;
-  config.readFromString("<defaultConfig>", defaultConfig.data);
-
-  // config step 2: overwrite defaults with values specified in config file
-  // (signal an error if any new unexpected fields are defined)
-  config.setOverWriteOnlyMode(true);
-  if (NULL != configFileName) {
-    config.readFromFile(configFileName);
-  }
-
-  // config step 3: overwrite with values specified on command line
-  config.readFromConfig(commandLineConfig);
-
-  if (zmdpDebugLevelG >= 1) {
-    printf("CFLAGS = %s\n", CFLAGS);
-    printf("ARGS = %s\n", outs.str().c_str());
+  while (1) {
+    printf("\nMain menu\n"
+	   "\n"
+	   "  1 - Output the RockExplore model in Cassandra format to RockExplore.pomdp\n"
+	   "  2 - Manually control the robot in the simulator\n"
+	   "  3 - Visualize a policy in the simulator\n"
+	   "  4 - Evaluate the quality of a policy\n"
+	   "\n"
+	   "Your choice (ctrl-C to quit): "
+	   );
     fflush(stdout);
-  }
 
-  p.setValues(config);
-  doSolve(config, p);
-#endif
+    int choice = getUserChoice();
+
+    switch (choice) {
+    case 1:
+      model.writeCassandraModel("RockExplore.pomdp");
+      printf("\nModel written to RockExplore.pomdp\n");
+      exit(0);
+      break;
+    case 2:
+      doManual();
+      exit(0);
+    case 3:
+      doVisualize();
+      exit(0);
+      break;
+    case 4:
+      doEvaluate();
+      exit(0);
+      break;
+    default:
+      printf("\n*** Sorry, I didn't understand that choice ***\n");
+    }
+  }
 
   return 0;
 }
@@ -338,6 +233,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2007/03/05 23:33:24  trey
+ * now outputs reasonable Cassandra model
+ *
  * Revision 1.1  2007/03/05 08:58:26  trey
  * initial check-in
  *
