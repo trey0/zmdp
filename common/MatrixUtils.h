@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.14 $  $Author: trey $  $Date: 2006-04-28 17:57:41 $
+ $Revision: 1.15 $  $Author: trey $  $Date: 2007-03-06 06:53:48 $
    
  @file    MatrixUtils.h
  @brief   No brief
@@ -92,7 +92,10 @@ namespace MatrixUtils {
 
   inline void init_matrix_utils(void)
   {
+  // Initialize the random number generator
     srand(time(0));
+    // Seems the random number generator needs to "clear its throat" on some systems.
+    rand();
   }
 
   // Generate a sample from a uniform distribution over [0,1].
@@ -326,6 +329,9 @@ namespace MatrixUtils {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.14  2006/04/28 17:57:41  trey
+ * changed to use apache license
+ *
  * Revision 1.13  2006/02/06 19:29:40  trey
  * added denseRep() function
  *
