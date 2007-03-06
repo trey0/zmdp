@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.6 $  $Author: trey $  $Date: 2007-03-06 06:52:30 $
+ $Revision: 1.7 $  $Author: trey $  $Date: 2007-03-06 07:48:43 $
   
  @file    RockExplore.cc
  @brief   No brief
@@ -390,20 +390,14 @@ void RockExplore::getUpdatedBelief(RockExploreBelief& bp,
 				   const RockExploreBelief& b,
 				   int ai, int o)
 {
-  // This (temporary) map data structure will allow us to efficiently
+  // This (temporary) dense data structure will allow us to efficiently
   // combine the probabilities of outcomes that arise from different
   // starting states.
-  std::map<int, double> bpMap;
+  std::vector<double> bpDense(getNumStates());
 
   double reward;
   RockExploreBelief outcomes;
 
-#if 0
-  cout << "getUpd" << endl;
-  for (int i=0; i < (int)b.size(); i++) {
-    cout << "s=" << b[i].index << " prob=" << b[i].prob << endl;
-  }
-#endif
   for (int i=0; i < (int)b.size(); i++) {
     int si = b[i].index;
     getActionResult(reward, outcomes, si, ai);
@@ -412,31 +406,19 @@ void RockExplore::getUpdatedBelief(RockExploreBelief& bp,
       // sp is the index for the outcome state.
       int sp = outcomes[j].index;
 
-      // Create an entry in bpMap for the probability of sp if
-      // it does not already exist.
-      if (bpMap.find(sp) == bpMap.end()) {
-	bpMap[sp] = 0.0;
-      }
-
       // P(sp | b, a, o) = sum_s [ P(s | b) * P(sp | s, a) * P(o | a, sp) ]
-      bpMap[sp] += b[i].prob * outcomes[j].prob * getObsProb(ai, sp, o);
-#if 0
-      cout << "sp=" << sp
-	   << " bpMap[sp]=" << bpMap[sp]
-	   << " b[i].prob=" << b[i].prob
-	   << " o[j].prob=" << outcomes[j].prob
-	   << " P(o|a,s)=" << getObsProb(ai, sp, o)
-	   << endl;
-#endif
+      bpDense[sp] += b[i].prob * outcomes[j].prob * getObsProb(ai, sp, o);
     }
   }
 
-  // Transform map bpMap into standard vector format bp.
+  // Transform map bpDense into standard vector format bp.
   bp.clear();
   double sum = 0.0;
-  for (typeof(bpMap.begin()) mi=bpMap.begin(); mi != bpMap.end(); mi++) {
-    bp.push_back(RockExploreBeliefEntry(mi->second, mi->first));
-    sum += mi->second;
+  for (int sp=0; sp < getNumStates(); sp++) {
+    if (bpDense[sp] > 0.0) {
+      bp.push_back(RockExploreBeliefEntry(bpDense[sp], sp));
+      sum += bpDense[sp];
+    }
   }
 
   // Normalize bp.
@@ -727,6 +709,9 @@ RockExplore* modelG = NULL;
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.6  2007/03/06 06:52:30  trey
+ * avoided potential issues with random numbers
+ *
  * Revision 1.5  2007/03/06 06:37:52  trey
  * implementing heuristics
  *
