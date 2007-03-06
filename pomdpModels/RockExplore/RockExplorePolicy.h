@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2007-03-06 06:37:52 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2007-03-06 07:49:31 $
    
  @file    RockExplorePolicy.h
  @brief   The RockExplorePolicy problem is closely related to the RockSample problem
@@ -57,13 +57,25 @@ struct MDPValueFunction {
   // Returns the value V(s).
   double getValue(int s) const;
 
-  // Returns the expected value of a belief V(b) = sum_s P(s | b) V(s)
-  double getValue(const RockExploreBelief& b) const;
+  // Returns Q(s,a).
+  double getQ(int s, int a) const;
 
-  // Returns HV(s) = max_a [ R(s,a) + discount * sum_s' P(s' | s,a) V(s') ].
+  // Returns arg max_a Q(s,a).
+  int getMaxQAction(int s) const;
+
+  // Returns HV(s) = max_a Q(s,a).
   double getUpdatedValue(int s) const;
 
-  // Returns HV(b) = max_a [ R(b,a) + discount * sum_o P(b' | b,a,o) V(b') ]
+  // Returns the value of a belief V(b) = sum_s P(s | b) V(s)
+  double getValue(const RockExploreBelief& b) const;
+
+  // Returns Q(b,a).
+  double getQ(const RockExploreBelief& b, int a) const;
+
+  // Returns arg max_a Q(b,a).
+  int getMaxQAction(const RockExploreBelief& b) const;
+
+  // Returns HV(b) = max_a Q(b,a).
   double getUpdatedValue(const RockExploreBelief& b) const;
 };
 
@@ -130,6 +142,9 @@ extern PomdpExecCore* getPolicy(void);
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2007/03/06 06:37:52  trey
+ * implementing heuristics
+ *
  * Revision 1.1  2007/03/06 04:32:33  trey
  * initial check-in
  *

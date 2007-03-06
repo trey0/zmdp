@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2007-03-06 06:37:52 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2007-03-06 07:49:22 $
   
  @file    RockExplorePolicy.cc
  @brief   No brief
@@ -89,7 +89,31 @@ double MDPValueFunction::getValue(int s) const
   return V[s];
 }
 
-// Returns the expected value of a belief V(b) = sum_s b(s) V(s)
+// Returns Q(s,a).
+double MDPValueFunction::getQ(int s, int a) const
+{
+  double Rsa;
+  RockExploreBelief outcomes;
+  modelG->getActionResult(Rsa, outcomes, s, a);
+  return Rsa + modelG->params.discountFactor * getValue(outcomes);
+}
+
+// Returns arg max_a Q(s,a).
+int MDPValueFunction::getMaxQAction(int s) const
+{
+  double maxQsa = -99e+20;
+  int maxQAction = -1;
+  for (int a=0; a < modelG->getNumActions(); a++) {
+    double Qsa = getQ(s,a);
+    if (Qsa > maxQsa) {
+      maxQsa = Qsa;
+      maxQAction = a;
+    }
+  }
+  return maxQAction;
+}
+
+// Returns the value of a belief V(b) = sum_s b(s) V(s)
 double MDPValueFunction::getValue(const RockExploreBelief& b) const
 {
   double expectedValue = 0.0;
@@ -100,42 +124,49 @@ double MDPValueFunction::getValue(const RockExploreBelief& b) const
   return expectedValue;
 }
 
-// Returns HV(s) = max_a [ R(s,a) + discount * sum_s' P(s' | s,a) V(s') ].
-double MDPValueFunction::getUpdatedValue(int s) const
+// Returns Q(b,a).
+double MDPValueFunction::getQ(const RockExploreBelief& b, int a) const
 {
-  double maxVal = -99e+20;
-  for (int a=0; a < modelG->getNumActions(); a++) {
-    double reward;
-    RockExploreBelief outcomes;
-    modelG->getActionResult(reward, outcomes, s, a);
-
-    double val = reward + modelG->params.discountFactor * getValue(outcomes);
-    maxVal = std::max(maxVal, val);
+  double Rba;
+  RockExploreObsProbs obsProbs;
+  modelG->getActionResult(Rba, obsProbs, b, a);
+  
+  double nextStateVal = 0.0;
+  for (int o=0; o < modelG->getNumObservations(); o++) {
+    RockExploreBelief nextBelief;
+    if (obsProbs[o] > 0.0) {
+      modelG->getUpdatedBelief(nextBelief, b, a, o);
+      nextStateVal += obsProbs[o] * getValue(nextBelief);
+    }
   }
-  return maxVal;
+  return Rba + modelG->params.discountFactor * nextStateVal;
 }
 
-// Returns HV(b) = max_a [ R(b,a) + discount * sum_o P(b' | b,a,o) V(b') ]
+// Returns HV(s) = max_a Q(s,a).
+double MDPValueFunction::getUpdatedValue(int s) const
+{
+  return getQ(s, getMaxQAction(s));
+}
+
+// Returns arg max_a Q(b,a).
+int MDPValueFunction::getMaxQAction(const RockExploreBelief& b) const
+{
+  double maxQba = -99e+20;
+  int maxQAction = -1;
+  for (int a=0; a < modelG->getNumActions(); a++) {
+    double Qba = getQ(b,a);
+    if (Qba > maxQba) {
+      maxQba = Qba;
+      maxQAction = a;
+    }
+  }
+  return maxQAction;
+}
+
+// Returns HV(b) = max_a Q(b,a).
 double MDPValueFunction::getUpdatedValue(const RockExploreBelief& b) const
 {
-  double maxVal = -99e+20;
-  for (int a=0; a < modelG->getNumActions(); a++) {
-    double expectedReward;
-    RockExploreObsProbs obsProbs;
-    modelG->getActionResult(expectedReward, obsProbs, b, a);
-
-    double val = 0.0;
-    for (int o=0; o < modelG->getNumObservations(); o++) {
-      RockExploreBelief bp;
-      if (obsProbs[o] > 0.0) {
-	modelG->getUpdatedBelief(bp, b, a, o);
-	val += obsProbs[o] * getValue(bp);
-      }
-    }
-    val = expectedReward + modelG->params.discountFactor * val;
-    maxVal = std::max(maxVal, val);
-  }
-  return maxVal;
+  return getQ(b, getMaxQAction(b));
 }
 
 // Chooses an action according to the "user" policy, meaning we
@@ -183,36 +214,23 @@ void HeuristicPolicy::advanceToNextBelief(int a, int o)
 // Chooses an action according to the QMDP heuristic.
 int QMDPPolicy::chooseAction(void)
 {
-  int bestAction = -1;
-  double maxQ = -99e+20;
-
+  // Calculate Q(b,a) values.
+  double maxQba = -99e+20;
+  int maxQAction = -1;
   for (int a=0; a < modelG->getNumActions(); a++) {
     double Qba = 0.0;
     for (int i=0; i < (int)b.size(); i++) {
       int s = b[i].index;
-
-      double Rsa;
-      RockExploreBelief outcomes;
-      modelG->getActionResult(Rsa, outcomes, s, a);
-
-      double nextStateVal = 0.0;
-      for (int j=0; j < (int)outcomes.size(); j++) {
-	int nextState = outcomes[j].index;
-	nextStateVal += outcomes[j].prob * vfn.getValue(nextState);
-      }
-      // Q(s,a) = R(s,a) + discount * sum_s' [ P(s' | s, a) * V(s') ]
-      double Qsa = Rsa + modelG->params.discountFactor * nextStateVal;
-      // Q(b,a) = sum_s [ b(s) * Q(s,a) ]
-      Qba += b[i].prob * Qsa;
+      Qba += b[i].prob * vfn.getQ(s, a);
     }
-    if (Qba > maxQ) {
-      // bestAction = arg max_a Q(b,a)
-      bestAction = a;
-      maxQ = Qba;
+    if (Qba > maxQba) {
+      maxQba = Qba;
+      maxQAction = a;
     }
   }
 
-  return bestAction;
+  // Return arg max_a Q(b,a).
+  return maxQAction;
 }
 
 // Chooses an action according to the voting heuristic.
@@ -225,34 +243,10 @@ int VotingPolicy::chooseAction(void)
   // votes are weighted according to b(s).
   for (int i=0; i < (int)b.size(); i++) {
     int s = b[i].index;
-    
-    double bestQsa = -99e+20;
-    int bestActionForS = -1;
-
-    for (int a=0; a < modelG->getNumActions(); a++) {
-      double Rsa;
-      RockExploreBelief outcomes;
-      modelG->getActionResult(Rsa, outcomes, s, a);
-
-      double nextStateVal = 0.0;
-      for (int j=0; j < (int)outcomes.size(); j++) {
-	int nextState = outcomes[j].index;
-	nextStateVal += outcomes[j].prob * vfn.getValue(nextState);
-      }
-      // Q(s,a) = R(s,a) + discount * sum_s' [ P(s' | s, a) * V(s') ]
-      double Qsa = Rsa + modelG->params.discountFactor * nextStateVal;
-
-      if (Qsa > bestQsa) {
-	// bestAction = arg max_a Q(s,a)
-	bestActionForS = a;
-	bestQsa = Qsa;
-      }
-    }
-
-    voteTotals[bestActionForS] += b[i].prob;
+    voteTotals[vfn.getMaxQAction(s)] += b[i].prob;
   }
 
-  // Calculate action with most votes
+  // Calculate the action with the most votes.
   int bestAction = -1;
   double bestVoteTotal = -99e+20;
   for (int a=0; a < modelG->getNumActions(); a++) {
@@ -268,13 +262,52 @@ int VotingPolicy::chooseAction(void)
 // Chooses an action according to the most likely state heuristic.
 int MostLikelyPolicy::chooseAction(void)
 {
-  return -1;
+  // Calculate the most likely state s*.
+  double maxProb = 0.0;
+  int maxProbState = -1;
+  for (int i=0; i < (int)b.size(); i++) {
+    if (b[i].prob > maxProb) {
+      maxProb = b[i].prob;
+      maxProbState = b[i].index;
+    }
+  }
+
+  // Return argmax_a Q(s*, a).
+  return vfn.getMaxQAction(maxProbState);
 }
 
 // Chooses an action according to the two-step lookahead heuristic.
 int TwoStepPolicy::chooseAction(void)
 {
-  return -1;
+  // Define HQ(b,a) = R(b,a) + discount * sum_o P(o | b,a) HV(b').
+
+  // Calculate HQ(b,a) values.
+  double maxHQba = -99e+20;
+  int maxHQAction = -1;
+
+  for (int a=0; a < modelG->getNumActions(); a++) {
+    double Rba;
+    RockExploreObsProbs obsProbs;
+    modelG->getActionResult(Rba, obsProbs, b, a);
+
+    double nextBeliefVal = 0.0;
+    for (int o=0; o < modelG->getNumObservations(); o++) {
+      if (obsProbs[o] > 0.0) {
+	RockExploreBelief nextBelief;
+	modelG->getUpdatedBelief(nextBelief, b, a, o);
+	nextBeliefVal += obsProbs[o] * vfn.getUpdatedValue(nextBelief);
+      }
+    }
+    double HQba = Rba + modelG->params.discountFactor * nextBeliefVal;
+
+    if (HQba > maxHQba) {
+      maxHQba = HQba;
+      maxHQAction = a;
+    }
+  }
+
+  // Return arg max_a HQ(b,a).
+  return maxHQAction;
 }
 
 enum PolicyTypes {
@@ -364,6 +397,9 @@ PomdpExecCore* getPolicy(void)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2007/03/06 06:37:52  trey
+ * implementing heuristics
+ *
  * Revision 1.1  2007/03/06 04:32:33  trey
  * initial check-in
  *
