@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.5 $  $Author: trey $  $Date: 2007-03-06 07:57:00 $
+ $Revision: 1.6 $  $Author: trey $  $Date: 2007-03-07 08:12:27 $
    
  @file    RockExplore.h
  @brief   The RockExplore problem is closely related to the RockSample problem
@@ -30,119 +30,73 @@
 #include <vector>
 #include <map>
 
+#include "REBasicPomdp.h"
+
 namespace zmdp {
 
-// A 2D position.
-struct RockExplorePos {
-  int x, y;
+/**********************************************************************
+ * TUNABLE PARAMETERS
+ **********************************************************************/
 
-  RockExplorePos(void) {}
-  RockExplorePos(int _x, int _y) : x(_x), y(_y) {}
-  bool operator==(const RockExplorePos& a) const {
-    return (x == a.x) && (y == a.y);
-  }
-};
+#define RE_WIDTH (4)
+#define RE_HEIGHT (4)
+#define RE_INIT_X (0)
+#define RE_INIT_Y (1)
+#define RE_ROCK_GOOD_PRIOR (0.7)
+#define RE_COST_MOVE (-1)
+#define RE_COST_CHECK (-1)
+#define RE_COST_ILLEGAL (-100)
+#define RE_COST_SAMPLE_BAD (-15)
+#define RE_REWARD_SAMPLE_GOOD (15)
+#define RE_REWARD_EXIT (15)
+#define RE_DISCOUNT (0.95)
+#define RE_NUM_ROCKS (4)
+#define RE_ROCK_POSITIONS { 1,3,  2,1,  3,1,  0,0 }
 
-// Parameters that define an instance of the RockExplore problem.
-struct RockExploreParams {
-  // Dimensions of the map in the x and y axes respectively
-  int width, height;
-  
-  // Starting position of the robot
-  RockExplorePos initPos;
+/**********************************************************************
+ * HELPER DATA STRUCTURES
+ **********************************************************************/
 
-  // The prior probability of each rock being good
-  double rockGoodPrior;
+// NOTE: The REPos and REState data structures really belong here
+// because they are specific to the RockExplore domain.  However, it was
+// easier to implement everything with those data structures defined in
+// REBasicPomdp.h.
 
-  // Cost of executing a move action
-  double costMove;
-
-  // Cost of executing a check action
-  double costCheck;
-
-  // Cost of executing an illegal action (for example, moving off the
-  // map)
-  double costIllegal;
-
-  // Cost of sampling a bad rock
-  double costSampleBad;
-
-  // Reward received for sampling a good rock
-  double rewardSampleGood;
-
-  // Reward received for exiting the map
-  double rewardExit;
-
-  // Discount factor
-  double discountFactor;
-
-  // Number of rocks in the map (gives length of vectors)
-  int numRocks;
-
-  // Vector giving the position of each rock
-  std::vector<RockExplorePos> rockPos;
-};
-
-// A world state in the RockExplore problem.
-struct RockExploreState {
-  // If true, the system is in the unique 'terminal state' and the other
-  // fields are ignored
-  bool isTerminalState;
-
-  // Position of the robot
-  RockExplorePos robotPos;
-
-  // Vector indicating whether each rock is good
-  std::vector<bool> rockIsGood;
-
-  RockExploreState(void) :
-    isTerminalState(false),
-    robotPos(RockExplorePos(-1,-1))
-  {}
-};
-
-enum RockExploreActionTypes {
+// Action types for RockExplore.
+enum REActionTypes {
   ACT_MOVE,
   ACT_SAMPLE,
   ACT_CHECK,
 };
 
 // An action in the RockExplore problem.
-struct RockExploreAction {
+struct REAction {
   // Type of action: ACT_MOVE, ACT_SAMPLE, or ACT_CHECK
   int actionType;
 
   // Specifies change in position (if any)
-  RockExplorePos deltaPos;
+  REPos deltaPos;
 
   // If actionType is ACT_CHECK, specifies which rock to check
   int rockIndex;
 
-  RockExploreAction(void) {}
+  REAction(void) {}
 
   // Generates an action struct given an action index.
-  RockExploreAction(int ai) {
+  REAction(int ai) {
     switch (ai) {
-    case 0: init(ACT_MOVE,   RockExplorePos( 0, 1), -1); break;
-    case 1: init(ACT_MOVE,   RockExplorePos( 1, 0), -1); break;
-    case 2: init(ACT_MOVE,   RockExplorePos( 0,-1), -1); break;
-    case 3: init(ACT_MOVE,   RockExplorePos(-1, 0), -1); break;
-    case 4: init(ACT_SAMPLE, RockExplorePos( 0, 0), -1); break;
+    case 0: init(ACT_MOVE,   REPos( 0, 1), -1); break;
+    case 1: init(ACT_MOVE,   REPos( 1, 0), -1); break;
+    case 2: init(ACT_MOVE,   REPos( 0,-1), -1); break;
+    case 3: init(ACT_MOVE,   REPos(-1, 0), -1); break;
+    case 4: init(ACT_SAMPLE, REPos( 0, 0), -1); break;
     default:
-      init(ACT_CHECK, RockExplorePos(0,0), ai-5);
+      init(ACT_CHECK, REPos(0,0), ai-5);
     }
   }
 
-  static const char* getString(int ai) {
-    static const char* actionTable[] = {"amn", "ame", "ams", "amw", "as",
-					"ac0", "ac1", "ac2", "ac3", "ac4",
-					"ac5", "ac6", "ac7", "ac8", "ac9" };
-    assert(ai < 15);
-    return actionTable[ai];
-  }
-
   // A function for initializing all the fields of an action.
-  void init(int _actionType, RockExplorePos _deltaPos, int _rockIndex)
+  void init(int _actionType, REPos _deltaPos, int _rockIndex)
   {
     actionType = _actionType;
     deltaPos = _deltaPos;
@@ -150,131 +104,77 @@ struct RockExploreAction {
   }
 };
 
-// An entry in a probability distribution over states.
-struct RockExploreBeliefEntry {
-  double prob;
-  int index;
-
-  RockExploreBeliefEntry(void) {}
-  RockExploreBeliefEntry(double _prob, int _index) : prob(_prob), index(_index) {}
-};
-
-// A vector (sparsely) representing a probability distribution over states.
-typedef std::vector<RockExploreBeliefEntry> RockExploreBelief;
-
-// A vector representing a probability distribution over observations.
-typedef std::vector<double> RockExploreObsProbs;
-
 // A vector representing the marginal probability that each rock is good.
-typedef std::vector<double> RockExploreRockMarginals;
+typedef std::vector<double> RERockProbs;
 
-// The implementation of the RockExplore model.
-struct RockExplore {
-  // Parameters of the problem
-  RockExploreParams params;
+/**********************************************************************
+ * THE MAIN MODEL
+ **********************************************************************/
 
-  // Maps from the index of a state to the corresponding state struct
-  std::vector<RockExploreState> states;
+struct RockExplore : public REBasicPomdp {
+  RockExplore(void);
+  
+  // The fixed locations of the rocks in the map.
+  std::vector<REPos> rockPos;
 
-  // Maps from the string identifier for a state to the state index
-  std::map<std::string, int> stateLookup;
+  /**********************************************************************
+   * FUNCTIONS DESCRIBING THE BASIC MODEL
+   **********************************************************************/
+  
+  // Returns the number of states, actions, or observations.
+  int getNumStates(void) { return states.size(); }
+  int getNumActions(void) { return RE_NUM_ROCKS + 5; }
+  int getNumObservations(void) { return 2; }
 
-  /**********************************************************************/
+  // Returns the initial belief b0.
+  REBelief getInitialBelief(void);
 
-  // The constructor -- you must specify the problem params at initialization.
-  RockExplore(const RockExploreParams& _params);
+  // Returns the results of from state si applying action ai.
+  REActionResult getActionResult(int si, int ai);
 
-  // Sets result to be the initial belief.  Returns result.
-  RockExploreBelief& getInitialBelief(RockExploreBelief& result);
+  // Returns the probability of seeing observation o when action
+  // ai is applied and the system transitions to state sp.
+  double getObsProb(int ai, int sp, int o);
 
-  // Returns the number of states.
-  int getNumStates(void) const { return states.size(); }
+  /**********************************************************************
+   * I/O FUNCTIONS -- SUBCLASSES IMPLEMENT THESE
+   **********************************************************************/
+  
+  // Return the string representation of the given state, action, or observation.
+  std::string getStateString(int si);
+  std::string getActionString(int ai);
+  std::string getObservationString(int oi);
 
-  // Returns the number of distinct actions.
-  int getNumActions(void) const { return params.numRocks + 5; }
+  // Returns the human-readable map for the given belief.
+  std::string getMap(const REBelief& b);
 
-  // Sets reward to be the reward for applying action ai in state si.
-  // Sets outcomes to be the distribution of possible successor states.
-  void getActionResult(double& reward,
-		       RockExploreBelief& outcomes,
-		       int si, int ai);
-
-  // Returns the number of distinct observations.
-  int getNumObservations(void) const;
-
-  // Returns the probability of seeing observation o if action ai is applied
-  // and the system transitions to state sp.
-  double getObsProb(int ai, int sp, int o) const;
-
-  // Sets result to be the distribution of possible observations when
-  // action ai is applied and the system transitions to state sp.
-  // Returns result.
-  RockExploreObsProbs& getObsProbs(RockExploreObsProbs& obsProbs,
-				   int ai, int sp) const;
-
-  // POMDP version of getActionResult.  Sets expectedReward to be the
-  // expected reward and sets obsProbs to be the distribution of
-  // possible observations when from belief b action ai is applied.
-  void getActionResult(double& expectedReward,
-		       RockExploreObsProbs& obsProbs,
-		       const RockExploreBelief& b, int ai);
-
-  // Sets bp to be the updated belief when from belief b action ai is
-  // executed and observation o is received.
-  void getUpdatedBelief(RockExploreBelief& bp,
-			const RockExploreBelief& b,
-			int ai, int o);
-
-  // Uses the transition model to generate all reachable states and assign
-  // them index values.  This is called during initialization; before it is
-  // called getNumStates() is not valid.
-  void generateReachableStates(void);
-
-  // Outputs a Cassandra-format POMDP model to the given file.
-  void writeCassandraModel(const std::string& outFile);
-
+  /**********************************************************************
+   * INTERNAL HELPER FUNCTIONS
+   **********************************************************************/
+  
   // Calculates the marginal probability that each rock is good from the
-  // given belief b.  Sets result to be the vector of marginals.
-  // Returns result.
-  RockExploreRockMarginals& getMarginals(RockExploreRockMarginals& result,
-					 const RockExploreBelief& b) const;
+  // given belief b.  Returns the vector of marginals.
+  RERockProbs getRockProbs(const REBelief& b) const;
 
-  // Generates a belief in which all the states have the given robotPos
+  // Returns a belief in which all the states have the given robotPos
   // and a distribution of rockIsGood values consistent with the
   // marginals specified by probRockIsGood.  This is effectively the
-  // inverse of the getMarginals() function.
-  RockExploreBelief& getBelief(RockExploreBelief& result,
-			       const RockExplorePos& robotPos,
-			       const RockExploreRockMarginals& probRockIsGood);
+  // inverse of the getRockProbs() function.
+  REBelief getBelief(const REPos& robotPos,
+		     const RERockProbs& rockProbs);
 
   // Returns the terminal state.
-  static const RockExploreState& getTerminalState(void);
+  static const REState& getTerminalState(void);
 
-  // Sets result to be the string identifier for state s.  Returns result.
-  std::string& getStateString(std::string& result, const RockExploreState& s) const;
-
-  // Sets result to be the string form for the state with id si. Returns result.
-  std::string& getStateString(std::string& result, int si) const;
+  // Returns the string identifier for state s.  Returns result.
+  std::string getStateString(const REState& s);
 
   // Returns the index for state s.  This includes assigning an index to
   // state s if it doesn't already have one.
-  int getStateId(const RockExploreState& s);
-
-  // Sets result to be the map for state si and belief b.  Returns result.
-  std::string& getMap(std::string& result, int si,
-		      const RockExploreRockMarginals& probRockIsGood) const;
-
-  // Returns the most likely state according to the distribution b.
-  int getMostLikelyState(const RockExploreBelief& b) const;
-
-  // Returns a stochastically selected state index from the distribution b.
-  int chooseStochasticOutcome(const RockExploreBelief& b) const;
-
-  // Returns a stochastically selected observation from the distribution obsProbs.
-  int chooseStochasticOutcome(const RockExploreObsProbs& obsProbs) const;
+  int getStateId(const REState& s);
 };
 
-extern RockExplore* modelG;
+extern RockExplore m;
 
 }; // namespace zmdp
 
@@ -283,6 +183,9 @@ extern RockExplore* modelG;
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.5  2007/03/06 07:57:00  trey
+ * added getMostLikelyState()
+ *
  * Revision 1.4  2007/03/06 04:32:47  trey
  * working towards heuristic policies
  *

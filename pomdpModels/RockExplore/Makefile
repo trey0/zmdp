@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.3 2007-03-06 08:46:56 trey Exp $
+# $Id: Makefile,v 1.4 2007-03-07 08:12:27 trey Exp $
 #
 # Copyright (c) 2008, Trey Smith.
 #
@@ -43,7 +43,7 @@ RE_LIBS := \
 	-lzmdpCommon
 
 BUILDBIN_TARGET := zmdpRockExplore
-BUILDBIN_SRCS := zmdpRockExplore.cc RockExplore.cc RockExplorePolicy.cc
+BUILDBIN_SRCS := zmdpRockExplore.cc REBasicPomdp.cc RockExplore.cc RockExplorePolicy.cc
 BUILDBIN_INDEP_LIBS :=
 BUILDBIN_DEP_LIBS := $(RE_LIBS)
 include $(BUILD_DIR)/buildbin.mak
@@ -62,6 +62,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.3  2007/03/06 08:46:56  trey
+# many tweaks
+#
 # Revision 1.2  2007/03/06 04:32:47  trey
 # working towards heuristic policies
 #

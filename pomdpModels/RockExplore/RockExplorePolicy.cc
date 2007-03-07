@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.6 $  $Author: trey $  $Date: 2007-03-07 05:46:43 $
+ $Revision: 1.7 $  $Author: trey $  $Date: 2007-03-07 08:12:27 $
   
  @file    RockExplorePolicy.cc
  @brief   No brief
@@ -50,9 +50,9 @@ namespace zmdp {
 void REValueFunction::init(void)
 {
   V.clear();
-  V.resize(modelG->states.size(), 0.0);
+  V.resize(m.states.size(), 0.0);
   Vp.clear();
-  Vp.resize(modelG->states.size());
+  Vp.resize(m.states.size());
 }
 
 // Performs a sweep of value iteration, updating all states.  Returns the
@@ -93,10 +93,8 @@ double REValueFunction::getValue(int s) const
 // Returns Q(s,a).
 double REValueFunction::getQ(int s, int a) const
 {
-  double Rsa;
-  RockExploreBelief outcomes;
-  modelG->getActionResult(Rsa, outcomes, s, a);
-  return Rsa + modelG->params.discountFactor * getValue(outcomes);
+  REActionResult out = m.getActionResult(s, a);
+  return out.reward + RE_DISCOUNT * getValue(out.outcomes);
 }
 
 // Returns arg max_a Q(s,a).
@@ -104,7 +102,7 @@ int REValueFunction::getMaxQAction(int s) const
 {
   double maxQsa = -99e+20;
   int maxQAction = -1;
-  for (int a=0; a < modelG->getNumActions(); a++) {
+  for (int a=0; a < m.getNumActions(); a++) {
     double Qsa = getQ(s,a);
     if (Qsa > maxQsa) {
       maxQsa = Qsa;
@@ -115,7 +113,7 @@ int REValueFunction::getMaxQAction(int s) const
 }
 
 // Returns the value of a belief V(b) = sum_s b(s) V(s)
-double REValueFunction::getValue(const RockExploreBelief& b) const
+double REValueFunction::getValue(const REBelief& b) const
 {
   double expectedValue = 0.0;
   for (int i=0; i < (int)b.size(); i++) {
@@ -126,22 +124,18 @@ double REValueFunction::getValue(const RockExploreBelief& b) const
 }
 
 // Returns Q(b,a).
-double REValueFunction::getQ(const RockExploreBelief& b, int a) const
+double REValueFunction::getQ(const REBelief& b, int a) const
 {
-  double Rba;
-  RockExploreObsProbs obsProbs;
-  modelG->getActionResult(Rba, obsProbs, b, a);
+  REObsProbsResult out = m.getBeliefResult(b, a);
   
   double nextStateVal = 0.0;
-  for (int o=0; o < modelG->getNumObservations(); o++) {
-    RockExploreBelief nextBelief;
-    if (obsProbs[o] > 0.0) {
-      modelG->getUpdatedBelief(nextBelief, b, a, o);
-      
-      nextStateVal += obsProbs[o] * getValue(nextBelief);
+  for (int o=0; o < m.getNumObservations(); o++) {
+    if (out.obsProbs[o] > 0.0) {
+      REBelief nextBelief = m.getUpdatedBelief(b, a, o);
+      nextStateVal += out.obsProbs[o] * getValue(nextBelief);
     }
   }
-  return Rba + modelG->params.discountFactor * nextStateVal;
+  return out.expectedReward + RE_DISCOUNT * nextStateVal;
 }
 
 // Returns HV(s) = max_a Q(s,a).
@@ -151,11 +145,11 @@ double REValueFunction::getUpdatedValue(int s) const
 }
 
 // Returns arg max_a Q(b,a).
-int REValueFunction::getMaxQAction(const RockExploreBelief& b) const
+int REValueFunction::getMaxQAction(const REBelief& b) const
 {
   double maxQba = -99e+20;
   int maxQAction = -1;
-  for (int a=0; a < modelG->getNumActions(); a++) {
+  for (int a=0; a < m.getNumActions(); a++) {
     double Qba = getQ(b,a);
     if (Qba > maxQba) {
       maxQba = Qba;
@@ -166,7 +160,7 @@ int REValueFunction::getMaxQAction(const RockExploreBelief& b) const
 }
 
 // Returns HV(b) = max_a Q(b,a).
-double REValueFunction::getUpdatedValue(const RockExploreBelief& b) const
+double REValueFunction::getUpdatedValue(const REBelief& b) const
 {
   return getQ(b, getMaxQAction(b));
 }
@@ -177,16 +171,16 @@ int UserPolicy::chooseAction(void)
 {
   while (1) {
     cout << "\nChoose action from [";
-    for (int ai=0; ai < modelG->getNumActions(); ai++) {
-      cout << RockExploreAction::getString(ai) << " ";
+    for (int ai=0; ai < m.getNumActions(); ai++) {
+      cout << m.getActionString(ai) << " ";
     }
     cout << "]: ";
     cout.flush();
 
     std::string as;
     cin >> as;
-    for (int ai=0; ai < modelG->getNumActions(); ai++) {
-      if (as == RockExploreAction::getString(ai)) {
+    for (int ai=0; ai < m.getNumActions(); ai++) {
+      if (as == m.getActionString(ai)) {
 	return ai;
       }
     }
@@ -198,15 +192,13 @@ int UserPolicy::chooseAction(void)
 // Informs the policy that the system is at the initial belief.
 void HeuristicPolicy::setToInitialBelief(void)
 {
-  modelG->getInitialBelief(b);
+  b = m.getInitialBelief();
 }
 
 // Informs the policy that action a was applied and observation o was received.
 void HeuristicPolicy::advanceToNextBelief(int a, int o)
 {
-  RockExploreBelief bp;
-  modelG->getUpdatedBelief(bp, b, a, o);
-  b = bp;
+  b = m.getUpdatedBelief(b, a, o);
 }
 
 // Chooses an action according to the QMDP heuristic.
@@ -219,7 +211,7 @@ int QMDPPolicy::chooseAction(void)
 int VotingPolicy::chooseAction(void)
 {
   // Initialize votes for each action to 0.
-  std::vector<double> voteTotals(modelG->getNumActions(), 0.0);
+  std::vector<double> voteTotals(m.getNumActions(), 0.0);
 
   // Each state s votes for the best action to take from that state; the
   // votes are weighted according to b(s).
@@ -231,7 +223,7 @@ int VotingPolicy::chooseAction(void)
   // Calculate the action with the most votes.
   int bestAction = -1;
   double bestVoteTotal = -99e+20;
-  for (int a=0; a < modelG->getNumActions(); a++) {
+  for (int a=0; a < m.getNumActions(); a++) {
     if (voteTotals[a] > bestVoteTotal) {
       bestAction = a;
       bestVoteTotal = voteTotals[a];
@@ -245,7 +237,7 @@ int VotingPolicy::chooseAction(void)
 int MostLikelyPolicy::chooseAction(void)
 {
   // Calculate the most likely state s* and return argmax_a Q(s*, a).
-  return vfn.getMaxQAction(modelG->getMostLikelyState(b));
+  return vfn.getMaxQAction(m.getMostLikelyState(b));
 }
 
 /**********************************************************************
@@ -259,7 +251,7 @@ int MostLikelyPolicy::chooseAction(void)
 // Returns the normalized entropy.
 //   H(b) = -sum_s b(s) log(b(s))  -- Cassandra p. 264.
 //   HBar(b) = H(b)/H(u)           -- Cassandra p. 266
-double getHBar(const RockExploreBelief& b)
+double getHBar(const REBelief& b)
 {
   double sum = 0.0;
   for (unsigned int i=0; i < b.size(); i++) {
@@ -269,7 +261,7 @@ double getHBar(const RockExploreBelief& b)
     }
   }
   double Hb = -sum;
-  double Hu = -log(1.0 / ((double) modelG->getNumStates()));
+  double Hu = -log(1.0 / ((double) m.getNumStates()));
   return Hb / Hu;
 }
 
@@ -287,17 +279,14 @@ int DualModePolicy::chooseAction(void)
 
     double minSH = 99e+20;
     int minSHAction = -1;
-    for (int a=0; a < modelG->getNumActions(); a++) {
-      double reward;
-      RockExploreObsProbs obsProbs;
-      modelG->getActionResult(reward, obsProbs, b, a);
+    for (int a=0; a < m.getNumActions(); a++) {
+      REObsProbsResult out = m.getBeliefResult(b, a);
 
       double sumHBar = 0.0;
-      for (int o=0; o < modelG->getNumObservations(); o++) {
-	if (obsProbs[o] > 0.0) {
-	  RockExploreBelief nextBelief;
-	  modelG->getUpdatedBelief(nextBelief, b, a, o);
-	  sumHBar += obsProbs[o] * getHBar(nextBelief);
+      for (int o=0; o < m.getNumObservations(); o++) {
+	if (out.obsProbs[o] > 0.0) {
+	  REBelief nextBelief = m.getUpdatedBelief(b, a, o);
+	  sumHBar += out.obsProbs[o] * getHBar(nextBelief);
 	}
       }
 
@@ -407,6 +396,9 @@ const char* getPolicyName(int policyType)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.6  2007/03/07 05:46:43  trey
+ * implemented evaluator, fixed bugs in sim
+ *
  * Revision 1.5  2007/03/07 03:52:34  trey
  * removed two-step policy and replaced with dual-mode policy
  *

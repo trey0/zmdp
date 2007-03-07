@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.6 $  $Author: trey $  $Date: 2007-03-07 05:46:43 $
+ $Revision: 1.7 $  $Author: trey $  $Date: 2007-03-07 08:12:27 $
    
  @file    RockExplorePolicy.h
  @brief   The RockExplorePolicy problem is closely related to the RockSample problem
@@ -67,16 +67,16 @@ struct REValueFunction {
   double getUpdatedValue(int s) const;
 
   // Returns the value of a belief V(b) = sum_s P(s | b) V(s)
-  double getValue(const RockExploreBelief& b) const;
+  double getValue(const REBelief& b) const;
 
   // Returns Q(b,a).
-  double getQ(const RockExploreBelief& b, int a) const;
+  double getQ(const REBelief& b, int a) const;
 
   // Returns arg max_a Q(b,a).
-  int getMaxQAction(const RockExploreBelief& b) const;
+  int getMaxQAction(const REBelief& b) const;
 
   // Returns HV(b) = max_a Q(b,a).
-  double getUpdatedValue(const RockExploreBelief& b) const;
+  double getUpdatedValue(const REBelief& b) const;
 };
 
 #define NUM_POLICIES (5)
@@ -99,7 +99,7 @@ struct UserPolicy : public PomdpExecCore {
 // This is a base policy for all the heuristic policies based on the MDP value
 // function.
 struct HeuristicPolicy : public PomdpExecCore {
-  RockExploreBelief b;
+  REBelief b;
 
   // Informs the policy that the system is at the initial belief.
   void setToInitialBelief(void);
@@ -161,6 +161,9 @@ extern const char* getPolicyName(int policyType);
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.6  2007/03/07 05:46:43  trey
+ * implemented evaluator, fixed bugs in sim
+ *
  * Revision 1.5  2007/03/07 03:52:34  trey
  * removed two-step policy and replaced with dual-mode policy
  *
