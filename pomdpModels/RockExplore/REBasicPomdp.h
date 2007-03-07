@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2007-03-07 08:12:27 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2007-03-07 08:34:14 $
    
  @file    BasicPomdp.h
  @brief   The BasicPomdp problem is closely related to the RockSample problem
@@ -109,7 +109,7 @@ struct REBasicPomdp {
   virtual std::string getStateString(const REState& s) = 0;
   virtual std::string getActionString(int ai) = 0;
   virtual std::string getObservationString(int oi) = 0;
-  virtual std::string getMap(const REBelief& b) = 0;
+  virtual std::string getMap(int si, const REBelief& b) = 0;
 
   /**********************************************************************
    * UTILITY FUNCTIONS THAT RELY ON THE BASIC MODEL
@@ -172,6 +172,9 @@ extern REBasicPomdp* modelG;
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2007/03/07 08:12:27  trey
+ * refactored things
+ *
  *
  ***************************************************************************/
 

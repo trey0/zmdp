@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.6 $  $Author: trey $  $Date: 2007-03-07 08:12:27 $
+ $Revision: 1.7 $  $Author: trey $  $Date: 2007-03-07 08:34:14 $
    
  @file    RockExplore.h
  @brief   The RockExplore problem is closely related to the RockSample problem
@@ -146,7 +146,7 @@ struct RockExplore : public REBasicPomdp {
   std::string getObservationString(int oi);
 
   // Returns the human-readable map for the given belief.
-  std::string getMap(const REBelief& b);
+  std::string getMap(int si, const REBelief& b);
 
   /**********************************************************************
    * INTERNAL HELPER FUNCTIONS
@@ -183,6 +183,9 @@ extern RockExplore m;
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.6  2007/03/07 08:12:27  trey
+ * refactored things
+ *
  * Revision 1.5  2007/03/06 07:57:00  trey
  * added getMostLikelyState()
  *

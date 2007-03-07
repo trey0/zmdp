@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.10 $  $Author: trey $  $Date: 2007-03-07 08:12:27 $
+ $Revision: 1.11 $  $Author: trey $  $Date: 2007-03-07 08:34:14 $
   
  @file    RockExplore.cc
  @brief   No brief
@@ -66,11 +66,11 @@ REBelief RockExplore::getInitialBelief(void)
 {
   // Initialize the probability of each rock being good to the prior value
   // for the problem.
-  RERockProbs probRockIsGood(RE_NUM_ROCKS, RE_ROCK_GOOD_PRIOR);
+  RERockProbs rockProbs(RE_NUM_ROCKS, RE_ROCK_GOOD_PRIOR);
 
   // Construct a belief distribution from the initial robot position and
   // the priors.
-  return getBelief(REPos(RE_INIT_X, RE_INIT_Y), probRockIsGood);
+  return getBelief(REPos(RE_INIT_X, RE_INIT_Y), rockProbs);
 }
 
 // Returns the results of from state si applying action ai.
@@ -221,10 +221,9 @@ std::string RockExplore::getObservationString(int oi)
 }
 
 // Returns the human-readable map for the given belief.
-std::string RockExplore::getMap(const REBelief& b)
+std::string RockExplore::getMap(int si, const REBelief& b)
 {
   RERockProbs rockProbs = getRockProbs(b);
-  int si = b[0].index;
   REState s = states[si];
 
   if (s.isTerminalState) {
@@ -350,7 +349,6 @@ REBelief RockExplore::getBelief(const REPos& robotPos,
     // If the probability is non-zero, add an entry to the resulting belief.
     if (prob > 0.0) {
       sp.rockIsGood = rockIsGood;
-      std::string sps;
       result.push_back(REBeliefEntry(prob, getStateId(sp)));
     }
 
@@ -369,6 +367,14 @@ REBelief RockExplore::getBelief(const REPos& robotPos,
     }
     if (reachedLastCombination) break;
   }
+
+#if 0
+  cout << "getBelief: ";
+  for (int i=0; i < (int)result.size(); i++) {
+    cout << result[i].prob << "," << getStateString(result[i].index) << " ";
+  }
+  cout << endl;
+#endif
 
   return result;
 }
@@ -429,6 +435,9 @@ RockExplore m;
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.10  2007/03/07 08:12:27  trey
+ * refactored things
+ *
  * Revision 1.9  2007/03/06 08:46:56  trey
  * many tweaks
  *

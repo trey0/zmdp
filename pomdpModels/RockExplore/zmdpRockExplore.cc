@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.11 $  $Author: trey $  $Date: 2007-03-07 08:12:27 $
+ $Revision: 1.12 $  $Author: trey $  $Date: 2007-03-07 08:34:14 $
 
  @file    zmdpRockExplore.cc
  @brief   No brief
@@ -77,23 +77,24 @@ struct RockExploreSim {
   bool takeStep(void) {
     bool doVisualize = (mode != MODE_EVAL);
     
-    // Check if the selected policy type is implemented.
-    if (0 == timeStep && -1 == policy->chooseAction()) {
-      return false;
-    }
-
     if (doVisualize) {
       // Display current state and belief
       printf("Current map is:\n"
 	     "\n"
-	     "%s",
-	     m.getMap(b).c_str());
+	     "%s\n",
+	     m.getMap(si,b).c_str());
     }
       
     int ai = policy->chooseAction();
+
+    // Check if the selected policy type is implemented.
+    if (0 == timeStep && -1 == ai) {
+      return false;
+    }
+
     if (MODE_VISUALIZE == mode) {
       /* display action selected by policy and wait for user to continue */
-      printf("\nPolicy selects action %s\n", m.getActionString(ai).c_str());
+      printf("Policy selects action %s\n", m.getActionString(ai).c_str());
       waitForUser();
     }
       
@@ -292,6 +293,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.11  2007/03/07 08:12:27  trey
+ * refactored things
+ *
  * Revision 1.10  2007/03/07 05:46:43  trey
  * implemented evaluator, fixed bugs in sim
  *
