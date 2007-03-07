@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.4 $  $Author: trey $  $Date: 2007-03-06 08:46:56 $
+ $Revision: 1.5 $  $Author: trey $  $Date: 2007-03-07 03:52:34 $
   
  @file    RockExplorePolicy.cc
  @brief   No brief
@@ -82,44 +82,6 @@ void REValueFunction::valueIterationToResidual(double eps)
     fflush(stdout);
   }
   printf(" done.\n");
-}
-
-// Initializes value function according to blind policy method.
-void REValueFunction::blindPolicyInitToResidual(double eps)
-{
-  printf("Generating blind policy value function");
-  fflush(stdout);
-
-  double bestWorstCaseVal = -99e+20;
-  std::vector<double> bestV;
-
-  for (int a=0; a < modelG->getNumActions(); a++) {
-    init();
-    while (1) {
-      double maxResidual = 0.0;
-      for (int s=0; s < modelG->getNumStates(); s++) {
-	Vp[s] = getQ(s,a);
-	maxResidual = std::max(maxResidual, fabs(V[s] - Vp[s]));
-      }
-      V = Vp;
-      if (maxResidual < eps) break;
-    }
-
-    double worstCaseVal = 99e+20;
-    for (int s=0; s < modelG->getNumStates(); s++) {
-      worstCaseVal = std::min(worstCaseVal, V[s]);
-    }
-    if (worstCaseVal > bestWorstCaseVal) {
-      bestWorstCaseVal = worstCaseVal;
-      bestV = V;
-    }
-
-    printf(".");
-    fflush(stdout);
-  }
-  printf(" done.\n");
-
-  V = bestV;
 }
 
 // Returns the value V(s).
@@ -250,23 +212,7 @@ void HeuristicPolicy::advanceToNextBelief(int a, int o)
 // Chooses an action according to the QMDP heuristic.
 int QMDPPolicy::chooseAction(void)
 {
-  // Calculate Q(b,a) values.
-  double maxQba = -99e+20;
-  int maxQAction = -1;
-  for (int a=0; a < modelG->getNumActions(); a++) {
-    double Qba = 0.0;
-    for (int i=0; i < (int)b.size(); i++) {
-      int s = b[i].index;
-      Qba += b[i].prob * vfn.getQ(s, a);
-    }
-    if (Qba > maxQba) {
-      maxQba = Qba;
-      maxQAction = a;
-    }
-  }
-
-  // Return arg max_a Q(b,a).
-  return maxQAction;
+  return vfn.getMaxQAction(b);
 }
 
 // Chooses an action according to the voting heuristic.
@@ -302,52 +248,83 @@ int MostLikelyPolicy::chooseAction(void)
   return vfn.getMaxQAction(modelG->getMostLikelyState(b));
 }
 
-TwoStepPolicy::TwoStepPolicy(void)
+/**********************************************************************
+ * BEGIN DUAL-MODE FUNCTIONS
+ **********************************************************************/
+
+// Arbitrary threshold value.  Smaller values cause the dual-mode heuristic
+// to more readily employ entropy-minimizing actions.
+#define DUAL_MODE_ENTROPY_THRESHOLD (0.1)
+
+// Returns the normalized entropy.
+//   H(b) = -sum_s b(s) log(b(s))  -- Cassandra p. 264.
+//   HBar(b) = H(b)/H(u)           -- Cassandra p. 266
+double getHBar(const RockExploreBelief& b)
 {
-  vfn.blindPolicyInitToResidual(1e-3);
-}
-
-// Chooses an action according to the two-step lookahead heuristic.
-int TwoStepPolicy::chooseAction(void)
-{
-  // Define HQ(b,a) = R(b,a) + discount * sum_o P(o | b,a) HV(tau(b,a,o)).
-
-  // Calculate HQ(b,a) values.
-  double maxHQba = -99e+20;
-  int maxHQAction = -1;
-
-  for (int a=0; a < modelG->getNumActions(); a++) {
-    double Rba;
-    RockExploreObsProbs obsProbs;
-    modelG->getActionResult(Rba, obsProbs, b, a);
-
-    double nextBeliefVal = 0.0;
-    for (int o=0; o < modelG->getNumObservations(); o++) {
-      if (obsProbs[o] > 0.0) {
-	RockExploreBelief nextBelief;
-	modelG->getUpdatedBelief(nextBelief, b, a, o);
-	nextBeliefVal += obsProbs[o] * vfn.getUpdatedValue(nextBelief);
-      }
-    }
-    double HQba = Rba + modelG->params.discountFactor * nextBeliefVal;
-
-    if (HQba > maxHQba) {
-      maxHQba = HQba;
-      maxHQAction = a;
+  double sum = 0.0;
+  for (unsigned int i=0; i < b.size(); i++) {
+    double p = b[i].prob;
+    if (p > 0.0) {
+      sum += p * log(p);
     }
   }
-
-  //printf("V(b)=%lf maxHQba=%lf\n", vfn.getValue(b), maxHQba);
-
-  // Return arg max_a HQ(b,a).
-  return maxHQAction;
+  double Hb = -sum;
+  double Hu = -log(1.0 / ((double) modelG->getNumStates()));
+  return Hb / Hu;
 }
+
+// Chooses an action according to the dual-mode heuristic.
+int DualModePolicy::chooseAction(void)
+{
+  if (getHBar(b) > DUAL_MODE_ENTROPY_THRESHOLD) {
+
+    // Take action that minimizes expected entropy on the next time step:
+    //
+    //   SH(b,a) = sum_o P(o | b,a) HBar(tau(b,a,o)) -- Cassandra p. 264
+    //   a^* = min_a SH(b,a)                         -- Cassandra p. 266
+    //
+    // (This is the DM, not ADM, heuristic.)
+
+    double minSH = 99e+20;
+    int minSHAction = -1;
+    for (int a=0; a < modelG->getNumActions(); a++) {
+      double reward;
+      RockExploreObsProbs obsProbs;
+      modelG->getActionResult(reward, obsProbs, b, a);
+
+      double sumHBar = 0.0;
+      for (int o=0; o < modelG->getNumObservations(); o++) {
+	if (obsProbs[o] > 0.0) {
+	  RockExploreBelief nextBelief;
+	  modelG->getUpdatedBelief(nextBelief, b, a, o);
+	  sumHBar += obsProbs[o] * getHBar(nextBelief);
+	}
+      }
+
+      if (sumHBar < minSH) {
+	minSH = sumHBar;
+	minSHAction = a;
+      }
+    }
+    return minSHAction;
+
+  } else {
+
+    // Take the QMDP action.
+    return vfn.getMaxQAction(b);
+
+  }
+}
+
+/**********************************************************************
+ * END DUAL-MODE FUNCTIONS
+ **********************************************************************/
 
 enum PolicyTypes {
   P_QMDP=1,
   P_VOTING=2,
   P_MOST_LIKELY=3,
-  P_TWO_STEP=4,
+  P_DUAL_MODE=4,
   P_ZMDP=5
 };
 
@@ -372,7 +349,7 @@ static int getPolicyType(void)
 	   "  1 - QMDP heuristic\n"
 	   "  2 - Voting heuristic\n"
 	   "  3 - Most likely state heuristic\n"
-	   "  4 - Two-step lookahead heuristic\n"
+	   "  4 - Dual-mode heuristic\n"
 	   "  5 - Read zmdpSolve-generated policy from out.policy\n"
 	   "\n"
 	   "Your choice: "
@@ -408,8 +385,8 @@ PomdpExecCore* getPolicy(void)
     return new VotingPolicy(*vfn);
   case P_MOST_LIKELY:
     return new MostLikelyPolicy(*vfn);
-  case P_TWO_STEP:
-    return new TwoStepPolicy();
+  case P_DUAL_MODE:
+    return new DualModePolicy(*vfn);
   case P_ZMDP: {
     ZMDPConfig* config = new ZMDPConfig();
     config->readFromString("<defaultConfig>", defaultConfig.data);
@@ -430,6 +407,9 @@ PomdpExecCore* getPolicy(void)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2007/03/06 08:46:56  trey
+ * many tweaks
+ *
  * Revision 1.3  2007/03/06 07:49:22  trey
  * refactored, implemented TwoStepPolicy
  *

@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.4 $  $Author: trey $  $Date: 2007-03-06 08:46:56 $
+ $Revision: 1.5 $  $Author: trey $  $Date: 2007-03-07 03:52:34 $
    
  @file    RockExplorePolicy.h
  @brief   The RockExplorePolicy problem is closely related to the RockSample problem
@@ -53,9 +53,6 @@ struct REValueFunction {
   // Performs value iteration until the maximum residual between
   // successive sweeps is smaller than eps. 
   void valueIterationToResidual(double eps);
-
-  // Initializes value function according to blind policy method.
-  void blindPolicyInitToResidual(double eps);
 
   // Returns the value V(s).
   double getValue(int s) const;
@@ -125,11 +122,13 @@ struct MostLikelyPolicy : public HeuristicPolicy {
   int chooseAction(void);
 };
 
-struct TwoStepPolicy : public HeuristicPolicy {
+struct DualModePolicy : public HeuristicPolicy {
   REValueFunction vfn;
-  TwoStepPolicy(void);
+  DualModePolicy(const REValueFunction& _vfn) :
+    vfn(_vfn)
+  {}
 
-  // Chooses an action according to the two-step lookahead heuristic.
+  // Chooses an action according to the dual-mode heuristic.
   int chooseAction(void);
 };
 
@@ -146,6 +145,9 @@ extern PomdpExecCore* getPolicy(void);
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2007/03/06 08:46:56  trey
+ * many tweaks
+ *
  * Revision 1.3  2007/03/06 07:49:31  trey
  * refactored, implemented TwoStepPolicy
  *
