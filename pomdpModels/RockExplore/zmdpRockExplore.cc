@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.13 $  $Author: trey $  $Date: 2007-03-07 08:50:35 $
+ $Revision: 1.14 $  $Author: trey $  $Date: 2007-03-07 09:10:50 $
 
  @file    zmdpRockExplore.cc
  @brief   No brief
@@ -232,7 +232,38 @@ void doEvaluateAll(void)
 
 void doDisplayMDPPolicy(void)
 {
-  // fill me in
+  REValueFunction vfn;
+  vfn.valueIterationToResidual(1e-3);
+
+  std::vector<int> mdpPolicy(m.getNumStates());
+  for (int si=0; si < m.getNumStates(); si++) {
+    mdpPolicy[si] = vfn.getMaxQAction(si);
+  }
+
+  REState s;
+  s.isTerminalState = false;
+  s.rockIsGood.resize(RE_NUM_ROCKS);
+
+  printf("MDP policy:\n"
+	 "\n");
+  for (int rgood=0; rgood < (1<<RE_NUM_ROCKS); rgood++) {
+    printf("r");
+    for (int r=0; r < RE_NUM_ROCKS; r++) {
+      s.rockIsGood[r] = rgood & (1<<(RE_NUM_ROCKS-r-1));
+      printf("%d", (int)s.rockIsGood[r]);
+    }
+    printf(":\n");
+
+    for (s.robotPos.y=RE_HEIGHT-1; s.robotPos.y >= 0; s.robotPos.y--) {
+      printf("  ");
+      for (s.robotPos.x=0; s.robotPos.x < RE_WIDTH; s.robotPos.x++) {
+	int si = m.getStateId(s);
+	printf("%-3s ", m.getActionString(mdpPolicy[si]).c_str());
+      }
+      printf("\n");
+    }
+    printf("\n");
+  }
 }
 
 int main(int argc, char **argv) {
@@ -293,6 +324,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.13  2007/03/07 08:50:35  trey
+ * cleaned up for improved readability
+ *
  * Revision 1.12  2007/03/07 08:34:14  trey
  * fixed bugs introduced during refactoring
  *
