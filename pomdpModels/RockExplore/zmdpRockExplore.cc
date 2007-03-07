@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.8 $  $Author: trey $  $Date: 2007-03-06 08:46:56 $
+ $Revision: 1.9 $  $Author: trey $  $Date: 2007-03-07 03:52:12 $
 
  @file    zmdpRockExplore.cc
  @brief   No brief
@@ -96,7 +96,7 @@ struct RockExploreSim {
     int ai = policy->chooseAction();
     if (MODE_VISUALIZE == mode) {
       /* display action selected by policy and wait for user to continue */
-      printf("Policy selects action %s\n", RockExploreAction::getString(ai));
+      printf("\nPolicy selects action %s\n", RockExploreAction::getString(ai));
       waitForUser();
     }
       
@@ -244,6 +244,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.8  2007/03/06 08:46:56  trey
+ * many tweaks
+ *
  * Revision 1.7  2007/03/06 06:52:30  trey
  * avoided potential issues with random numbers
  *
