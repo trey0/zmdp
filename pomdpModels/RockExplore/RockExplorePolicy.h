@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.5 $  $Author: trey $  $Date: 2007-03-07 03:52:34 $
+ $Revision: 1.6 $  $Author: trey $  $Date: 2007-03-07 05:46:43 $
    
  @file    RockExplorePolicy.h
  @brief   The RockExplorePolicy problem is closely related to the RockSample problem
@@ -79,6 +79,16 @@ struct REValueFunction {
   double getUpdatedValue(const RockExploreBelief& b) const;
 };
 
+#define NUM_POLICIES (5)
+
+enum PolicyTypes {
+  P_QMDP=1,
+  P_VOTING=2,
+  P_MOST_LIKELY=3,
+  P_DUAL_MODE=4,
+  P_ZMDP=5
+};
+
 // This "policy" selects actions by asking the user.
 struct UserPolicy : public PomdpExecCore {
   void setToInitialBelief(void) { /* do nothing */ }
@@ -135,8 +145,14 @@ struct DualModePolicy : public HeuristicPolicy {
 // Accepts a numeric value input on console.
 extern int getUserChoice(void);
 
-// Queries the user for their desired policy type and returns a policy.
-extern PomdpExecCore* getPolicy(void);
+// Queries the user and returns the id for their desired policy type.
+extern int getUserPolicyType(void);
+
+// Returns a policy of the specified type.
+extern PomdpExecCore* getPolicy(int policyType);
+
+// Returns the string name of the specified policy type.
+extern const char* getPolicyName(int policyType);
 
 }; // namespace zmdp
 
@@ -145,6 +161,9 @@ extern PomdpExecCore* getPolicy(void);
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.5  2007/03/07 03:52:34  trey
+ * removed two-step policy and replaced with dual-mode policy
+ *
  * Revision 1.4  2007/03/06 08:46:56  trey
  * many tweaks
  *

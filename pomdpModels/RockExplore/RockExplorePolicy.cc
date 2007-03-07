@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.5 $  $Author: trey $  $Date: 2007-03-07 03:52:34 $
+ $Revision: 1.6 $  $Author: trey $  $Date: 2007-03-07 05:46:43 $
   
  @file    RockExplorePolicy.cc
  @brief   No brief
@@ -320,14 +320,6 @@ int DualModePolicy::chooseAction(void)
  * END DUAL-MODE FUNCTIONS
  **********************************************************************/
 
-enum PolicyTypes {
-  P_QMDP=1,
-  P_VOTING=2,
-  P_MOST_LIKELY=3,
-  P_DUAL_MODE=4,
-  P_ZMDP=5
-};
-
 // Accepts a numeric value input on console.
 int getUserChoice(void)
 {
@@ -340,8 +332,8 @@ int getUserChoice(void)
   return choice;
 }
 
-// Queries the user for their desired policy type
-static int getPolicyType(void)
+// Queries the user and returns the id for their desired policy type.
+int getUserPolicyType(void)
 {
   while (1) {
     printf("\nPolicy type menu\n"
@@ -366,8 +358,8 @@ static int getPolicyType(void)
   }
 }
 
-// Queries the user for their desired policy type and returns a policy.
-PomdpExecCore* getPolicy(void)
+// Returns a policy of the specified type.
+PomdpExecCore* getPolicy(int policyType)
 {
   // Only need to run value iteration once even if running multiple policies.
   static REValueFunction* vfn = NULL;
@@ -376,17 +368,11 @@ PomdpExecCore* getPolicy(void)
     vfn->valueIterationToResidual(1e-3);
   }
 
-  int policyType = getPolicyType();
-
   switch (policyType) {
-  case P_QMDP:
-    return new QMDPPolicy(*vfn);
-  case P_VOTING:
-    return new VotingPolicy(*vfn);
-  case P_MOST_LIKELY:
-    return new MostLikelyPolicy(*vfn);
-  case P_DUAL_MODE:
-    return new DualModePolicy(*vfn);
+  case P_QMDP:        return new QMDPPolicy(*vfn);
+  case P_VOTING:      return new VotingPolicy(*vfn);
+  case P_MOST_LIKELY: return new MostLikelyPolicy(*vfn);
+  case P_DUAL_MODE:   return new DualModePolicy(*vfn);
   case P_ZMDP: {
     ZMDPConfig* config = new ZMDPConfig();
     config->readFromString("<defaultConfig>", defaultConfig.data);
@@ -402,11 +388,28 @@ PomdpExecCore* getPolicy(void)
   };
 }
 
+// Returns the string name of the specified policy type.
+const char* getPolicyName(int policyType)
+{
+  static const char* policyNames[] = {
+    "qmdp",
+    "voting",
+    "mostLikely",
+    "dualMode",
+    "zmdpSolve"
+  };
+  // policyType is 1-indexed
+  return policyNames[policyType-1];
+}
+
 }; // namespace zmdp
 
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.5  2007/03/07 03:52:34  trey
+ * removed two-step policy and replaced with dual-mode policy
+ *
  * Revision 1.4  2007/03/06 08:46:56  trey
  * many tweaks
  *

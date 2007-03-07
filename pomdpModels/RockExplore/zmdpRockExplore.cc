@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.9 $  $Author: trey $  $Date: 2007-03-07 03:52:12 $
+ $Revision: 1.10 $  $Author: trey $  $Date: 2007-03-07 05:46:43 $
 
  @file    zmdpRockExplore.cc
  @brief   No brief
@@ -71,6 +71,7 @@ struct RockExploreSim {
     si = modelG->chooseStochasticOutcome(b);
     policy->setToInitialBelief();
     timeStep = 0;
+    totalReward = 0;
   }
 
   bool takeStep(void) {
@@ -122,6 +123,7 @@ struct RockExploreSim {
     policy->advanceToNextBelief(ai, o);
     si = sp;
     b = bp;
+    timeStep++;
 
     return true;
   }
@@ -129,6 +131,7 @@ struct RockExploreSim {
   bool run(void) {
     initialize();
 
+    const int maxSteps = 100;
     while (1) {
       if (!takeStep()) {
 	return false;
@@ -141,6 +144,9 @@ struct RockExploreSim {
 	  printf("\nReached terminal state, total discounted reward = %.3lf.\n",
 		 totalReward);
 	}
+	break;
+      } else if (MODE_EVAL == mode && timeStep >= maxSteps) {
+	// Stop evaluation run after at most 100 time steps.
 	break;
       }
     }
@@ -157,7 +163,7 @@ void doManual(void)
 
 void doVisualize(void)
 {
-  PomdpExecCore* policy = getPolicy();
+  PomdpExecCore* policy = getPolicy(getUserPolicyType());
   RockExploreSim sim(MODE_VISUALIZE, policy);
   if (!sim.run()) {
     printf("Sorry, that policy type is not yet implemented.\n");
@@ -165,13 +171,79 @@ void doVisualize(void)
   delete policy;
 }
 
-void doEvaluate(void)
+struct EvalResult {
+  double mean;
+  double conf95;
+};
+
+EvalResult evaluatePolicy(int policyType)
 {
-  PomdpExecCore* policy = getPolicy();
+  PomdpExecCore* policy = getPolicy(policyType);
   RockExploreSim sim(MODE_EVAL, policy);
-  // FIX
-  sim.run();
+
+  const int n = 100;
+  std::vector<double> samples(n);
+
+  // do 100 runs
+  printf("Evaluating %s...", getPolicyName(policyType));
+  fflush(stdout);
+  for (int i=0; i < n; i++) {
+    if (!sim.run()) {
+      printf("(oops, policy %s not implemented)\n", getPolicyName(policyType));
+      EvalResult result;
+      result.mean = -999;
+      result.conf95 = -999;
+      return result;
+    }
+    samples[i] = sim.totalReward;
+    printf(".");
+    fflush(stdout);
+  }
+
+  // summarize statistics
+  double sum = 0;
+  double sqsum = 0;
+  for (int i=0; i < n; i++) {
+    sum += samples[i];
+    sqsum += samples[i] * samples[i];
+  }
+  EvalResult result;
+  result.mean = sum / n;
+  double stdev = sqrt((sqsum - sum*sum/n) / (n-1));
+  result.conf95 = 1.96 * stdev/sqrt((double)n);
+  printf(" %lf +/- %lf\n", result.mean, result.conf95);
+
   delete policy;
+  return result;
+}
+
+void doEvaluateOne(void)
+{
+  int policyType = getUserPolicyType();
+  EvalResult result = evaluatePolicy(policyType);
+  printf("\n"
+	 "Expected discounted reward 95%% confidence interval:\n");
+  printf("  %-10s   %8.3lf +/- %7.3lf\n",
+	 getPolicyName(policyType), result.mean, result.conf95);
+}
+
+void doEvaluateAll(void)
+{
+  EvalResult results[NUM_POLICIES+1];
+  for (int i=1; i <= NUM_POLICIES; i++) {
+    results[i] = evaluatePolicy(i);
+  }
+  printf("\n"
+	 "Expected discounted reward 95%% confidence interval:\n");
+  for (int i=1; i <= NUM_POLICIES; i++) {
+    printf("  %-10s   %8.3lf +/- %7.3lf\n",
+	       getPolicyName(i), results[i].mean, results[i].conf95);
+  }
+}
+
+void doDisplayMDPPolicy(void)
+{
+  // fill me in
 }
 
 int main(int argc, char **argv) {
@@ -208,7 +280,9 @@ int main(int argc, char **argv) {
 	   "  1 - Write out the RockExplore model to RockExplore.pomdp\n"
 	   "  2 - Manually control the robot in the simulator\n"
 	   "  3 - Visualize a policy in the simulator\n"
-	   "  4 - Evaluate the quality of all policies\n"
+	   "  4 - Evaluate the quality of one policy\n"
+	   "  5 - Evaluate the quality of all policies (takes a while)\n"
+	   "  6 - Display the MDP policy\n"
 	   "\n"
 	   "Your choice (ctrl-C to quit): "
 	   );
@@ -230,7 +304,15 @@ int main(int argc, char **argv) {
       exit(0);
       break;
     case 4:
-      doEvaluate();
+      doEvaluateOne();
+      exit(0);
+      break;
+    case 5:
+      doEvaluateAll();
+      exit(0);
+      break;
+    case 6:
+      doDisplayMDPPolicy();
       exit(0);
       break;
     default:
@@ -244,6 +326,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.9  2007/03/07 03:52:12  trey
+ * tweaked appearance of map
+ *
  * Revision 1.8  2007/03/06 08:46:56  trey
  * many tweaks
  *
