@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.12 $  $Author: trey $  $Date: 2007-03-07 08:34:14 $
+ $Revision: 1.13 $  $Author: trey $  $Date: 2007-03-07 08:50:35 $
 
  @file    zmdpRockExplore.cc
  @brief   No brief
@@ -200,7 +200,7 @@ EvalResult evaluatePolicy(int policyType)
   result.mean = sum / n;
   double stdev = sqrt((sqsum - sum*sum/n) / (n-1));
   result.conf95 = 1.96 * stdev/sqrt((double)n);
-  printf(" %lf +/- %lf\n", result.mean, result.conf95);
+  printf(" %.3lf +/- %.3lf\n", result.mean, result.conf95);
 
   delete policy;
   return result;
@@ -293,6 +293,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.12  2007/03/07 08:34:14  trey
+ * fixed bugs introduced during refactoring
+ *
  * Revision 1.11  2007/03/07 08:12:27  trey
  * refactored things
  *

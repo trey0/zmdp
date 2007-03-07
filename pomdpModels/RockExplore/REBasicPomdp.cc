@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2007-03-07 08:12:27 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2007-03-07 08:50:35 $
   
  @file    REBasicPomdp.cc
  @brief   No brief
@@ -246,7 +246,7 @@ void REBasicPomdp::writeCassandraModel(const std::string& outFile)
 
   // Output "start" line
   out << "start: ";
-  for (int si=0; si < (int)states.size(); si++) {
+  for (int si=0; si < getNumStates(); si++) {
     out << denseB0[si] << " ";
   }
   out << endl << endl;
@@ -254,7 +254,7 @@ void REBasicPomdp::writeCassandraModel(const std::string& outFile)
   //////////////////////////////////////////////////////////////////////
   // Write the main body.
   char buf[256];
-  for (int si=0; si < (int)states.size(); si++) {
+  for (int si=0; si < getNumStates(); si++) {
     std::string ss = getStateString(si);
 
     for (int ai=0; ai < getNumActions(); ai++) {
@@ -341,5 +341,8 @@ int REBasicPomdp::getMostLikelyState(const REBelief& b)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2007/03/07 08:12:27  trey
+ * refactored things
+ *
  *
  ***************************************************************************/

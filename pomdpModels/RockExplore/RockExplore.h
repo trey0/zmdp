@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.7 $  $Author: trey $  $Date: 2007-03-07 08:34:14 $
+ $Revision: 1.8 $  $Author: trey $  $Date: 2007-03-07 08:50:35 $
    
  @file    RockExplore.h
  @brief   The RockExplore problem is closely related to the RockSample problem
@@ -168,10 +168,6 @@ struct RockExplore : public REBasicPomdp {
 
   // Returns the string identifier for state s.  Returns result.
   std::string getStateString(const REState& s);
-
-  // Returns the index for state s.  This includes assigning an index to
-  // state s if it doesn't already have one.
-  int getStateId(const REState& s);
 };
 
 extern RockExplore m;
@@ -183,6 +179,9 @@ extern RockExplore m;
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.7  2007/03/07 08:34:14  trey
+ * fixed bugs introduced during refactoring
+ *
  * Revision 1.6  2007/03/07 08:12:27  trey
  * refactored things
  *

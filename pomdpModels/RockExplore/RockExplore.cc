@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.11 $  $Author: trey $  $Date: 2007-03-07 08:34:14 $
+ $Revision: 1.12 $  $Author: trey $  $Date: 2007-03-07 08:50:35 $
   
  @file    RockExplore.cc
  @brief   No brief
@@ -242,32 +242,27 @@ std::string RockExplore::getMap(int si, const REBelief& b)
       // Left boundary
       outs << "# ";
       for (pos.x=0; pos.x < RE_WIDTH; pos.x++) {
-	bool isGoodRock = false;
+	int rockNum = -1;
+	for (int r=0; r < RE_NUM_ROCKS; r++) {
+	  if (pos == rockPos[r]) {
+	    rockNum = r;
+	    break;
+	  }
+	}
 	if (pos == s.robotPos) {
 	  // Robot marked with '*'
 	  outs << "*";
+	} else if (rockNum != -1) {
+	  // Rock marked with rock number
+	  outs << rockNum;
 	} else {
-	  bool isRock = false;
-	  for (int r=0; r < RE_NUM_ROCKS; r++) {
-	    if (pos == rockPos[r]) {
-	      outs << r;
-	      if (s.rockIsGood[r]) {
-		isGoodRock = true;
-	      }
-	      isRock = true;
-	      break;
-	    }
-	  }
-	  if (!isRock) {
-	    // Empty map locations marked with '.'
-	    outs << ".";
-	  }
+	  // Empty space marked with "."
+	  outs << ".";
 	}
-	if (isGoodRock) {
-	  outs << "+";
-	} else {
-	  outs << " ";
-	}
+	// Mark character to the right of a rock with +/- depending
+	// on whether the rock is good.  Otherwise just leave an
+	// extra space.
+	outs << ((rockNum != -1) ? (s.rockIsGood[rockNum] ? "+" : "-") : " ");
       }
       // Right boundary
       outs << "x" << endl;
@@ -408,26 +403,6 @@ std::string RockExplore::getStateString(const REState& s)
   return result;
 }
 
-// Returns the index for state s.  This includes assigning an index to
-// state s if it doesn't already have one.
-int RockExplore::getStateId(const REState& s)
-{
-  // ss is the string representation of state s
-  std::string ss = getStateString(s);
-
-  typeof(stateLookup.begin()) x = stateLookup.find(ss);
-  if (x == stateLookup.end()) {
-    // ss not found in stateLookup.  Assign a new index and return it
-    int newIndex = states.size();
-    states.push_back(s);
-    stateLookup[ss] = newIndex;
-    return newIndex;
-  } else {
-    // Return the existing index
-    return x->second;
-  }
-}
-
 RockExplore m;
 
 }; // namespace zmdp
@@ -435,6 +410,9 @@ RockExplore m;
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.11  2007/03/07 08:34:14  trey
+ * fixed bugs introduced during refactoring
+ *
  * Revision 1.10  2007/03/07 08:12:27  trey
  * refactored things
  *

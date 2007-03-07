@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.7 $  $Author: trey $  $Date: 2007-03-07 08:12:27 $
+ $Revision: 1.8 $  $Author: trey $  $Date: 2007-03-07 08:50:35 $
   
  @file    RockExplorePolicy.cc
  @brief   No brief
@@ -46,13 +46,133 @@ using namespace std;
 
 namespace zmdp {
 
+/**********************************************************************
+ * QMDP HEURISTIC
+ **********************************************************************/
+
+// Chooses an action according to the QMDP heuristic.
+int QMDPPolicy::chooseAction(void)
+{
+  return vfn.getMaxQAction(b);
+}
+
+/**********************************************************************
+ * VOTING HEURISTIC
+ **********************************************************************/
+
+// Chooses an action according to the voting heuristic.
+int VotingPolicy::chooseAction(void)
+{
+  // Initialize votes for each action to 0.
+  std::vector<double> voteTotals(m.getNumActions(), 0.0);
+
+  // Each state s votes for the best action to take from that state; the
+  // votes are weighted according to b(s).
+  for (int i=0; i < (int)b.size(); i++) {
+    int s = b[i].index;
+    voteTotals[vfn.getMaxQAction(s)] += b[i].prob;
+  }
+
+  // Calculate the action with the most votes.
+  int bestAction = -1;
+  double bestVoteTotal = -99e+20;
+  for (int a=0; a < m.getNumActions(); a++) {
+    if (voteTotals[a] > bestVoteTotal) {
+      bestAction = a;
+      bestVoteTotal = voteTotals[a];
+    }
+  }
+
+  return bestAction;
+}
+
+/**********************************************************************
+ * MOST LIKELY STATE HEURISTIC
+ **********************************************************************/
+
+// Chooses an action according to the most likely state heuristic.
+int MostLikelyPolicy::chooseAction(void)
+{
+  // Calculate the most likely state s* and return argmax_a Q(s*, a).
+  return vfn.getMaxQAction(m.getMostLikelyState(b));
+}
+
+/**********************************************************************
+ * DUAL-MODE HEURISTIC
+ **********************************************************************/
+
+// Arbitrary threshold value.  Smaller values cause the dual-mode heuristic
+// to more readily employ entropy-minimizing actions.
+#define DUAL_MODE_ENTROPY_THRESHOLD (0.1)
+
+// Returns the normalized entropy.
+//   H(b) = -sum_s b(s) log(b(s))  -- Cassandra p. 264.
+//   HBar(b) = H(b)/H(u)           -- Cassandra p. 266
+double getHBar(const REBelief& b)
+{
+  double sum = 0.0;
+  for (unsigned int i=0; i < b.size(); i++) {
+    double p = b[i].prob;
+    if (p > 0.0) {
+      sum += p * log(p);
+    }
+  }
+  double Hb = -sum;
+  double Hu = -log(1.0 / ((double) m.getNumStates()));
+  return Hb / Hu;
+}
+
+// Chooses an action according to the dual-mode heuristic.
+int DualModePolicy::chooseAction(void)
+{
+  if (getHBar(b) > DUAL_MODE_ENTROPY_THRESHOLD) {
+
+    // Take action that minimizes expected entropy on the next time step:
+    //
+    //   SH(b,a) = sum_o P(o | b,a) HBar(tau(b,a,o)) -- Cassandra p. 264
+    //   a^* = min_a SH(b,a)                         -- Cassandra p. 266
+    //
+    // (This is the DM, not ADM, heuristic.)
+
+    double minSH = 99e+20;
+    int minSHAction = -1;
+    for (int a=0; a < m.getNumActions(); a++) {
+      REObsProbsResult out = m.getBeliefResult(b, a);
+
+      double sumHBar = 0.0;
+      for (int o=0; o < m.getNumObservations(); o++) {
+	if (out.obsProbs[o] > 0.0) {
+	  REBelief nextBelief = m.getUpdatedBelief(b, a, o);
+	  sumHBar += out.obsProbs[o] * getHBar(nextBelief);
+	}
+      }
+
+      if (sumHBar < minSH) {
+	minSH = sumHBar;
+	minSHAction = a;
+      }
+    }
+    return minSHAction;
+
+  } else {
+
+    // Take the QMDP action.
+    return vfn.getMaxQAction(b);
+
+  }
+}
+
+/**********************************************************************
+ * END HEURISTICS
+ **********************************************************************/
+
 // Initializes the value function to have zero value for all states.
 void REValueFunction::init(void)
 {
   V.clear();
-  V.resize(m.states.size(), 0.0);
+  V.resize(m.getNumStates(), 0.0);
   Vp.clear();
-  Vp.resize(m.states.size());
+  Vp.resize(m.getNumStates(), 0.0);
 }
 
 // Performs a sweep of value iteration, updating all states.  Returns the
@@ -201,114 +321,6 @@ void HeuristicPolicy::advanceToNextBelief(int a, int o)
   b = m.getUpdatedBelief(b, a, o);
 }
 
-// Chooses an action according to the QMDP heuristic.
-int QMDPPolicy::chooseAction(void)
-{
-  return vfn.getMaxQAction(b);
-}
-
-// Chooses an action according to the voting heuristic.
-int VotingPolicy::chooseAction(void)
-{
-  // Initialize votes for each action to 0.
-  std::vector<double> voteTotals(m.getNumActions(), 0.0);
-
-  // Each state s votes for the best action to take from that state; the
-  // votes are weighted according to b(s).
-  for (int i=0; i < (int)b.size(); i++) {
-    int s = b[i].index;
-    voteTotals[vfn.getMaxQAction(s)] += b[i].prob;
-  }
-
-  // Calculate the action with the most votes.
-  int bestAction = -1;
-  double bestVoteTotal = -99e+20;
-  for (int a=0; a < m.getNumActions(); a++) {
-    if (voteTotals[a] > bestVoteTotal) {
-      bestAction = a;
-      bestVoteTotal = voteTotals[a];
-    }
-  }
-
-  return bestAction;
-}
-
-// Chooses an action according to the most likely state heuristic.
-int MostLikelyPolicy::chooseAction(void)
-{
-  // Calculate the most likely state s* and return argmax_a Q(s*, a).
-  return vfn.getMaxQAction(m.getMostLikelyState(b));
-}
-
-/**********************************************************************
- * BEGIN DUAL-MODE FUNCTIONS
- **********************************************************************/
-
-// Arbitrary threshold value.  Smaller values cause the dual-mode heuristic
-// to more readily employ entropy-minimizing actions.
-#define DUAL_MODE_ENTROPY_THRESHOLD (0.1)
-
-// Returns the normalized entropy.
-//   H(b) = -sum_s b(s) log(b(s))  -- Cassandra p. 264.
-//   HBar(b) = H(b)/H(u)           -- Cassandra p. 266
-double getHBar(const REBelief& b)
-{
-  double sum = 0.0;
-  for (unsigned int i=0; i < b.size(); i++) {
-    double p = b[i].prob;
-    if (p > 0.0) {
-      sum += p * log(p);
-    }
-  }
-  double Hb = -sum;
-  double Hu = -log(1.0 / ((double) m.getNumStates()));
-  return Hb / Hu;
-}
-
-// Chooses an action according to the dual-mode heuristic.
-int DualModePolicy::chooseAction(void)
-{
-  if (getHBar(b) > DUAL_MODE_ENTROPY_THRESHOLD) {
-
-    // Take action that minimizes expected entropy on the next time step:
-    //
-    //   SH(b,a) = sum_o P(o | b,a) HBar(tau(b,a,o)) -- Cassandra p. 264
-    //   a^* = min_a SH(b,a)                         -- Cassandra p. 266
-    //
-    // (This is the DM, not ADM, heuristic.)
-
-    double minSH = 99e+20;
-    int minSHAction = -1;
-    for (int a=0; a < m.getNumActions(); a++) {
-      REObsProbsResult out = m.getBeliefResult(b, a);
-
-      double sumHBar = 0.0;
-      for (int o=0; o < m.getNumObservations(); o++) {
-	if (out.obsProbs[o] > 0.0) {
-	  REBelief nextBelief = m.getUpdatedBelief(b, a, o);
-	  sumHBar += out.obsProbs[o] * getHBar(nextBelief);
-	}
-      }
-
-      if (sumHBar < minSH) {
-	minSH = sumHBar;
-	minSHAction = a;
-      }
-    }
-    return minSHAction;
-
-  } else {
-
-    // Take the QMDP action.
-    return vfn.getMaxQAction(b);
-
-  }
-}
-
-/**********************************************************************
- * END DUAL-MODE FUNCTIONS
- **********************************************************************/
-
 // Accepts a numeric value input on console.
 int getUserChoice(void)
 {
@@ -396,6 +408,9 @@ const char* getPolicyName(int policyType)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.7  2007/03/07 08:12:27  trey
+ * refactored things
+ *
  * Revision 1.6  2007/03/07 05:46:43  trey
  * implemented evaluator, fixed bugs in sim
  *
