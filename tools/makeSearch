@@ -1,0 +1,74 @@
+#!/usr/bin/perl
+
+# nohup makeSearch >& stdout.log &
+
+######################################################################
+# ADJUSTABLE PARAMETERS
+
+@searches = ("frtdp",
+	     "hsvi",
+	     "hdp",
+	     "lrtdp",
+	     "rtdp",
+	    );
+
+@pomdps = (["Tiger-Grid", "tiger-grid.pomdp"],
+	   ["Hallway", "hallway.pomdp"],
+	   ["Hallway2", "hallway2.pomdp"],
+	   ["Tag", "tagAvoid.pomdp"],
+	   ["RockSample[4,4]", "RockSample_4_4.pomdp"],
+	   ["RockSample[5,7]", "RockSample_5_7.pomdp -f"],
+	   #["RockSample[7,8]", "RockSample_7_8.pomdp -f"],
+	   #["RockSample[10,10]", "RockSample_10_10.pomdp -f"],
+	  );
+
+@mdps = (["large-b", "large-b.racetrack"],
+	 ["large-b-3", "large-b-3.racetrack"],
+	 ["large-b-w", "large-b-w.racetrack"],
+	 ["large-ring", "large-ring.racetrack"],
+	 ["large-ring-3", "large-ring-3.racetrack"],
+	 ["large-ring-w", "large-ring-w.racetrack"],
+	);
+
+@problems = (@pomdps,
+	     #@mdps
+	     );
+
+######################################################################
+
+sub usage {
+    die "usage: makeSearch OPTIONS\n".
+	"  -h or --help   Print this help\n";
+}
+
+while ($_ = shift @ARGV) {
+    if ($_ eq "-h" or $_ eq "--help") {
+	&usage();
+    } else {
+	die "ERROR: unknown option '$_' (-h for help)\n";
+    }
+}
+
+$root = "~/z";
+$bin = "$root/bin/linux2";
+$zmdpBenchmark = "zmdpBenchmark -i 10 --terminateWallclockSeconds 100 --evaluationEpochsPerMagnitude 3";
+
+sub dosys {
+    my $cmd = shift;
+    print "$cmd\n";
+    system($cmd) && die "ERROR: couldn't execute '$cmd'\n";
+}
+
+for $search (@searches) {
+    for $probPair (@problems) {
+	($fancyProb,$prob) = @{$probPair};
+	$probPath = "$root/problems.archive/$prob";
+	($probStem,$probExt) = split(/\./, $prob, 2);
+	$probExt =~ s/\s.*//;
+	$dir = "$probExt/${probStem}_$search";
+	if (! -e $dir) {
+	    &dosys("mkdir -p $dir");
+	    &dosys("cd $dir && $zmdpBenchmark --searchStrategy $search $probPath >& stdout.log");
+	}
+    }
+}
