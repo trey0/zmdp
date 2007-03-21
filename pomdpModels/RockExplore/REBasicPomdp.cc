@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2007-03-07 08:50:35 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2007-03-21 04:07:22 $
   
  @file    REBasicPomdp.cc
  @brief   No brief
@@ -203,8 +203,8 @@ void REBasicPomdp::generateReachableStates(void)
 void REBasicPomdp::writeCassandraModel(const std::string& outFile)
 {
   // Open the output file
-  std::ofstream out(outFile.c_str());
-  if (!out) {
+  FILE* out = fopen(outFile.c_str(), "w");
+  if (NULL == out) {
     cerr << "ERROR: couldn't open " << outFile << " for writing: "
 	      << strerror(errno) << endl;
     exit(EXIT_FAILURE);
@@ -212,29 +212,29 @@ void REBasicPomdp::writeCassandraModel(const std::string& outFile)
 
   //////////////////////////////////////////////////////////////////////
   // Write the preamble.
-  out << "discount: " << RE_DISCOUNT << endl;
-  out << "values: reward" << endl;
+  fprintf(out, "discount: %lf\n", RE_DISCOUNT);
+  fprintf(out, "values: reward\n");
 
   // Output "actions" line
-  out << "actions: ";
+  fprintf(out, "actions: ");
   for (int ai=0; ai < getNumActions(); ai++) {
-    out << getActionString(ai) << " ";
+    fprintf(out, "%s ", getActionString(ai).c_str());
   }
-  out << endl;
+  fprintf(out, "\n");
 
   // Output "observations" line
-  out << "observations: ";
+  fprintf(out, "observations: ");
   for (int o=0; o < getNumObservations(); o++) {
-    out << getObservationString(o) << " ";
+    fprintf(out, "%s ", getObservationString(o).c_str());
   }
-  out << endl;
+  fprintf(out, "\n");
 
   // Output "states" line
-  out << "states: ";
+  fprintf(out, "states: ");
   for (int si=0; si < getNumStates(); si++) {
-    out << getStateString(si) << " ";
+    fprintf(out, "%s ", getStateString(si).c_str());
   }
-  out << endl;
+  fprintf(out, "\n");
 
   // Generate sparse representation of initial belief and unpack into
   // dense representation.
@@ -245,15 +245,14 @@ void REBasicPomdp::writeCassandraModel(const std::string& outFile)
   }
 
   // Output "start" line
-  out << "start: ";
+  fprintf(out, "start: ");
   for (int si=0; si < getNumStates(); si++) {
-    out << denseB0[si] << " ";
+    fprintf(out, "%10.8lf ", denseB0[si]);
   }
-  out << endl << endl;
+  fprintf(out, "\n\n");
 
   //////////////////////////////////////////////////////////////////////
   // Write the main body.
-  char buf[256];
   for (int si=0; si < getNumStates(); si++) {
     std::string ss = getStateString(si);
 
@@ -262,31 +261,28 @@ void REBasicPomdp::writeCassandraModel(const std::string& outFile)
       std::string as = getActionString(ai);
 
       // Output R line for state=si, action=ai
-      snprintf(buf, sizeof(buf), "R: %-3s : %-10s : * : * %f",
-	       as.c_str(), ss.c_str(), res.reward);
-      out << buf << endl;
+      fprintf(out, "R: %-3s : %-10s : * : * %lf\n",
+	      as.c_str(), ss.c_str(), res.reward);
 
       // Output T lines for state=si, action=ai
       for (int i=0; i < (int)res.outcomes.size(); i++) {
 	std::string sps = getStateString(res.outcomes[i].index);
-	snprintf(buf, sizeof(buf), "T: %-3s : %-10s : %-10s %f",
-		 as.c_str(), ss.c_str(), sps.c_str(),
-		 res.outcomes[i].prob);
-	out << buf << endl;
+	fprintf(out, "T: %-3s : %-10s : %-10s %lf\n",
+		as.c_str(), ss.c_str(), sps.c_str(),
+		res.outcomes[i].prob);
       }
 
       // Output O lines for action=ai, outcome=si
       for (int o=0; o < getNumObservations(); o++) {
 	double obsProb = getObsProb(ai, si, o);
-	snprintf(buf, sizeof(buf), "O: %-3s : %-10s : o%d %f",
-		 as.c_str(), ss.c_str(), o, obsProb);
-	out << buf << endl;
+	fprintf(out, "O: %-3s : %-10s : o%d %lf\n",
+		as.c_str(), ss.c_str(), o, obsProb);
       }
-      out << endl;
+      fprintf(out, "\n");
     }
   }
 
-  out.close();
+  fclose(out);
 }
 
 // Returns a stochastically selected state index from the distribution b.
@@ -341,6 +337,9 @@ int REBasicPomdp::getMostLikelyState(const REBelief& b)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2007/03/07 08:50:35  trey
+ * cleaned up for improved readability
+ *
  * Revision 1.1  2007/03/07 08:12:27  trey
  * refactored things
  *
