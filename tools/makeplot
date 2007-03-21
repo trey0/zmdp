@@ -58,6 +58,7 @@ select STDOUT;
 
 if ($postscript_output) {
     print GP "set terminal postscript\n";
+    print GP "set size 0.4, 0.4\n";
 }
 
 if ($use_bounds_file) {
@@ -86,7 +87,6 @@ set logscale x
 set xlabel "wallclock time (seconds)"
 set ylabel "solution quality"
 set title "$plot_file"
-set size 0.4, 0.4
 plot "$plot_file"   using 1:2:3  notitle             with errorbars, \\\
      "$bounds_file" using 1:3    notitle             with lines,     \\\
      "$plot_file"   using 1:2    notitle             with lines,     \\\
