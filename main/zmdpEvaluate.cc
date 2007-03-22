@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.13 $  $Author: trey $  $Date: 2007-03-05 08:57:08 $
+ $Revision: 1.14 $  $Author: trey $  $Date: 2007-03-22 18:24:54 $
 
  @file    zmdpEvaluate.cc
  @brief   Use to evaluate a POMDP policy in simulation.
@@ -28,7 +28,7 @@
 #include <fstream>
 
 #include "MatrixUtils.h"
-#include "PomdpSim.h"
+#include "MDPSim.h"
 #include "MaxPlanesLowerBoundExec.h"
 #include "LSPathAndReactExec.h"
 #include "solverUtils.h"
@@ -95,7 +95,7 @@ void doit(const ZMDPConfig& config, SolverParams& p)
       exit(EXIT_FAILURE);
     }
   }
-  PomdpSim* sim = new PomdpSim(simPomdp);
+  MDPSim* sim = new MDPSim(simPomdp);
 
   const char* simulationTraceOutputFile =
     config.getString("simulationTraceOutputFile").c_str();
@@ -123,7 +123,7 @@ void doit(const ZMDPConfig& config, SolverParams& p)
   }
 
   // do evaluation
-  std::vector<double> rewardValues;
+  dvector rewardValues(p.evaluationTrialsPerEpoch);
   for (int i=0; i < p.evaluationTrialsPerEpoch; i++) {
     if (i >= simulationTracesToLogPerEpoch) {
       sim->simOutFile = NULL; // stop logging
@@ -134,10 +134,10 @@ void doit(const ZMDPConfig& config, SolverParams& p)
     for (int j=0; (j < p.evaluationMaxStepsPerTrial) || (0 == p.evaluationMaxStepsPerTrial); j++) {
       int a = e->chooseAction();
       sim->performAction(a);
-      e->advanceToNextBelief(a, sim->lastObservation);
+      e->advanceToNextBelief(a, sim->lastOutcomeIndex);
       if (sim->terminated) break;
     }
-    rewardValues.push_back(sim->rewardSoFar);
+    rewardValues(i) = sim->rewardSoFar;
     scoresOut << sim->rewardSoFar << endl;
     
     if (i%10 == 9) {
@@ -147,11 +147,23 @@ void doit(const ZMDPConfig& config, SolverParams& p)
   }
   printf("\n");
 
+#if 0
+  // old calculation, only valid if samples are normally distributed
   double avg, stdev;
-  calc_avg_stdev_collection(rewardValues.begin(), rewardValues.end(),
+  calc_avg_stdev_collection(rewardValues.data.begin(), rewardValues.data.end(),
 			    avg, stdev);
   double conf95 = 1.96 * stdev / sqrt((double)rewardValues.size());
   printf("REWARD_MEAN_MEANCONF95 %.3lf %.3lf\n", avg, conf95);
+#endif
+
+  // new calculation using bootstrap method
+  double mean, quantile1, quantile2;
+  dvector weights;
+  set_to_one(weights, p.evaluationTrialsPerEpoch);
+  calc_bootstrap_mean_quantile(weights, rewardValues,
+			       0.05, // 95% confidence interval
+			       mean, quantile1, quantile2);
+  printf("REWARD_MEAN_CONF95MIN_CONF95MAX %.3lf %.3lf %.3lf\n", mean, quantile1, quantile2);
 
   simOutFile.close();
   scoresOut.close();
@@ -173,9 +185,8 @@ void usage(const char* cmdName) {
     "\n"
     "  zmdpEvaluate evaluates a policy output by zmdpSolve or zmdpBenchmark.\n"
     "  The policy is evaluated by executing a number of trials in simulation;\n"
-    "  the output is mean reward and a 95% confidence interval for the estimate\n"
-    "  of the mean under the (not necessarily correct) assumption that the\n"
-    "  per-trial reward is normally distributed.  Sorry, statisticians may wince...\n"
+    "  the output is mean reward and the 95% confidence interval for the\n"
+    "  estimate of the mean, calculated using the bootstrap method.\n"
     "\n"
     "  ZMDP gets configuration information from three places: (1) Default values\n"
     "  are embedded in the binary at compile time.  (2) If you specify a config file\n"
@@ -329,6 +340,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.13  2007/03/05 08:57:08  trey
+ * modified how zmdpMainConfig is used so binaries built in other directories can embed the default config
+ *
  * Revision 1.12  2006/11/12 21:22:15  trey
  * added better error checking for incompatible planner and evaluation models
  *
