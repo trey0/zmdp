@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.24 $  $Author: trey $  $Date: 2007-01-15 17:25:24 $
+ $Revision: 1.25 $  $Author: trey $  $Date: 2007-03-22 18:24:23 $
 
  @file    solverUtils.cc
  @brief   No brief
@@ -295,23 +295,20 @@ void constructSolverObjects(SolverObjects& obj,
   switch (p.modelType) {
   case T_POMDP:
     obj.problem = new Pomdp(p.probName, &config);
-    obj.sim = new PomdpSim((Pomdp*) obj.problem);
     break;
   case T_MDP:
     obj.problem = new GenericDiscreteMDP(p.probName, &config);
-    obj.sim = new MDPSim(obj.problem);
     break;
   case T_RACETRACK:
     obj.problem = new RaceTrack(p.probName);
-    obj.sim = new MDPSim(obj.problem);
     break;
   case T_CUSTOM:
     obj.problem = new CustomMDP(config);
-    obj.sim = new MDPSim(obj.problem);
     break;
   default:
     assert(0); // never reach this point
   }
+  obj.sim = new MDPSim(obj.problem);
 
   if (T_POMDP == p.modelType && obj.problem->getDiscount() >= 1.0 && -1 == p.maxHorizon) {
     cerr << "ERROR: with modelType='pomdp', you must have either discount < 1\n"
@@ -481,6 +478,9 @@ void constructSolverObjects(SolverObjects& obj,
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.24  2007/01/15 17:25:24  trey
+ * fixed logic to ensure that RelaxUpperBound is not used for POMDPs
+ *
  * Revision 1.23  2007/01/14 00:53:51  trey
  * added ability to log storage space during a run
  *

@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.15 $  $Author: trey $  $Date: 2006-11-09 20:49:26 $
+ $Revision: 1.16 $  $Author: trey $  $Date: 2007-03-22 18:24:23 $
    
  @file    solverUtils.h
  @brief   No brief
@@ -40,7 +40,6 @@
 #include "GenericDiscreteMDP.h"
 #include "RaceTrack.h"
 #include "CustomMDP.h"
-#include "PomdpSim.h"
 #include "MDPSim.h"
 
 // value function representations
@@ -131,6 +130,9 @@ void constructSolverObjects(SolverObjects& obj,
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.15  2006/11/09 20:49:26  trey
+ * added modelType="mdp"
+ *
  * Revision 1.14  2006/11/08 16:35:28  trey
  * renamed useFastPomdpParser to useFastModelParser; Pomdp constructor now takes different arguments
  *
