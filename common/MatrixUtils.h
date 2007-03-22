@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.15 $  $Author: trey $  $Date: 2007-03-06 06:53:48 $
+ $Revision: 1.16 $  $Author: trey $  $Date: 2007-03-22 18:21:25 $
    
  @file    MatrixUtils.h
  @brief   No brief
@@ -252,6 +252,54 @@ namespace MatrixUtils {
     }
   }
 
+  // Estimate the proportion-p quantile using the weighted-average method.
+  inline double getQuantile(const dvector& sortedVals, double p)
+  {
+    int n = sortedVals.size();
+    double x = p * n - 0.5;
+    int i = floor(x);
+    double r = x - i;
+    assert(0 <= i && (i+1) < n);
+    return sortedVals(i) + r * (sortedVals(i+1) - sortedVals(i));
+  }
+
+  // Uses the bootstrap method to calculate the weigted mean and
+  // quantiles alpha/2 and (1-alpha/2) for the estimate of the weighted
+  // mean.  (For example, if alpha=0.05, [quantile1 .. quantile2] is a
+  // 95% confidence interval for the mean.)
+  inline void calc_bootstrap_mean_quantile(const dvector& weights, const dvector& vals,
+					   double alpha,
+					   double& mean, double& quantile1, double& quantile2)
+  {
+    int n = weights.size();
+    double sum = 0.0;
+    double wtSum = 0.0;
+    for (int i=0; i < n; i++) {
+      sum += weights(i) * vals(i);
+      wtSum += weights(i);
+    }
+    mean = sum / wtSum;
+
+    assert(0.0 < alpha && alpha < 1.0);
+    const int numSamplesInQuantile = 50; // totally arbitrary
+    int numBootstrapSamples = (int) (numSamplesInQuantile / (alpha/2));
+    dvector bvals(numBootstrapSamples);
+    for (int i=0; i < numBootstrapSamples; i++) {
+      sum = 0.0;
+      wtSum = 0.0;
+      for (int j=0; j < n; j++) {
+	int k = (int) (unit_rand() * n);
+	sum += weights(k) * vals(k);
+	wtSum += weights(k);
+      }
+      bvals(i) = sum / wtSum;
+    }
+
+    std::sort(bvals.data.begin(), bvals.data.end());
+    quantile1 = getQuantile(bvals, alpha/2);
+    quantile2 = getQuantile(bvals, (1.0 - alpha/2));
+  }
+
   struct IndPair {
     int ind;
     double val;
@@ -329,6 +377,9 @@ namespace MatrixUtils {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.15  2007/03/06 06:53:48  trey
+ * Adjusted to avoid not-very-random initial random numbers under Mac OS X
+ *
  * Revision 1.14  2006/04/28 17:57:41  trey
  * changed to use apache license
  *
