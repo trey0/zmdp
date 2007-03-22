@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.4 $  $Author: trey $  $Date: 2006-11-07 20:06:38 $
+ $Revision: 1.5 $  $Author: trey $  $Date: 2007-03-22 23:57:28 $
    
  @file    BoundPair.cc
  @brief   No brief
@@ -237,6 +237,14 @@ int BoundPair::chooseAction(const state_vector& s) const
   int bestAction = -1;
 
   if (!useUpperBoundRunTimeActionSelection) {
+    bestAction = lowerBound->chooseAction(s);
+    if (-1 != bestAction) {
+      return bestAction;
+    }
+
+    // if bestAction is -1, the lowerBound object does not have a
+    // special implementation of chooseAction(); fall back to the default
+    // implementation
     double lbVal;
     double maxVal = -99e+20;
     double minVal = 99e+20;
@@ -258,7 +266,7 @@ int BoundPair::chooseAction(const state_vector& s) const
 	minVal = lbVal;
       }
     }
-
+    
     // but only return best LB action if all choices are not tied
     if (maxVal - minVal > 1e-10) {
       return bestAction;
@@ -334,6 +342,9 @@ void BoundPair::writePolicy(const std::string& outFileName)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2006/11/07 20:06:38  trey
+ * added getQValue() function
+ *
  * Revision 1.3  2006/10/26 21:26:19  trey
  * fixed problem of crashing when search strategies do not demand maintainLowerBound=1 or maintainUpperBound=1
  *

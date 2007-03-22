@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-10-24 02:06:35 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2007-03-22 23:57:16 $
    
  @file    IncrementalLowerBound.h
  @brief   No brief
@@ -37,6 +37,11 @@ namespace zmdp {
 struct IncrementalLowerBound : public AbstractBound {
   virtual void initNodeBound(MDPNode& cn) = 0;
   virtual void update(MDPNode& cn) = 0;
+  virtual int chooseAction(const state_vector& s) {
+    // signal to fall back to default implementation if derived class
+    // does not implement chooseAction()
+    return -1;
+  }
 };
 
 }; // namespace zmdp
@@ -46,6 +51,9 @@ struct IncrementalLowerBound : public AbstractBound {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/10/24 02:06:35  trey
+ * initial check-in
+ *
  *
  ***************************************************************************/
 
