@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.8 2007-01-14 01:24:40 trey Exp $
+# $Id: Makefile,v 1.9 2007-03-22 18:25:49 trey Exp $
 #
 # Copyright (c) 2002-2005, Trey Smith. All rights reserved.
 #
@@ -33,14 +33,12 @@ maininstall:
 SUBDIRS := 
 
 INSTALLHEADERS_HEADERS := \
-	Pomdp.h \
-	PomdpSim.h
+	Pomdp.h
 include $(BUILD_DIR)/installheaders.mak
 
 BUILDLIB_TARGET := libzmdpPomdpCore.a
 BUILDLIB_SRCS := \
-	Pomdp.cc \
-	PomdpSim.cc
+	Pomdp.cc
 include $(BUILD_DIR)/buildlib.mak
 
 ifneq (,$(TEST))
@@ -62,6 +60,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.8  2007/01/14 01:24:40  trey
+# removed obsolete reference to boost
+#
 # Revision 1.7  2006/11/05 03:25:25  trey
 # added maininstall target for convenience
 #
