@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.5 $  $Author: trey $  $Date: 2006-11-08 16:33:14 $
+ $Revision: 1.6 $  $Author: trey $  $Date: 2007-03-22 18:21:08 $
    
  @file    MDPSim.h
  @brief   No brief
@@ -31,8 +31,9 @@ namespace zmdp {
 class MDPSim : public AbstractSim {
 public:
   MDP* model;
-  int elapsedTime;
   cvector state;
+  int elapsedTime;
+  int lastOutcomeIndex;
   
   MDPSim(MDP* _model);
 
@@ -49,6 +50,9 @@ public:
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.5  2006/11/08 16:33:14  trey
+ * renamed MDP.h to MDPModel.h to avoid confusion with mdp.h, stupid case insensitive Mac OS X
+ *
  * Revision 1.4  2006/04/28 17:57:41  trey
  * changed to use apache license
  *

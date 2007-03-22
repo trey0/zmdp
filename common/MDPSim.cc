@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2006-04-28 17:57:41 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2007-03-22 18:21:08 $
    
  @file    MDPSim.cc
  @brief   No brief
@@ -53,6 +53,7 @@ MDPSim::MDPSim(MDP* _model) :
 void MDPSim::restart(void) {
   elapsedTime = 0;
   rewardSoFar = 0;
+  lastOutcomeIndex = -1;
   terminated = false;
   state.resize(model->getInitialState().size());
   state = model->getInitialState();
@@ -72,28 +73,25 @@ void MDPSim::performAction(int a) {
   double imm_reward = model->getReward(state,a);
   rewardSoFar += pow(model->discount, elapsedTime) * imm_reward;
 
-  // figure out actual next state and observation
-#define CHOOSE_EPS (1e-10)
-
-  // draw outcome o
+  // draw outcome index o and corresponding successor state sp
   outcome_prob_vector opv;
+  state_vector sp;
   model->getOutcomeProbVector(opv, state, a);
   int o = chooseFromDistribution(opv);
-
-  state_vector sp;
   model->getNextState(sp, state, a, o);
 
+  // log transition information
   if (simOutFile) {
     (*simOutFile) << "sim: [" << sparseRep(state) << "] " << a << " ["
 		  << sparseRep(sp) << "] " << o << endl;
   }
 
-  // change state and elapsed time
+  // bring sim variables up to date
   state = sp;
   elapsedTime++;
+  lastOutcomeIndex = o;
 
-  // we used to check termination *before* the transition to take into account
-  // weirdness in the hallway and hallway2 problems; but that's resolved now.
+  // check for termination
   if (model->getIsTerminalState(state)) {
     terminated = true;
     if (simOutFile) {
@@ -107,6 +105,9 @@ void MDPSim::performAction(int a) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2006/04/28 17:57:41  trey
+ * changed to use apache license
+ *
  * Revision 1.2  2006/02/01 01:09:37  trey
  * renamed pomdp namespace -> zmdp
  *
