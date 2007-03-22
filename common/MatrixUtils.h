@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.16 $  $Author: trey $  $Date: 2007-03-22 18:21:25 $
+ $Revision: 1.17 $  $Author: trey $  $Date: 2007-03-22 23:57:46 $
    
  @file    MatrixUtils.h
  @brief   No brief
@@ -257,7 +257,7 @@ namespace MatrixUtils {
   {
     int n = sortedVals.size();
     double x = p * n - 0.5;
-    int i = floor(x);
+    int i = (int) floor(x);
     double r = x - i;
     assert(0 <= i && (i+1) < n);
     return sortedVals(i) + r * (sortedVals(i+1) - sortedVals(i));
@@ -377,6 +377,9 @@ namespace MatrixUtils {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.16  2007/03/22 18:21:25  trey
+ * added bootstrap calculation of confidence intervals
+ *
  * Revision 1.15  2007/03/06 06:53:48  trey
  * Adjusted to avoid not-very-random initial random numbers under Mac OS X
  *
