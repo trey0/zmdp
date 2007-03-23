@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2007-03-23 01:05:06 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2007-03-23 02:18:01 $
    
  @file    PolicyEvaluator.h
  @brief   No brief
@@ -36,7 +36,20 @@ struct PolicyEvaluator {
   PolicyEvaluator(MDP* _simModel,
 		  MDPExec* _exec,
 		  const ZMDPConfig* _config);
-  void getRewardSamples(dvector& weights, dvector& rewards, bool verbose);
+  void getRewardSamples(dvector& weights,
+			dvector& rewards,
+			std::vector<bool>& reachedGoal,
+			bool verbose);
+
+protected:
+  void getRewardSamplesSimple(dvector& weights,
+			      dvector& rewards,
+			      std::vector<bool>& reachedGoal,
+			      bool verbose);
+  void getRewardSamplesCache(dvector& weights,
+			     dvector& rewards,
+			     std::vector<bool>& reachedGoal,
+			     bool verbose);
 };
 
 }; // namespace zmdp
@@ -46,5 +59,8 @@ struct PolicyEvaluator {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2007/03/23 01:05:06  trey
+ * added PolicyEvaluator
+ *
  *
  ***************************************************************************/
