@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.6 $  $Author: trey $  $Date: 2006-11-08 16:42:38 $
+ $Revision: 1.7 $  $Author: trey $  $Date: 2007-03-23 00:01:20 $
    
  @file    LSPathAndReactExec.cc
  @brief   No brief
@@ -38,6 +38,7 @@
 #include "MatrixUtils.h"
 #include "LSPathAndReactExec.h"
 #include "LifeSurvey.h"
+#include "Pomdp.h"
 
 using namespace std;
 using namespace MatrixUtils;
@@ -60,7 +61,8 @@ void LSPathAndReactExec::init(const std::string& pomdpFileName,
 
   printf("LSPathAndReactExec: reading pomdp model\n");
   gettimeofday(&tv1, NULL);
-  pomdp = new Pomdp(pomdpFileName, config);
+  Pomdp* pomdp = new Pomdp(pomdpFileName, config);
+  mdp = pomdp;
   gettimeofday(&tv2, NULL);
   printf("  (took %.3f seconds)\n",
 	 (tv2.tv_sec - tv1.tv_sec) + 1e-6*(tv2.tv_usec - tv1.tv_usec));
@@ -74,23 +76,23 @@ void LSPathAndReactExec::init(const std::string& pomdpFileName,
 
   generatePath();
 
-  currentBeliefInitialized = false;
+  currentStateInitialized = false;
 }
 
-void LSPathAndReactExec::setToInitialBelief(void)
+void LSPathAndReactExec::setToInitialState(void)
 {
-  currentBelief = pomdp->getInitialBelief();
-  currentBeliefInitialized = true;
+  currentState = mdp->getInitialState();
+  currentStateInitialized = true;
 
   std::vector<LSOutcome> initStates;
   m.getInitialStateDistribution(initStates);
 
   // (reduce state distribution to a deterministic state)
   assert(initStates.size() > 0);
-  currentState = initStates[0].nextState;
+  currentLSState = initStates[0].nextState;
   FOR (i, 3) {
     // assume no life unless life is positively sensed
-    currentState.lifeInNeighborCell[i] = 0;
+    currentLSState.lifeInNeighborCell[i] = 0;
   }
 }
 
@@ -114,7 +116,7 @@ int LSPathAndReactExec::chooseAction(void)
   LSAction a;
   const LSModelFile& f = m.mfile;
 
-  if (currentState.usedLookaheadInThisCell) {
+  if (currentLSState.usedLookaheadInThisCell) {
     a.type = LS_ACT_MOVE;
 
     double val;
@@ -123,18 +125,18 @@ int LSPathAndReactExec::chooseAction(void)
     int bestDir = -1;
     FOR (dir, 3) {
       // check if a move in the given direction is legal
-      LSPos nextPos = m.getNeighbor(currentState.pos, dir);
+      LSPos nextPos = m.getNeighbor(currentLSState.pos, dir);
       unsigned char r = f.grid.getCellBounded(nextPos);
       if (LS_OBSTACLE == r
-	  || (LS_NE == currentState.lastMoveDirection && LS_SE == dir)
-	  || (LS_SE == currentState.lastMoveDirection && LS_NE == dir)) {
+	  || (LS_NE == currentLSState.lastMoveDirection && LS_SE == dir)
+	  || (LS_SE == currentLSState.lastMoveDirection && LS_NE == dir)) {
 	continue;
       }
 
       // evaluate the move according to heuristic criteria
       val = 0;
-      if (currentState.rewardLevelInRegion[r] < 3
-	  && currentState.lifeInNeighborCell[dir]) {
+      if (currentLSState.rewardLevelInRegion[r] < 3
+	  && currentLSState.lifeInNeighborCell[dir]) {
 	val += 10000;
 	targetExists = true;
       }
@@ -149,7 +151,7 @@ int LSPathAndReactExec::chooseAction(void)
 
     if (-1 == bestDir) {
       fprintf(stderr, "ERROR: LSPathAndReactExec::chooseAction: in pos (%d,%d) -- there are no legal moves!\n",
-	      currentState.pos.x, currentState.pos.y);
+	      currentLSState.pos.x, currentLSState.pos.y);
       exit(EXIT_FAILURE);
     }
 
@@ -164,29 +166,31 @@ int LSPathAndReactExec::chooseAction(void)
   return a.toInt();
 }
 
-void LSPathAndReactExec::advanceToNextBelief(int ai, int oi)
+void LSPathAndReactExec::advanceToNextState(int ai, int oi)
 {
 #if 1
   // sanity check
   obs_prob_vector opv;
-  pomdp->getObsProbVector(opv, currentBelief, ai);
+  mdp->getOutcomeProbVector(opv, currentState, ai);
   assert(0 <= oi && oi < (int)opv.size());
   if (opv(oi) < 1e-10) {
-    fprintf(stderr, "ERROR: LSPathAndReactExec::advanceToNextBelief -- got impossible observation %d (prob=%lg)\n",
+    fprintf(stderr, "ERROR: LSPathAndReactExec::advanceToNextState -- got impossible observation %d (prob=%lg)\n",
 	    oi, opv(oi));
     exit(EXIT_FAILURE);
   }
 #endif
 
-  pomdp->getNextBelief(currentBelief, currentBelief, ai, oi);
+  state_vector nextState;
+  mdp->getNextState(nextState, currentState, ai, oi);
+  currentState = nextState;
 
   // get possible next outcomes according to probabilistic LS model
   std::vector<LSOutcome> outcomes;
   double reward;
-  m.getOutcomes(outcomes, reward, currentState, ai);
+  m.getOutcomes(outcomes, reward, currentLSState, ai);
 
   // reduce distribution to deterministic next state
-  LSState nextState = outcomes[0].nextState;
+  LSState nextLSState = outcomes[0].nextState;
 
   // muck with lifeInNeighborCell to follow the right deterministic logic
   LSObservation o(oi);
@@ -194,19 +198,19 @@ void LSPathAndReactExec::advanceToNextBelief(int ai, int oi)
     // last action was a move; we believe none of the cells in front has life
     // until we get a positive lookahead observation
     FOR (i, 3) {
-      nextState.lifeInNeighborCell[i] = 0;
+      nextLSState.lifeInNeighborCell[i] = 0;
     }
   } else {
     // last action was a lookahead; mark high confidence neighbor cells
     // as containing life
     FOR (i, 3) {
       if (LS_BASE_NUM_OBSERVATIONS-1 == o.lifeInNeighborConfidence[i]) {
-	nextState.lifeInNeighborCell[i] = 1;
+	nextLSState.lifeInNeighborCell[i] = 1;
       }
     }
   }
 
-  currentState = nextState;
+  currentLSState = nextLSState;
 }
 
 int LSPathAndReactExec::getDistanceToNearestPathCell(const LSPos& pos) const
@@ -403,6 +407,9 @@ bool LSPathAndReactExec::dominates(const LSValueEntry& val1,
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.6  2006/11/08 16:42:38  trey
+ * changed Pomdp constructor arguments
+ *
  * Revision 1.5  2006/07/06 16:15:44  trey
  * added sanity check in advanceToNextBelief() to catch impossible observations
  *

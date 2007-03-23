@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.8 $  $Author: trey $  $Date: 2007-03-07 08:50:35 $
+ $Revision: 1.9 $  $Author: trey $  $Date: 2007-03-23 00:03:33 $
   
  @file    RockExplorePolicy.cc
  @brief   No brief
@@ -310,13 +310,13 @@ int UserPolicy::chooseAction(void)
 }
 
 // Informs the policy that the system is at the initial belief.
-void HeuristicPolicy::setToInitialBelief(void)
+void HeuristicPolicy::setToInitialState(void)
 {
   b = m.getInitialBelief();
 }
 
 // Informs the policy that action a was applied and observation o was received.
-void HeuristicPolicy::advanceToNextBelief(int a, int o)
+void HeuristicPolicy::advanceToNextState(int a, int o)
 {
   b = m.getUpdatedBelief(b, a, o);
 }
@@ -360,7 +360,7 @@ int getUserPolicyType(void)
 }
 
 // Returns a policy of the specified type.
-PomdpExecCore* getPolicy(int policyType)
+MDPExecCore* getPolicy(int policyType)
 {
   // Only need to run value iteration once even if running multiple policies.
   static REValueFunction* vfn = NULL;
@@ -408,6 +408,9 @@ const char* getPolicyName(int policyType)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.8  2007/03/07 08:50:35  trey
+ * cleaned up for improved readability
+ *
  * Revision 1.7  2007/03/07 08:12:27  trey
  * refactored things
  *

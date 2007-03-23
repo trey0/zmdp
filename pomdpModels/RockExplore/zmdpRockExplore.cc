@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.14 $  $Author: trey $  $Date: 2007-03-07 09:10:50 $
+ $Revision: 1.15 $  $Author: trey $  $Date: 2007-03-23 00:03:33 $
 
  @file    zmdpRockExplore.cc
  @brief   No brief
@@ -55,13 +55,13 @@ enum SimModes {
 
 struct RockExploreSim {
   int mode;
-  PomdpExecCore* policy;
+  MDPExecCore* policy;
   REBelief b;
   int si;
   int timeStep;
   double totalReward;
 
-  RockExploreSim(int _mode, PomdpExecCore* _policy) :
+  RockExploreSim(int _mode, MDPExecCore* _policy) :
     mode(_mode),
     policy(_policy)
   {}
@@ -69,7 +69,7 @@ struct RockExploreSim {
   void initialize(void) {
     b = m.getInitialBelief();
     si = m.chooseStochasticOutcome(b);
-    policy->setToInitialBelief();
+    policy->setToInitialState();
     timeStep = 0;
     totalReward = 0;
   }
@@ -109,7 +109,7 @@ struct RockExploreSim {
     REBelief bp = m.getUpdatedBelief(b, ai, o);
       
     // Advance to next state and belief
-    policy->advanceToNextBelief(ai, o);
+    policy->advanceToNextState(ai, o);
     si = sp;
     b = bp;
     timeStep++;
@@ -152,7 +152,7 @@ void doManual(void)
 
 void doVisualize(void)
 {
-  PomdpExecCore* policy = getPolicy(getUserPolicyType());
+  MDPExecCore* policy = getPolicy(getUserPolicyType());
   RockExploreSim sim(MODE_VISUALIZE, policy);
   if (!sim.run()) {
     printf("Sorry, that policy type is not yet implemented.\n");
@@ -167,7 +167,7 @@ struct EvalResult {
 
 EvalResult evaluatePolicy(int policyType)
 {
-  PomdpExecCore* policy = getPolicy(policyType);
+  MDPExecCore* policy = getPolicy(policyType);
   RockExploreSim sim(MODE_EVAL, policy);
 
   const int n = 100;
@@ -324,6 +324,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.14  2007/03/07 09:10:50  trey
+ * added display of MDP policy
+ *
  * Revision 1.13  2007/03/07 08:50:35  trey
  * cleaned up for improved readability
  *

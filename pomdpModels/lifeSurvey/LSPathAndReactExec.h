@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2006-11-08 16:42:38 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2007-03-23 00:01:20 $
    
  @file    LSPathAndReactExec.h
  @brief   No brief
@@ -28,7 +28,7 @@
 #include <vector>
 
 #include "LifeSurvey.h"
-#include "PomdpExec.h"
+#include "MDPExec.h"
 
 namespace zmdp {
 
@@ -46,10 +46,10 @@ struct LSValueEntry {
 
 typedef std::vector<LSValueEntry> LSValueVector;
 
-struct LSPathAndReactExec : public PomdpExec {
+struct LSPathAndReactExec : public MDPExec {
   LSModel m;
   LSPath plannedPath;
-  LSState currentState;
+  LSState currentLSState;
 
   std::vector<LSValueVector> bestValueMap;
   int numPathsEvaluated;
@@ -61,9 +61,9 @@ struct LSPathAndReactExec : public PomdpExec {
 	    const ZMDPConfig* config);
 
   // implement PomdpExec virtual methods
-  void setToInitialBelief(void);
+  void setToInitialState(void);
   int chooseAction(void);
-  void advanceToNextBelief(int a, int o);
+  void advanceToNextState(int a, int o);
 
   // helpers
   int getDistanceToNearestPathCell(const LSPos& pos) const;
@@ -85,6 +85,9 @@ struct LSPathAndReactExec : public PomdpExec {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2006/11/08 16:42:38  trey
+ * changed Pomdp constructor arguments
+ *
  * Revision 1.2  2006/07/03 14:30:06  trey
  * code no longer makes subtly invalid assumptions about when one path dominates another, so the output path is guaranteed to be optimal (luckily, seems to output the same path as before)
  *

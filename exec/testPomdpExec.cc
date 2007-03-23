@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2006-11-08 16:40:15 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2007-03-23 00:01:04 $
    
  @file    testPomdpExec.cc
  @brief   No brief
@@ -34,6 +34,9 @@
 
 #include "MatrixUtils.h"
 #include "MaxPlanesLowerBoundExec.h"
+#include "zmdpMainConfig.h"
+
+#include "zmdpMainConfig.cc" // embed default config file
 
 using namespace std;
 using namespace zmdp;
@@ -45,24 +48,27 @@ void doit(const char* modelFileName,
   // seeds random number generator
   MatrixUtils::init_matrix_utils();
 
+  ZMDPConfig* config = new ZMDPConfig();
+  config->readFromString("<defaultConfig>", defaultConfig.data);
+
   MaxPlanesLowerBoundExec* em = new MaxPlanesLowerBoundExec();
   printf("initializing\n");
-  em->init(modelFileName, useFastModelParser, policyFileName);
+  em->init(modelFileName, useFastModelParser, policyFileName, *config);
 
-  PomdpExec* e = em;
+  MDPExec* e = em;
 
   for (int i=0; i < 3; i++) {
     printf("new simulation run\n");
-    e->setToInitialBelief();
+    e->setToInitialState();
     printf("  reset to initial belief\n");
     while (1) {
       int a = e->chooseAction();
       printf("  chose action %d\n", a);
-      int o = e->getRandomObservation(a);
+      int o = e->getRandomOutcome(a);
       printf("  simulated seeing random observation %d\n", o);
-      e->advanceToNextBelief(a,o);
+      e->advanceToNextState(a,o);
       printf("  updated belief\n");
-      if (e->getBeliefIsTerminal()) {
+      if (e->getStateIsTerminal()) {
 	printf("  belief is terminal, ending run\n");
 	break;
       }
@@ -127,6 +133,9 @@ int main(int argc, char *argv[])
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2006/11/08 16:40:15  trey
+ * renamed useFastParser to useFastModelParser
+ *
  * Revision 1.2  2006/06/27 18:20:18  trey
  * turned PomdpExec into an abstract class; most of the original implementation is now in the derived class MaxPlanesLowerBoundExec
  *

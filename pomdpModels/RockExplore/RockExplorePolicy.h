@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.7 $  $Author: trey $  $Date: 2007-03-07 08:12:27 $
+ $Revision: 1.8 $  $Author: trey $  $Date: 2007-03-23 00:03:33 $
    
  @file    RockExplorePolicy.h
  @brief   The RockExplorePolicy problem is closely related to the RockSample problem
@@ -31,7 +31,7 @@
 #include <map>
 
 #include "RockExplore.h"
-#include "PomdpExec.h"
+#include "MDPExec.h"
 #include "MaxPlanesLowerBoundExec.h"
 
 namespace zmdp {
@@ -90,22 +90,22 @@ enum PolicyTypes {
 };
 
 // This "policy" selects actions by asking the user.
-struct UserPolicy : public PomdpExecCore {
-  void setToInitialBelief(void) { /* do nothing */ }
+struct UserPolicy : public MDPExecCore {
+  void setToInitialState(void) { /* do nothing */ }
   int chooseAction(void);
-  void advanceToNextBelief(int a, int o) { /* do nothing */ }
+  void advanceToNextState(int a, int o) { /* do nothing */ }
 };
 
 // This is a base policy for all the heuristic policies based on the MDP value
 // function.
-struct HeuristicPolicy : public PomdpExecCore {
+struct HeuristicPolicy : public MDPExecCore {
   REBelief b;
 
   // Informs the policy that the system is at the initial belief.
-  void setToInitialBelief(void);
+  void setToInitialState(void);
 
   // Informs the policy that action a was applied and observation o was received.
-  void advanceToNextBelief(int a, int o);
+  void advanceToNextState(int a, int o);
 };
 
 struct QMDPPolicy : public HeuristicPolicy {
@@ -149,7 +149,7 @@ extern int getUserChoice(void);
 extern int getUserPolicyType(void);
 
 // Returns a policy of the specified type.
-extern PomdpExecCore* getPolicy(int policyType);
+extern MDPExecCore* getPolicy(int policyType);
 
 // Returns the string name of the specified policy type.
 extern const char* getPolicyName(int policyType);
@@ -161,6 +161,9 @@ extern const char* getPolicyName(int policyType);
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.7  2007/03/07 08:12:27  trey
+ * refactored things
+ *
  * Revision 1.6  2007/03/07 05:46:43  trey
  * implemented evaluator, fixed bugs in sim
  *

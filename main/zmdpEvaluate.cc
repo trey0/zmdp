@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.14 $  $Author: trey $  $Date: 2007-03-22 18:24:54 $
+ $Revision: 1.15 $  $Author: trey $  $Date: 2007-03-23 00:05:19 $
 
  @file    zmdpEvaluate.cc
  @brief   Use to evaluate a POMDP policy in simulation.
@@ -58,7 +58,7 @@ void doit(const ZMDPConfig& config, SolverParams& p)
   }
 
   // initialize exec
-  PomdpExec* e;
+  MDPExec* e;
   if (0 == strcmp(policyTypeG, "maxPlanes")) {
     if (NULL == policyFileNameG) {
       fprintf(stderr, "ERROR: maxPlanes policy type requires -p argument (-h for help)\n");
@@ -84,12 +84,13 @@ void doit(const ZMDPConfig& config, SolverParams& p)
   // initialize simulator
   Pomdp* simPomdp;
   if (plannerModelFileNameG == simModelFileNameG) {
-    simPomdp = e->pomdp;
+    simPomdp = (Pomdp*) e->mdp;
   } else {
+    Pomdp* plannerPomdp = (Pomdp*) e->mdp;
     simPomdp = new Pomdp(simModelFileNameG, &config);
 
-    if (! ((e->pomdp->getNumActions() == simPomdp->getNumActions())
-	   && (e->pomdp->getNumObservations() == simPomdp->getNumObservations()))) {
+    if (! ((plannerPomdp->getNumActions() == simPomdp->getNumActions())
+	   && (plannerPomdp->getNumObservations() == simPomdp->getNumObservations()))) {
       printf("ERROR: planner model %s and evaluation model %s must have the same number of actions and observations\n",
 	     plannerModelFileNameG, simModelFileNameG);
       exit(EXIT_FAILURE);
@@ -130,11 +131,11 @@ void doit(const ZMDPConfig& config, SolverParams& p)
     }
 
     sim->restart();
-    e->setToInitialBelief();
+    e->setToInitialState();
     for (int j=0; (j < p.evaluationMaxStepsPerTrial) || (0 == p.evaluationMaxStepsPerTrial); j++) {
       int a = e->chooseAction();
       sim->performAction(a);
-      e->advanceToNextBelief(a, sim->lastOutcomeIndex);
+      e->advanceToNextState(a, sim->lastOutcomeIndex);
       if (sim->terminated) break;
     }
     rewardValues(i) = sim->rewardSoFar;
@@ -146,15 +147,6 @@ void doit(const ZMDPConfig& config, SolverParams& p)
     }
   }
   printf("\n");
-
-#if 0
-  // old calculation, only valid if samples are normally distributed
-  double avg, stdev;
-  calc_avg_stdev_collection(rewardValues.data.begin(), rewardValues.data.end(),
-			    avg, stdev);
-  double conf95 = 1.96 * stdev / sqrt((double)rewardValues.size());
-  printf("REWARD_MEAN_MEANCONF95 %.3lf %.3lf\n", avg, conf95);
-#endif
 
   // new calculation using bootstrap method
   double mean, quantile1, quantile2;
@@ -340,6 +332,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.14  2007/03/22 18:24:54  trey
+ * now use MDPSim instead of PomdpSim; switched to use bootstrap calculation of confidence intervals
+ *
  * Revision 1.13  2007/03/05 08:57:08  trey
  * modified how zmdpMainConfig is used so binaries built in other directories can embed the default config
  *
