@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.3 2007-03-23 00:01:04 trey Exp $
+# $Id: Makefile,v 1.4 2007-03-23 00:25:55 trey Exp $
 #
 # Copyright (c) 2006, Trey Smith. All rights reserved.
 #
@@ -36,21 +36,21 @@ CFLAGS +=
 
 INSTALLHEADERS_HEADERS := \
 	MDPExec.h \
-	MaxPlanesLowerBoundExec.h
+	BoundPairExec.h
 include $(BUILD_DIR)/installheaders.mak
 
 BUILDLIB_TARGET := libzmdpPomdpExec.a
 BUILDLIB_SRCS := \
 	MDPExec.cc \
-	MaxPlanesLowerBoundExec.cc
+	BoundPairExec.cc
 include $(BUILD_DIR)/buildlib.mak
 
 ifneq (,$(TEST))
 
 # add targets here to be built with 'make TEST=1 install'
 
-BUILDBIN_TARGET := testPomdpExec
-BUILDBIN_SRCS := testPomdpExec.cc
+BUILDBIN_TARGET := testMDPExec
+BUILDBIN_SRCS := testMDPExec.cc
 BUILDBIN_INDEP_LIBS := 
 BUILDBIN_DEP_LIBS := \
 	-lzmdpPomdpExec \
@@ -71,6 +71,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.3  2007/03/23 00:01:04  trey
+# fixed to reflect migration from PomdpExec to MDPExec base class
+#
 # Revision 1.2  2006/06/27 18:20:31  trey
 # added MaxPlanesLowerBoundExec
 #

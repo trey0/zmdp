@@ -1,7 +1,7 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.4 $  $Author: trey $  $Date: 2007-03-23 00:01:04 $
+ $Revision: 1.1 $  $Author: trey $  $Date: 2007-03-23 00:25:55 $
    
- @file    testPomdpExec.cc
+ @file    MDPExec.cc
  @brief   No brief
 
  Copyright (c) 2006, Trey Smith. All rights reserved.
@@ -33,7 +33,7 @@
 #include <iostream>
 
 #include "MatrixUtils.h"
-#include "MaxPlanesLowerBoundExec.h"
+#include "BoundPairExec.h"
 #include "zmdpMainConfig.h"
 
 #include "zmdpMainConfig.cc" // embed default config file
@@ -51,9 +51,9 @@ void doit(const char* modelFileName,
   ZMDPConfig* config = new ZMDPConfig();
   config->readFromString("<defaultConfig>", defaultConfig.data);
 
-  MaxPlanesLowerBoundExec* em = new MaxPlanesLowerBoundExec();
+  BoundPairExec* em = new BoundPairExec();
   printf("initializing\n");
-  em->init(modelFileName, useFastModelParser, policyFileName, *config);
+  em->initMaxPlanes(modelFileName, useFastModelParser, policyFileName, *config);
 
   MDPExec* e = em;
 
@@ -133,6 +133,9 @@ int main(int argc, char *argv[])
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2007/03/23 00:01:04  trey
+ * fixed to reflect migration from PomdpExec to MDPExec base class
+ *
  * Revision 1.3  2006/11/08 16:40:15  trey
  * renamed useFastParser to useFastModelParser
  *
