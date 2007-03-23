@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.4 $  $Author: trey $  $Date: 2006-10-18 18:05:56 $
+ $Revision: 1.5 $  $Author: trey $  $Date: 2007-03-23 02:20:17 $
    
  @file    TestDriver.h
  @brief   No brief
@@ -32,7 +32,7 @@ namespace zmdp {
 class TestDriver {
 public:
   AbstractSim* sim;
-  std::vector<double> rewardRecord;
+  dvector rewardSamples;
   
   TestDriver(void) : sim(NULL) {}
   ~TestDriver(void) {
@@ -42,16 +42,6 @@ public:
     }
   }
 
-  void interleave(const ZMDPConfig& config,
-		  int numIterations,
-		  AbstractSim* _sim,
-		  Solver& solver,
-		  int numSteps,
-		  double minPrecision,
-		  double minWait,
-		  const std::string& incPlotFileName,
-		  const std::string& boundsFileNameFmt,
-		  const std::string& simFileNameFmt);
   double getReward(void) { return sim->rewardSoFar; }
   void batchTestIncremental(const ZMDPConfig& config,
 			    int numIterations,
@@ -74,6 +64,9 @@ public:
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2006/10/18 18:05:56  trey
+ * now propagating config data structure to lower levels so config fields can be used to control more parts of the system
+ *
  * Revision 1.3  2006/06/15 16:09:47  trey
  * restructured so zmdpBenchmark can output policies
  *

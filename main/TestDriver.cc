@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.16 $  $Author: trey $  $Date: 2007-01-15 21:16:37 $
+ $Revision: 1.17 $  $Author: trey $  $Date: 2007-03-23 02:20:17 $
 
  @file    TestDriver.cc
  @brief   No brief
@@ -36,108 +36,13 @@
 #include "TestDriver.h"
 #include "zmdpCommonDefs.h"
 #include "MatrixUtils.h"
+#include "BoundPairExec.h"
+#include "PolicyEvaluator.h"
 
 using namespace std;
 using namespace MatrixUtils;
 
 namespace zmdp {
-
-void TestDriver::interleave(const ZMDPConfig& config,
-			    int numIterations,
-			    AbstractSim* _sim,
-			    Solver& solver,
-			    int numSteps,
-			    double minPrecision,
-			    double minWait,
-			    const string& scatterFileName,
-			    const string& boundsFileNameFmt,
-			    const string& simFileNameFmt)
-{
-  int action;
-  belief_vector last_belief, diff;
-  ofstream scatterFile, boundsFile, simFile;
-  char boundsFileName[PATH_MAX], simFileName[PATH_MAX];
-  double deltaTime, timeSoFar, episodeTimeSoFar;
-  bool achievedPrecision, achievedTerminalState;
-
-  sim = _sim;
-
-  scatterFile.open( scatterFileName.c_str() );
-  if (! scatterFile) {
-    cerr << "ERROR: couldn't open " << scatterFileName << " for writing: "
-	 << strerror(errno) << endl;
-    exit(EXIT_FAILURE);
-  }
-
-  system("mkdir -p plots");
-
-  FOR (i, numIterations) {
-    cout << "=-=-=-=-= interleave: trial " << (i+1) << " / " << numIterations << endl;
-
-    // reset the planner
-    solver.planInit(sim->getModel(), &config);
-
-    // set up a new bounds file and sim file for each iteration
-    snprintf( boundsFileName, sizeof(boundsFileName), boundsFileNameFmt.c_str(), i );
-    boundsFile.open( boundsFileName );
-    if (! boundsFile) {
-      cerr << "ERROR: couldn't open " << boundsFileName << " for writing: "
-	   << strerror(errno) << endl;
-      exit(EXIT_FAILURE);
-    }
-    solver.setBoundsFile(&boundsFile);
-    
-    snprintf( simFileName, sizeof(simFileName), simFileNameFmt.c_str(), i );
-    simFile.open( simFileName );
-    if (! simFile) {
-      cerr << "ERROR: couldn't open " << simFileName << " for writing: "
-	   << strerror(errno) << endl;
-      exit(EXIT_FAILURE);
-    }
-    sim->simOutFile = &simFile;
-
-    // restart the sim
-    sim->restart();
-    timeSoFar = 0;
-    achievedTerminalState = false;
-
-    // run in interleaved mode
-    FOR (t, numSteps) {
-      cout << "#-#-#-#-#-#-# interleave: trial " << (i+1) << " / " << numIterations
-	   << ", time step " << (t+1) << " / " << numSteps << endl;
-      // iterate the planner until it achieves the desired precision
-      episodeTimeSoFar = 0.0;
-      do {
-	timeval plan_start = getTime();
-	achievedPrecision =
-	  solver.planFixedTime(sim->getModel()->getInitialState(),
-			       /* maxTime = */ -1, /* minPrecision = */ minPrecision);
-	deltaTime = timevalToSeconds(getTime() - plan_start);
-	timeSoFar += deltaTime;
-	episodeTimeSoFar += deltaTime;
-      } while ( !(achievedPrecision && episodeTimeSoFar >= minWait) );
-
-      // take one action
-      action = solver.chooseAction(sim->getInformationState());
-      sim->performAction(action);
-      
-      // check if we reached a terminal state
-      if (sim->terminated) {
-	achievedTerminalState = true;
-	break;
-      }
-    }
-
-    // record the total planning time and reward from this interleaved run
-    scatterFile << timeSoFar << " "
-		<< sim->rewardSoFar << " "
-		<< achievedTerminalState << endl;
-
-    boundsFile.close();
-    simFile.close();
-  }
-  scatterFile.close();
-}
 
 void TestDriver::batchTestIncremental(const ZMDPConfig& config,
 				      int numIterations,
@@ -152,9 +57,7 @@ void TestDriver::batchTestIncremental(const ZMDPConfig& config,
 				      const string& simFileName,
 				      const char* outPolicyFileName)
 {
-  int action, last_action;
   belief_vector last_belief, diff;
-  bool can_reuse_last_action;
 
   sim = so.sim;
 
@@ -208,7 +111,6 @@ void TestDriver::batchTestIncremental(const ZMDPConfig& config,
   double timeSoFar = 1e-20;
   double logLastSimTime = -99;
   bool solverFinished = false;
-  bool achieved_terminal_state;
   while (!solverFinished && timeSoFar < terminateWallclockSeconds) {
     timeval plan_start = getTime();
     solverFinished =
@@ -239,6 +141,10 @@ void TestDriver::batchTestIncremental(const ZMDPConfig& config,
 
     sim->simOutFile = &simOutFile;
 
+    BoundPairExec exec;
+    exec.init(so.problem, so.bounds);
+    PolicyEvaluator eval(so.problem, &exec, &config);
+
     if ((timeSoFar > firstEpochWallclockSeconds
 	 && log(timeSoFar) - logLastSimTime > ::log(10) / ticksPerOrder)
 	// ensure we do a simulation after the last iteration
@@ -261,71 +167,41 @@ void TestDriver::batchTestIncremental(const ZMDPConfig& config,
 	system(cmd.c_str());
       }
 
-      // repeatedly simulate, reusing the initial solution
-      simOutFile << "----- time " << timeSoFar << endl;
-      rewardRecord.clear();
-      cout << endl;
-      int num_successes = 0;
-      FOR (i, numIterations) {
-	cout << "#-#-#-#-#-#-# batchTest " << (i+1) << " / " << numIterations;
-	cout.flush();
-	if (((int)i) >= simulationTracesToLogPerEpoch) {
-	  sim->simOutFile = NULL; // stop logging
-	}
-	sim->restart();
-	last_action = -1;
-	achieved_terminal_state = false;
-	FOR (j, numSteps) {
-	  can_reuse_last_action = false;
-	  if (-1 != last_action) {
-	    diff = sim->getInformationState();
-	    diff -= last_belief;
-	    if (norm_inf(diff) < 1e-10) {
-	      can_reuse_last_action = true;
-	    }
-	  }
-	  if (can_reuse_last_action) {
-	    action = last_action;
-	  } else {
-	    action = so.solver->chooseAction(sim->getInformationState());
-	  }
+      // simulate running the policy many times and collect the per-run total reward values
+      dvector weights;
+      std::vector<bool> reachedGoal;
+      eval.getRewardSamples(weights, rewardSamples, reachedGoal,
+			    /* verbose = */ true);
 
-	  last_action = action;
-	  last_belief = sim->getInformationState();
-
-	  sim->performAction(action);
-
-	  if (sim->terminated) {
-	    num_successes++;
-	    achieved_terminal_state = true;
-	    break;
-	  }
-	}
-	cout << " (reward " << sim->rewardSoFar << ")" << endl;
-	rewardRecord.push_back(sim->rewardSoFar);
-	if (!achieved_terminal_state) {
-	  cout << "(time ran out in simulation)" << endl;
-	}
+      int numSuccesses = 0;
+      FOR (i, reachedGoal.size()) {
+	if (reachedGoal[i]) numSuccesses++;
       }
-      
-      // collect policy evaluation statistics and write a line to the log file
-      double avg, stdev;
-      calc_avg_stdev_collection(rewardRecord.begin(), rewardRecord.end(), avg, stdev);
-      
-      double success_rate = ((double) num_successes) / numIterations;
+      double success_rate = ((double) numSuccesses) / numIterations;
 
 #if 0
-      ValueInterval val = so.solver.getValueAt(model->getInitialState());
-      // for some reason, if i use sqrt() instead of ::sqrt(), it's ambiguous
-      incPlotFile << timeSoFar << " " << avg << " "
-		  << (stdev/::sqrt(numIterations)*1.96) << " "
-		  << val.l << " " << val.u << " " << success_rate << endl;
-#else
+      // collect policy evaluation statistics and write a line to the log file
+      double avg, stdev;
+      calc_avg_stdev_collection(rewardSamples.data.begin(), rewardSamples.data.end(),
+				avg, stdev);
+
       incPlotFile << timeSoFar
 		  << " " << avg
 		  << " " << (stdev/::sqrt(numIterations)*1.96)
 		  << " " << success_rate << endl;
 #endif
+
+      // calculate summary statistics, mean and 95% confidence interval for the mean
+      double mean, quantile1, quantile2;
+      calc_bootstrap_mean_quantile(weights, rewardSamples,
+				   0.05, // 95% confidence interval
+				   mean, quantile1, quantile2);
+
+      incPlotFile << timeSoFar
+		  << " " << mean
+		  << " " << quantile1
+		  << " " << quantile2
+		  << " " << success_rate << endl;
      
       incPlotFile.flush();
 
@@ -378,12 +254,12 @@ void TestDriver::batchTestIncremental(const ZMDPConfig& config,
   
 void TestDriver::printRewards(void) {
   cout << "rewards: ";
-  FOR_EACH( reward, rewardRecord ) {
+  FOR_EACH( reward, rewardSamples.data ) {
     cout << (*reward) << " ";
   }
   cout << endl;
   double avg, stdev;
-  calc_avg_stdev_collection(rewardRecord.begin(), rewardRecord.end(), avg, stdev);
+  calc_avg_stdev_collection(rewardSamples.data.begin(), rewardSamples.data.end(), avg, stdev);
   cout << "reward avg stdev: " << avg << " " << stdev << endl;
 }
 
@@ -392,6 +268,9 @@ void TestDriver::printRewards(void) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.16  2007/01/15 21:16:37  trey
+ * fixed logic bug in terminateUpperBoundValue support
+ *
  * Revision 1.15  2007/01/15 20:22:04  trey
  * added support for terminate{Lower,Upper}BoundValue config parameters
  *
