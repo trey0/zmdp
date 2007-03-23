@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.15 $  $Author: trey $  $Date: 2007-03-23 00:05:19 $
+ $Revision: 1.16 $  $Author: trey $  $Date: 2007-03-23 00:30:28 $
 
  @file    zmdpEvaluate.cc
  @brief   Use to evaluate a POMDP policy in simulation.
@@ -29,7 +29,7 @@
 
 #include "MatrixUtils.h"
 #include "MDPSim.h"
-#include "MaxPlanesLowerBoundExec.h"
+#include "BoundPairExec.h"
 #include "LSPathAndReactExec.h"
 #include "solverUtils.h"
 #include "zmdpMainConfig.h"
@@ -64,8 +64,8 @@ void doit(const ZMDPConfig& config, SolverParams& p)
       fprintf(stderr, "ERROR: maxPlanes policy type requires -p argument (-h for help)\n");
       exit(EXIT_FAILURE);
     }
-    MaxPlanesLowerBoundExec* em = new MaxPlanesLowerBoundExec();
-    em->init(plannerModelFileNameG, p.useFastModelParser, policyFileNameG, config);
+    BoundPairExec* em = new BoundPairExec();
+    em->initMaxPlanes(plannerModelFileNameG, p.useFastModelParser, policyFileNameG, config);
     e = em;
   } else if (0 == strcmp(policyTypeG, "lspath")) {
     if (NULL == sourceModelFileNameG) {
@@ -332,6 +332,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.15  2007/03/23 00:05:19  trey
+ * fixed to reflect migration from PomdpExec to MDPExec base class
+ *
  * Revision 1.14  2007/03/22 18:24:54  trey
  * now use MDPSim instead of PomdpSim; switched to use bootstrap calculation of confidence intervals
  *

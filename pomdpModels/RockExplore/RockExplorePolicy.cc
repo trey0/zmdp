@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.9 $  $Author: trey $  $Date: 2007-03-23 00:03:33 $
+ $Revision: 1.10 $  $Author: trey $  $Date: 2007-03-23 00:30:50 $
   
  @file    RockExplorePolicy.cc
  @brief   No brief
@@ -377,11 +377,11 @@ MDPExecCore* getPolicy(int policyType)
   case P_ZMDP: {
     ZMDPConfig* config = new ZMDPConfig();
     config->readFromString("<defaultConfig>", defaultConfig.data);
-    MaxPlanesLowerBoundExec* policy = new MaxPlanesLowerBoundExec();
-    policy->init("RockExplore.pomdp",
-		 /* useFastParser = */ false,
-		 "out.policy",
-		 *config);
+    BoundPairExec* policy = new MaxPlanesLowerBoundExec();
+    policy->initMaxPlanes("RockExplore.pomdp",
+			  /* useFastParser = */ false,
+			  "out.policy",
+			  *config);
     return policy;
   }
   default:
@@ -408,6 +408,9 @@ const char* getPolicyName(int policyType)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.9  2007/03/23 00:03:33  trey
+ * fixed to reflect migration from PomdpExec to MDPExec base class
+ *
  * Revision 1.8  2007/03/07 08:50:35  trey
  * cleaned up for improved readability
  *

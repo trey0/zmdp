@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.8 $  $Author: trey $  $Date: 2007-03-23 00:03:33 $
+ $Revision: 1.9 $  $Author: trey $  $Date: 2007-03-23 00:30:50 $
    
  @file    RockExplorePolicy.h
  @brief   The RockExplorePolicy problem is closely related to the RockSample problem
@@ -32,7 +32,7 @@
 
 #include "RockExplore.h"
 #include "MDPExec.h"
-#include "MaxPlanesLowerBoundExec.h"
+#include "BoundPairExec.h"
 
 namespace zmdp {
 
@@ -161,6 +161,9 @@ extern const char* getPolicyName(int policyType);
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.8  2007/03/23 00:03:33  trey
+ * fixed to reflect migration from PomdpExec to MDPExec base class
+ *
  * Revision 1.7  2007/03/07 08:12:27  trey
  * refactored things
  *
