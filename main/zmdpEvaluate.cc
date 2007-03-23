@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.16 $  $Author: trey $  $Date: 2007-03-23 00:30:28 $
+ $Revision: 1.17 $  $Author: trey $  $Date: 2007-03-23 02:21:30 $
 
  @file    zmdpEvaluate.cc
  @brief   Use to evaluate a POMDP policy in simulation.
@@ -33,6 +33,7 @@
 #include "LSPathAndReactExec.h"
 #include "solverUtils.h"
 #include "zmdpMainConfig.h"
+#include "PolicyEvaluator.h"
 
 #include "zmdpMainConfig.cc" // embed default config file
 
@@ -96,69 +97,19 @@ void doit(const ZMDPConfig& config, SolverParams& p)
       exit(EXIT_FAILURE);
     }
   }
-  MDPSim* sim = new MDPSim(simPomdp);
 
-  const char* simulationTraceOutputFile =
-    config.getString("simulationTraceOutputFile").c_str();
-  
-  ofstream simOutFile(simulationTraceOutputFile);
-  if (!simOutFile) {
-    fprintf(stderr, "ERROR: couldn't open %s for writing: %s\n",
-	    simulationTraceOutputFile, strerror(errno));
-    exit(EXIT_FAILURE);
-  }
-  sim->simOutFile = &simOutFile;
+  // simulate running the policy many times and collect the per-run total reward values
+  PolicyEvaluator eval(simPomdp, e, &config);
+  dvector weights, rewardSamples;
+  std::vector<bool> reachedGoal;
+  eval.getRewardSamples(weights, rewardSamples, reachedGoal, /* verbose = */ true);
 
-  int simulationTracesToLogPerEpoch = config.getInt("simulationTracesToLogPerEpoch");
-  if (simulationTracesToLogPerEpoch < 0) {
-    simulationTracesToLogPerEpoch = INT_MAX;
-  }
-
-  std::string scoresOutputFile = config.getString("scoresOutputFile");
-
-  ofstream scoresOut(scoresOutputFile.c_str());
-  if (!scoresOut) {
-    fprintf(stderr, "ERROR: couldn't open %s for writing: %s\n",
-	    scoresOutputFile.c_str(), strerror(errno));
-    exit(EXIT_FAILURE);
-  }
-
-  // do evaluation
-  dvector rewardValues(p.evaluationTrialsPerEpoch);
-  for (int i=0; i < p.evaluationTrialsPerEpoch; i++) {
-    if (i >= simulationTracesToLogPerEpoch) {
-      sim->simOutFile = NULL; // stop logging
-    }
-
-    sim->restart();
-    e->setToInitialState();
-    for (int j=0; (j < p.evaluationMaxStepsPerTrial) || (0 == p.evaluationMaxStepsPerTrial); j++) {
-      int a = e->chooseAction();
-      sim->performAction(a);
-      e->advanceToNextState(a, sim->lastOutcomeIndex);
-      if (sim->terminated) break;
-    }
-    rewardValues(i) = sim->rewardSoFar;
-    scoresOut << sim->rewardSoFar << endl;
-    
-    if (i%10 == 9) {
-      printf(".");
-      fflush(stdout);
-    }
-  }
-  printf("\n");
-
-  // new calculation using bootstrap method
+  // output summary statistics, mean and 95% confidence interval for the mean
   double mean, quantile1, quantile2;
-  dvector weights;
-  set_to_one(weights, p.evaluationTrialsPerEpoch);
-  calc_bootstrap_mean_quantile(weights, rewardValues,
+  calc_bootstrap_mean_quantile(weights, rewardSamples,
 			       0.05, // 95% confidence interval
 			       mean, quantile1, quantile2);
   printf("REWARD_MEAN_CONF95MIN_CONF95MAX %.3lf %.3lf %.3lf\n", mean, quantile1, quantile2);
-
-  simOutFile.close();
-  scoresOut.close();
 }
 
 void usage(const char* cmdName) {
@@ -332,6 +283,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.16  2007/03/23 00:30:28  trey
+ * fixed to reflect name change from MaxPlanesLowerBoundExec to BoundPairExec
+ *
  * Revision 1.15  2007/03/23 00:05:19  trey
  * fixed to reflect migration from PomdpExec to MDPExec base class
  *
