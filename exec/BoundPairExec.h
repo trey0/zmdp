@@ -1,7 +1,7 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.4 $  $Author: trey $  $Date: 2007-03-23 00:01:04 $
+ $Revision: 1.1 $  $Author: trey $  $Date: 2007-03-23 00:26:11 $
    
- @file    MaxPlanesLowerBoundExec.h
+ @file    BoundPairExec.h
  @brief   No brief
 
  Copyright (c) 2006, Trey Smith. All rights reserved.
@@ -20,8 +20,8 @@
 
  ***************************************************************************/
 
-#ifndef INCMaxPlanesLowerBoundExec_h
-#define INCMaxPlanesLowerBoundExec_h
+#ifndef INCBoundPairExec_h
+#define INCBoundPairExec_h
 
 /**********************************************************************
  * INCLUDES
@@ -33,7 +33,7 @@
 #include <vector>
 
 #include "MDPExec.h"
-#include "MaxPlanesLowerBound.h"
+#include "Pomdp.h"
 #include "BoundPair.h"
 
 /**********************************************************************
@@ -42,20 +42,21 @@
 
 namespace zmdp {
 
-struct MaxPlanesLowerBoundExec : public MDPExec {
+struct BoundPairExec : public MDPExec {
   BoundPair* bounds;
 
-  MaxPlanesLowerBoundExec(void);
+  BoundPairExec(void);
 
   // initializer to use if you already have data structures for the model
   // and the bounds
   void init(Pomdp* _pomdp, BoundPair* _bounds);
 
-  // alternate initializer that reads the model and bounds from files
-  void init(const std::string& modelFileName,
-	    bool useFastModelParser,
-	    const std::string& policyFileName,
-	    const ZMDPConfig& config);
+  // alternate initializer that reads the model and a
+  // MaxPlanesLowerBound from files
+  void initMaxPlanes(const std::string& modelFileName,
+		     bool useFastModelParser,
+		     const std::string& policyFileName,
+		     const ZMDPConfig& config);
 
   void init();
 
@@ -70,11 +71,14 @@ struct MaxPlanesLowerBoundExec : public MDPExec {
 
 }; // namespace zmdp
 
-#endif // INCMaxPlanesLowerBoundExec_h
+#endif // INCBoundPairExec_h
 
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2007/03/23 00:01:04  trey
+ * fixed to reflect migration from PomdpExec to MDPExec base class
+ *
  * Revision 1.3  2006/11/08 16:40:15  trey
  * renamed useFastParser to useFastModelParser
  *

@@ -1,7 +1,7 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.5 $  $Author: trey $  $Date: 2007-03-23 00:01:04 $
+ $Revision: 1.1 $  $Author: trey $  $Date: 2007-03-23 00:26:11 $
    
- @file    MaxPlanesLowerBoundExec.cc
+ @file    BoundPairExec.cc
  @brief   No brief
 
  Copyright (c) 2002-2006, Trey Smith. All rights reserved.
@@ -36,7 +36,8 @@
 
 #include "zmdpCommonDefs.h"
 #include "MatrixUtils.h"
-#include "MaxPlanesLowerBoundExec.h"
+#include "BoundPairExec.h"
+#include "MaxPlanesLowerBound.h"
 
 using namespace std;
 using namespace MatrixUtils;
@@ -44,13 +45,13 @@ using namespace sla;
 
 namespace zmdp {
 
-MaxPlanesLowerBoundExec::MaxPlanesLowerBoundExec(void) :
+BoundPairExec::BoundPairExec(void) :
   bounds(NULL)
 {}
 
 // initializer to use if you already have data structures for the model
 // and the bounds
-void MaxPlanesLowerBoundExec::init(Pomdp* _pomdp, BoundPair* _bounds)
+void BoundPairExec::init(Pomdp* _pomdp, BoundPair* _bounds)
 {
   mdp = _pomdp;
   bounds = _bounds;
@@ -58,14 +59,14 @@ void MaxPlanesLowerBoundExec::init(Pomdp* _pomdp, BoundPair* _bounds)
 }
 
 // alternate initializer that reads the model and bounds from files
-void MaxPlanesLowerBoundExec::init(const std::string& modelFileName,
-				   bool useFastModelParser,
-				   const std::string& policyFileName,
-				   const ZMDPConfig& config)
+void BoundPairExec::initMaxPlanes(const std::string& modelFileName,
+				  bool useFastModelParser,
+				  const std::string& policyFileName,
+				  const ZMDPConfig& config)
 {
   timeval tv1, tv2;
 
-  printf("MaxPlanesLowerBoundExec: reading pomdp model, useFastModelParser=%d\n",
+  printf("BoundPairExec: reading pomdp model, useFastModelParser=%d\n",
 	 useFastModelParser);
   gettimeofday(&tv1, NULL);
   Pomdp* pomdp = new Pomdp(modelFileName, &config);
@@ -76,7 +77,7 @@ void MaxPlanesLowerBoundExec::init(const std::string& modelFileName,
 
   MaxPlanesLowerBound* lb = new MaxPlanesLowerBound(pomdp, &config);
 
-  printf("MaxPlanesLowerBoundExec: reading policy\n");
+  printf("BoundPairExec: reading policy\n");
   gettimeofday(&tv1, NULL);
   lb->readFromFile(policyFileName);
   gettimeofday(&tv2, NULL);
@@ -93,25 +94,25 @@ void MaxPlanesLowerBoundExec::init(const std::string& modelFileName,
   currentStateInitialized = false;
 }
 
-void MaxPlanesLowerBoundExec::setToInitialState(void)
+void BoundPairExec::setToInitialState(void)
 {
   currentState = mdp->getInitialState();
   currentStateInitialized = true;
 }
 
-int MaxPlanesLowerBoundExec::chooseAction(void)
+int BoundPairExec::chooseAction(void)
 {
   return bounds->chooseAction(currentState);
 }
 
-void MaxPlanesLowerBoundExec::advanceToNextState(int a, int o)
+void BoundPairExec::advanceToNextState(int a, int o)
 {
   state_vector nextState;
   mdp->getNextState(nextState, currentState, a, o);
   currentState = nextState;
 }
 
-void MaxPlanesLowerBoundExec::setBelief(const belief_vector& b)
+void BoundPairExec::setBelief(const belief_vector& b)
 {
   currentState = b;
 }
@@ -121,6 +122,9 @@ void MaxPlanesLowerBoundExec::setBelief(const belief_vector& b)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.5  2007/03/23 00:01:04  trey
+ * fixed to reflect migration from PomdpExec to MDPExec base class
+ *
  * Revision 1.4  2006/11/08 16:40:15  trey
  * renamed useFastParser to useFastModelParser
  *
