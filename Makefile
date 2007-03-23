@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.21 2006-11-08 18:04:07 trey Exp $
+# $Id: Makefile,v 1.22 2007-03-23 00:14:54 trey Exp $
 #
 # Copyright (c) 2002-2005, Trey Smith.  All rights reserved.
 #
@@ -27,7 +27,7 @@ include $(CHECKOUT_DIR)/src/build/header.mak
 include $(SRC_DIR)/common/options.mak
 
 # ADD ANY SUBDIRS THAT NEED TO BE VISITED DURING A BUILD TO THE SUBDIRS LIST
-SUBDIRS = common parsers mdps bounds search pomdpCore pomdpBounds pomdpModels pomdpExec main
+SUBDIRS = common parsers mdps bounds search exec pomdpCore pomdpBounds pomdpModels main
 
 include $(BUILD_DIR)/toplevel.mak
 
@@ -41,6 +41,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.21  2006/11/08 18:04:07  trey
+# renamed pomdpParser/ directory to parsers/
+#
 # Revision 1.20  2006/10/25 02:12:22  trey
 # added "test" target
 #
