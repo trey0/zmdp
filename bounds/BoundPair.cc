@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.5 $  $Author: trey $  $Date: 2007-03-22 23:57:28 $
+ $Revision: 1.6 $  $Author: trey $  $Date: 2007-03-23 02:11:18 $
    
  @file    BoundPair.cc
  @brief   No brief
@@ -237,14 +237,15 @@ int BoundPair::chooseAction(const state_vector& s) const
   int bestAction = -1;
 
   if (!useUpperBoundRunTimeActionSelection) {
+#if 0
+    // direct policy performs significantly worse than lookahead-1 policy,
+    // so let's not use it even though it chooses actions more quickly
     bestAction = lowerBound->chooseAction(s);
     if (-1 != bestAction) {
       return bestAction;
     }
+#endif
 
-    // if bestAction is -1, the lowerBound object does not have a
-    // special implementation of chooseAction(); fall back to the default
-    // implementation
     double lbVal;
     double maxVal = -99e+20;
     double minVal = 99e+20;
@@ -342,6 +343,9 @@ void BoundPair::writePolicy(const std::string& outFileName)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.5  2007/03/22 23:57:28  trey
+ * added ability for derived classes of IncrementalLowerBound to implement their own chooseAction() method that overrides the default in BoundPair
+ *
  * Revision 1.4  2006/11/07 20:06:38  trey
  * added getQValue() function
  *
