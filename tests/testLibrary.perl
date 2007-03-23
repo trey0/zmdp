@@ -134,13 +134,12 @@ sub testZmdpEvaluate {
 
     open(IN, "$cmd 2>&1 |") or die "ERROR: couldn't run [$cmd]: $!\n";
     my $numpat = "(-?\\d+(\\.\\d*)?([eE][+-]\\d+)?)";
-    my ($mean, $meanConf95);
+    my $mean;
     while (<IN>) {
 	print;
 	my $numpat = "(-?\\d+(\\.\\d*)?([eE][+-]\\d+)?)";
-	if (/^REWARD_MEAN_MEANCONF95\s+$numpat\s+$numpat/) {
+	if (/^REWARD_MEAN_CONF95MIN_CONF95MAX\s+$numpat\s+$numpat\s+$numpat/) {
 	    $mean = $1;
-	    $meanConf95 = $4;
 	}
 	# could look at stdout output here, guess there's no need
     }
