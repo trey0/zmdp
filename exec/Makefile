@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.5 2007-03-23 01:05:06 trey Exp $
+# $Id: Makefile,v 1.6 2007-03-23 02:12:39 trey Exp $
 #
 # Copyright (c) 2006, Trey Smith. All rights reserved.
 #
@@ -27,7 +27,7 @@ include $(CHECKOUT_DIR)/src/build/header.mak
 include $(SRC_DIR)/common/options.mak
 
 maininstall:
-	$(MAKE) $(MFLAGS) -C .. -fMakefile SUBDIRS='pomdpExec main' install
+	$(MAKE) $(MFLAGS) -C .. -fMakefile SUBDIRS='exec main' install
 
 # ADD ANY SUBDIRS THAT NEED TO BE VISITED DURING A BUILD TO THE SUBDIRS LIST
 SUBDIRS := 
@@ -40,7 +40,7 @@ INSTALLHEADERS_HEADERS := \
 	PolicyEvaluator.h
 include $(BUILD_DIR)/installheaders.mak
 
-BUILDLIB_TARGET := libzmdpPomdpExec.a
+BUILDLIB_TARGET := libzmdpExec.a
 BUILDLIB_SRCS := \
 	MDPExec.cc \
 	BoundPairExec.cc \
@@ -55,7 +55,7 @@ BUILDBIN_TARGET := testMDPExec
 BUILDBIN_SRCS := testMDPExec.cc
 BUILDBIN_INDEP_LIBS := 
 BUILDBIN_DEP_LIBS := \
-	-lzmdpPomdpExec \
+	-lzmdpExec \
 	-lzmdpPomdpCore \
 	-lzmdpPomdpBounds \
 	-lzmdpPomdpParser \
@@ -73,6 +73,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.5  2007/03/23 01:05:06  trey
+# added PolicyEvaluator
+#
 # Revision 1.4  2007/03/23 00:25:55  trey
 # renamed testPomdpExec to testMDPExec
 #
