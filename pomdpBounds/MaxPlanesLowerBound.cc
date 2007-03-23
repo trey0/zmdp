@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.25 $  $Author: trey $  $Date: 2007-02-22 22:01:28 $
+ $Revision: 1.26 $  $Author: trey $  $Date: 2007-03-23 00:04:59 $
    
  @file    MaxPlanesLowerBound.cc
  @brief   No brief
@@ -299,6 +299,11 @@ void MaxPlanesLowerBound::update(MDPNode& cn)
 
   addLBPlane(newPlane);
   maybePrune(core->numBackups);
+}
+
+int MaxPlanesLowerBound::chooseAction(const state_vector& b)
+{
+  return getBestLBPlaneConst(b).action; 
 }
 
 void MaxPlanesLowerBound::setPlaneForNode(MDPNode& cn, LBPlane* newPlane)
@@ -714,6 +719,9 @@ int MaxPlanesLowerBound::getStorage(int whichMetric) const
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.25  2007/02/22 22:01:28  trey
+ * made change to support list calculation to avoid bad interactions with pruning that caused a crash; parallels an earlier change to the sawtooth upper bound
+ *
  * Revision 1.24  2007/01/14 00:54:10  trey
  * added hooks for logging storage space during a run
  *

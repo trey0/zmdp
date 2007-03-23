@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.15 $  $Author: trey $  $Date: 2007-01-14 00:54:10 $
+ $Revision: 1.16 $  $Author: trey $  $Date: 2007-03-23 00:04:59 $
    
  @file    MaxPlanesLowerBound.h
  @brief   No brief
@@ -84,6 +84,7 @@ struct MaxPlanesLowerBound : public IncrementalLowerBound {
   double getValue(const belief_vector& b, const MDPNode* cn) const;
   void initNodeBound(MDPNode& cn);
   void update(MDPNode& cn);
+  int chooseAction(const state_vector& b);
 
   void getNewLBPlaneQ(LBPlane& result, MDPNode& cn, int a);
   void getNewLBPlane(LBPlane& result, MDPNode& cn);
@@ -112,6 +113,9 @@ struct MaxPlanesLowerBound : public IncrementalLowerBound {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.15  2007/01/14 00:54:10  trey
+ * added hooks for logging storage space during a run
+ *
  * Revision 1.14  2006/10/25 19:13:01  trey
  * migrated to more run-time config parameters
  *
