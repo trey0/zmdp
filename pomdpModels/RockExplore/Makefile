@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.4 2007-03-07 08:12:27 trey Exp $
+# $Id: Makefile,v 1.5 2007-03-23 02:19:19 trey Exp $
 #
 # Copyright (c) 2008, Trey Smith.
 #
@@ -33,7 +33,7 @@ maininstall:
 SUBDIRS := 
 
 RE_LIBS := \
-	-lzmdpPomdpExec \
+	-lzmdpExec \
 	-lzmdpSearch \
 	-lzmdpPomdpCore \
 	-lzmdpPomdpBounds \
@@ -62,6 +62,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.4  2007/03/07 08:12:27  trey
+# refactored things
+#
 # Revision 1.3  2007/03/06 08:46:56  trey
 # many tweaks
 #

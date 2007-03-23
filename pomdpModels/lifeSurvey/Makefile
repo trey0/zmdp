@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.7 2006-09-12 19:46:52 trey Exp $
+# $Id: Makefile,v 1.8 2007-03-23 02:18:29 trey Exp $
 #
 # Copyright (c) 2002-2005, Trey Smith. All rights reserved.
 #
@@ -83,7 +83,7 @@ BUILDBIN_SRCS := testLSPathAndReact.cc
 BUILDBIN_INDEP_LIBS := 
 BUILDBIN_DEP_LIBS := \
 	-lzmdpLifeSurvey \
-	-lzmdpPomdpExec \
+	-lzmdpExec \
 	-lzmdpPomdpCore \
 	-lzmdpPomdpBounds \
 	-lzmdpPomdpParser \
@@ -100,6 +100,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.7  2006/09/12 19:46:52  trey
+# added dumpMap
+#
 # Revision 1.6  2006/07/10 02:22:41  trey
 # added calcLSTrialStats
 #
