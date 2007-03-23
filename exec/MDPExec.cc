@@ -1,7 +1,7 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2006-06-27 18:20:18 $
+ $Revision: 1.1 $  $Author: trey $  $Date: 2007-03-23 00:00:36 $
    
- @file    PomdpExec.cc
+ @file    MDPExec.cc
  @brief   No brief
 
  Copyright (c) 2002-2006, Trey Smith. All rights reserved.
@@ -36,7 +36,7 @@
 
 #include "zmdpCommonDefs.h"
 #include "MatrixUtils.h"
-#include "PomdpExec.h"
+#include "MDPExec.h"
 
 using namespace std;
 using namespace MatrixUtils;
@@ -44,26 +44,26 @@ using namespace sla;
 
 namespace zmdp {
 
-PomdpExec::PomdpExec(void) :
-  pomdp(NULL),
-  currentBeliefInitialized(false)
+MDPExec::MDPExec(void) :
+  mdp(NULL),
+  currentStateInitialized(false)
 {}
 
-bool PomdpExec::getBeliefIsTerminal(void) const
+bool MDPExec::getStateIsTerminal(void) const
 {
-  return pomdp->getIsTerminalState(currentBelief);
+  return mdp->getIsTerminalState(currentState);
 }
 
-belief_vector& PomdpExec::getBelief(belief_vector& b) const
+state_vector& MDPExec::getState(state_vector& s) const
 {
-  b = currentBelief;
-  return b;
+  s = currentState;
+  return s;
 }
 
-int PomdpExec::getRandomObservation(int a) const
+int MDPExec::getRandomOutcome(int a) const
 {
   obs_prob_vector opv;
-  return chooseFromDistribution(pomdp->getObsProbVector(opv, currentBelief, a));
+  return chooseFromDistribution(mdp->getOutcomeProbVector(opv, currentState, a));
 }
 
 }; // namespace zmdp
@@ -71,6 +71,9 @@ int PomdpExec::getRandomObservation(int a) const
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2006/06/27 18:20:18  trey
+ * turned PomdpExec into an abstract class; most of the original implementation is now in the derived class MaxPlanesLowerBoundExec
+ *
  * Revision 1.1  2006/06/24 16:25:27  trey
  * initial check-in
  *
