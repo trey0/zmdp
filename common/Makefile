@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.29 2007-01-14 01:24:17 trey Exp $
+# $Id: Makefile,v 1.30 2007-03-24 22:38:31 trey Exp $
 #
 # Copyright (c) 2002-2005, Trey Smith. All rights reserved.
 #
@@ -29,6 +29,9 @@ include $(SRC_DIR)/common/options.mak
 # ADD ANY SUBDIRS THAT NEED TO BE VISITED DURING A BUILD TO THE SUBDIRS LIST
 SUBDIRS := 
 
+maininstall:
+	$(MAKE) $(MFLAGS) -C .. -fMakefile SUBDIRS='mdps main' install
+
 INSTALLHEADERS_HEADERS := \
 	zmdpCommonDefs.h \
 	zmdpCommonTime.h \
@@ -39,7 +42,6 @@ INSTALLHEADERS_HEADERS := \
 	slaMatrixUtils.h \
 	MatrixUtils.h \
 	MDPModel.h \
-	AbstractSim.h \
 	MDPSim.h \
 	Solver.h \
 	embedFiles.h
@@ -70,6 +72,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.29  2007/01/14 01:24:17  trey
+# removed obsolete reference to boost
+#
 # Revision 1.28  2006/11/08 16:33:14  trey
 # renamed MDP.h to MDPModel.h to avoid confusion with mdp.h, stupid case insensitive Mac OS X
 #
