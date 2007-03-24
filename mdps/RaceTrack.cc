@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.12 $  $Author: trey $  $Date: 2006-10-24 02:11:53 $
+ $Revision: 1.13 $  $Author: trey $  $Date: 2007-03-24 22:44:33 $
   
  @file    RaceTrack.cc
  @brief   No brief
@@ -255,9 +255,9 @@ void TrackMap::readFromFile(const string& mapFileName, FILE* mapFile, int lnum)
  **********************************************************************/
 
 struct RTLowerBound : public AbstractBound {
-  const RaceTrack* problem;
+  RaceTrack* problem;
 
-  RTLowerBound(const RaceTrack* _problem) : problem(_problem) {}
+  RTLowerBound(RaceTrack* _problem) : problem(_problem) {}
   void initialize(double targetPrecision) {}
   double getValue(const state_vector& s, const MDPNode* cn) const;
 };
@@ -434,19 +434,19 @@ void RaceTrack::readFromFile(const std::string& specFileName)
   fclose(plist.inFile);
 }
 
-const state_vector& RaceTrack::getInitialState(void) const
+const state_vector& RaceTrack::getInitialState(void)
 {
   return bogusInitialState;
 }
 
-bool RaceTrack::getIsTerminalState(const state_vector& s) const
+bool RaceTrack::getIsTerminalState(const state_vector& s)
 {
   bool isTerminal = IS_TERMINAL_STATE(s);
   return isTerminal;
 }
 
 outcome_prob_vector& RaceTrack::getOutcomeProbVector(outcome_prob_vector& result,
-						     const state_vector& s, int a) const
+						     const state_vector& s, int a)
 {
   if (IS_INITIAL_STATE(s)) {
     // transition to one of the starting line cells (uniform probability distribution)
@@ -515,7 +515,7 @@ outcome_prob_vector& RaceTrack::getOutcomeProbVector(outcome_prob_vector& result
 }
 
 state_vector& RaceTrack::getNextState(state_vector& result, const state_vector& s,
-				      int a, int o) const
+				      int a, int o)
 {
   if (IS_INITIAL_STATE(s)) {
     // transition to one of the starting line cells; which one indicated by o
@@ -568,7 +568,7 @@ state_vector& RaceTrack::getNextState(state_vector& result, const state_vector& 
   return result;
 }
 
-double RaceTrack::getReward(const state_vector& s, int a) const
+double RaceTrack::getReward(const state_vector& s, int a)
 {
   double cost;
   if (IS_TERMINAL_STATE(s)) {
@@ -593,12 +593,12 @@ double RaceTrack::getReward(const state_vector& s, int a) const
   return -cost;
 }
 
-AbstractBound* RaceTrack::newLowerBound(const ZMDPConfig* _config) const
+AbstractBound* RaceTrack::newLowerBound(const ZMDPConfig* _config)
 {
   return new RTLowerBound(this);
 }
 
-AbstractBound* RaceTrack::newUpperBound(const ZMDPConfig* _config) const
+AbstractBound* RaceTrack::newUpperBound(const ZMDPConfig* _config)
 {
   return new RTUpperBound(this);
 }
@@ -608,6 +608,9 @@ AbstractBound* RaceTrack::newUpperBound(const ZMDPConfig* _config) const
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.12  2006/10/24 02:11:53  trey
+ * interface changes for better consistency with the rest of the system
+ *
  * Revision 1.11  2006/10/18 18:06:06  trey
  * now propagating config data structure to lower levels so config fields can be used to control more parts of the system
  *

@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.6 $  $Author: trey $  $Date: 2007-01-14 00:53:30 $
+ $Revision: 1.7 $  $Author: trey $  $Date: 2007-03-24 22:40:28 $
    
  @file    RelaxUBInitializer.h
  @brief   No brief
@@ -30,14 +30,14 @@
 namespace zmdp {
 
 struct RelaxUBInitializer : public AbstractBound {
-  const MDP* problem;
+  MDP* problem;
   MDPNode* root;
   MDPHash* lookup;
   AbstractBound* initLowerBound;
   AbstractBound* initUpperBound;
   const ZMDPConfig* config;
 
-  RelaxUBInitializer(const MDP* _problem, const ZMDPConfig* _config);
+  RelaxUBInitializer(MDP* _problem, const ZMDPConfig* _config);
   virtual ~RelaxUBInitializer(void) {}
 
   MDPNode* getNode(const state_vector& s);
@@ -62,6 +62,9 @@ struct RelaxUBInitializer : public AbstractBound {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.6  2007/01/14 00:53:30  trey
+ * added hooks for plotting storage space during a run
+ *
  * Revision 1.5  2006/10/24 02:07:27  trey
  * tweaked args to some functions to match changes elsewhere
  *

@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-11-09 20:46:12 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2007-03-24 22:44:33 $
   
  @file    Pomdp.cc
  @brief   No brief
@@ -67,12 +67,12 @@ GenericDiscreteMDP::GenericDiscreteMDP(const std::string& fileName,
   maxHorizon = config->getInt("maxHorizon");
 }
 
-const state_vector& GenericDiscreteMDP::getInitialState(void) const
+const state_vector& GenericDiscreteMDP::getInitialState(void)
 {
   return initialState;
 }
 
-bool GenericDiscreteMDP::getIsTerminalState(const state_vector& sv) const
+bool GenericDiscreteMDP::getIsTerminalState(const state_vector& sv)
 {
   int s = (int) sv(0);
   return isTerminalState[s];
@@ -80,7 +80,7 @@ bool GenericDiscreteMDP::getIsTerminalState(const state_vector& sv) const
 
 outcome_prob_vector& GenericDiscreteMDP::getOutcomeProbVector(outcome_prob_vector& result,
 							      const state_vector& sv,
-							      int a) const
+							      int a)
 {
   int s = (int) sv(0);
 
@@ -97,7 +97,7 @@ outcome_prob_vector& GenericDiscreteMDP::getOutcomeProbVector(outcome_prob_vecto
 
 state_vector& GenericDiscreteMDP::getNextState(state_vector& result,
 					       const state_vector& sv,
-					       int a, int o) const
+					       int a, int o)
 {
   // NOTE: getNextState() could be made more efficient if we could cache
   // information over multiple calls with the same s and a
@@ -121,13 +121,13 @@ state_vector& GenericDiscreteMDP::getNextState(state_vector& result,
   assert(0); // never reach this point
 }
 
-double GenericDiscreteMDP::getReward(const state_vector& sv, int a) const
+double GenericDiscreteMDP::getReward(const state_vector& sv, int a)
 {
   int s = (int) sv(0);
   return R(s,a);
 }
 
-double GenericDiscreteMDP::getLongTermFactor(void) const
+double GenericDiscreteMDP::getLongTermFactor(void)
 {
   // calculate longTermFactor
   double longTermFactor = MDP_LONG_TERM_UNBOUNDED;
@@ -152,10 +152,10 @@ double GenericDiscreteMDP::getLongTermFactor(void) const
 }
 
 struct GenericDiscreteLowerBound : public AbstractBound {
-  const GenericDiscreteMDP* x;
+  GenericDiscreteMDP* x;
   double globalLowerBound;
 
-  GenericDiscreteLowerBound(const GenericDiscreteMDP* _x) : x(_x) {}
+  GenericDiscreteLowerBound(GenericDiscreteMDP* _x) : x(_x) {}
   void initialize(double targetPrecision) {
     // maxMinReward = max_a min_s R(s,a)
     double maxMinReward = -99e+20;
@@ -175,10 +175,10 @@ struct GenericDiscreteLowerBound : public AbstractBound {
 };
 
 struct GenericDiscreteUpperBound : public AbstractBound {
-  const GenericDiscreteMDP* x;
+  GenericDiscreteMDP* x;
   double globalUpperBound;
 
-  GenericDiscreteUpperBound(const GenericDiscreteMDP* _x) : x(_x) {}
+  GenericDiscreteUpperBound(GenericDiscreteMDP* _x) : x(_x) {}
   void initialize(double targetPrecision) {
     // maxReward = max_a max_s R(s,a)
     double maxReward = -99e+20;
@@ -194,12 +194,12 @@ struct GenericDiscreteUpperBound : public AbstractBound {
   }
 };
 
-AbstractBound* GenericDiscreteMDP::newLowerBound(const ZMDPConfig* _config) const
+AbstractBound* GenericDiscreteMDP::newLowerBound(const ZMDPConfig* _config)
 {
   return new GenericDiscreteLowerBound(this);
 }
 
-AbstractBound* GenericDiscreteMDP::newUpperBound(const ZMDPConfig* _config) const
+AbstractBound* GenericDiscreteMDP::newUpperBound(const ZMDPConfig* _config)
 {
   return new GenericDiscreteUpperBound(this);
 }
@@ -210,5 +210,8 @@ AbstractBound* GenericDiscreteMDP::newUpperBound(const ZMDPConfig* _config) cons
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/11/09 20:46:12  trey
+ * initial check-in
+ *
  *
  ***************************************************************************/

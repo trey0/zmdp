@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.19 $  $Author: trey $  $Date: 2006-11-07 20:07:12 $
+ $Revision: 1.20 $  $Author: trey $  $Date: 2007-03-24 22:45:13 $
    
  @file    RTDPCore.h
  @brief   Common code used by multiple RTDP variants found in this
@@ -73,7 +73,7 @@ struct NodeStack {
 };
 
 struct RTDPCore : public Solver {
-  const MDP* problem;
+  MDP* problem;
   BoundPairCore* bounds;
   timeval boundsStartTime;
   timeval previousElapsedTime;
@@ -103,7 +103,7 @@ struct RTDPCore : public Solver {
   virtual void derivedClassInit(void) {}
 
   // virtual functions from Solver that constitute the external api
-  void planInit(const MDP* problem, const ZMDPConfig* _config);
+  void planInit(MDP* problem, const ZMDPConfig* _config);
   bool planFixedTime(const state_vector& s,
 		     double maxTimeSeconds,
 		     double _targetPrecision);
@@ -122,6 +122,9 @@ struct RTDPCore : public Solver {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.19  2006/11/07 20:07:12  trey
+ * added support for qValuesOutputFile
+ *
  * Revision 1.18  2006/10/27 18:24:29  trey
  * replaced logBackups() virtual function with finishLogging(), which provides a more general hook where other search strategies can do their cleanup actions
  *

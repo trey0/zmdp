@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.23 $  $Author: trey $  $Date: 2006-11-07 20:07:12 $
+ $Revision: 1.24 $  $Author: trey $  $Date: 2007-03-24 22:45:13 $
    
  @file    RTDPCore.cc
  @brief   Common code used by multiple RTDP variants found in this
@@ -80,7 +80,7 @@ void RTDPCore::init(void)
   initialized = true;
 }
 
-void RTDPCore::planInit(const MDP* _problem,
+void RTDPCore::planInit(MDP* _problem,
 			const ZMDPConfig* _config)
 {
   config = _config;
@@ -205,6 +205,9 @@ void RTDPCore::finishLogging(void)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.23  2006/11/07 20:07:12  trey
+ * added support for qValuesOutputFile
+ *
  * Revision 1.22  2006/10/27 18:24:29  trey
  * replaced logBackups() virtual function with finishLogging(), which provides a more general hook where other search strategies can do their cleanup actions
  *

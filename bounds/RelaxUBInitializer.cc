@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.8 $  $Author: trey $  $Date: 2007-01-14 00:53:30 $
+ $Revision: 1.9 $  $Author: trey $  $Date: 2007-03-24 22:40:28 $
    
  @file    RelaxUBInitializer.cc
  @brief   No brief
@@ -42,7 +42,7 @@ using namespace MatrixUtils;
 
 namespace zmdp {
 
-RelaxUBInitializer::RelaxUBInitializer(const MDP* _problem, const ZMDPConfig* _config) :
+RelaxUBInitializer::RelaxUBInitializer(MDP* _problem, const ZMDPConfig* _config) :
   problem(_problem),
   root(NULL),
   config(_config)
@@ -267,6 +267,9 @@ int RelaxUBInitializer::getStorage(int whichMetric) const
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.8  2007/01/14 00:53:30  trey
+ * added hooks for plotting storage space during a run
+ *
  * Revision 1.7  2006/11/08 16:32:46  trey
  * renamed MDP.h to MDPModel.h to avoid confusion with mdp.h, stupid case insensitive Mac OS X
  *

@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.10 $  $Author: trey $  $Date: 2006-11-08 16:37:33 $
+ $Revision: 1.11 $  $Author: trey $  $Date: 2007-03-24 22:44:33 $
    
  @file    RaceTrack.h
  @brief   No brief
@@ -50,27 +50,26 @@ public:
   void readFromFile(const std::string& specFileName);
 
   // returns the initial state
-  const state_vector& getInitialState(void) const;
+  const state_vector& getInitialState(void);
 
   // returns true if state is terminal
-  bool getIsTerminalState(const state_vector& s) const;
+  bool getIsTerminalState(const state_vector& s);
 
   // sets result to be the vector of outcome probabilities when from
   // state s action a is selected
   outcome_prob_vector& getOutcomeProbVector(outcome_prob_vector& result,
-					    const state_vector& s, int a)
-       const;
+					    const state_vector& s, int a);
 
   // sets result to be the next state when from state s action a is
   // selected and outcome o results
   state_vector& getNextState(state_vector& result, const state_vector& s, int a,
-			     int o) const;
+			     int o);
 
   // returns the expected immediate reward when from state s action a is selected
-  double getReward(const state_vector& s, int a) const;
+  double getReward(const state_vector& s, int a);
 
-  AbstractBound* newLowerBound(const ZMDPConfig* _config) const;
-  AbstractBound* newUpperBound(const ZMDPConfig* _config) const;
+  AbstractBound* newLowerBound(const ZMDPConfig* _config);
+  AbstractBound* newUpperBound(const ZMDPConfig* _config);
 };
 
 }; // namespace zmdp
@@ -80,6 +79,9 @@ public:
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.10  2006/11/08 16:37:33  trey
+ * renamed MDP.h to MDPModel.h to avoid confusion with mdp.h, stupid case insensitive Mac OS X
+ *
  * Revision 1.9  2006/10/24 02:11:53  trey
  * interface changes for better consistency with the rest of the system
  *

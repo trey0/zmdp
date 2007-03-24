@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.23 $  $Author: trey $  $Date: 2007-02-22 22:01:57 $
+ $Revision: 1.24 $  $Author: trey $  $Date: 2007-03-24 22:45:26 $
   
  @file    Pomdp.cc
  @brief   No brief
@@ -102,22 +102,22 @@ belief_vector& Pomdp::getNextBelief(belief_vector& result,
   return result;
 }
 
-double Pomdp::getReward(const belief_vector& b, int a) const
+double Pomdp::getReward(const belief_vector& b, int a)
 {
   return inner_prod_column( R, a, b );
 }
 
-AbstractBound* Pomdp::newLowerBound(const ZMDPConfig* _config) const
+AbstractBound* Pomdp::newLowerBound(const ZMDPConfig* _config)
 {
   return new MaxPlanesLowerBound(this, _config);
 }
 
-AbstractBound* Pomdp::newUpperBound(const ZMDPConfig* _config) const
+AbstractBound* Pomdp::newUpperBound(const ZMDPConfig* _config)
 {
   return new SawtoothUpperBound(this, _config);
 }
 
-bool Pomdp::getIsTerminalState(const state_vector& s) const
+bool Pomdp::getIsTerminalState(const state_vector& s)
 {
   double nonTerminalSum = 0.0;
   FOR_CV (s) {
@@ -133,6 +133,9 @@ bool Pomdp::getIsTerminalState(const state_vector& s) const
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.23  2007/02/22 22:01:57  trey
+ * added comment
+ *
  * Revision 1.22  2006/11/09 20:52:44  trey
  * added initialization of numStateDimensions
  *

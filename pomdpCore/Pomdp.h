@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.10 $  $Author: trey $  $Date: 2006-11-08 16:39:14 $
+ $Revision: 1.11 $  $Author: trey $  $Date: 2007-03-24 22:45:26 $
    
  @file    Pomdp.h
  @brief   No brief
@@ -51,10 +51,10 @@ struct Pomdp : public CassandraModel {
 			       int a, int o) const;
 
   // returns the expected immediate reward when from belief b action a is selected
-  double getReward(const belief_vector& b, int a) const;
+  double getReward(const belief_vector& b, int a);
 
-  AbstractBound* newLowerBound(const ZMDPConfig* _config) const;
-  AbstractBound* newUpperBound(const ZMDPConfig* _config) const;
+  AbstractBound* newLowerBound(const ZMDPConfig* _config);
+  AbstractBound* newUpperBound(const ZMDPConfig* _config);
 
   // POMDP-as-belief-MDP aliases for functions implemented in MDP
   int getBeliefSize(void) const { return getNumStateDimensions(); }
@@ -63,13 +63,13 @@ struct Pomdp : public CassandraModel {
   void setNumObservations(int _numObservations) { numObservations = _numObservations; }
 
   // POMDP-as-belief-MDP implementations for virtual functions declared in MDP
-  const state_vector& getInitialState(void) const { return getInitialBelief(); }
-  bool getIsTerminalState(const state_vector& s) const;
+  const state_vector& getInitialState(void) { return getInitialBelief(); }
+  bool getIsTerminalState(const state_vector& s) ;
   outcome_prob_vector& getOutcomeProbVector(outcome_prob_vector& result, const state_vector& b,
-					    int a) const
+					    int a)
     { return getObsProbVector(result,b,a); }
   state_vector& getNextState(state_vector& result, const state_vector& s,
-			     int a, int o) const
+			     int a, int o)
     { return getNextBelief(result,s,a,o); }
   
 protected:
@@ -86,6 +86,9 @@ protected:
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.10  2006/11/08 16:39:14  trey
+ * moved file reading functionality into src/parsers/, in CassandraParser.cc and FastParser.cc
+ *
  * Revision 1.9  2006/10/24 02:13:43  trey
  * changes to match new Solver interface
  *
