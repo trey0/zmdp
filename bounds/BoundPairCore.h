@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.4 $  $Author: trey $  $Date: 2006-11-08 16:32:07 $
+ $Revision: 1.5 $  $Author: trey $  $Date: 2007-03-24 22:39:57 $
    
  @file    BoundPairCore.h
  @brief   No brief
@@ -55,7 +55,7 @@ struct BoundPairCore {
 
   virtual ~BoundPairCore(void) {}
 
-  virtual void initialize(const MDP* _problem,
+  virtual void initialize(MDP* _problem,
 			  const ZMDPConfig* _config) = 0;
 
   virtual MDPNode* getRootNode(void) = 0;
@@ -83,6 +83,9 @@ struct BoundPairCore {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2006/11/08 16:32:07  trey
+ * renamed MDP.h to MDPModel.h to avoid confusion with mdp.h, stupid case insensitive Mac OS X
+ *
  * Revision 1.3  2006/11/07 20:06:47  trey
  * added getQValue() function
  *
