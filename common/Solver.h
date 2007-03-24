@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.16 $  $Author: trey $  $Date: 2006-11-08 16:33:14 $
+ $Revision: 1.17 $  $Author: trey $  $Date: 2007-03-24 22:38:55 $
    
  @file    Solver.h
  @brief   No brief
@@ -33,7 +33,7 @@ public:
   virtual ~Solver(void) {}
 
   // sets up the problem
-  virtual void planInit(const MDP* problem,
+  virtual void planInit(MDP* problem,
 			const ZMDPConfig* config) = 0;
 
   // plan for a fixed amount of time.  if maxTimeSeconds < 0,
@@ -63,6 +63,9 @@ public:
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.16  2006/11/08 16:33:14  trey
+ * renamed MDP.h to MDPModel.h to avoid confusion with mdp.h, stupid case insensitive Mac OS X
+ *
  * Revision 1.15  2006/10/27 18:24:29  trey
  * replaced logBackups() virtual function with finishLogging(), which provides a more general hook where other search strategies can do their cleanup actions
  *

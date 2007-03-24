@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2006-11-07 20:06:37 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2007-03-24 22:39:27 $
    
  @file    BoundPair.h
  @brief   No brief
@@ -36,7 +36,7 @@ using namespace sla;
 namespace zmdp {
 
 struct BoundPair : public BoundPairCore {
-  const MDP* problem;
+  MDP* problem;
   const ZMDPConfig* config;
   IncrementalLowerBound* lowerBound;
   IncrementalUpperBound* upperBound;
@@ -53,7 +53,7 @@ struct BoundPair : public BoundPairCore {
 
   void updateDualPointBounds(MDPNode& cn, int* maxUBActionP);
 
-  void initialize(const MDP* _problem,
+  void initialize(MDP* _problem,
 		  const ZMDPConfig* _config);
 
   MDPNode* getRootNode(void);
@@ -74,6 +74,9 @@ struct BoundPair : public BoundPairCore {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2006/11/07 20:06:37  trey
+ * added getQValue() function
+ *
  * Revision 1.2  2006/10/24 19:11:01  trey
  * added writePolicy() from ConvexBounds
  *

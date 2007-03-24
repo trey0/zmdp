@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.6 $  $Author: trey $  $Date: 2007-03-23 02:11:18 $
+ $Revision: 1.7 $  $Author: trey $  $Date: 2007-03-24 22:39:34 $
    
  @file    BoundPair.cc
  @brief   No brief
@@ -101,7 +101,7 @@ void BoundPair::updateDualPointBounds(MDPNode& cn, int* maxUBActionP)
   if (NULL != maxUBActionP) *maxUBActionP = maxUBAction;
 }
 
-void BoundPair::initialize(const MDP* _problem,
+void BoundPair::initialize(MDP* _problem,
 			   const ZMDPConfig* _config)
 {
   problem = _problem;
@@ -343,6 +343,9 @@ void BoundPair::writePolicy(const std::string& outFileName)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.6  2007/03/23 02:11:18  trey
+ * switched back to using lookahead 1 policy during evaluation
+ *
  * Revision 1.5  2007/03/22 23:57:28  trey
  * added ability for derived classes of IncrementalLowerBound to implement their own chooseAction() method that overrides the default in BoundPair
  *
