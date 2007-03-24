@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.17 $  $Author: trey $  $Date: 2007-03-22 23:57:46 $
+ $Revision: 1.18 $  $Author: trey $  $Date: 2007-03-24 23:17:25 $
    
  @file    MatrixUtils.h
  @brief   No brief
@@ -195,14 +195,14 @@ namespace MatrixUtils {
 
   inline const char* hashable(const dvector& b)
   {
-    static char *buf;
-    static unsigned int buf_size = 0;
-    unsigned int n = b.size();
-    if (0 == buf) {
-      buf_size = n*HASH_VECTOR_LEN+1;
-      buf = new char[buf_size];
+    static char *buf = NULL;
+    static unsigned int n = 0;
+
+    if (b.size() > n) {
+      n = b.size();
+      if (NULL != buf) delete[] buf;
+      buf = new char[n*HASH_VECTOR_LEN+1];
     }
-    assert(buf_size >= n*HASH_VECTOR_LEN+1);
 
     char *pos = buf;
     FOR (i, b.size()) {
@@ -214,14 +214,14 @@ namespace MatrixUtils {
 
   inline const char* hashable(const cvector& b)
   {
-    static char *buf;
-    static unsigned int buf_size = 0;
-    unsigned int n = b.size();
-    if (0 == buf) {
-      buf_size = n*HASH_VECTOR_LEN+1;
-      buf = new char[buf_size];
+    static char *buf = NULL;
+    static unsigned int n = 0;
+
+    if (b.size() > n) {
+      n = b.size();
+      if (NULL != buf) delete[] buf;
+      buf = new char[n*HASH_VECTOR_LEN+1];
     }
-    assert(buf_size >= n*HASH_VECTOR_LEN+1);
 
     char *pos = buf;
     FOR_CV (b) {
@@ -377,6 +377,9 @@ namespace MatrixUtils {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.17  2007/03/22 23:57:46  trey
+ * added cast to avoid warning
+ *
  * Revision 1.16  2007/03/22 18:21:25  trey
  * added bootstrap calculation of confidence intervals
  *
