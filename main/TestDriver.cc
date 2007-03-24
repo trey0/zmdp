@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.17 $  $Author: trey $  $Date: 2007-03-23 02:20:17 $
+ $Revision: 1.18 $  $Author: trey $  $Date: 2007-03-24 22:42:52 $
 
  @file    TestDriver.cc
  @brief   No brief
@@ -143,7 +143,8 @@ void TestDriver::batchTestIncremental(const ZMDPConfig& config,
 
     BoundPairExec exec;
     exec.init(so.problem, so.bounds);
-    PolicyEvaluator eval(so.problem, &exec, &config);
+    PolicyEvaluator eval(so.problem, &exec, &config,
+			 /* assumeIdenticalModels = */ true);
 
     if ((timeSoFar > firstEpochWallclockSeconds
 	 && log(timeSoFar) - logLastSimTime > ::log(10) / ticksPerOrder)
@@ -268,6 +269,9 @@ void TestDriver::printRewards(void) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.17  2007/03/23 02:20:17  trey
+ * removed interleave() function, unused for a long time; policy evaluation now uses PolicyEvaluator class
+ *
  * Revision 1.16  2007/01/15 21:16:37  trey
  * fixed logic bug in terminateUpperBoundValue support
  *

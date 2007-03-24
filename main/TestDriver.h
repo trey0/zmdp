@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.5 $  $Author: trey $  $Date: 2007-03-23 02:20:17 $
+ $Revision: 1.6 $  $Author: trey $  $Date: 2007-03-24 22:42:52 $
    
  @file    TestDriver.h
  @brief   No brief
@@ -31,7 +31,7 @@ namespace zmdp {
 
 class TestDriver {
 public:
-  AbstractSim* sim;
+  MDPSim* sim;
   dvector rewardSamples;
   
   TestDriver(void) : sim(NULL) {}
@@ -64,6 +64,9 @@ public:
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.5  2007/03/23 02:20:17  trey
+ * removed interleave() function, unused for a long time; policy evaluation now uses PolicyEvaluator class
+ *
  * Revision 1.4  2006/10/18 18:05:56  trey
  * now propagating config data structure to lower levels so config fields can be used to control more parts of the system
  *
