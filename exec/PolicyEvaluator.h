@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2007-03-23 02:18:01 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2007-03-24 22:41:01 $
    
  @file    PolicyEvaluator.h
  @brief   No brief
@@ -24,32 +24,44 @@
 #define INCPolicyEvaluator_h
 
 #include "MDPExec.h"
+#include "MDPSim.h"
+#include "MDPCache.h"
 
 namespace zmdp {
 
 struct PolicyEvaluator {
+  PolicyEvaluator(MDP* _simModel,
+		  MDPExec* _exec,
+		  const ZMDPConfig* _config,
+		  bool _assumeIdenticalModels);
+  void getRewardSamples(dvector& weights,
+			dvector& rewards,
+			std::vector<bool>& reachedGoal,
+			bool _verbose);
+
+protected:
   MDP* simModel;
   MDP* planningModel;
   MDPExec* exec;
   const ZMDPConfig* config;
+  bool assumeIdenticalModels;
+  bool useEvaluationCache;
+  int evaluationTrialsPerEpoch;
+  int evaluationMaxStepsPerTrial;
+  std::string scoresOutputFile;
+  std::string simulationTraceOutputFile;
+  int simulationTracesToLogPerEpoch;
+  MDPSim* sim;
+  std::ofstream* simOutFile;
+  std::ofstream* scoresOutFile;
+  bool verbose;
+  EXT_NAMESPACE::hash_map<std::string, int> policyCache;
+  int cacheHits, cacheQueries;
 
-  PolicyEvaluator(MDP* _simModel,
-		  MDPExec* _exec,
-		  const ZMDPConfig* _config);
-  void getRewardSamples(dvector& weights,
-			dvector& rewards,
-			std::vector<bool>& reachedGoal,
-			bool verbose);
-
-protected:
-  void getRewardSamplesSimple(dvector& weights,
-			      dvector& rewards,
-			      std::vector<bool>& reachedGoal,
-			      bool verbose);
-  void getRewardSamplesCache(dvector& weights,
-			     dvector& rewards,
-			     std::vector<bool>& reachedGoal,
-			     bool verbose);
+  int chooseActionCache(void);
+  void getRewardSamplesInternal(dvector& weights,
+				dvector& rewards,
+				std::vector<bool>& reachedGoal);
 };
 
 }; // namespace zmdp
@@ -59,6 +71,9 @@ protected:
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2007/03/23 02:18:01  trey
+ * added hook for alternate caching version of getRewardSamples()
+ *
  * Revision 1.1  2007/03/23 01:05:06  trey
  * added PolicyEvaluator
  *
