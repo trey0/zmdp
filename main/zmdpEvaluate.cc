@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.17 $  $Author: trey $  $Date: 2007-03-23 02:21:30 $
+ $Revision: 1.18 $  $Author: trey $  $Date: 2007-03-24 22:43:34 $
 
  @file    zmdpEvaluate.cc
  @brief   Use to evaluate a POMDP policy in simulation.
@@ -99,7 +99,8 @@ void doit(const ZMDPConfig& config, SolverParams& p)
   }
 
   // simulate running the policy many times and collect the per-run total reward values
-  PolicyEvaluator eval(simPomdp, e, &config);
+  PolicyEvaluator eval(simPomdp, e, &config,
+		       /* assumeIdenticalModels = */ (simPomdp == e->mdp));
   dvector weights, rewardSamples;
   std::vector<bool> reachedGoal;
   eval.getRewardSamples(weights, rewardSamples, reachedGoal, /* verbose = */ true);
@@ -283,6 +284,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.17  2007/03/23 02:21:30  trey
+ * policy evaluation now uses PolicyEvaluator class
+ *
  * Revision 1.16  2007/03/23 00:30:28  trey
  * fixed to reflect name change from MaxPlanesLowerBoundExec to BoundPairExec
  *
