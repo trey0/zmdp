@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.16 $  $Author: trey $  $Date: 2007-03-22 18:24:23 $
+ $Revision: 1.17 $  $Author: trey $  $Date: 2007-03-24 22:43:10 $
    
  @file    solverUtils.h
  @brief   No brief
@@ -116,7 +116,7 @@ struct SolverObjects {
   Solver* solver;
   BoundPair* bounds;
   MDP* problem;
-  AbstractSim* sim;
+  MDPSim* sim;
 };
 
 void constructSolverObjects(SolverObjects& obj,
@@ -130,6 +130,9 @@ void constructSolverObjects(SolverObjects& obj,
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.16  2007/03/22 18:24:23  trey
+ * now use MDPSim in all cases; PomdpSim no longer needed
+ *
  * Revision 1.15  2006/11/09 20:49:26  trey
  * added modelType="mdp"
  *
