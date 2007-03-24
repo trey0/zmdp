@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-11-08 16:33:45 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2007-03-24 22:37:42 $
    
  @file    MDPModel.h
  @brief   No brief
@@ -52,24 +52,23 @@ struct MDP {
   double getDiscount(void) const { return discount; }
 
   // returns the initial state
-  virtual const state_vector& getInitialState(void) const = 0;
+  virtual const state_vector& getInitialState(void) = 0;
 
   // returns true if state is terminal
-  virtual bool getIsTerminalState(const state_vector& s) const = 0;
+  virtual bool getIsTerminalState(const state_vector& s) = 0;
 
   // sets result to be the vector of outcome probabilities when from
   // state s action a is selected
   virtual outcome_prob_vector& getOutcomeProbVector(outcome_prob_vector& result,
-						    const state_vector& s, int a)
-       const = 0;
+						    const state_vector& s, int a) = 0;
 
   // sets result to be the next state when from state s action a is
   // selected and outcome o results
   virtual state_vector& getNextState(state_vector& result, const state_vector& s, int a,
-				     int o) const = 0;
+				     int o) = 0;
 
   // returns the expected immediate reward when from state s action a is selected
-  virtual double getReward(const state_vector& s, int a) const = 0;
+  virtual double getReward(const state_vector& s, int a) = 0;
 
   // returns a new lower bound or upper bound that is valid for
   // this MDP.  notes:
@@ -78,8 +77,8 @@ struct MDP {
   // * some types of MDP might not define one of these bounds, which
   //   could be signaled by returning NULL.  so far this hasn't been
   //   explored.
-  virtual AbstractBound* newLowerBound(const ZMDPConfig* _config) const = 0;
-  virtual AbstractBound* newUpperBound(const ZMDPConfig* _config) const = 0;
+  virtual AbstractBound* newLowerBound(const ZMDPConfig* _config) = 0;
+  virtual AbstractBound* newUpperBound(const ZMDPConfig* _config) = 0;
 };
 
 }; // namespace zmdp
@@ -89,6 +88,9 @@ struct MDP {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2006/11/08 16:33:45  trey
+ * renamed MDP.h to MDPModel.h to avoid confusion with mdp.h, stupid case insensitive Mac OS X
+ *
  * Revision 1.9  2006/10/24 02:08:40  trey
  * changed some functions from pass-by-ref to pass-by-pointer to better match the rest of the system
  *
