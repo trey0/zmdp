@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.6 $  $Author: trey $  $Date: 2007-03-22 18:21:08 $
+ $Revision: 1.7 $  $Author: trey $  $Date: 2007-03-24 22:38:15 $
    
  @file    MDPSim.h
  @brief   No brief
@@ -28,16 +28,18 @@
 
 namespace zmdp {
 
-class MDPSim : public AbstractSim {
-public:
+struct MDPSim {
   MDP* model;
   cvector state;
+  double rewardSoFar;
+  bool terminated;
+  std::ostream *simOutFile;
   int elapsedTime;
   int lastOutcomeIndex;
   
   MDPSim(MDP* _model);
 
-  const MDP* getModel(void) const { return model; }
+  MDP* getModel(void) { return model; }
   void restart(void);
   void performAction(int a);
   const state_vector& getInformationState(void) const { return state; }
@@ -50,6 +52,9 @@ public:
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.6  2007/03/22 18:21:08  trey
+ * added lastOutcomeIndex field
+ *
  * Revision 1.5  2006/11/08 16:33:14  trey
  * renamed MDP.h to MDPModel.h to avoid confusion with mdp.h, stupid case insensitive Mac OS X
  *
