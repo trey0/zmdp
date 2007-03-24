@@ -236,6 +236,23 @@ REFERENCES
 ========================================================================
 RELEASE NOTES
 
+Changes from 1.0.2 to 1.1.0 (24 Mar 2007)
+
+* Greatly improved speed of policy evaluation in zmdpBenchmark and
+  zmdpEvaluate with better caching.  The improvements are controlled
+  with the 'useEvaluationCache' config option, which is turned on by
+  default.
+
+* Changed how confidence intervals are calculated when reporting
+  expected long-term reward of a policy.  We now use the bootstrap
+  method, which does not rely on a normality assumption.  The bootstrap
+  result is expressed as 'mean min max' rather than 'mean +/- delta'.
+  This forced the format of the 'inc.plot' output file and the
+  zmdpEvaluate console output to change slightly.
+
+* Substantial code refactoring, which largely consisted of combining
+  mostly redundant code blocks to improve maintainability.
+
 Changes from 1.0.0 to 1.0.2 (22 Feb 2007)
 
 * Fixed problem of intermittent crashing when selecting actions in
@@ -388,4 +405,4 @@ zpomdp 0.1.0 (28 Oct 2005)
 * Initial release.
 
 ==========================================================
-$Id: README,v 1.34 2007-03-23 00:32:10 trey Exp $
+$Id: README,v 1.35 2007-03-24 23:17:51 trey Exp $
