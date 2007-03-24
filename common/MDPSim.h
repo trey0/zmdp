@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.7 $  $Author: trey $  $Date: 2007-03-24 22:38:15 $
+ $Revision: 1.8 $  $Author: trey $  $Date: 2007-03-24 23:15:54 $
    
  @file    MDPSim.h
  @brief   No brief
@@ -23,7 +23,6 @@
 #ifndef INCMDPSim_h
 #define INCMDPSim_h
 
-#include "AbstractSim.h"
 #include "MDPModel.h"
 
 namespace zmdp {
@@ -52,6 +51,9 @@ struct MDPSim {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.7  2007/03/24 22:38:15  trey
+ * removed dependence on AbstractSim; removed const-ness of getModel()
+ *
  * Revision 1.6  2007/03/22 18:21:08  trey
  * added lastOutcomeIndex field
  *
