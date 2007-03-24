@@ -20,6 +20,7 @@ cd zmdp-$VERSION
 zmdp
 cvs checkout src
 mv src/{README,COPYING} .
+rm -rf src/pomdpModels/RockExplore
 cd ..
 echo 'building tarball'
 tar cfz zmdp-${VERSION}.tgz zmdp-$VERSION
