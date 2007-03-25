@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.7 $  $Author: trey $  $Date: 2007-03-24 22:39:34 $
+ $Revision: 1.8 $  $Author: trey $  $Date: 2007-03-25 15:14:52 $
    
  @file    BoundPair.cc
  @brief   No brief
@@ -268,10 +268,7 @@ int BoundPair::chooseAction(const state_vector& s) const
       }
     }
     
-    // but only return best LB action if all choices are not tied
-    if (maxVal - minVal > 1e-10) {
-      return bestAction;
-    }
+    return bestAction;
   }
 
   // fall back to UB
@@ -343,6 +340,9 @@ void BoundPair::writePolicy(const std::string& outFileName)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.7  2007/03/24 22:39:34  trey
+ * removed const-ness of problem argument
+ *
  * Revision 1.6  2007/03/23 02:11:18  trey
  * switched back to using lookahead 1 policy during evaluation
  *
