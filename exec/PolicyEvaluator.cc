@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.5 $  $Author: trey $  $Date: 2007-03-25 07:34:39 $
+ $Revision: 1.6 $  $Author: trey $  $Date: 2007-03-25 15:15:42 $
    
  @file    PolicyEvaluator.cc
  @brief   No brief
@@ -59,8 +59,7 @@ PolicyEvaluator::PolicyEvaluator(MDP* _simModel,
   scoresOutFile(NULL)
 {}
 
-void PolicyEvaluator::getRewardSamples(dvector& weights,
-				       dvector& rewards,
+void PolicyEvaluator::getRewardSamples(dvector& rewards,
 				       std::vector<bool>& reachedGoal,
 				       bool _verbose)
 {
@@ -84,11 +83,10 @@ void PolicyEvaluator::getRewardSamples(dvector& weights,
   }
   
   if (useEvaluationCache) {
-    getRewardSamplesCache(weights, rewards, reachedGoal);
+    getRewardSamplesCache(rewards, reachedGoal);
   } else {
-    getRewardSamplesSimple(weights, rewards, reachedGoal);
+    getRewardSamplesSimple(rewards, reachedGoal);
   }
-
 
   // cleanup
   if (NULL != simOutFile) {
@@ -118,7 +116,7 @@ struct PESimLogEntry {
 
 typedef std::vector<PESimLogEntry> PESimLog;
 
-void PolicyEvaluator::getRewardSamplesCache(dvector& weights, dvector& rewards,
+void PolicyEvaluator::getRewardSamplesCache(dvector& rewards,
 					    std::vector<bool>& reachedGoal)
 {
   CacheMDP modelCache(simModel);
@@ -132,10 +130,19 @@ void PolicyEvaluator::getRewardSamplesCache(dvector& weights, dvector& rewards,
     }
   }
     
+  ofstream* simOutFileTmp = simOutFile;
+
   // pass 1: log trials
   std::vector<PESimLog> trials(evaluationTrialsPerEpoch);
   reachedGoal.resize(evaluationTrialsPerEpoch);
   for (int i=0; i < evaluationTrialsPerEpoch; i++) {
+    if (i >= simulationTracesToLogPerEpoch) {
+      simOutFileTmp = NULL; // stop logging
+    }
+      
+    if (simOutFileTmp) {
+      (*simOutFileTmp) << ">>> begin" << endl;
+    }
     exec->setToInitialState();
     CMDPNode* simState = modelCache.root;
     CMDPQEntry* Qa = NULL;
@@ -161,6 +168,12 @@ void PolicyEvaluator::getRewardSamplesCache(dvector& weights, dvector& rewards,
 	e->userInt++;
       }
       trials[i].push_back(PESimLogEntry(simState, a, o));
+
+      if (simOutFileTmp) {
+	(*simOutFileTmp) << "sim: [" << sparseRep(simState->s) << "] " << a << " ["
+			 << sparseRep(e->nextState->s) << "] " << o << endl;
+      }
+
       simState = e->nextState;
 
       if (assumeIdenticalModels) {
@@ -170,6 +183,9 @@ void PolicyEvaluator::getRewardSamplesCache(dvector& weights, dvector& rewards,
       }
       if (simState->isTerminal) {
 	reachedGoal[i] = true;
+	if (simOutFileTmp) {
+	  (*simOutFileTmp) << "terminated" << endl;
+	}
 	break;
       }
     }
@@ -193,14 +209,14 @@ void PolicyEvaluator::getRewardSamplesCache(dvector& weights, dvector& rewards,
 	for (int o=0; o < (int)Qa->getNumOutcomes(); o++) {
 	  CMDPEdge* e = Qa->outcomes[o];
 	  if (NULL != e) {
-	    probSum += Qa->opv(o);
 	    if (-1 != e->userInt) {
+	      probSum += Qa->opv(o);
 	      cntSum += e->userInt;
 	    }
 	  }
 	}
 #if 0
-	printf("s=%d a=%d\n", si, a);
+	printf("s=%d a=%d probSum=%lf cntSum=%lf\n", si, a, probSum, cntSum);
 #endif
 	for (int o=0; o < (int)Qa->getNumOutcomes(); o++) {
 	  CMDPEdge* e = Qa->outcomes[o];
@@ -208,8 +224,8 @@ void PolicyEvaluator::getRewardSamplesCache(dvector& weights, dvector& rewards,
 	    if (-1 != e->userInt) {
 	      e->userDouble = (Qa->opv(o) / probSum) / (e->userInt / cntSum);
 #if 0
-	      printf("  o=%d probSum=%lf cntSum=%lf reweight=%lf\n",
-		     o, probSum, cntSum, e->userDouble);
+	      printf("  o=%d n=%d opv(o)=%lf reweight=%lf\n",
+		     o, e->userInt, Qa->opv(o), e->userDouble);
 #endif
 	    }
 	  }
@@ -219,7 +235,6 @@ void PolicyEvaluator::getRewardSamplesCache(dvector& weights, dvector& rewards,
   }
 
   // pass 3: go back through logs and perform reweighting
-  set_to_one(weights, evaluationTrialsPerEpoch);
   rewards.resize(evaluationTrialsPerEpoch);
   for (int i=0; i < evaluationTrialsPerEpoch; i++) {
     double rewardSoFar = 0.0;
@@ -242,7 +257,7 @@ void PolicyEvaluator::getRewardSamplesCache(dvector& weights, dvector& rewards,
   }
 }
 
-void PolicyEvaluator::getRewardSamplesSimple(dvector& weights, dvector& rewards,
+void PolicyEvaluator::getRewardSamplesSimple(dvector& rewards,
 					     std::vector<bool>& reachedGoal)
 {
   sim = new MDPSim(simModel);
@@ -264,7 +279,6 @@ void PolicyEvaluator::getRewardSamplesSimple(dvector& weights, dvector& rewards,
     }
   }
     
-  set_to_one(weights, evaluationTrialsPerEpoch);
   reachedGoal.resize(evaluationTrialsPerEpoch);
     
   // do evaluation
@@ -310,6 +324,9 @@ void PolicyEvaluator::getRewardSamplesSimple(dvector& weights, dvector& rewards,
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.5  2007/03/25 07:34:39  trey
+ * moved debug print statement
+ *
  * Revision 1.4  2007/03/25 07:09:17  trey
  * now use CacheMDP data structures more directly for better efficiency; added stratified sampling to decrease variance
  *

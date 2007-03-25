@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.4 $  $Author: trey $  $Date: 2007-03-25 07:09:17 $
+ $Revision: 1.5 $  $Author: trey $  $Date: 2007-03-25 15:15:42 $
    
  @file    PolicyEvaluator.h
  @brief   No brief
@@ -34,8 +34,7 @@ struct PolicyEvaluator {
 		  MDPExec* _exec,
 		  const ZMDPConfig* _config,
 		  bool _assumeIdenticalModels);
-  void getRewardSamples(dvector& weights,
-			dvector& rewards,
+  void getRewardSamples(dvector& rewards,
 			std::vector<bool>& reachedGoal,
 			bool _verbose);
 
@@ -56,10 +55,8 @@ protected:
   std::ofstream* scoresOutFile;
   bool verbose;
 
-  void getRewardSamplesCache(dvector& weights, dvector& rewards,
-			     std::vector<bool>& reachedGoal);
-  void getRewardSamplesSimple(dvector& weights, dvector& rewards,
-			      std::vector<bool>& reachedGoal);
+  void getRewardSamplesCache(dvector& rewards, std::vector<bool>& reachedGoal);
+  void getRewardSamplesSimple(dvector& rewards, std::vector<bool>& reachedGoal);
 };
 
 }; // namespace zmdp
@@ -69,6 +66,9 @@ protected:
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2007/03/25 07:09:17  trey
+ * now use CacheMDP data structures more directly for better efficiency; added stratified sampling to decrease variance
+ *
  * Revision 1.3  2007/03/24 22:41:01  trey
  * simplified and added caching features
  *
