@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.5 $  $Author: trey $  $Date: 2007-03-25 15:15:42 $
+ $Revision: 1.6 $  $Author: trey $  $Date: 2007-03-25 17:38:25 $
    
  @file    PolicyEvaluator.h
  @brief   No brief
@@ -34,9 +34,7 @@ struct PolicyEvaluator {
 		  MDPExec* _exec,
 		  const ZMDPConfig* _config,
 		  bool _assumeIdenticalModels);
-  void getRewardSamples(dvector& rewards,
-			std::vector<bool>& reachedGoal,
-			bool _verbose);
+  void getRewardSamples(dvector& rewards, double& successRate, bool _verbose);
 
 protected:
   MDP* simModel;
@@ -55,8 +53,12 @@ protected:
   std::ofstream* scoresOutFile;
   bool verbose;
 
-  void getRewardSamplesCache(dvector& rewards, std::vector<bool>& reachedGoal);
-  void getRewardSamplesSimple(dvector& rewards, std::vector<bool>& reachedGoal);
+  void doBatch(dvector& rewards, double& successRate, int numTrials,
+	       int numTracesToLog);
+  void doBatchCache(dvector& rewards, double& successRate, int numTrials,
+		    int numTracesToLog);
+  void doBatchSimple(dvector& rewards, double& successRate, int numTrials,
+		     int numTracesToLog);
 };
 
 }; // namespace zmdp
@@ -66,6 +68,9 @@ protected:
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.5  2007/03/25 15:15:42  trey
+ * removed weights output from getRewardSamples(); added back in logging of simulation trace
+ *
  * Revision 1.4  2007/03/25 07:09:17  trey
  * now use CacheMDP data structures more directly for better efficiency; added stratified sampling to decrease variance
  *

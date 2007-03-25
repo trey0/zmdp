@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.6 $  $Author: trey $  $Date: 2007-03-25 15:15:42 $
+ $Revision: 1.7 $  $Author: trey $  $Date: 2007-03-25 17:38:25 $
    
  @file    PolicyEvaluator.cc
  @brief   No brief
@@ -59,9 +59,7 @@ PolicyEvaluator::PolicyEvaluator(MDP* _simModel,
   scoresOutFile(NULL)
 {}
 
-void PolicyEvaluator::getRewardSamples(dvector& rewards,
-				       std::vector<bool>& reachedGoal,
-				       bool _verbose)
+void PolicyEvaluator::getRewardSamples(dvector& rewards, double& successRate, bool _verbose)
 {
   verbose = _verbose;
 
@@ -74,7 +72,7 @@ void PolicyEvaluator::getRewardSamples(dvector& rewards,
   if (simulationTracesToLogPerEpoch < 0) {
     simulationTracesToLogPerEpoch = INT_MAX;
   }
-  
+
   simOutFile = new ofstream(simulationTraceOutputFile.c_str());
   if (! (*simOutFile)) {
     fprintf(stderr, "ERROR: couldn't open %s for writing: %s\n",
@@ -82,11 +80,39 @@ void PolicyEvaluator::getRewardSamples(dvector& rewards,
     exit(EXIT_FAILURE);
   }
   
-  if (useEvaluationCache) {
-    getRewardSamplesCache(rewards, reachedGoal);
-  } else {
-    getRewardSamplesSimple(rewards, reachedGoal);
+  if (verbose) {
+    scoresOutFile = new ofstream(scoresOutputFile.c_str());
+    if (!scoresOutFile) {
+      fprintf(stderr, "ERROR: couldn't open %s for writing: %s\n",
+	      scoresOutputFile.c_str(), strerror(errno));
+      exit(EXIT_FAILURE);
+    }
   }
+    
+  // parameter 30 is arbitrary, trying to guarantee valid statistics
+  int numBatches = std::min(evaluationTrialsPerEpoch, 30);
+  int numTrialsPerBatch = evaluationTrialsPerEpoch / numBatches;
+
+  rewards.resize(numBatches);
+  double successRateSum = 0.0;
+  int startTrialIndex = 0;
+  for (int i=0; i < numBatches; i++) {
+    dvector batchRewards;
+    double batchSuccessRate;
+    doBatch(batchRewards, batchSuccessRate, numTrialsPerBatch,
+	    simulationTracesToLogPerEpoch - startTrialIndex);
+    rewards(i) = sum(batchRewards) / numTrialsPerBatch;
+    successRateSum += batchSuccessRate;
+    startTrialIndex += numTrialsPerBatch;
+  }
+
+  printf("batchRewards: ");
+  for (int i=0; i < numBatches; i++) {
+    printf("%.4lf ", rewards(i));
+  }
+  printf("\n");
+
+  successRate = successRateSum / numBatches;
 
   // cleanup
   if (NULL != simOutFile) {
@@ -103,6 +129,18 @@ void PolicyEvaluator::getRewardSamples(dvector& rewards,
   }
 }
 
+void PolicyEvaluator::doBatch(dvector& rewards,
+			      double& successRate,
+			      int numTrials,
+			      int numTracesToLog)
+{
+  if (useEvaluationCache) {
+    doBatchCache(rewards, successRate, numTrials, numTracesToLog);
+  } else {
+    doBatchSimple(rewards, successRate, numTrials, numTracesToLog);
+  }
+}
+
 struct PESimLogEntry {
   CMDPNode* cn;
   int a;
@@ -116,27 +154,36 @@ struct PESimLogEntry {
 
 typedef std::vector<PESimLogEntry> PESimLog;
 
-void PolicyEvaluator::getRewardSamplesCache(dvector& rewards,
-					    std::vector<bool>& reachedGoal)
+void PolicyEvaluator::doBatchCache(dvector& rewards,
+				   double& successRate,
+				   int numTrials,
+				   int numTracesToLog)
 {
   CacheMDP modelCache(simModel);
     
-  if (verbose) {
-    scoresOutFile = new ofstream(scoresOutputFile.c_str());
-    if (!scoresOutFile) {
-      fprintf(stderr, "ERROR: couldn't open %s for writing: %s\n",
-	      scoresOutputFile.c_str(), strerror(errno));
-      exit(EXIT_FAILURE);
-    }
-  }
-    
   ofstream* simOutFileTmp = simOutFile;
 
-  // pass 1: log trials
-  std::vector<PESimLog> trials(evaluationTrialsPerEpoch);
-  reachedGoal.resize(evaluationTrialsPerEpoch);
-  for (int i=0; i < evaluationTrialsPerEpoch; i++) {
-    if (i >= simulationTracesToLogPerEpoch) {
+  // pass 0: clear old count data if any
+  for (int si=0; si < (int)modelCache.nodeTable.size(); si++) {
+    CMDPNode* cn = modelCache.nodeTable[si];
+    for (int a=0; a < modelCache.getNumActions(); a++) {
+      CMDPQEntry* Qa = cn->Q[a];
+      if (NULL != Qa) {
+	for (int o=0; o < (int)Qa->getNumOutcomes(); o++) {
+	  CMDPEdge* e = Qa->outcomes[o];
+	  if (NULL != e) {
+	    e->userInt = -1;
+	  }
+	}
+      }
+    }
+  }
+
+  // pass 1: record trials
+  std::vector<PESimLog> trials(numTrials);
+  int numTrialsReachedGoal = 0;
+  for (int i=0; i < numTrials; i++) {
+    if (i >= numTracesToLog) {
       simOutFileTmp = NULL; // stop logging
     }
       
@@ -146,7 +193,6 @@ void PolicyEvaluator::getRewardSamplesCache(dvector& rewards,
     exec->setToInitialState();
     CMDPNode* simState = modelCache.root;
     CMDPQEntry* Qa = NULL;
-    reachedGoal[i] = false;
     for (int j=0; (j < evaluationMaxStepsPerTrial) || (0 == evaluationMaxStepsPerTrial);
 	 j++) {
 
@@ -182,7 +228,7 @@ void PolicyEvaluator::getRewardSamplesCache(dvector& rewards,
 	exec->advanceToNextState(a, o);
       }
       if (simState->isTerminal) {
-	reachedGoal[i] = true;
+	numTrialsReachedGoal++;
 	if (simOutFileTmp) {
 	  (*simOutFileTmp) << "terminated" << endl;
 	}
@@ -196,6 +242,9 @@ void PolicyEvaluator::getRewardSamplesCache(dvector& rewards,
 	fflush(stdout);
       }
     }
+  }
+  if (verbose) {
+    printf("\n");
   }
 
   // pass 2: collate counts and calculate reweighting coefficients
@@ -222,7 +271,11 @@ void PolicyEvaluator::getRewardSamplesCache(dvector& rewards,
 	  CMDPEdge* e = Qa->outcomes[o];
 	  if (NULL != e) {
 	    if (-1 != e->userInt) {
-	      e->userDouble = (Qa->opv(o) / probSum) / (e->userInt / cntSum);
+	      if (probSum == 1.0) {
+		e->userDouble = Qa->opv(o) / (e->userInt / cntSum);
+	      } else {
+		e->userDouble = 1.0;
+	      }
 #if 0
 	      printf("  o=%d n=%d opv(o)=%lf reweight=%lf\n",
 		     o, e->userInt, Qa->opv(o), e->userDouble);
@@ -235,8 +288,8 @@ void PolicyEvaluator::getRewardSamplesCache(dvector& rewards,
   }
 
   // pass 3: go back through logs and perform reweighting
-  rewards.resize(evaluationTrialsPerEpoch);
-  for (int i=0; i < evaluationTrialsPerEpoch; i++) {
+  rewards.resize(numTrials);
+  for (int i=0; i < numTrials; i++) {
     double rewardSoFar = 0.0;
     for (int j=trials[i].size()-1; j >= 0; j--) {
       PESimLogEntry& entry = trials[i][j];
@@ -252,45 +305,29 @@ void PolicyEvaluator::getRewardSamplesCache(dvector& rewards,
     }
   }
     
-  if (verbose) {
-    printf("\n");
-  }
+  successRate = ((double) numTrialsReachedGoal) / numTrials;
 }
 
-void PolicyEvaluator::getRewardSamplesSimple(dvector& rewards,
-					     std::vector<bool>& reachedGoal)
+void PolicyEvaluator::doBatchSimple(dvector& rewards,
+				    double& successRate,
+				    int numTrials,
+				    int numTracesToLog)
 {
   sim = new MDPSim(simModel);
     
-  simOutFile = new ofstream(simulationTraceOutputFile.c_str());
-  if (! (*simOutFile)) {
-    fprintf(stderr, "ERROR: couldn't open %s for writing: %s\n",
-	    simulationTraceOutputFile.c_str(), strerror(errno));
-    exit(EXIT_FAILURE);
-  }
   sim->simOutFile = simOutFile;
     
-  if (verbose) {
-    scoresOutFile = new ofstream(scoresOutputFile.c_str());
-    if (!scoresOutFile) {
-      fprintf(stderr, "ERROR: couldn't open %s for writing: %s\n",
-	      scoresOutputFile.c_str(), strerror(errno));
-      exit(EXIT_FAILURE);
-    }
-  }
-    
-  reachedGoal.resize(evaluationTrialsPerEpoch);
+  int numTrialsReachedGoal = 0;
     
   // do evaluation
-  rewards.resize(evaluationTrialsPerEpoch);
-  for (int i=0; i < evaluationTrialsPerEpoch; i++) {
-    if (i >= simulationTracesToLogPerEpoch) {
+  rewards.resize(numTrials);
+  for (int i=0; i < numTrials; i++) {
+    if (i >= numTracesToLog) {
       sim->simOutFile = NULL; // stop logging
     }
       
     sim->restart();
     exec->setToInitialState();
-    reachedGoal[i] = false;
     for (int j=0; (j < evaluationMaxStepsPerTrial) || (0 == evaluationMaxStepsPerTrial);
 	 j++) {
       int a = exec->chooseAction();
@@ -301,7 +338,7 @@ void PolicyEvaluator::getRewardSamplesSimple(dvector& rewards,
 	exec->advanceToNextState(a, sim->lastOutcomeIndex);
       }
       if (sim->terminated) {
-	reachedGoal[i] = true;
+	numTrialsReachedGoal++;
 	break;
       }
     }
@@ -317,6 +354,8 @@ void PolicyEvaluator::getRewardSamplesSimple(dvector& rewards,
   if (verbose) {
     printf("\n");
   }
+
+  successRate = ((double) numTrialsReachedGoal) / numTrials;
 }
 
 }; // namespace zmdp
@@ -324,6 +363,9 @@ void PolicyEvaluator::getRewardSamplesSimple(dvector& rewards,
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.6  2007/03/25 15:15:42  trey
+ * removed weights output from getRewardSamples(); added back in logging of simulation trace
+ *
  * Revision 1.5  2007/03/25 07:34:39  trey
  * moved debug print statement
  *
