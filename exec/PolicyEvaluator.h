@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.6 $  $Author: trey $  $Date: 2007-03-25 17:38:25 $
+ $Revision: 1.7 $  $Author: trey $  $Date: 2007-03-25 21:38:18 $
    
  @file    PolicyEvaluator.h
  @brief   No brief
@@ -25,7 +25,7 @@
 
 #include "MDPExec.h"
 #include "MDPSim.h"
-#include "MDPCache.h"
+#include "CacheMDP.h"
 
 namespace zmdp {
 
@@ -52,6 +52,7 @@ protected:
   std::ofstream* simOutFile;
   std::ofstream* scoresOutFile;
   bool verbose;
+  CacheMDP* modelCache;
 
   void doBatch(dvector& rewards, double& successRate, int numTrials,
 	       int numTracesToLog);
@@ -68,6 +69,9 @@ protected:
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.6  2007/03/25 17:38:25  trey
+ * reworked how statistics are collected so that the benefits of reweighting show up in the confidence interval calculation
+ *
  * Revision 1.5  2007/03/25 15:15:42  trey
  * removed weights output from getRewardSamples(); added back in logging of simulation trace
  *

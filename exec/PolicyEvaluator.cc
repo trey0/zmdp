@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.8 $  $Author: trey $  $Date: 2007-03-25 18:37:02 $
+ $Revision: 1.9 $  $Author: trey $  $Date: 2007-03-25 21:38:18 $
    
  @file    PolicyEvaluator.cc
  @brief   No brief
@@ -56,7 +56,8 @@ PolicyEvaluator::PolicyEvaluator(MDP* _simModel,
   assumeIdenticalModels(_assumeIdenticalModels),
   sim(NULL),
   simOutFile(NULL),
-  scoresOutFile(NULL)
+  scoresOutFile(NULL),
+  modelCache(NULL)
 {}
 
 void PolicyEvaluator::getRewardSamples(dvector& rewards, double& successRate, bool _verbose)
@@ -100,7 +101,7 @@ void PolicyEvaluator::getRewardSamples(dvector& rewards, double& successRate, bo
     dvector batchRewards;
     double batchSuccessRate;
     doBatch(batchRewards, batchSuccessRate, numTrialsPerBatch,
-	    simulationTracesToLogPerEpoch - startTrialIndex);
+	    std::max(0, simulationTracesToLogPerEpoch - startTrialIndex));
     rewards(i) = sum(batchRewards) / numTrialsPerBatch;
     successRateSum += batchSuccessRate;
     startTrialIndex += numTrialsPerBatch;
@@ -116,18 +117,12 @@ void PolicyEvaluator::getRewardSamples(dvector& rewards, double& successRate, bo
   successRate = successRateSum / numBatches;
 
   // cleanup
-  if (NULL != simOutFile) {
-    delete simOutFile;
-    simOutFile = NULL;
-  }
-  if (NULL != scoresOutFile) {
-    delete scoresOutFile;
-    scoresOutFile = NULL;
-  }
-  if (NULL != sim) {
-    delete sim;
-    sim = NULL;
-  }
+#define DELETE_AND_NULL(x) if (NULL != (x)) { delete (x); (x) = NULL; }
+
+  DELETE_AND_NULL(simOutFile);
+  DELETE_AND_NULL(scoresOutFile);
+  DELETE_AND_NULL(sim);
+  DELETE_AND_NULL(modelCache);
 }
 
 void PolicyEvaluator::doBatch(dvector& rewards,
@@ -160,14 +155,16 @@ void PolicyEvaluator::doBatchCache(dvector& rewards,
 				   int numTrials,
 				   int numTracesToLog)
 {
-  CacheMDP modelCache(simModel);
+  if (NULL == modelCache) {
+    modelCache = new CacheMDP(simModel);
+  }
     
   ofstream* simOutFileTmp = simOutFile;
 
   // pass 0: clear old count data if any
-  for (int si=0; si < (int)modelCache.nodeTable.size(); si++) {
-    CMDPNode* cn = modelCache.nodeTable[si];
-    for (int a=0; a < modelCache.getNumActions(); a++) {
+  for (int si=0; si < (int)modelCache->nodeTable.size(); si++) {
+    CMDPNode* cn = modelCache->nodeTable[si];
+    for (int a=0; a < modelCache->getNumActions(); a++) {
       CMDPQEntry* Qa = cn->Q[a];
       if (NULL != Qa) {
 	for (int o=0; o < (int)Qa->getNumOutcomes(); o++) {
@@ -192,7 +189,7 @@ void PolicyEvaluator::doBatchCache(dvector& rewards,
       (*simOutFileTmp) << ">>> begin" << endl;
     }
     exec->setToInitialState();
-    CMDPNode* simState = modelCache.root;
+    CMDPNode* simState = modelCache->root;
     CMDPQEntry* Qa = NULL;
     for (int j=0; (j < evaluationMaxStepsPerTrial) || (0 == evaluationMaxStepsPerTrial);
 	 j++) {
@@ -205,7 +202,7 @@ void PolicyEvaluator::doBatchCache(dvector& rewards,
 	a = simState->userInt;
       }
 
-      Qa = modelCache.getQ(*simState, a);
+      Qa = modelCache->getQ(*simState, a);
       int o = chooseFromDistribution(Qa->opv);
       CMDPEdge* e = Qa->outcomes[o];
       assert(NULL != e);
@@ -250,9 +247,9 @@ void PolicyEvaluator::doBatchCache(dvector& rewards,
   }
 
   // pass 2: collate counts and calculate reweighting coefficients
-  for (int si=0; si < (int)modelCache.nodeTable.size(); si++) {
-    CMDPNode* cn = modelCache.nodeTable[si];
-    for (int a=0; a < modelCache.getNumActions(); a++) {
+  for (int si=0; si < (int)modelCache->nodeTable.size(); si++) {
+    CMDPNode* cn = modelCache->nodeTable[si];
+    for (int a=0; a < modelCache->getNumActions(); a++) {
       CMDPQEntry* Qa = cn->Q[a];
       if (NULL != Qa) {
 	double probSum = 0.0;
@@ -298,7 +295,7 @@ void PolicyEvaluator::doBatchCache(dvector& rewards,
       CMDPQEntry& Qa = *entry.cn->Q[entry.a];
       double reweight = Qa.outcomes[entry.o]->userDouble;
 	
-      rewardSoFar = Qa.immediateReward + reweight * modelCache.getDiscount() * rewardSoFar;
+      rewardSoFar = Qa.immediateReward + reweight * modelCache->getDiscount() * rewardSoFar;
     }
     rewards(i) = rewardSoFar;
 
@@ -366,6 +363,9 @@ void PolicyEvaluator::doBatchSimple(dvector& rewards,
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.8  2007/03/25 18:37:02  trey
+ * tweaked console output
+ *
  * Revision 1.7  2007/03/25 17:38:25  trey
  * reworked how statistics are collected so that the benefits of reweighting show up in the confidence interval calculation
  *
