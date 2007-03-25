@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2007-03-24 22:41:01 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2007-03-25 07:09:17 $
    
  @file    PolicyEvaluator.cc
  @brief   No brief
@@ -65,28 +65,7 @@ void PolicyEvaluator::getRewardSamples(dvector& weights,
 				       bool _verbose)
 {
   verbose = _verbose;
-  getRewardSamplesInternal(weights, rewards, reachedGoal);
-}
 
-int PolicyEvaluator::chooseActionCache(void)
-{
-  std::string hs = hashable(exec->currentState);
-  typeof(policyCache.begin()) keyValuePair = policyCache.find(hs);
-  cacheQueries++;
-  if (policyCache.end() == keyValuePair) {
-    int a = exec->chooseAction();
-    policyCache[hs] = a;
-    return a;
-  } else {
-    cacheHits++;
-    return keyValuePair->second;
-  }
-}
-
-void PolicyEvaluator::getRewardSamplesInternal(dvector& weights,
-					       dvector& rewards,
-					       std::vector<bool>& reachedGoal)
-{
   useEvaluationCache = config->getBool("useEvaluationCache");
   evaluationTrialsPerEpoch = config->getInt("evaluationTrialsPerEpoch");
   evaluationMaxStepsPerTrial = config->getInt("evaluationMaxStepsPerTrial");
@@ -97,19 +76,53 @@ void PolicyEvaluator::getRewardSamplesInternal(dvector& weights,
     simulationTracesToLogPerEpoch = INT_MAX;
   }
   
-  if (useEvaluationCache) {
-    simModel = new CacheMDP(simModel);
-  }
-  sim = new MDPSim(simModel);
-
   simOutFile = new ofstream(simulationTraceOutputFile.c_str());
   if (! (*simOutFile)) {
     fprintf(stderr, "ERROR: couldn't open %s for writing: %s\n",
 	    simulationTraceOutputFile.c_str(), strerror(errno));
     exit(EXIT_FAILURE);
   }
-  sim->simOutFile = simOutFile;
+  
+  if (useEvaluationCache) {
+    getRewardSamplesCache(weights, rewards, reachedGoal);
+  } else {
+    getRewardSamplesSimple(weights, rewards, reachedGoal);
+  }
 
+
+  // cleanup
+  if (NULL != simOutFile) {
+    delete simOutFile;
+    simOutFile = NULL;
+  }
+  if (NULL != scoresOutFile) {
+    delete scoresOutFile;
+    scoresOutFile = NULL;
+  }
+  if (NULL != sim) {
+    delete sim;
+    sim = NULL;
+  }
+}
+
+struct PESimLogEntry {
+  CMDPNode* cn;
+  int a;
+  int o;
+  PESimLogEntry(CMDPNode* _cn, int _a, int _o) :
+    cn(_cn),
+    a(_a),
+    o(_o)
+  {}
+};
+
+typedef std::vector<PESimLogEntry> PESimLog;
+
+void PolicyEvaluator::getRewardSamplesCache(dvector& weights, dvector& rewards,
+					    std::vector<bool>& reachedGoal)
+{
+  CacheMDP modelCache(simModel);
+    
   if (verbose) {
     scoresOutFile = new ofstream(scoresOutputFile.c_str());
     if (!scoresOutFile) {
@@ -118,39 +131,155 @@ void PolicyEvaluator::getRewardSamplesInternal(dvector& weights,
       exit(EXIT_FAILURE);
     }
   }
+    
+  // pass 1: log trials
+  std::vector<PESimLog> trials(evaluationTrialsPerEpoch);
+  reachedGoal.resize(evaluationTrialsPerEpoch);
+  for (int i=0; i < evaluationTrialsPerEpoch; i++) {
+    exec->setToInitialState();
+    CMDPNode* simState = modelCache.root;
+    CMDPQEntry* Qa = NULL;
+    reachedGoal[i] = false;
+    for (int j=0; (j < evaluationMaxStepsPerTrial) || (0 == evaluationMaxStepsPerTrial);
+	 j++) {
 
-  if (useEvaluationCache) {
-    cacheHits = 0;
-    cacheQueries = 0;
+      int a;
+      if (-1 == simState->userInt) {
+	a = exec->chooseAction();
+	simState->userInt = a;
+      } else {
+	a = simState->userInt;
+      }
+
+      Qa = modelCache.getQ(*simState, a);
+      int o = chooseFromDistribution(Qa->opv);
+      CMDPEdge* e = Qa->outcomes[o];
+      assert(NULL != e);
+      if (-1 == e->userInt) {
+	e->userInt = 1;
+      } else {
+	e->userInt++;
+      }
+      trials[i].push_back(PESimLogEntry(simState, a, o));
+      simState = e->nextState;
+
+      if (assumeIdenticalModels) {
+	exec->currentState = simState->s;
+      } else {
+	exec->advanceToNextState(a, o);
+      }
+      if (simState->isTerminal) {
+	reachedGoal[i] = true;
+	break;
+      }
+    }
   }
 
+  // pass 2: collate counts and calculate reweighting coefficients
+  for (int si=0; si < (int)modelCache.nodeTable.size(); si++) {
+    CMDPNode* cn = modelCache.nodeTable[si];
+    for (int a=0; a < modelCache.getNumActions(); a++) {
+      CMDPQEntry* Qa = cn->Q[a];
+      if (NULL != Qa) {
+	double probSum = 0.0;
+	double cntSum = 0;
+	for (int o=0; o < (int)Qa->getNumOutcomes(); o++) {
+	  CMDPEdge* e = Qa->outcomes[o];
+	  if (NULL != e) {
+	    probSum += Qa->opv(o);
+	    if (-1 != e->userInt) {
+	      cntSum += e->userInt;
+	    }
+	  }
+	}
+#if 0
+	printf("s=%d a=%d\n", si, a);
+#endif
+	for (int o=0; o < (int)Qa->getNumOutcomes(); o++) {
+	  CMDPEdge* e = Qa->outcomes[o];
+	  if (NULL != e) {
+	    if (-1 != e->userInt) {
+	      e->userDouble = (Qa->opv(o) / probSum) / (e->userInt / cntSum);
+#if 0
+	      printf("  o=%d probSum=%lf cntSum=%lf reweight=%lf\n",
+		     o, probSum, cntSum, e->userDouble);
+#endif
+	    }
+	  }
+	}
+      }
+    }
+  }
+
+  // pass 3: go back through logs and perform reweighting
+  set_to_one(weights, evaluationTrialsPerEpoch);
+  rewards.resize(evaluationTrialsPerEpoch);
+  for (int i=0; i < evaluationTrialsPerEpoch; i++) {
+    double rewardSoFar = 0.0;
+    for (int j=trials[i].size()-1; j >= 0; j--) {
+      PESimLogEntry& entry = trials[i][j];
+      CMDPQEntry& Qa = *entry.cn->Q[entry.a];
+      double reweight = Qa.outcomes[entry.o]->userDouble;
+	
+      rewardSoFar = Qa.immediateReward + reweight * modelCache.getDiscount() * rewardSoFar;
+    }
+    rewards(i) = rewardSoFar;
+
+    if (verbose) {
+      (*scoresOutFile) << rewardSoFar << endl;
+      if (i%10 == 9) {
+	printf(".");
+	fflush(stdout);
+      }
+    }
+  }
+    
+  if (verbose) {
+    printf("\n");
+  }
+}
+
+void PolicyEvaluator::getRewardSamplesSimple(dvector& weights, dvector& rewards,
+					     std::vector<bool>& reachedGoal)
+{
+  sim = new MDPSim(simModel);
+    
+  simOutFile = new ofstream(simulationTraceOutputFile.c_str());
+  if (! (*simOutFile)) {
+    fprintf(stderr, "ERROR: couldn't open %s for writing: %s\n",
+	    simulationTraceOutputFile.c_str(), strerror(errno));
+    exit(EXIT_FAILURE);
+  }
+  sim->simOutFile = simOutFile;
+    
+  if (verbose) {
+    scoresOutFile = new ofstream(scoresOutputFile.c_str());
+    if (!scoresOutFile) {
+      fprintf(stderr, "ERROR: couldn't open %s for writing: %s\n",
+	      scoresOutputFile.c_str(), strerror(errno));
+      exit(EXIT_FAILURE);
+    }
+  }
+    
   set_to_one(weights, evaluationTrialsPerEpoch);
   reachedGoal.resize(evaluationTrialsPerEpoch);
-
+    
   // do evaluation
   rewards.resize(evaluationTrialsPerEpoch);
   for (int i=0; i < evaluationTrialsPerEpoch; i++) {
     if (i >= simulationTracesToLogPerEpoch) {
       sim->simOutFile = NULL; // stop logging
     }
-
+      
     sim->restart();
     exec->setToInitialState();
     reachedGoal[i] = false;
-    for (int j=0; (j < evaluationMaxStepsPerTrial) || (0 == evaluationMaxStepsPerTrial); j++) {
-      int a;
-      if (useEvaluationCache) {
-	a = chooseActionCache();
-      } else {
-	a = exec->chooseAction();
-      }
+    for (int j=0; (j < evaluationMaxStepsPerTrial) || (0 == evaluationMaxStepsPerTrial);
+	 j++) {
+      int a = exec->chooseAction();
       sim->performAction(a);
       if (assumeIdenticalModels) {
-	if (useEvaluationCache) {
-	  ((CacheMDP*) simModel)->translateState(exec->currentState, sim->state);
-	} else {
-	  exec->currentState = sim->state;
-	}
+	exec->currentState = sim->state;
       } else {
 	exec->advanceToNextState(a, sim->lastOutcomeIndex);
       }
@@ -171,28 +300,6 @@ void PolicyEvaluator::getRewardSamplesInternal(dvector& weights,
   if (verbose) {
     printf("\n");
   }
-
-  if (useEvaluationCache) {
-#if 0
-    printf("cache hits %d queries %d rate %3.1lf%%\n",
-	   cacheHits, cacheQueries, 100 * ((double) cacheHits) / cacheQueries);
-#endif
-    
-    // reset policy cache before next evaluation epoch
-    policyCache.clear();
-  }
-
-  // cleanup
-  if (NULL != simOutFile) {
-    delete simOutFile;
-    simOutFile = NULL;
-  }
-  if (NULL != scoresOutFile) {
-    delete scoresOutFile;
-    scoresOutFile = NULL;
-  }
-  delete sim;
-  sim = NULL;
 }
 
 }; // namespace zmdp
@@ -200,6 +307,9 @@ void PolicyEvaluator::getRewardSamplesInternal(dvector& weights,
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2007/03/24 22:41:01  trey
+ * simplified and added caching features
+ *
  * Revision 1.2  2007/03/23 02:18:01  trey
  * added hook for alternate caching version of getRewardSamples()
  *

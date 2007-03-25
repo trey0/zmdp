@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2007-03-24 22:41:01 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2007-03-25 07:09:17 $
    
  @file    PolicyEvaluator.h
  @brief   No brief
@@ -55,13 +55,11 @@ protected:
   std::ofstream* simOutFile;
   std::ofstream* scoresOutFile;
   bool verbose;
-  EXT_NAMESPACE::hash_map<std::string, int> policyCache;
-  int cacheHits, cacheQueries;
 
-  int chooseActionCache(void);
-  void getRewardSamplesInternal(dvector& weights,
-				dvector& rewards,
-				std::vector<bool>& reachedGoal);
+  void getRewardSamplesCache(dvector& weights, dvector& rewards,
+			     std::vector<bool>& reachedGoal);
+  void getRewardSamplesSimple(dvector& weights, dvector& rewards,
+			      std::vector<bool>& reachedGoal);
 };
 
 }; // namespace zmdp
@@ -71,6 +69,9 @@ protected:
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2007/03/24 22:41:01  trey
+ * simplified and added caching features
+ *
  * Revision 1.2  2007/03/23 02:18:01  trey
  * added hook for alternate caching version of getRewardSamples()
  *
