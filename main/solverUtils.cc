@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.25 $  $Author: trey $  $Date: 2007-03-22 18:24:23 $
+ $Revision: 1.26 $  $Author: trey $  $Date: 2007-03-25 21:39:32 $
 
  @file    solverUtils.cc
  @brief   No brief
@@ -277,15 +277,6 @@ void SolverParams::inferMissingValues(void)
       }
     }
   }
-  if (NULL != policyOutputFile) {
-    if (lowerBoundRepresentation != V_MAXPLANES) {
-      cerr << "WARNING: selected options indicate an output policy should be written, but\n"
-	   << "  policy output is currently only supported when modelType='pomdp'\n"
-	   << "  and lowerBoundRepresentation='maxPlanes'; disabling policy output on this run"
-	   << endl;
-      policyOutputFile = NULL;
-    }
-  }
 }
 
 void constructSolverObjects(SolverObjects& obj,
@@ -417,6 +408,17 @@ void constructSolverObjects(SolverObjects& obj,
     assert(0); // never reach this point
   }
 
+  if (NULL != p.policyOutputFile) {
+    if (! (p.maintainLowerBound && (p.lowerBoundRepresentation == V_MAXPLANES))) {
+      cerr << "WARNING: selected options indicate an output policy should be written, but\n"
+	   << "  policy output is currently only supported when modelType='pomdp',\n"
+	   << "  lowerBoundRepresentation='maxPlanes', and lower bound is maintained;\n"
+	   << "  disabling policy output on this run"
+	   << endl;
+      p.policyOutputFile = NULL;
+    }
+  }
+
   bool dualPointBounds =
     p.maintainLowerBound && p.maintainUpperBound &&
     (V_POINT == p.lowerBoundRepresentation) &&
@@ -478,6 +480,9 @@ void constructSolverObjects(SolverObjects& obj,
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.25  2007/03/22 18:24:23  trey
+ * now use MDPSim in all cases; PomdpSim no longer needed
+ *
  * Revision 1.24  2007/01/15 17:25:24  trey
  * fixed logic to ensure that RelaxUpperBound is not used for POMDPs
  *
