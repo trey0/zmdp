@@ -236,6 +236,14 @@ REFERENCES
 ========================================================================
 RELEASE NOTES
 
+Changes from 1.1.0 to 1.1.1 (25 Mar 2007)
+
+* Made further improvements to policy evaluation, including improved
+  caching and sample reweighting to reduce variance.
+
+* Fixed a bug that caused a crash during policy evaluation with the
+  hallway.pomdp problem.
+
 Changes from 1.0.2 to 1.1.0 (24 Mar 2007)
 
 * Greatly improved speed of policy evaluation in zmdpBenchmark and
@@ -406,4 +414,4 @@ zpomdp 0.1.0 (28 Oct 2005)
 * Initial release.
 
 ==========================================================
-$Id: README,v 1.36 2007-03-24 23:23:24 trey Exp $
+$Id: README,v 1.37 2007-03-25 18:36:46 trey Exp $

@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: options.mak,v 1.70 2007-03-24 23:17:51 trey Exp $
+# $Id: options.mak,v 1.71 2007-03-25 18:36:46 trey Exp $
 #
 # Copyright (c) 2002-2006, Trey Smith. All rights reserved.
 #
@@ -16,7 +16,7 @@
 # permissions and limitations under the License.
 ######################################################################
 
-CFLAGS += -DZMDP_VERSION=1.1.0
+CFLAGS += -DZMDP_VERSION=1.1.1
 
 # algorithm configuration options (most of the options that used to be
 # in this file are now run-time configuration parameters; see
@@ -34,6 +34,9 @@ CFLAGS += -DCFLAGS="\"$(XCFLAGS)\""
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.70  2007/03/24 23:17:51  trey
+# updated version number and release notes
+#
 # Revision 1.69  2007/02/22 22:06:54  trey
 # updated release notes for v1.0,2
 #
