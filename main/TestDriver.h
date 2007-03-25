@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.6 $  $Author: trey $  $Date: 2007-03-24 22:42:52 $
+ $Revision: 1.7 $  $Author: trey $  $Date: 2007-03-25 21:39:06 $
    
  @file    TestDriver.h
  @brief   No brief
@@ -53,7 +53,6 @@ public:
 			    const std::string& boundsFileName,
 			    const std::string& simFileName,
 			    const char* outPolicyFileName);
-  void printRewards(void);
 
 };
 
@@ -64,6 +63,9 @@ public:
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.6  2007/03/24 22:42:52  trey
+ * now use MDPSim rather than abstract parent class AbstractSim; fixed to conform to new PolicyEvaluator constructor interface
+ *
  * Revision 1.5  2007/03/23 02:20:17  trey
  * removed interleave() function, unused for a long time; policy evaluation now uses PolicyEvaluator class
  *

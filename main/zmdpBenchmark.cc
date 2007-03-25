@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.15 $  $Author: trey $  $Date: 2007-03-05 08:57:08 $
+ $Revision: 1.16 $  $Author: trey $  $Date: 2007-03-25 21:40:25 $
 
  @file    zmdpBenchmark.cc
  @brief   No brief
@@ -58,8 +58,6 @@ void doBenchmark(const ZMDPConfig& config, SolverParams& p)
 			 /* boundsFileName = */ p.boundsOutputFile,
 			 /* simFileName = */ p.simulationTraceOutputFile,
 			 /* policyOutputFile = */ p.policyOutputFile);
-
-  x.printRewards();
 }
 
 void usage(const char* cmdName) {
@@ -228,6 +226,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.15  2007/03/05 08:57:08  trey
+ * modified how zmdpMainConfig is used so binaries built in other directories can embed the default config
+ *
  * Revision 1.14  2006/11/08 16:36:16  trey
  * renamed useFastPomdpParser to useFastModelParser
  *

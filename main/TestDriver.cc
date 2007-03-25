@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.20 $  $Author: trey $  $Date: 2007-03-25 17:39:01 $
+ $Revision: 1.21 $  $Author: trey $  $Date: 2007-03-25 21:38:59 $
 
  @file    TestDriver.cc
  @brief   No brief
@@ -246,22 +246,14 @@ void TestDriver::batchTestIncremental(const ZMDPConfig& config,
   so.solver->finishLogging();
 }
   
-void TestDriver::printRewards(void) {
-  cout << "rewards: ";
-  FOR_EACH( reward, rewardSamples.data ) {
-    cout << (*reward) << " ";
-  }
-  cout << endl;
-  double avg, stdev;
-  calc_avg_stdev_collection(rewardSamples.data.begin(), rewardSamples.data.end(), avg, stdev);
-  cout << "reward avg stdev: " << avg << " " << stdev << endl;
-}
-
 }; // namespace zmdp
 
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.20  2007/03/25 17:39:01  trey
+ * simplified how success rate is tracked
+ *
  * Revision 1.19  2007/03/25 15:16:10  trey
  * no longer deal with sample weights in policy evaluation
  *
