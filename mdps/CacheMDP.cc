@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2007-03-24 22:44:15 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2007-03-25 07:08:16 $
   
  @file    CacheMDP.cc
  @brief   No brief
@@ -142,7 +142,7 @@ CMDPNode* CacheMDP::getNodeX(const state_vector& s)
     cn.si = si;
     cn.isTerminal = problem->getIsTerminalState(s);
     cn.Q.resize(problem->getNumActions(), NULL);
-    cn.userData = NULL;
+    cn.userInt = -1;
     nodeTable.push_back(&cn);
     lookup[hs] = si;
     return &cn;
@@ -165,7 +165,8 @@ CMDPQEntry* CacheMDP::getQ(CMDPNode& cn, int a)
 	state_vector sp;
 	problem->getNextState(sp, cn.s, a, o);
 	e->nextState = getNodeX(sp);
-	e->userData = NULL;
+	e->userInt = -1;
+	e->userDouble = 0.0;
 	Qa.outcomes[o] = e;
       } else {
 	Qa.outcomes[o] = NULL;
@@ -183,5 +184,8 @@ CMDPQEntry* CacheMDP::getQ(CMDPNode& cn, int a)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2007/03/24 22:44:15  trey
+ * initial check-in
+ *
  *
  ***************************************************************************/

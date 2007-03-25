@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2007-03-24 22:44:15 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2007-03-25 07:08:16 $
    
  @file    CacheMDP.h
  @brief   No brief
@@ -35,19 +35,11 @@ namespace zmdp {
 
 struct CMDPNode;
 
-struct CMDPUserData {
-  virtual ~CMDPUserData(void) {}
-};
-
 struct CMDPEdge {
   CMDPNode* nextState;
   // code that uses CacheMDP can associate arbitrary extra data with an edge
-  CMDPUserData* userData;
-
-  ~CMDPEdge(void) {
-    // do not delete nextState, which is owned by the global node table
-    if (NULL != userData) delete userData;
-  }
+  int userInt;
+  double userDouble;
 };
 
 struct CMDPQEntry {
@@ -64,7 +56,7 @@ struct CMDPNode {
   bool isTerminal;
   std::vector<CMDPQEntry*> Q;
   // code that uses CacheMDP can associate arbitrary extra data with a node
-  CMDPUserData* userData;
+  int userInt;
 
   ~CMDPNode(void) {
     FOR_EACH (elt, Q) {
@@ -72,7 +64,6 @@ struct CMDPNode {
 	delete (*elt);
       }
     }
-    if (NULL != userData) delete userData;
   }
   bool isFringe(void) const { return Q.empty(); }
   size_t getNumActions(void) const { return Q.size(); }
@@ -98,7 +89,6 @@ struct CacheMDP : public MDP {
   state_vector& getNextState(state_vector& result, const state_vector& s, int a,
 			     int o);
   double getReward(const state_vector& s, int a);
-
   const state_vector& translateState(state_vector& result, const state_vector& s);
 
   AbstractBound* newLowerBound(const ZMDPConfig* _config) { assert(0); }
@@ -117,6 +107,9 @@ struct CacheMDP : public MDP {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2007/03/24 22:44:15  trey
+ * initial check-in
+ *
  *
  ***************************************************************************/
 
