@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.19 $  $Author: trey $  $Date: 2007-03-25 15:16:10 $
+ $Revision: 1.20 $  $Author: trey $  $Date: 2007-03-25 17:39:01 $
 
  @file    zmdpEvaluate.cc
  @brief   Use to evaluate a POMDP policy in simulation.
@@ -102,8 +102,8 @@ void doit(const ZMDPConfig& config, SolverParams& p)
   PolicyEvaluator eval(simPomdp, e, &config,
 		       /* assumeIdenticalModels = */ (simPomdp == e->mdp));
   dvector rewardSamples;
-  std::vector<bool> reachedGoal;
-  eval.getRewardSamples(rewardSamples, reachedGoal, /* verbose = */ true);
+  double successRate;
+  eval.getRewardSamples(rewardSamples, successRate, /* verbose = */ true);
 
   // output summary statistics, mean and 95% confidence interval for the mean
   double mean, quantile1, quantile2;
@@ -284,6 +284,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.19  2007/03/25 15:16:10  trey
+ * no longer deal with sample weights in policy evaluation
+ *
  * Revision 1.18  2007/03/24 22:43:34  trey
  * fixed to conform to new PolicyEvaluator constructor interface
  *

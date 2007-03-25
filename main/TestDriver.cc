@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.19 $  $Author: trey $  $Date: 2007-03-25 15:16:10 $
+ $Revision: 1.20 $  $Author: trey $  $Date: 2007-03-25 17:39:01 $
 
  @file    TestDriver.cc
  @brief   No brief
@@ -169,14 +169,9 @@ void TestDriver::batchTestIncremental(const ZMDPConfig& config,
       }
 
       // simulate running the policy many times and collect the per-run total reward values
-      std::vector<bool> reachedGoal;
-      eval.getRewardSamples(rewardSamples, reachedGoal, /* verbose = */ true);
-
-      int numSuccesses = 0;
-      FOR (i, reachedGoal.size()) {
-	if (reachedGoal[i]) numSuccesses++;
-      }
-      double success_rate = ((double) numSuccesses) / numIterations;
+      dvector rewardSamples;
+      double successRate;
+      eval.getRewardSamples(rewardSamples, successRate, /* verbose = */ true);
 
 #if 0
       // collect policy evaluation statistics and write a line to the log file
@@ -187,7 +182,7 @@ void TestDriver::batchTestIncremental(const ZMDPConfig& config,
       incPlotFile << timeSoFar
 		  << " " << avg
 		  << " " << (stdev/::sqrt(numIterations)*1.96)
-		  << " " << success_rate << endl;
+		  << " " << successRate << endl;
 #endif
 
       // calculate summary statistics, mean and 95% confidence interval for the mean
@@ -200,7 +195,7 @@ void TestDriver::batchTestIncremental(const ZMDPConfig& config,
 		  << " " << mean
 		  << " " << quantile1
 		  << " " << quantile2
-		  << " " << success_rate << endl;
+		  << " " << successRate << endl;
      
       incPlotFile.flush();
 
@@ -267,6 +262,9 @@ void TestDriver::printRewards(void) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.19  2007/03/25 15:16:10  trey
+ * no longer deal with sample weights in policy evaluation
+ *
  * Revision 1.18  2007/03/24 22:42:52  trey
  * now use MDPSim rather than abstract parent class AbstractSim; fixed to conform to new PolicyEvaluator constructor interface
  *
