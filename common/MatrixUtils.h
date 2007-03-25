@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.18 $  $Author: trey $  $Date: 2007-03-24 23:17:25 $
+ $Revision: 1.19 $  $Author: trey $  $Date: 2007-03-25 15:14:01 $
    
  @file    MatrixUtils.h
  @brief   No brief
@@ -263,22 +263,20 @@ namespace MatrixUtils {
     return sortedVals(i) + r * (sortedVals(i+1) - sortedVals(i));
   }
 
-  // Uses the bootstrap method to calculate the weigted mean and
-  // quantiles alpha/2 and (1-alpha/2) for the estimate of the weighted
-  // mean.  (For example, if alpha=0.05, [quantile1 .. quantile2] is a
-  // 95% confidence interval for the mean.)
-  inline void calc_bootstrap_mean_quantile(const dvector& weights, const dvector& vals,
+  // Uses the bootstrap method to calculate the mean and quantiles
+  // alpha/2 and (1-alpha/2) for the estimate of the mean.  (For
+  // example, if alpha=0.05, [quantile1 .. quantile2] is a 95%
+  // confidence interval for the mean.)
+  inline void calc_bootstrap_mean_quantile(const dvector& vals,
 					   double alpha,
 					   double& mean, double& quantile1, double& quantile2)
   {
-    int n = weights.size();
+    int n = vals.size();
     double sum = 0.0;
-    double wtSum = 0.0;
     for (int i=0; i < n; i++) {
-      sum += weights(i) * vals(i);
-      wtSum += weights(i);
+      sum += vals(i);
     }
-    mean = sum / wtSum;
+    mean = sum / n;
 
     assert(0.0 < alpha && alpha < 1.0);
     const int numSamplesInQuantile = 50; // totally arbitrary
@@ -286,13 +284,11 @@ namespace MatrixUtils {
     dvector bvals(numBootstrapSamples);
     for (int i=0; i < numBootstrapSamples; i++) {
       sum = 0.0;
-      wtSum = 0.0;
       for (int j=0; j < n; j++) {
 	int k = (int) (unit_rand() * n);
-	sum += weights(k) * vals(k);
-	wtSum += weights(k);
+	sum += vals(k);
       }
-      bvals(i) = sum / wtSum;
+      bvals(i) = sum / n;
     }
 
     std::sort(bvals.data.begin(), bvals.data.end());
@@ -377,6 +373,9 @@ namespace MatrixUtils {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.18  2007/03/24 23:17:25  trey
+ * bug fix; you can now safely change the size of the state set without causing a crash in the hashable() function
+ *
  * Revision 1.17  2007/03/22 23:57:46  trey
  * added cast to avoid warning
  *
