@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.18 $  $Author: trey $  $Date: 2007-03-24 22:43:34 $
+ $Revision: 1.19 $  $Author: trey $  $Date: 2007-03-25 15:16:10 $
 
  @file    zmdpEvaluate.cc
  @brief   Use to evaluate a POMDP policy in simulation.
@@ -101,13 +101,13 @@ void doit(const ZMDPConfig& config, SolverParams& p)
   // simulate running the policy many times and collect the per-run total reward values
   PolicyEvaluator eval(simPomdp, e, &config,
 		       /* assumeIdenticalModels = */ (simPomdp == e->mdp));
-  dvector weights, rewardSamples;
+  dvector rewardSamples;
   std::vector<bool> reachedGoal;
-  eval.getRewardSamples(weights, rewardSamples, reachedGoal, /* verbose = */ true);
+  eval.getRewardSamples(rewardSamples, reachedGoal, /* verbose = */ true);
 
   // output summary statistics, mean and 95% confidence interval for the mean
   double mean, quantile1, quantile2;
-  calc_bootstrap_mean_quantile(weights, rewardSamples,
+  calc_bootstrap_mean_quantile(rewardSamples,
 			       0.05, // 95% confidence interval
 			       mean, quantile1, quantile2);
   printf("REWARD_MEAN_CONF95MIN_CONF95MAX %.3lf %.3lf %.3lf\n", mean, quantile1, quantile2);
@@ -284,6 +284,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.18  2007/03/24 22:43:34  trey
+ * fixed to conform to new PolicyEvaluator constructor interface
+ *
  * Revision 1.17  2007/03/23 02:21:30  trey
  * policy evaluation now uses PolicyEvaluator class
  *

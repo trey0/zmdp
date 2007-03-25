@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.18 $  $Author: trey $  $Date: 2007-03-24 22:42:52 $
+ $Revision: 1.19 $  $Author: trey $  $Date: 2007-03-25 15:16:10 $
 
  @file    TestDriver.cc
  @brief   No brief
@@ -169,10 +169,8 @@ void TestDriver::batchTestIncremental(const ZMDPConfig& config,
       }
 
       // simulate running the policy many times and collect the per-run total reward values
-      dvector weights;
       std::vector<bool> reachedGoal;
-      eval.getRewardSamples(weights, rewardSamples, reachedGoal,
-			    /* verbose = */ true);
+      eval.getRewardSamples(rewardSamples, reachedGoal, /* verbose = */ true);
 
       int numSuccesses = 0;
       FOR (i, reachedGoal.size()) {
@@ -194,7 +192,7 @@ void TestDriver::batchTestIncremental(const ZMDPConfig& config,
 
       // calculate summary statistics, mean and 95% confidence interval for the mean
       double mean, quantile1, quantile2;
-      calc_bootstrap_mean_quantile(weights, rewardSamples,
+      calc_bootstrap_mean_quantile(rewardSamples,
 				   0.05, // 95% confidence interval
 				   mean, quantile1, quantile2);
 
@@ -269,6 +267,9 @@ void TestDriver::printRewards(void) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.18  2007/03/24 22:42:52  trey
+ * now use MDPSim rather than abstract parent class AbstractSim; fixed to conform to new PolicyEvaluator constructor interface
+ *
  * Revision 1.17  2007/03/23 02:20:17  trey
  * removed interleave() function, unused for a long time; policy evaluation now uses PolicyEvaluator class
  *
