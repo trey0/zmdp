@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.7 $  $Author: trey $  $Date: 2007-03-25 17:38:25 $
+ $Revision: 1.8 $  $Author: trey $  $Date: 2007-03-25 18:37:02 $
    
  @file    PolicyEvaluator.cc
  @brief   No brief
@@ -105,6 +105,7 @@ void PolicyEvaluator::getRewardSamples(dvector& rewards, double& successRate, bo
     successRateSum += batchSuccessRate;
     startTrialIndex += numTrialsPerBatch;
   }
+  printf("\n");
 
   printf("batchRewards: ");
   for (int i=0; i < numBatches; i++) {
@@ -244,7 +245,8 @@ void PolicyEvaluator::doBatchCache(dvector& rewards,
     }
   }
   if (verbose) {
-    printf("\n");
+    printf("#");
+    fflush(stdout);
   }
 
   // pass 2: collate counts and calculate reweighting coefficients
@@ -352,7 +354,8 @@ void PolicyEvaluator::doBatchSimple(dvector& rewards,
     }
   }
   if (verbose) {
-    printf("\n");
+    printf("#");
+    fflush(stdout);
   }
 
   successRate = ((double) numTrialsReachedGoal) / numTrials;
@@ -363,6 +366,9 @@ void PolicyEvaluator::doBatchSimple(dvector& rewards,
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.7  2007/03/25 17:38:25  trey
+ * reworked how statistics are collected so that the benefits of reweighting show up in the confidence interval calculation
+ *
  * Revision 1.6  2007/03/25 15:15:42  trey
  * removed weights output from getRewardSamples(); added back in logging of simulation trace
  *
