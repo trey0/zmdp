@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.4 $  $Author: trey $  $Date: 2007-03-25 07:09:17 $
+ $Revision: 1.5 $  $Author: trey $  $Date: 2007-03-25 07:34:39 $
    
  @file    PolicyEvaluator.cc
  @brief   No brief
@@ -173,6 +173,13 @@ void PolicyEvaluator::getRewardSamplesCache(dvector& weights, dvector& rewards,
 	break;
       }
     }
+
+    if (verbose) {
+      if (i%10 == 9) {
+	printf(".");
+	fflush(stdout);
+      }
+    }
   }
 
   // pass 2: collate counts and calculate reweighting coefficients
@@ -227,10 +234,6 @@ void PolicyEvaluator::getRewardSamplesCache(dvector& weights, dvector& rewards,
 
     if (verbose) {
       (*scoresOutFile) << rewardSoFar << endl;
-      if (i%10 == 9) {
-	printf(".");
-	fflush(stdout);
-      }
     }
   }
     
@@ -307,6 +310,9 @@ void PolicyEvaluator::getRewardSamplesSimple(dvector& weights, dvector& rewards,
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2007/03/25 07:09:17  trey
+ * now use CacheMDP data structures more directly for better efficiency; added stratified sampling to decrease variance
+ *
  * Revision 1.3  2007/03/24 22:41:01  trey
  * simplified and added caching features
  *
