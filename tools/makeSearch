@@ -5,70 +5,299 @@
 ######################################################################
 # ADJUSTABLE PARAMETERS
 
-@searches = ("frtdp",
+@SEARCHES = ("frtdp",
 	     "hsvi",
 	     "hdp",
 	     "lrtdp",
 	     "rtdp",
 	    );
 
-@pomdps = (["Tiger-Grid", "tiger-grid.pomdp"],
-	   ["Hallway", "hallway.pomdp"],
-	   ["Hallway2", "hallway2.pomdp"],
-	   ["Tag", "tagAvoid.pomdp"],
-	   ["RockSample[4,4]", "RockSample_4_4.pomdp"],
-	   ["RockSample[5,7]", "RockSample_5_7.pomdp -f"],
-	   #["RockSample[7,8]", "RockSample_7_8.pomdp -f"],
-	   #["RockSample[10,10]", "RockSample_10_10.pomdp -f"],
+@POMDPS = (#{title => "Tiger-Grid", prob => "tiger-grid.pomdp"},
+	   #{title => "Hallway", prob => "hallway.pomdp", opts => "--evaluationFirstEpochWallclockSeconds 0.1"},
+	   #{title => "Hallway2", prob => "hallway2.pomdp", opts => "--evaluationFirstEpochWallclockSeconds 0.1"},
+	   {title => "Tag", prob => "tagAvoid.pomdp"},
+	   #{title => "RockSample[4,4]", prob => "RockSample_4_4.pomdp", opts => "--evaluationFirstEpochWallclockSeconds 0.1"},
+	   {title => "RockSample[5,7]", prob => "RockSample_5_7.pomdp", opts => "-f --evaluationFirstEpochWallclockSeconds 0.1"},
+	   #{title => "RockSample[7,8]", prob => "RockSample_7_8.pomdp", opts => "-f"},
+	   #{title => "RockSample[10,10]", prob => "RockSample_10_10.pomdp", opts => "-f"},
+	   {title => "LifeSurvey1", prob => "ltv1.pomdp", opts => "-f"},
 	  );
 
-@mdps = (["large-b", "large-b.racetrack"],
-	 ["large-b-3", "large-b-3.racetrack"],
-	 ["large-b-w", "large-b-w.racetrack"],
-	 ["large-ring", "large-ring.racetrack"],
-	 ["large-ring-3", "large-ring-3.racetrack"],
-	 ["large-ring-w", "large-ring-w.racetrack"],
+@MDPS = ({title => "large-b", prob => "large-b.racetrack", opts => "--evaluationFirstEpochWallclockSeconds 0.1"},
+	 {title => "large-b-3", prob => "large-b-3.racetrack", opts => "--evaluationFirstEpochWallclockSeconds 0.1"},
+	 {title => "large-b-w", prob => "large-b-w.racetrack", opts => "--evaluationFirstEpochWallclockSeconds 0.1"},
+	 {title => "large-ring", prob => "large-ring.racetrack", opts => "--evaluationFirstEpochWallclockSeconds 0.1"},
+	 {title => "large-ring-3", prob => "large-ring-3.racetrack", opts => "--evaluationFirstEpochWallclockSeconds 0.1"},
+	 {title => "large-ring-w", prob => "large-ring-w.racetrack", opts => "--evaluationFirstEpochWallclockSeconds 0.1"},
 	);
 
-@problems = (@pomdps,
-	     #@mdps
+@PROBLEMS = (@POMDPS,
+	     #@MDPS
 	     );
+
+$TIMEOUT1 = 100;
+$TIMEOUT2 = 150;
 
 ######################################################################
 
-sub usage {
-    die "usage: makeSearch OPTIONS\n".
-	"  -h or --help   Print this help\n";
+sub dosys {
+    my $cmd = shift;
+    my $ignoreError = 0;
+    if ($cmd =~ s/^-//) {
+	$ignoreError = 1;
+    }
+    print "$cmd\n";
+    my $ret = system($cmd);
+    if (! $ignoreError and $ret != 0) {
+	die "ERROR: couldn't execute '$cmd'\n";
+    }
 }
 
+sub doSearch {
+    $root = "~/z";
+    $bin = "$root/bin/linux2";
+    $zmdpBenchmark = "zmdpBenchmark -i 10000 --terminateWallclockSeconds $TIMEOUT1 --evaluationEpochsPerMagnitude 3";
+    
+    for $search (@SEARCHES) {
+	for $probHash (@PROBLEMS) {
+	    $title = $probHash->{title};
+	    $prob = $probHash->{prob};
+	    $opts = $probHash->{opts} || "";
+	    $probPath = "$root/problems.archive/$prob";
+	    ($probStem,$probExt) = split(/\./, $prob, 2);
+	    $probExt =~ s/\s.*//;
+	    $dir = "$probExt/${probStem}_$search";
+	    if (! -e $dir) {
+		&dosys("mkdir -p $dir");
+		&dosys("-cd $dir && runWithTimeout $TIMEOUT2 $zmdpBenchmark $opts --searchStrategy $search $probPath >& stdout.log");
+	    }
+	}
+    }
+}
+
+sub doPerfPlot {
+    die "not implemented\n";
+}
+
+sub cullBounds {
+    my $boundsFile = shift;
+
+    my $culledFile = "${boundsFile}.culled";
+    open(BOUNDS, "< $boundsFile")
+	or die "ERROR: couldn't open $boundsFile for reading: $!\n";
+    my @lines = ();
+    for (<BOUNDS>) {
+	push @lines, $_;
+    }
+    close(BOUNDS);
+
+    my $keepSpacing = $#lines / 15;
+
+    open(CULLED, "> $culledFile")
+	or die "ERROR: couldn't open $culledFile for writing: $!\n";
+    my $j = 0;
+    for my $i (0..$#lines) {
+	$_ = $lines[$i];
+	next if /^\#/;
+	if ($i == $#lines) {
+	    # always print last line
+	    print CULLED;
+	} else {
+	    # skip most lines
+	    $j++;
+	    if ($j >= $keepSpacing) {
+		print CULLED;
+		$j = 0;
+	    }
+	}
+    }
+    close(CULLED);
+}
+
+sub doBoundsPlotProb {
+    my $probHash = shift;
+    my $pos = shift;
+
+    my $prob = $probHash->{prob};
+    my $probTitle = $probHash->{title};
+    my ($probStem, $probExt) = split(/\./, $prob, 2);
+
+    my $originX;
+    if ($pos == 1) {
+	$originX = 0;
+    } else {
+	$originX = 0.5;
+    }
+
+    # figure out which search algorithms have data available for the problem
+    my @vsearches = ();
+    for my $search (@SEARCHES) {
+	my $dir = "$probExt/${probStem}_${search}";
+	if (-e $dir) {
+	    push @vsearches, $search;
+	}
+    }
+    my $vn = $#vsearches+1;
+    @lineStyles = ("-+", "-*", "--o", "--x", "-");
+
+    my $octScript = "";
+
+    # load data for all search algorithms
+    for my $i (0..$#vsearches) {
+	my $search = $vsearches[$i];
+
+	my $boundsFile = "$probExt/${probStem}_${search}/bounds.plot";
+	&cullBounds($boundsFile);
+	$octScript .=<<"EOF";
+${search}Bounds = load("${boundsFile}.culled");
+${search}Perf = load("$probExt/${probStem}_${search}/inc.plot");
+EOF
+    }
+    
+    # set time range for perf plot to match bounds plots
+    my $search = $vsearches[0];
+    $octScript .=<<"EOF";
+minTime = min(${search}Bounds(:,1));
+maxTime = max(${search}Bounds(:,1));
+EOF
+
+    # plot ub data for all search algorithms
+    $octScript .= "subplot(3,2,1);\n";
+
+    $octScript .= <<"EOF";
+__gnuplot_set__ size 0.5, 0.3
+__gnuplot_set__ origin $originX, 0.7
+EOF
+    $octScript .= "plot(\n";
+    for my $i (0..$#vsearches) {
+	my $search = $vsearches[$i];
+	my $style = $lineStyles[$i];
+	if ($i != 0) { $octScript .= ",\n"; }
+	$octScript .= "  ${search}Bounds(:,1), ${search}Bounds(:,3), '$style'";
+    }
+    $octScript .= "\n);\n";
+    $octScript .= "title('$probTitle -- Upper Bound (smaller is better)')\n";
+    $octScript .= "axis([minTime maxTime 0 1], 'autoy');\n";
+
+    # plot lb data for all search algorithms
+    $octScript .= "subplot(3,2,3);\n";
+
+    $octScript .= <<"EOF";
+__gnuplot_set__ size 0.5, 0.3
+__gnuplot_set__ origin $originX, 0.4
+EOF
+    $octScript .= "plot(\n";
+    for my $i (0..$#vsearches) {
+	my $search = $vsearches[$i];
+	my $style = $lineStyles[$i];
+        # weed out search algorithms that do not maintain a lower bound
+	next if (($search eq "rtdp")  or ($search eq "lrtdp") or ($search eq "hdp"));
+	if ($i != 0) { $octScript .= ",\n"; }
+	$octScript .= "  ${search}Bounds(:,1), ${search}Bounds(:,2), '$style'";
+    }
+    $octScript .= "\n);\n";
+    $octScript .= "title('Lower Bound (larger is better)')\n";
+    $octScript .= "axis([minTime maxTime 0 1], 'autoy');\n";
+
+    # plot perf data for all search algorithms
+    $octScript .= <<"EOF";
+EOF
+
+    $octScript .= "subplot(3,2,5);\n";
+    $octScript .= <<"EOF";
+__gnuplot_set__ size 0.5, 0.4
+__gnuplot_set__ origin $originX, 0
+__gnuplot_set__ key below
+EOF
+    $octScript .= "plot(";
+    for my $i (0..$#vsearches) {
+	my $search = $vsearches[$i];
+	my $style = $lineStyles[$i];
+	my $searchTitle = $search;
+	$searchTitle =~ tr/a-z/A-Z/;
+	if ($i != 0) { $octScript .= ",\n"; }
+	$octScript .= "  ${search}Perf(:,1), ${search}Perf(:,2), '$style;$searchTitle;'";
+    }
+    $octScript .= "\n);\n";
+    $octScript .= "title('Policy Quality in Simulation (larger is better)')\n";
+    $octScript .= "axis([minTime maxTime 0 1], 'autoy');\n";
+
+    # set time range for perf plot to match bounds plots
+    my $search = $vsearches[0];
+    $octScript .=<<"EOF";
+minTime = min(${search}Bounds(:,1));
+maxTime = max(${search}Bounds(:,1));
+axis([minTime maxTime 0 1], "autoy");
+EOF
+
+   return $octScript;
+}
+
+sub doBoundsPlot {
+    my $octScript = "";
+
+    # set output mode
+    my $outStem = "searchBoundsPlot";
+    if ($OUTPUT_MODE eq "pdf") {
+	$octScript .= <<"EOF";
+__gnuplot_set__ terminal postscript enhanced "Helvetica" 10
+__gnuplot_set__ output "${outStem}.ps"
+EOF
+    }
+
+    $octScript .= &doBoundsPlotProb(@POMDPS[0], 1);
+    $octScript .= &doBoundsPlotProb(@POMDPS[1], 2);
+
+    # run the octave script
+    print "octave --silent $octOpts <<\n$octScript";
+    open(OCT, "|octave $octOpts") or die "ERROR: couldn't run octave\n";
+    select(OCT);
+    $| = 1;
+    select(STDOUT);
+    print OCT $octScript;
+    if ($OUTPUT_MODE eq "pdf") {
+    	close(OCT);
+	&dosys("ps2pdf ${outStem}.ps");
+	&dosys("rm -f ${outStem}.ps");
+	print "output written to ${outStem}.pdf\n";
+    } else {
+	sleep(10000);
+    }
+}
+
+sub usage {
+    die "usage: makeSearch OPTIONS\n".
+	"  -h or --help   Print this help\n".
+	"  -s             Run search algorithms (default).\n".
+	"  -q             Make performance plots (policy quality v. time)\n".
+	"  -b             Make bounds plots (bounds v. time)\n".
+	"  -p             Output plots to a pdf file\n";
+}
+
+$target = "search";
+$OUTPUT_MODE = "x11";
 while ($_ = shift @ARGV) {
     if ($_ eq "-h" or $_ eq "--help") {
 	&usage();
+    } elsif ($_ eq "-s") {
+	$target = "search";
+    } elsif ($_ eq "-q") {
+	$target = "perfPlot";
+    } elsif ($_ eq "-b") {
+	$target = "boundsPlot";
+    } elsif ($_ eq "-p") {
+	$OUTPUT_MODE = "pdf";
     } else {
 	die "ERROR: unknown option '$_' (-h for help)\n";
     }
 }
 
-$root = "~/z";
-$bin = "$root/bin/linux2";
-$zmdpBenchmark = "zmdpBenchmark -i 10 --terminateWallclockSeconds 100 --evaluationEpochsPerMagnitude 3";
-
-sub dosys {
-    my $cmd = shift;
-    print "$cmd\n";
-    system($cmd) && die "ERROR: couldn't execute '$cmd'\n";
-}
-
-for $search (@searches) {
-    for $probPair (@problems) {
-	($fancyProb,$prob) = @{$probPair};
-	$probPath = "$root/problems.archive/$prob";
-	($probStem,$probExt) = split(/\./, $prob, 2);
-	$probExt =~ s/\s.*//;
-	$dir = "$probExt/${probStem}_$search";
-	if (! -e $dir) {
-	    &dosys("mkdir -p $dir");
-	    &dosys("cd $dir && $zmdpBenchmark --searchStrategy $search $probPath >& stdout.log");
-	}
-    }
+if ($target eq "search") {
+    &doSearch();
+} elsif ($target eq "perfPlot") {
+    &doPerfPlot();
+} elsif ($target eq "boundsPlot") {
+    &doBoundsPlot();
+} else {
+    die "ERROR: unknown target '$target' (-h for help)\n";
 }
