@@ -6,6 +6,7 @@ sub usage {
 	."   -t    Plot bounds vs. time\n"
         ."   -i    Plot bounds vs. number of top-level iterations\n"
 	."   -s    Plot speed (iterations v. time)\n"
+	."   -q    Plot policy quality v. time\n"
         ."   -p    Generate postscript output\n";
 }
 
@@ -25,6 +26,8 @@ for (@ARGV) {
 	    push @plot_types, 'i';
 	} elsif ($_ eq "-s") {
 	    push @plot_types, 's';
+	} elsif ($_ eq "-q") {
+	    push @plot_types, 'q';
 	} else {
 	    print STDERR "ERROR: unknown option $_\n\n";
 	    &usage;
@@ -118,6 +121,23 @@ plot "$bounds1_file" using 1:6    title "$dir1 # top level iterations" with line
      "$bounds2_file" using 1:7    title "$dir2 # backups"              with lines,     \\\
      "$bounds1_file" using 1:9    title "$dir1 # belief comparisons"   with lines,     \\\
      "$bounds2_file" using 1:9    title "$dir2 # belief comparisons"   with lines
+     
+######################################################################
+
+EOF
+
+} elsif ($plot_type eq 'q') {
+
+print GP <<"EOF";
+
+######################################################################
+set logscale x
+set xlabel "wallclock time (seconds)"
+set title "$dir1 vs. $dir2"
+plot "$inc1_file" using 1:2     title "$dir1" with lines, \\\
+     "$inc1_file" using 1:2:3:4 notitle with errorbars,   \\\
+     "$inc2_file" using 1:2     title "$dir2" with lines, \\\
+     "$inc2_file" using 1:2:3:4 notitle with errorbars
      
 ######################################################################
 
