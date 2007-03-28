@@ -24,10 +24,10 @@
 	   #{title => "RockSample[10,10]", prob => "RockSample_10_10.pomdp", opts => "-f"},
 	  );
 
-@MDPS = ({title => "large-b", abbrev => "LB", prob => "large-b.racetrack", opts => "--evaluationFirstEpochWallclockSeconds 0.1"},
-	 {title => "large-b-w", abbrev => "LBW", prob => "large-b-w.racetrack", opts => "--evaluationFirstEpochWallclockSeconds 0.1"},
-	 {title => "large-ring", abbrev => "LR", prob => "large-ring.racetrack", opts => "--evaluationFirstEpochWallclockSeconds 0.1"},
-	 {title => "large-ring-w", abbrev => "LRW", prob => "large-ring-w.racetrack", opts => "--evaluationFirstEpochWallclockSeconds 0.1"},
+@MDPS = ({title => "large-b", abbrev => "LB", prob => "large-b.racetrack", opts => "--evaluationFirstEpochWallclockSeconds 0.1", maxY => -20},
+	 {title => "large-b-w", abbrev => "LBW", prob => "large-b-w.racetrack", opts => "--evaluationFirstEpochWallclockSeconds 0.1", maxY => -20},
+	 {title => "large-ring", abbrev => "LR", prob => "large-ring.racetrack", opts => "--evaluationFirstEpochWallclockSeconds 0.1", maxY => -10},
+	 {title => "large-ring-w", abbrev => "LRW", prob => "large-ring-w.racetrack", opts => "--evaluationFirstEpochWallclockSeconds 0.1", maxY => -10},
 #	 {title => "large-b-3", prob => "large-b-3.racetrack", opts => "--evaluationFirstEpochWallclockSeconds 0.1"},
 #	 {title => "large-ring-3", prob => "large-ring-3.racetrack", opts => "--evaluationFirstEpochWallclockSeconds 0.1"},
 	);
@@ -446,7 +446,8 @@ sub doBoundsPlotProb {
     if ($probType eq "pomdp") {
 	$lowerAxis = "axis([$minTime $maxTime 0 1], 'autoy');\n";
     } else {
-	$lowerAxis = "axis([$minTime $maxTime -50 -10]);\n";
+	my $maxY = $probHash->{maxY};
+	$lowerAxis = "axis([$minTime $maxTime -50 $maxY]);\n";
     }
 
     my $pointSize = 0.5;
