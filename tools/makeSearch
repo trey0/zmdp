@@ -24,26 +24,28 @@
 	   #{title => "RockSample[10,10]", prob => "RockSample_10_10.pomdp", opts => "-f"},
 	  );
 
-@MDPS = ({title => "large-b", abbrev => "lb", prob => "large-b.racetrack", opts => "--evaluationFirstEpochWallclockSeconds 0.1"},
-	 {title => "large-b-w", abbrev => "lbw", prob => "large-b-w.racetrack", opts => "--evaluationFirstEpochWallclockSeconds 0.1"},
-	 {title => "large-ring", abbrev => "lr", prob => "large-ring.racetrack", opts => "--evaluationFirstEpochWallclockSeconds 0.1"},
-	 {title => "large-ring-w", abbrev => "lrw", prob => "large-ring-w.racetrack", opts => "--evaluationFirstEpochWallclockSeconds 0.1"},
+@MDPS = ({title => "large-b", abbrev => "LB", prob => "large-b.racetrack", opts => "--evaluationFirstEpochWallclockSeconds 0.1"},
+	 {title => "large-b-w", abbrev => "LBW", prob => "large-b-w.racetrack", opts => "--evaluationFirstEpochWallclockSeconds 0.1"},
+	 {title => "large-ring", abbrev => "LR", prob => "large-ring.racetrack", opts => "--evaluationFirstEpochWallclockSeconds 0.1"},
+	 {title => "large-ring-w", abbrev => "LRW", prob => "large-ring-w.racetrack", opts => "--evaluationFirstEpochWallclockSeconds 0.1"},
 #	 {title => "large-b-3", prob => "large-b-3.racetrack", opts => "--evaluationFirstEpochWallclockSeconds 0.1"},
 #	 {title => "large-ring-3", prob => "large-ring-3.racetrack", opts => "--evaluationFirstEpochWallclockSeconds 0.1"},
 	);
 
 for (@POMDPS) {
     $_->{timeout} = 1000;
+    $_->{type} = "pomdp";
 }
 for (@MDPS) {
     $_->{timeout} = 100;
+    $_->{type} = "mdp";
 }
 
 @PROBLEMS = (@POMDPS,
-	     #@MDPS
+	     @MDPS
 	     );
 
-@LINE_STYLES = ("-@", "-+", "-*", "--o", "--x", "-");
+@LINE_STYLES = ("-*1", "-o1", "-x1","-+1", "-*3", "-o3", "-x3","-+3");
 
 ######################################################################
 
@@ -80,15 +82,18 @@ sub doSearch {
 	    my $dir = "$probExt/${probStem}_$searchDir";
 	    if (! -e $dir) {
 		&dosys("mkdir -p $dir");
-		&dosys("-cd $dir && runWithTimeout $hardTimeout $zmdpBenchmark $searchOpts $probOpts --terminateWallclockSeconds $probTimeout $probPath >& stdout.log");
+		&dosys("-cd $dir && ulimit -s 1000000 && runWithTimeout $hardTimeout $zmdpBenchmark $searchOpts $probOpts --terminateWallclockSeconds $probTimeout $probPath >& stdout.log");
 	    }
 	}
     }
+    print "\n";
+    print ">>> DONE <<<\n";
 }
 
-sub getMinUBValue {
+sub getMinVal {
     my $searchHash = shift;
     my $probHash = shift;
+    my $whichField = shift;
 
     my $searchDir = $searchHash->{dir};
     my $prob = $probHash->{prob};
@@ -98,27 +103,43 @@ sub getMinUBValue {
 
     my $dir = "$probExt/${probStem}_$searchDir";
     my $boundsFile = "$dir/bounds.plot";
+    if (! -e $boundsFile) {
+	print STDERR "WARNING: $boundsFile does not exist\n";
+	return -99e+20;
+    }
     
     open(BOUNDS, "< $boundsFile")
 	or die "ERROR: couldn't open $boundsFile for reading: $!\n";
-    my $minUBVal = 99e+20;
+    my $minField = 99e+20;
+    my $numLines = 0;
     for (<BOUNDS>) {
 	next if /^\#/;
 	my @fields = split /\s+/;
-	my $ubVal = $fields[2];
-	if ($ubVal < $minUBVal) {
-	    $minUBVal = $ubVal;
+	my $field;
+	if ($whichField eq "ub") {
+	    $field = $fields[2];
+	} else {
+	    $field = $fields[2] - $fields[1];
 	}
+	if ($field < $minField) {
+	    $minField = $field;
+	}
+	$numLines++;
     }
     close(BOUNDS);
 
-    return $minUBVal;
+    if ($numLines > 0) {
+	return $minField;
+    } else {
+	return -99e+20;
+    }
 }
 
-sub getTimeToUBVal {
+sub getTimeToVal {
     my $searchHash = shift;
     my $probHash = shift;
-    my $testUBVal = shift;
+    my $whichField = shift;
+    my $testVal = shift;
 
     my $searchDir = $searchHash->{dir};
     my $prob = $probHash->{prob};
@@ -128,27 +149,38 @@ sub getTimeToUBVal {
 
     my $dir = "$probExt/${probStem}_$searchDir";
     my $boundsFile = "$dir/bounds.plot";
+
+    if (! -e $boundsFile) {
+	return (0,0);
+    }
     
     open(BOUNDS, "< $boundsFile")
 	or die "ERROR: couldn't open $boundsFile for reading: $!\n";
     for (<BOUNDS>) {
 	next if /^\#/;
 	my @fields = split /\s+/;
-	my $ubVal = $fields[2];
-	if ($ubVal <= $testUBVal) {
+	my $field;
+	if ($whichField eq "ub") {
+	    $field = $fields[2];
+	} else {
+	    $field = $fields[2] - $fields[1];
+	}
+	if ($field <= $testVal) {
+	    close(BOUNDS);
 	    my ($numUpdates, $wallclock) = ($fields[6], $fields[0]);
 	    return ($numUpdates, $wallclock);
 	}
     }
-    close(BOUNDS);
 
-    return $minUBVal;
+    # should only reach this point if file is empty
+    close(BOUNDS);
+    return (0,0);
 }
 
 sub getMin {
     my $minVal = 99e+20;
     for (@_) {
-	if ($_ < $minVal) {
+	if ($_ != 0 and $_ < $minVal) {
 	    $minVal = $_;
 	}
     }
@@ -157,29 +189,57 @@ sub getMin {
 
 sub doTableX {
     my $probList = shift;
+    my $whichField = shift;
     my $outFile = shift;
+
+    my @vsearches;
+    if ($whichField eq "ub") {
+	@vsearches = @SEARCHES;
+    } else {
+	@vsearches = ();
+	for my $searchHash (@SEARCHES) {
+	    my $searchDir = $searchHash->{dir};
+	    # weed out search algorithms that do not maintain a lower bound
+	    next if (($searchDir eq "rtdp")
+		     or ($searchDir eq "lrtdp")
+		     or ($searchDir eq "hdp"));
+	    push @vsearches, $searchHash;
+	}
+    }
 
     my %results = ();
     for my $probHash (@{$probList}) {
+	my $prob = $probHash->{prob};
+
 	# pass 1: first get the largest minimum ub value of any search strategy
 	my $maxMinVal = -99e+20;
-	for my $searchHash (@SEARCHES) {
-	    my $minVal = &getMinUBValue($searchHash, $probHash);
+	$results{$prob} = {};
+	for my $searchHash (@vsearches) {
+	    # skip bad combination
+	    if (($searchHash->{dir} eq "hsvi")
+		and (($probHash->{prob} eq "large-ring-w.racetrack")
+		     or ($probHash->{prob} eq "large-b-w.racetrack"))) {
+		#print "skipping bad combination\n";
+		next;
+	    }
+	    my $minVal = &getMinVal($searchHash, $probHash, $whichField);
 	    if ($minVal > $maxMinVal) {
 		$maxMinVal = $minVal;
 	    }
+	    $results{$prob}{maxMinVal} = $maxMinVal;
 	}
 	
 	# pass 2: get num. updates and wallclock times when each algorithm reached $maxMinVal
-	my $prob = $probHash->{prob};
-	$results{$prob} = {};
-	for my $searchHash (@SEARCHES) {
+	for my $searchHash (@vsearches) {
 	    my $searchDir = $searchHash->{dir};
-	    my ($numUpdates, $wallclock) = &getTimeToUBVal($searchHash, $probHash, $maxMinVal);
+	    my ($numUpdates, $wallclock) =
+		&getTimeToVal($searchHash, $probHash, $whichField, $maxMinVal);
 	    $results{$prob}{$searchDir} = { numUpdates => $numUpdates,
 					    wallclock => $wallclock };
 	}
     }
+
+    my $probType = $probList->[0]->{type};
 
     my $readable = "";
     my $tex = "";
@@ -187,10 +247,21 @@ sub doTableX {
     my $numProbs = $#{$probList}+1;
     my $rs = "r" x $numProbs;
 
+    $readable .= "  % maxMinVal:\n";
+    for my $probHash (@{$probList}) {
+	my $prob = $probHash->{prob};
+	my $probAbbrev = $probHash->{abbrev};
+	my $probMaxMinVal = $results{$prob}{maxMinVal};
+	$readable .= "  %   $probAbbrev $probMaxMinVal\n";
+    }
     $readable .= "  %          ";
     $tex .= "  \\begin{tabular}{l|${rs}|${rs}}\n";
     $tex .= "    \\hline \\hline\n";
-    $tex .= "    & \\multicolumn{$numProbs}{c|}{Thousands of updates} ";
+    if ($probType eq "pomdp") {
+	$tex .= "    & \\multicolumn{$numProbs}{c|}{Thousands of updates} ";
+    } else {
+	$tex .= "    & \\multicolumn{$numProbs}{c|}{Millions of updates} ";
+    }
     $tex .= "& \\multicolumn{$numProbs}{c}{Wallclock (s)} \\\\\n";
     $tex .= "    ";
     for my $probHash (@{$probList}) {
@@ -212,13 +283,20 @@ sub doTableX {
 	my $prob = $probHash->{prob};
 	$minVals{$prob} = {};
 	$minVals{$prob}{numUpdates}
-	    = &getMin(map { $results{$prob}{$_->{dir}}{numUpdates}  } @SEARCHES);
+	    = &getMin(map { $results{$prob}{$_->{dir}}{numUpdates}  } @vsearches);
 	$minVals{$prob}{wallclock}
-	    = &getMin(map { $results{$prob}{$_->{dir}}{wallclock}  } @SEARCHES);
+	    = &getMin(map { $results{$prob}{$_->{dir}}{wallclock}  } @vsearches);
     }
 
-    for my $i (0..$#SEARCHES) {
-	my $searchHash = $SEARCHES[$i];
+    my $numUpdatesFormat;
+    if ($probType eq "pomdp") {
+	$numUpdatesFormat = "%8.1f";
+    } else {
+	$numUpdatesFormat = "%8.2f";
+    }
+
+    for my $i (0..$#vsearches) {
+	my $searchHash = $vsearches[$i];
 	my $searchTitle = $searchHash->{title};
 	my $searchDir = $searchHash->{dir};
 	$readable .= sprintf("  %% %-8s ", $searchTitle);
@@ -226,21 +304,37 @@ sub doTableX {
 	for my $probHash (@{$probList}) {
 	    my $prob = $probHash->{prob};
 	    my $numUpdates = $results{$prob}{$searchDir}{numUpdates};
-	    $readable .= sprintf("%8.1f ", $numUpdates/1000);
-	    if ($numUpdates == $minVals{$prob}{numUpdates}) {
-		$tex .= sprintf("& {\\bf %.1f} ", $numUpdates/1000);
+	    my $scaledNumUpdates;
+	    if ($probType eq "pomdp") {
+		$scaledNumUpdates = $numUpdates / 1000;
 	    } else {
-		$tex .= sprintf("& %.1f ", $numUpdates/1000);
+		$scaledNumUpdates = $numUpdates / 10**6;
+	    }
+	    if ($numUpdates == 0) {
+		$readable .= sprintf("%8s ", "-");
+		$tex .= "& - ";
+	    } else {
+		$readable .= sprintf("$numUpdatesFormat ", $scaledNumUpdates);
+		if ($numUpdates == $minVals{$prob}{numUpdates}) {
+		    $tex .= sprintf("& {\\bf $numUpdatesFormat} ", $scaledNumUpdates);
+		} else {
+		    $tex .= sprintf("& $numUpdatesFormat ", $scaledNumUpdates);
+		}
 	    }
 	}
 	for my $probHash (@{$probList}) {
 	    my $prob = $probHash->{prob};
 	    my $wallclock = $results{$prob}{$searchDir}{wallclock};
-	    $readable .= sprintf("%8.1f ", $wallclock);
-	    if ($wallclock == $minVals{$prob}{wallclock}) {
-		$tex .= sprintf("& {\\bf %.1f} ", $wallclock);
+	    if ($wallclock == 0) {
+		$readable .= sprintf("%8s ", "-");
+		$tex .= "& - ";
 	    } else {
-		$tex .= sprintf("& %.1f ", $wallclock);
+		$readable .= sprintf("%8.1f ", $wallclock);
+		if ($wallclock == $minVals{$prob}{wallclock}) {
+		    $tex .= sprintf("& {\\bf %.1f} ", $wallclock);
+		} else {
+		    $tex .= sprintf("& %.1f ", $wallclock);
+		}
 	    }
 	}
 	$readable .= "\n";
@@ -260,8 +354,10 @@ sub doTableX {
 }
 
 sub doTable {
-    &doTableX(\@POMDPS, "searchPomdpTable.tex");
-    #&doTableX(\@MDPS, "searchMdpTable.tex");
+    &doTableX(\@POMDPS, "ub",     "searchPomdpUBTable.tex");
+    &doTableX(\@POMDPS, "regret", "searchPomdpRegretTable.tex");
+    &doTableX(\@MDPS,   "ub",     "searchMdpUBTable.tex");
+    &doTableX(\@MDPS,   "regret", "searchMdpRegretTable.tex");
 }
 
 sub getErrDelta {
@@ -279,9 +375,14 @@ sub getErrDelta {
     }
     close(INC);
 
-    my $mean = $sum/$n;
-    my $errDelta = $mean/2;
-    $errDelta =~ s/([1-9]).*/$1/; # reduce to one significant figure
+    my $errDelta;
+    if ($n == 0) {
+	$errDelta = -1;
+    } else {
+	my $mean = $sum/$n;
+	$errDelta = $mean/2;
+	$errDelta =~ s/([1-9]).*/$1/; # reduce to one significant figure
+    }
     return $errDelta;
 }
 
@@ -327,6 +428,7 @@ sub doBoundsPlotProb {
     my $prob = $probHash->{prob};
     my $probAbbrev = $probHash->{abbrev};
     my $probTimeout = $probHash->{timeout};
+    my $probType = $probHash->{type};
     my ($probStem, $probExt) = split(/\./, $prob, 2);
 
     my $widthX = 0.3;
@@ -336,6 +438,18 @@ sub doBoundsPlotProb {
     } else {
 	$originX = $widthX;
     }
+
+    my $minTime = $probTimeout/1000.0;
+    my $maxTime = $probTimeout;
+
+    my $lowerAxis;
+    if ($probType eq "pomdp") {
+	$lowerAxis = "axis([$minTime $maxTime 0 1], 'autoy');\n";
+    } else {
+	$lowerAxis = "axis([$minTime $maxTime -50 -10]);\n";
+    }
+
+    my $pointSize = 0.5;
 
     # figure out which search algorithms have data available for the problem
     my @vsearches = ();
@@ -368,12 +482,6 @@ ${searchDir}Perf = load("${incFile}.culled");
 EOF
     }
     
-    # get time range from first plot to use for all plots so they line up
-    $octScript .=<<"EOF";
-minTime = 1
-maxTime = $probTimeout
-EOF
-
     # plot upper bound data for all search algorithms
     my $plotNum = $pos;
     $octScript .= "subplot(3,2,$pos);\n";
@@ -381,6 +489,7 @@ EOF
     $octScript .= <<"EOF";
 __gnuplot_set__ size $widthX, 0.3
 __gnuplot_set__ origin $originX, 0.7
+__gnuplot_set__ pointsize $pointSize
 EOF
     $octScript .= "__gnuplot_set__ format x '10^{%L}'\n";
     $octScript .= "semilogx(\n";
@@ -391,9 +500,9 @@ EOF
 	$octScript .= "  ${searchDir}Bounds(:,1), ${searchDir}Bounds(:,3), '$style'";
     }
     $octScript .= "\n);\n";
-    $octScript .= "title('$probAbbrev -- Upper Bound (smaller is better)')\n";
+    $octScript .= "title('$probAbbrev Upper Bound (smaller is better)')\n";
     $octScript .= "__gnuplot_set__ format x '10^{%L}'\n";
-    $octScript .= "axis([minTime maxTime 0 1], 'autoy');\n";
+    $octScript .= "axis([$minTime $maxTime 0 1], 'autoy');\n";
 
     # plot lower bound data for all search algorithms
     my $plotNum = 2 + $pos;
@@ -402,6 +511,7 @@ EOF
     $octScript .= <<"EOF";
 __gnuplot_set__ size $widthX, 0.3
 __gnuplot_set__ origin $originX, 0.4
+__gnuplot_set__ pointsize $pointSize
 EOF
     $octScript .= "__gnuplot_set__ format x '10^{%L}'\n";
     $octScript .= "semilogx(\n";
@@ -414,18 +524,16 @@ EOF
 	if ($i != $#vsearches) { $octScript .= ",\n"; }
     }
     $octScript .= "\n);\n";
-    $octScript .= "title('Lower Bound (larger is better)')\n";
-    $octScript .= "axis([minTime maxTime 0 1], 'autoy');\n";
+    $octScript .= "title('$probAbbrev Lower Bound (larger is better)')\n";
+    $octScript .= $lowerAxis;
 
-    # plot policy quality data for all search algorithms
-    $octScript .= <<"EOF";
-EOF
-
+    # plot simulation data for all search algorithms
     my $plotNum = 4 + $pos;
     $octScript .= "subplot(3,2,$plotNum);\n";
     $octScript .= <<"EOF";
 __gnuplot_set__ size $widthX, 0.4
 __gnuplot_set__ origin $originX, 0
+__gnuplot_set__ pointsize $pointSize
 __gnuplot_set__ key below
 EOF
     $octScript .= "__gnuplot_set__ format x '10^{%L}'\n";
@@ -439,8 +547,8 @@ EOF
 	$octScript .= "  ${searchDir}Perf(:,1), ${searchDir}Perf(:,2), '$style;$searchTitle;'";
     }
     $octScript .= "\n);\n";
-    $octScript .= "title('Mean Reward (+/- $errDelta, larger is better)')\n";
-    $octScript .= "axis([minTime maxTime 0 1], 'autoy');\n";
+    $octScript .= "title('$probAbbrev Simulation (+/- $errDelta, larger is better)')\n";
+    $octScript .= $lowerAxis;
 
    return $octScript;
 }
@@ -487,6 +595,11 @@ sub doBoundsPlot {
     # plot pomdps. each graph contains the plots for two pomdps, one in each column.
     for my $i (0..$#POMDPS/2) {
 	&doBoundsPlotPair(\@POMDPS, "Pomdp", $i);
+    }
+
+    # plot mdps.
+    for my $i (0..$#MDPS/2) {
+	&doBoundsPlotPair(\@MDPS, "Mdp", $i);
     }
 }
 
