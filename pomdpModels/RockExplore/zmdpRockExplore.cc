@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.15 $  $Author: trey $  $Date: 2007-03-23 00:03:33 $
+ $Revision: 1.16 $  $Author: trey $  $Date: 2007-04-01 20:48:31 $
 
  @file    zmdpRockExplore.cc
  @brief   No brief
@@ -173,7 +173,7 @@ EvalResult evaluatePolicy(int policyType)
   const int n = 100;
   std::vector<double> samples(n);
 
-  // do 100 runs
+  // do runs
   printf("Evaluating %s...", getPolicyName(policyType));
   fflush(stdout);
   for (int i=0; i < n; i++) {
@@ -198,7 +198,17 @@ EvalResult evaluatePolicy(int policyType)
   }
   EvalResult result;
   result.mean = sum / n;
-  double stdev = sqrt((sqsum - sum*sum/n) / (n-1));
+
+  double variance = (sqsum - sum*sum/n) / (n-1);
+  // this check in case round-off error causes variance to be
+  // slightly negative
+  assert(variance > -1e-10);
+  if (variance < 0) {
+    variance = 0;
+  }
+
+  double stdev = sqrt(variance);
+  stdev = sqrt(variance);
   result.conf95 = 1.96 * stdev/sqrt((double)n);
   printf(" %.3lf +/- %.3lf\n", result.mean, result.conf95);
 
@@ -324,6 +334,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.15  2007/03/23 00:03:33  trey
+ * fixed to reflect migration from PomdpExec to MDPExec base class
+ *
  * Revision 1.14  2007/03/07 09:10:50  trey
  * added display of MDP policy
  *
