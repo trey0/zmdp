@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.11 $  $Author: trey $  $Date: 2007-04-01 19:25:44 $
+ $Revision: 1.12 $  $Author: trey $  $Date: 2007-04-01 20:10:33 $
   
  @file    RockExplorePolicy.cc
  @brief   No brief
@@ -41,6 +41,18 @@
 #include "zmdpMainConfig.h"
 
 #include "RockExplorePolicy.h"
+
+// Sometimes actions have true Q(s,a) or Q(b,a) values that are
+// identical.  Unfortunately, the calculated values can vary based on
+// round-off error, changing which action looks best according to QMDP
+// or other heuristics.  Even worse, while the chosen action tends to be
+// consistent across runs for any particular platform, it can vary by
+// platform -- this means that users working with different platforms
+// may report substantially different performance without any obvious
+// cause.  In order to mitigate this last problem, if several actions
+// are tied to within TIE_BREAK_EPS, we will always choose the first
+// action (according to the arbitrary ordering of the action indices).
+#define TIE_BREAK_EPS (1e-12)
 
 using namespace std;
 
@@ -147,7 +159,7 @@ int DualModePolicy::chooseAction(void)
 	}
       }
 
-      if (sumHBar < minSH) {
+      if (sumHBar < minSH - TIE_BREAK_EPS) {
 	minSH = sumHBar;
 	minSHAction = a;
       }
@@ -224,7 +236,7 @@ int REValueFunction::getMaxQAction(int s) const
   int maxQAction = -1;
   for (int a=0; a < m.getNumActions(); a++) {
     double Qsa = getQ(s,a);
-    if (Qsa > maxQsa) {
+    if (Qsa > maxQsa + TIE_BREAK_EPS) {
       maxQsa = Qsa;
       maxQAction = a;
     }
@@ -271,7 +283,7 @@ int REValueFunction::getMaxQAction(const REBelief& b) const
   int maxQAction = -1;
   for (int a=0; a < m.getNumActions(); a++) {
     double Qba = getQ(b,a);
-    if (Qba > maxQba) {
+    if (Qba > maxQba + TIE_BREAK_EPS) {
       maxQba = Qba;
       maxQAction = a;
     }
@@ -408,6 +420,9 @@ const char* getPolicyName(int policyType)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.11  2007/04/01 19:25:44  trey
+ * fixed reference to obsolete MaxPlanesLowerBoundExec object
+ *
  * Revision 1.10  2007/03/23 00:30:50  trey
  * fixed to reflect name change from MaxPlanesLowerBoundExec to BoundPairExec
  *
