@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.8 $  $Author: trey $  $Date: 2007-03-25 15:14:52 $
+ $Revision: 1.9 $  $Author: trey $  $Date: 2007-04-03 06:07:33 $
    
  @file    BoundPair.cc
  @brief   No brief
@@ -328,10 +328,12 @@ ValueInterval BoundPair::getQValue(const state_vector& s, int a) const
 		       maintainUpperBound ? ubVal : -1);
 }
 
-void BoundPair::writePolicy(const std::string& outFileName)
+void BoundPair::writePolicy(const std::string& outFileName, bool canModifyBounds)
 {
   MaxPlanesLowerBound* mlb = (MaxPlanesLowerBound*) lowerBound;
-  mlb->prunePlanes(numBackups);
+  if (canModifyBounds) {
+    mlb->prunePlanes(numBackups);
+  }
   mlb->writeToFile(outFileName);
 }
 
@@ -340,6 +342,9 @@ void BoundPair::writePolicy(const std::string& outFileName)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.8  2007/03/25 15:14:52  trey
+ * removed special case for actions tied according to LB; was causing a crash for some reason, not tracked down yet
+ *
  * Revision 1.7  2007/03/24 22:39:34  trey
  * removed const-ness of problem argument
  *

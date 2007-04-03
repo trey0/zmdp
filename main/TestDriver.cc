@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.21 $  $Author: trey $  $Date: 2007-03-25 21:38:59 $
+ $Revision: 1.22 $  $Author: trey $  $Date: 2007-04-03 06:08:51 $
 
  @file    TestDriver.cc
  @brief   No brief
@@ -161,7 +161,7 @@ void TestDriver::batchTestIncremental(const ZMDPConfig& config,
 	string cmd = string("mv ") + outPolicyFileName + " " + outPolicyFileName + ".bak >& /dev/null";
 	system(cmd.c_str());
 
-	so.bounds->writePolicy(outPolicyFileName);
+	so.bounds->writePolicy(outPolicyFileName, /* canModifyBounds = */ false);
 
 	// delete the backup
 	cmd = string("rm -f ") + outPolicyFileName + ".bak >& /dev/null";
@@ -251,6 +251,9 @@ void TestDriver::batchTestIncremental(const ZMDPConfig& config,
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.21  2007/03/25 21:38:59  trey
+ * removed obsolete printRewards() function
+ *
  * Revision 1.20  2007/03/25 17:39:01  trey
  * simplified how success rate is tracked
  *

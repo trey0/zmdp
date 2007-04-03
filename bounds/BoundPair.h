@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.4 $  $Author: trey $  $Date: 2007-03-24 22:39:27 $
+ $Revision: 1.5 $  $Author: trey $  $Date: 2007-04-03 06:07:33 $
    
  @file    BoundPair.h
  @brief   No brief
@@ -64,7 +64,7 @@ struct BoundPair : public BoundPairCore {
   int chooseAction(const state_vector& s) const;
   ValueInterval getValueAt(const state_vector& s) const;
   ValueInterval getQValue(const state_vector& s, int a) const;
-  void writePolicy(const std::string& outFileName);
+  void writePolicy(const std::string& outFileName, bool canModifyBounds);
 };
 
 }; // namespace zmdp
@@ -74,6 +74,9 @@ struct BoundPair : public BoundPairCore {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2007/03/24 22:39:27  trey
+ * removed const-ness of problem argument
+ *
  * Revision 1.3  2006/11/07 20:06:37  trey
  * added getQValue() function
  *
