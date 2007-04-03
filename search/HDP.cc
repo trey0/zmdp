@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.15 $  $Author: trey $  $Date: 2006-10-30 20:00:15 $
+ $Revision: 1.16 $  $Author: trey $  $Date: 2007-04-03 06:04:28 $
    
  @file    HDP.cc
  @brief   Implementation of Bonet and Geffner's HDP algorithm.
@@ -66,6 +66,7 @@ void HDP::getNodeHandler(MDPNode& cn)
   cn.searchData = searchData;
   searchData->isSolved = cn.isTerminal;
   searchData->idx = RT_IDX_PLUS_INFINITY;
+  searchData->low = RT_IDX_PLUS_INFINITY;
 }
 
 void HDP::staticGetNodeHandler(MDPNode& s, void* handlerData)
@@ -157,13 +158,14 @@ bool HDP::trialRecurse(MDPNode& cn, int depth)
     if (NULL != e) {
       MDPNode& sn = *e->nextState;
       //printf("      a=%d o=%d sn=[%s] sn.idx=%d\n", maxUBAction, o, denseRep(sn.s).c_str(), getIdx(sn));
+
       if (RT_IDX_PLUS_INFINITY == getIdx(sn)) {
 	if (trialRecurse(sn, depth+1)) {
 	  flag = true;
 	}
 	getLow(cn) = std::min(getLow(cn), getLow(sn));
       } else if (nodeStack.contains(&sn)) {
-	getLow(cn) = std::min(getLow(cn), getLow(sn));
+	getLow(cn) = std::min(getLow(cn), getIdx(sn));
       }
     }
   }
@@ -226,6 +228,9 @@ void HDP::derivedClassInit(void)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.15  2006/10/30 20:00:15  trey
+ * USE_DEBUG_PRINT replaced with a run-time config parameter "debugLevel"
+ *
  * Revision 1.14  2006/10/24 02:37:05  trey
  * updated for modified bounds interfaces
  *
