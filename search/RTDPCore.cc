@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.24 $  $Author: trey $  $Date: 2007-03-24 22:45:13 $
+ $Revision: 1.25 $  $Author: trey $  $Date: 2007-04-03 06:05:53 $
    
  @file    RTDPCore.cc
  @brief   Common code used by multiple RTDP variants found in this
@@ -124,16 +124,16 @@ bool RTDPCore::planFixedTime(const state_vector& s,
   previousElapsedTime = getTime() - boundsStartTime;
 
   if (NULL != boundsFile) {
+    (*boundsFile) << timevalToSeconds(getTime() - boundsStartTime)
+		  << " " << bounds->getRootNode()->lbVal
+		  << " " << bounds->getRootNode()->ubVal
+		  << " " << bounds->numStatesTouched
+		  << " " << bounds->numStatesExpanded
+		  << " " << numTrials
+		  << " " << bounds->numBackups
+		  << endl;
     double elapsed = timevalToSeconds(getTime() - boundsStartTime);
     if (done || (0 == lastPrintTime) || elapsed / lastPrintTime >= 1.01) {
-      (*boundsFile) << timevalToSeconds(getTime() - boundsStartTime)
-		    << " " << bounds->getRootNode()->lbVal
-		    << " " << bounds->getRootNode()->ubVal
-		    << " " << bounds->numStatesTouched
-		    << " " << bounds->numStatesExpanded
-		    << " " << numTrials
-		    << " " << bounds->numBackups
-		    << endl;
       boundsFile->flush();
       lastPrintTime = elapsed;
     }
@@ -205,6 +205,9 @@ void RTDPCore::finishLogging(void)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.24  2007/03/24 22:45:13  trey
+ * removed some const assertions for added implementation flexibility
+ *
  * Revision 1.23  2006/11/07 20:07:12  trey
  * added support for qValuesOutputFile
  *
