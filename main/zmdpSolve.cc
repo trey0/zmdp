@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.23 $  $Author: trey $  $Date: 2007-03-25 21:40:14 $
+ $Revision: 1.24 $  $Author: trey $  $Date: 2007-04-03 06:09:19 $
 
  @file    zmdpSolve.cc
  @brief   No brief
@@ -124,7 +124,7 @@ void doSolve(const ZMDPConfig& config, SolverParams& p)
   } else {
     printf("%05d writing policy to '%s'\n", (int) run.elapsedTime(), p.policyOutputFile);
     assert(so.bounds->lowerBound != NULL);
-    so.bounds->writePolicy(p.policyOutputFile);
+    so.bounds->writePolicy(p.policyOutputFile, /* canModifyBounds = */ true);
   }
 
   // finish up logging (if any, according to params specified in the config file)
@@ -292,6 +292,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.23  2007/03/25 21:40:14  trey
+ * added assertion
+ *
  * Revision 1.22  2007/03/05 08:57:08  trey
  * modified how zmdpMainConfig is used so binaries built in other directories can embed the default config
  *
