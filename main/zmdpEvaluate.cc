@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.20 $  $Author: trey $  $Date: 2007-03-25 17:39:01 $
+ $Revision: 1.21 $  $Author: trey $  $Date: 2007-04-08 22:49:08 $
 
  @file    zmdpEvaluate.cc
  @brief   Use to evaluate a POMDP policy in simulation.
@@ -43,7 +43,6 @@ using namespace zmdp;
 
 #define ZE_DEFAULT_POLICY_TYPE ("maxPlanes")
 
-const char* policyTypeG = ZE_DEFAULT_POLICY_TYPE;
 const char* policyFileNameG = NULL;
 const char* sourceModelFileNameG = NULL;
 const char* simModelFileNameG = NULL;
@@ -60,15 +59,16 @@ void doit(const ZMDPConfig& config, SolverParams& p)
 
   // initialize exec
   MDPExec* e;
-  if (0 == strcmp(policyTypeG, "maxPlanes")) {
+  std::string policyType = config.getString("policyType");
+  if (policyType == "maxPlanes" || policyType == "cassandraAlpha") {
     if (NULL == policyFileNameG) {
-      fprintf(stderr, "ERROR: maxPlanes policy type requires -p argument (-h for help)\n");
+      fprintf(stderr, "ERROR: specified policy type requires -p argument (-h for help)\n");
       exit(EXIT_FAILURE);
     }
     BoundPairExec* em = new BoundPairExec();
-    em->initMaxPlanes(plannerModelFileNameG, p.useFastModelParser, policyFileNameG, config);
+    em->initReadFiles(plannerModelFileNameG, policyFileNameG, config);
     e = em;
-  } else if (0 == strcmp(policyTypeG, "lspath")) {
+  } else if (policyType == "lspath") {
     if (NULL == sourceModelFileNameG) {
       fprintf(stderr, "ERROR: lspath policy type requires -s argument (-h for help)\n");
       exit(EXIT_FAILURE);
@@ -78,7 +78,7 @@ void doit(const ZMDPConfig& config, SolverParams& p)
     e = el;
   } else {
     fprintf(stderr, "ERROR: unknown policy type '%s' (-h for help)\n",
-	    policyTypeG);
+	    policyType.c_str());
     exit(EXIT_FAILURE);
   }
 
@@ -99,6 +99,12 @@ void doit(const ZMDPConfig& config, SolverParams& p)
   }
 
   // simulate running the policy many times and collect the per-run total reward values
+  if (zmdpDebugLevelG >= 1) {
+    bool assumeIdenticalModels = (simPomdp == e->mdp);
+    printf("If planning and sim models, evaluator can perform some optimizations:\n"
+	   "  assumeIdenticalModels=%d\n",
+	   assumeIdenticalModels);
+  }
   PolicyEvaluator eval(simPomdp, e, &config,
 		       /* assumeIdenticalModels = */ (simPomdp == e->mdp));
   dvector rewardSamples;
@@ -121,8 +127,8 @@ void usage(const char* cmdName) {
     "  -c or --config <file>  Specify a config file to read options from\n"
     "  --genConfig <file>     Generate an example config file and exit\n"
     "\n"
-    "  -t or --policyType     Specifies policy type.  Choices are: lspath, maxPlanes\n"
-    "                           [default: " << ZE_DEFAULT_POLICY_TYPE << "]\n"
+    "  -t or --policyType     Specifies policy type.  Choices are: maxPlanes, cassandraAlpha,\n"
+    "                           and lspath\n"
     "  -p or --policy         Specify input policy file (required with -t maxPlanes)\n"
     "  -m or --model          Specify planner model (if different from evaluation model)\n"
     "  -s or --sourceModel    Specify source model file (required with -t lspath)\n"
@@ -194,12 +200,6 @@ int main(int argc, char **argv) {
 	embedWriteToFile(argv[argi], defaultConfig);
 	printf("wrote config file with default settings to %s\n", argv[argi]);
 	exit(EXIT_SUCCESS);
-      } else if (args == "-t" || args == "--policyType") {
-	if (++argi == argc) {
-	  fprintf(stderr, "ERROR: found -t option without argument (use -h for help)\n");
-	  exit(EXIT_FAILURE);
-	}
-	policyTypeG = argv[argi];
       } else if (args == "-p" || args == "--policy") {
 	if (++argi == argc) {
 	  fprintf(stderr, "ERROR: found -p option without argument (use -h for help)\n");
@@ -225,6 +225,8 @@ int main(int argc, char **argv) {
 	  continue;
 	} else if (args == "-i") {
 	  args = "--evaluationTrialsPerEpoch";
+	} else if (args == "-t") {
+	  args = "--policyType";
 	}
 
 	if (args.find("--") != 0) {
@@ -284,6 +286,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.20  2007/03/25 17:39:01  trey
+ * simplified how success rate is tracked
+ *
  * Revision 1.19  2007/03/25 15:16:10  trey
  * no longer deal with sample weights in policy evaluation
  *
