@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2006-11-09 21:01:33 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2007-04-08 22:48:04 $
   
  @file    CassandraModel.cc
  @brief   No brief
@@ -47,7 +47,7 @@ CassandraModel::CassandraModel(void) :
 void CassandraModel::checkForTerminalStates(void)
 {
   if (zmdpDebugLevelG >= 1) {
-    printf("FastParser::readFromFile: marking zero-reward absorbing states as terminal\n");
+    printf("model initialization -- marking zero-reward absorbing states as terminal\n");
   }
   isTerminalState.resize(numStates, /* initialValue = */ true);
   FOR (s, numStates) {
@@ -94,6 +94,9 @@ void CassandraModel::debugDensity(void)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2006/11/09 21:01:33  trey
+ * added bogus initialization code to avoid compilation warnings
+ *
  * Revision 1.2  2006/11/09 20:47:46  trey
  * added initialState field for MDPs, fixed a potential problem with accessing undefined observation matrices with MDPs
  *

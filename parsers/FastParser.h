@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2006-11-09 20:48:56 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2007-04-08 22:48:04 $
    
  @file    FastParser.h
  @brief   No brief
@@ -38,15 +38,13 @@ struct FastParser {
   void readPomdpFromFile(CassandraModel& pomdp, const std::string& fileName);
 
 protected:
-  void readModelFromFile(CassandraModel& problem, const std::string& fileName,
+  void readModelFromFile(CassandraModel& problem,
 			 bool expectPomdp);
   void readModelFromStream(CassandraModel& problem,
-			   const std::string& fileName,
 			   std::istream& in,
 			   bool expectPomdp);
   void readStartVector(CassandraModel& problem,
 		       char *data,
-		       const std::string& fileName,
 		       bool expectPomdp);
 };
 
@@ -57,6 +55,9 @@ protected:
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2006/11/09 20:48:56  trey
+ * fixed some MDP vs. POMDP issues
+ *
  * Revision 1.1  2006/11/08 16:40:50  trey
  * initial check-in
  *

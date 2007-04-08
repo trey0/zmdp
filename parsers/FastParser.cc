@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.4 $  $Author: trey $  $Date: 2007-01-15 17:23:34 $
+ $Revision: 1.5 $  $Author: trey $  $Date: 2007-04-08 22:48:04 $
   
  @file    FastParser.cc
  @brief   No brief
@@ -65,36 +65,37 @@ static void trimTrailingWhiteSpace(char *s)
  ***************************************************************************/
 
 void FastParser::readGenericDiscreteMDPFromFile(CassandraModel& mdp,
-						const std::string& fileName)
+						const std::string& _fileName)
 {
-  readModelFromFile(mdp, fileName, /* expectPomdp = */ false);
+  mdp.fileName = _fileName;
+  readModelFromFile(mdp, /* expectPomdp = */ false);
 }
 
-void FastParser::readPomdpFromFile(CassandraModel& pomdp, const std::string& fileName)
+void FastParser::readPomdpFromFile(CassandraModel& pomdp, const std::string& _fileName)
 {
-  readModelFromFile(pomdp, fileName, /* expectPomdp = */ true);
+  pomdp.fileName = _fileName;
+  readModelFromFile(pomdp, /* expectPomdp = */ true);
 }
 
 void FastParser::readModelFromFile(CassandraModel& problem,
-				   const std::string& fileName,
 				   bool expectPomdp)
 {
   ifstream in;
 
   timeval startTime, endTime;
   if (zmdpDebugLevelG >= 1) {
-    cout << "reading problem (in fast mode) from " << fileName << endl;
+    cout << "reading problem (in fast mode) from " << problem.fileName << endl;
     gettimeofday(&startTime,0);
   }
 
-  in.open(fileName.c_str());
+  in.open(problem.fileName.c_str());
   if (!in) {
-    cerr << "ERROR: couldn't open " << fileName << " for reading: "
+    cerr << "ERROR: couldn't open " << problem.fileName << " for reading: "
 	 << strerror(errno) << endl;
     exit(EXIT_FAILURE);
   }
 
-  readModelFromStream(problem, fileName, in, expectPomdp);
+  readModelFromStream(problem, in, expectPomdp);
 
   in.close();
 
@@ -107,7 +108,6 @@ void FastParser::readModelFromFile(CassandraModel& problem,
 }
 
 void FastParser::readModelFromStream(CassandraModel& p,
-				     const std::string& fileName,
 				     std::istream& in,
 				     bool expectPomdp)
 {
@@ -137,7 +137,7 @@ void FastParser::readModelFromStream(CassandraModel& p,
   while (!in.eof()) {
     in.getline(buf,sizeof(buf));
     if (in.fail() && !in.eof()) {
-      cerr << "ERROR: " << fileName << ": line " << lineNumber << ": line too long for buffer"
+      cerr << "ERROR: " << p.fileName << ": line " << lineNumber << ": line too long for buffer"
 	   << " (max length " << sizeof(buf) << ")" << endl;
       exit(EXIT_FAILURE);
     }
@@ -149,7 +149,7 @@ void FastParser::readModelFromStream(CassandraModel& p,
     if (inPreamble) {
       if (PM_PREFIX_MATCHES("discount:")) {
 	if (1 != sscanf(buf,"discount: %lf", &p.discount)) {
-	  cerr << "ERROR: " << fileName << ": line " << lineNumber
+	  cerr << "ERROR: " << p.fileName << ": line " << lineNumber
 	       << ": syntax error in 'discount' statement"
 	       << endl;
 	  exit(EXIT_FAILURE);
@@ -157,13 +157,13 @@ void FastParser::readModelFromStream(CassandraModel& p,
 	discountSet = true;
       } else if (PM_PREFIX_MATCHES("values:")) {
 	if (1 != sscanf(buf,"values: %s", sbuf)) {
-	  cerr << "ERROR: " << fileName << ": line " << lineNumber
+	  cerr << "ERROR: " << p.fileName << ": line " << lineNumber
 	       << ": syntax error in 'values' statement"
 	       << endl;
 	  exit(EXIT_FAILURE);
 	}
 	if (0 != strcmp(sbuf,"reward")) {
-	  cerr << "ERROR: " << fileName << ": line " << lineNumber
+	  cerr << "ERROR: " << p.fileName << ": line " << lineNumber
 	       << ": expected 'values: reward', other types not supported by fast parser"
 	       << endl;
 	  exit(EXIT_FAILURE);
@@ -171,7 +171,7 @@ void FastParser::readModelFromStream(CassandraModel& p,
 	valuesSet = true;
       } else if (PM_PREFIX_MATCHES("actions:")) {
 	if (1 != sscanf(buf,"actions: %d", &p.numActions)) {
-	  cerr << "ERROR: " << fileName << ": line " << lineNumber
+	  cerr << "ERROR: " << p.fileName << ": line " << lineNumber
 	       << ": syntax error in 'actions' statement"
 	       << endl;
 	  exit(EXIT_FAILURE);
@@ -180,21 +180,21 @@ void FastParser::readModelFromStream(CassandraModel& p,
       } else if (PM_PREFIX_MATCHES("observations:")) {
 	if (expectPomdp) {
 	  if (1 != sscanf(buf,"observations: %d", &p.numObservations)) {
-	    cerr << "ERROR: " << fileName << ": line " << lineNumber
+	    cerr << "ERROR: " << p.fileName << ": line " << lineNumber
 		 << ": syntax error in 'observations' statement"
 		 << endl;
 	    exit(EXIT_FAILURE);
 	  }
 	  numObservationsSet = true;
 	} else {
-	  cerr << "ERROR: " << fileName << ": line " << lineNumber
+	  cerr << "ERROR: " << p.fileName << ": line " << lineNumber
 	       << ": got unexpected 'observations' statement in MDP"
 	       << endl;
 	  exit(EXIT_FAILURE);
 	}
       } else if (PM_PREFIX_MATCHES("states:")) {
 	if (1 != sscanf(buf,"states: %d", &p.numStates)) {
-	  cerr << "ERROR: " << fileName << ": line " << lineNumber
+	  cerr << "ERROR: " << p.fileName << ": line " << lineNumber
 	       << ": syntax error in 'states' statement"
 	       << endl;
 	  exit(EXIT_FAILURE);
@@ -202,12 +202,12 @@ void FastParser::readModelFromStream(CassandraModel& p,
 	numStatesSet = true;
       } else if (PM_PREFIX_MATCHES("start:")) {
 	if (!numStatesSet) {
-	  cerr << "ERROR: " << fileName << ": line " << lineNumber
+	  cerr << "ERROR: " << p.fileName << ": line " << lineNumber
 	       << ": got 'start' statement before 'states' statement"
 	       << endl;
 	  exit(EXIT_FAILURE);
 	}
-	readStartVector(p, buf, fileName, expectPomdp);
+	readStartVector(p, buf, expectPomdp);
 	startSet = true;
       } else {
 	// the statement is not one that is expected in the preamble,
@@ -215,7 +215,7 @@ void FastParser::readModelFromStream(CassandraModel& p,
 
 #define FP_CHECK_SET(VAR, NAME) \
 	if (!(VAR)) { \
-	  cerr << "ERROR: " << fileName << ": line " << lineNumber \
+	  cerr << "ERROR: " << p.fileName << ": line " << lineNumber \
 	       << ": at end of preamble, no '" << (NAME) << "' statement found" << endl; \
 	}
 
@@ -253,7 +253,7 @@ void FastParser::readModelFromStream(CassandraModel& p,
 	int s, a;
 	double reward;
 	if (3 != sscanf(buf, rFormat, &a, &s, &reward)) {
-	  cerr << "ERROR: " << fileName << ": line " << lineNumber
+	  cerr << "ERROR: " << p.fileName << ": line " << lineNumber
 	       << ": syntax error in R statement\n"
 	       << "  (expected format is '" << rFormat << "')"
 	       << endl;
@@ -264,7 +264,7 @@ void FastParser::readModelFromStream(CassandraModel& p,
 	int s, a, sp;
 	double prob;
 	if (4 != sscanf(buf,"T: %d : %d : %d %lf", &a, &s, &sp, &prob)) {
-	  cerr << "ERROR: " << fileName << ": line " << lineNumber
+	  cerr << "ERROR: " << p.fileName << ": line " << lineNumber
 	       << ": syntax error in T statement"
 	       << endl;
 	  exit(EXIT_FAILURE);
@@ -275,20 +275,20 @@ void FastParser::readModelFromStream(CassandraModel& p,
 	  int s, a, o;
 	  double prob;
 	  if (4 != sscanf(buf,"O: %d : %d : %d %lf", &a, &s, &o, &prob)) {
-	    cerr << "ERROR: " << fileName << ": line " << lineNumber
+	    cerr << "ERROR: " << p.fileName << ": line " << lineNumber
 		 << ": syntax error in O statement"
 		 << endl;
 	    exit(EXIT_FAILURE);
 	  }
 	  kmatrix_set_entry(Ox[a], s, o, prob);
 	} else {
-	  cerr << "ERROR: " << fileName << ": line " << lineNumber
+	  cerr << "ERROR: " << p.fileName << ": line " << lineNumber
 	       << ": got unexpected 'O' statement in MDP"
 	       << endl;
 	  exit(EXIT_FAILURE);
 	}
       } else {
-	cerr << "ERROR: " << fileName << ": line " << lineNumber
+	cerr << "ERROR: " << p.fileName << ": line " << lineNumber
 	     << ": got unexpected statement type while parsing body"
 	     << endl;
 	exit(EXIT_FAILURE);
@@ -321,7 +321,7 @@ void FastParser::readModelFromStream(CassandraModel& p,
 	fprintf(stderr,
 		"ERROR: %s: outgoing transition probabilities do not sum to 1 for:\n"
 		"  state %d, action %d, transition sum = %.10lf\n",
-		fileName.c_str(), (int)s, (int)a, sum(checkTmp));
+		p.fileName.c_str(), (int)s, (int)a, sum(checkTmp));
 	exit(EXIT_FAILURE);
       }
     }
@@ -345,7 +345,7 @@ void FastParser::readModelFromStream(CassandraModel& p,
 	  fprintf(stderr,
 		  "ERROR: %s: observation probabilities do not sum to 1 for:\n"
 		  "  state %d, action %d, observation sum = %.10lf\n",
-		  fileName.c_str(), (int)s, (int)a, sum(checkTmp));
+		  p.fileName.c_str(), (int)s, (int)a, sum(checkTmp));
 	  exit(EXIT_FAILURE);
 	}
       }
@@ -364,7 +364,7 @@ void FastParser::readModelFromStream(CassandraModel& p,
       fprintf(stderr,
 	      "ERROR: %s: initial belief entries do not sum to 1:\n"
 	      "  entry sum = %.10lf\n",
-	      fileName.c_str(), sum(p.initialBelief));
+	      p.fileName.c_str(), sum(p.initialBelief));
       exit(EXIT_FAILURE);
     }
   }
@@ -377,7 +377,6 @@ void FastParser::readModelFromStream(CassandraModel& p,
 
 void FastParser::readStartVector(CassandraModel& p,
 				 char *data,
-				 const std::string& fileName,
 				 bool expectPomdp)
 {
   if (expectPomdp) {
@@ -400,7 +399,7 @@ void FastParser::readStartVector(CassandraModel& p,
 	if (0 == i) {
 	  double startState = atof(tok);
 	  if (startState != floor(startState)) {
-	    cout << "ERROR: " << fileName
+	    cout << "ERROR: " << p.fileName
 		 << ": POMDP 'start' statement must either contain a single integer "
 		 << "specifying a known start state or a list of the initial probabilities of "
 		 << "all states"
@@ -410,7 +409,7 @@ void FastParser::readStartVector(CassandraModel& p,
 	  p.initialBelief.push_back((int)startState, 1.0);
 	  return;
 	} else {
-	  cout << "ERROR: " << fileName
+	  cout << "ERROR: " << p.fileName
 	       << ": POMDP 'start' statement must either contain a single integer "
 	       << "specifying a known start state or a list of the initial probabilities of "
 	       << "all states"
@@ -430,7 +429,7 @@ void FastParser::readStartVector(CassandraModel& p,
     double x, y;
     int ret = sscanf(data, "start: %lf %lf", &x, &y);
     if ((ret != 1) || (x != floor(x))) {
-      cout << "ERROR: " << fileName
+      cout << "ERROR: " << p.fileName
 	   << ": MDP 'start' statement must contain a single integer "
 	   << "specifying a known start state" << endl;
       exit(EXIT_FAILURE);
@@ -439,7 +438,7 @@ void FastParser::readStartVector(CassandraModel& p,
     p.initialState.resize(1);
     int startState;
     if (1 != sscanf(data, "start: %d", &startState)) {
-      cout << "ERROR: " << fileName
+      cout << "ERROR: " << p.fileName
 	   << ": MDP 'start' statement must contain a single integer "
 	   << "specifying a known start state" << endl;
       exit(EXIT_FAILURE);
@@ -453,6 +452,9 @@ void FastParser::readStartVector(CassandraModel& p,
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2007/01/15 17:23:34  trey
+ * fix problem that was causing zeros to have entries in the sparse representation of initialBelief
+ *
  * Revision 1.3  2006/11/09 21:11:33  trey
  * removed obsolete code referencing variable initialBeliefx
  *

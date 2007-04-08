@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2006-11-12 20:51:48 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2007-04-08 22:48:04 $
   
  @file    CassandraParser.cc
  @brief   No brief
@@ -46,14 +46,16 @@ using namespace MatrixUtils;
 namespace zmdp {
 
 void CassandraParser::readGenericDiscreteMDPFromFile(CassandraModel& mdp,
-						     const std::string& fileName)
+						     const std::string& _fileName)
 {
-  readModelFromFile(mdp, fileName, /* expectPomdp = */ false);
+  mdp.fileName = _fileName;
+  readModelFromFile(mdp, /* expectPomdp = */ false);
 }
 
-void CassandraParser::readPomdpFromFile(CassandraModel& pomdp, const std::string& fileName)
+void CassandraParser::readPomdpFromFile(CassandraModel& pomdp, const std::string& _fileName)
 {
-  readModelFromFile(pomdp, fileName, /* expectPomdp = */ true);
+  pomdp.fileName = _fileName;
+  readModelFromFile(pomdp, /* expectPomdp = */ true);
 }
 
 // This macro is a pure pass-through. I just use it to make clear
@@ -62,17 +64,16 @@ void CassandraParser::readPomdpFromFile(CassandraModel& pomdp, const std::string
 #define CASSANDRA_GLOBAL(X) (X)
 
 void CassandraParser::readModelFromFile(CassandraModel& p,
-					const std::string& fileName,
 					bool expectPomdp)
 {
   timeval startTime, endTime;
   if (zmdpDebugLevelG >= 1) {
-    cout << "reading problem from " << fileName << endl;
+    cout << "reading problem from " << p.fileName << endl;
     gettimeofday(&startTime,0);
   }
 
   // this is the main call to Tony Cassandra's parsing code
-  if (! readMDP(const_cast<char *>(fileName.c_str())) ) {
+  if (! readMDP(const_cast<char *>(p.fileName.c_str())) ) {
     // error messages should already have been printed
     exit(EXIT_FAILURE);
   }
@@ -145,6 +146,9 @@ void CassandraParser::readModelFromFile(CassandraModel& p,
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2006/11/12 20:51:48  trey
+ * added call to deallocateMDP() back in; it was accidentally left out when I migrated the translation code from pomdpCassandraWrapper to CassandraParser
+ *
  * Revision 1.2  2006/11/09 20:48:40  trey
  * fixed some MDP vs. POMDP issues
  *

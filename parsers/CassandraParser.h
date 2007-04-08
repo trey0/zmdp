@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2006-11-09 20:48:40 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2007-04-08 22:48:04 $
    
  @file    CassandraParser.h
  @brief   No brief
@@ -38,7 +38,7 @@ struct CassandraParser {
   void readPomdpFromFile(CassandraModel& pomdp, const std::string& fileName);
 
 protected:
-  void readModelFromFile(CassandraModel& problem, const std::string& fileName,
+  void readModelFromFile(CassandraModel& problem,
 			 bool expectPomdp);
 };
 
@@ -49,6 +49,9 @@ protected:
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2006/11/09 20:48:40  trey
+ * fixed some MDP vs. POMDP issues
+ *
  * Revision 1.1  2006/11/08 16:40:50  trey
  * initial check-in
  *
