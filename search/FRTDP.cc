@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.20 $  $Author: trey $  $Date: 2006-10-30 20:00:15 $
+ $Revision: 1.21 $  $Author: trey $  $Date: 2007-04-08 22:45:39 $
    
  @file    FRTDP.cc
  @brief   No brief
@@ -41,6 +41,7 @@ using namespace MatrixUtils;
 
 #define FRTDP_INIT_MAX_DEPTH (10)
 #define FRTDP_MAX_DEPTH_ADJUST_RATIO (1.1)
+#define FRTDP_QUALITY_MARGIN (1e-5)
 
 namespace zmdp {
 
@@ -186,28 +187,28 @@ bool FRTDP::doTrial(MDPNode& cn)
 	       /* logOcc = */ log(1.0),
 	       /* depth = */ 0);
 
-  double updateQualityRatio;
+  double updateQualityDiff;
   if (0 == oldQualitySum) {
-    updateQualityRatio = 1000;
+    updateQualityDiff = 1000;
   } else if (0 == newNumUpdates) {
-    updateQualityRatio = 0;
+    updateQualityDiff = -1000;
   } else {
     double oldMean = oldQualitySum / oldNumUpdates;
     double newMean = newQualitySum / newNumUpdates;
-    updateQualityRatio = newMean / oldMean;
+    updateQualityDiff = newMean - oldMean;
   }
   
-  if (updateQualityRatio >= 1.0) {
+  if (updateQualityDiff > -FRTDP_QUALITY_MARGIN) {
     oldMaxDepth = maxDepth;
     maxDepth *= FRTDP_MAX_DEPTH_ADJUST_RATIO;
     if (zmdpDebugLevelG >= 1) {
-      printf("endTrial: updateQualityRatio=%g oldMaxDepth=%g maxDepth=%g\n",
-	     updateQualityRatio, oldMaxDepth, maxDepth);
+      printf("endTrial: updateQualityDiff=%g oldMaxDepth=%g maxDepth=%g\n",
+	     updateQualityDiff, oldMaxDepth, maxDepth);
     }
   } else {
     if (zmdpDebugLevelG >= 1) {
-      printf("endTrial: updateQualityRatio=%g maxDepth=%g (no change)\n",
-	     updateQualityRatio, maxDepth);
+      printf("endTrial: updateQualityDiff=%g maxDepth=%g (no change)\n",
+	     updateQualityDiff, maxDepth);
     }
   }
 
@@ -231,6 +232,9 @@ void FRTDP::derivedClassInit(void)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.20  2006/10/30 20:00:15  trey
+ * USE_DEBUG_PRINT replaced with a run-time config parameter "debugLevel"
+ *
  * Revision 1.19  2006/10/24 02:37:05  trey
  * updated for modified bounds interfaces
  *
