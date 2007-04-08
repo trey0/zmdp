@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2007-03-23 02:12:04 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2007-04-08 22:46:57 $
    
  @file    BoundPairExec.h
  @brief   No brief
@@ -51,10 +51,8 @@ struct BoundPairExec : public MDPExec {
   // and the bounds
   void init(MDP* _mdp, BoundPair* _bounds);
 
-  // alternate initializer that reads the model and a
-  // MaxPlanesLowerBound from files
-  void initMaxPlanes(const std::string& modelFileName,
-		     bool useFastModelParser,
+  // alternate initializer that reads the model and a policy from files
+  void initReadFiles(const std::string& modelFileName,
 		     const std::string& policyFileName,
 		     const ZMDPConfig& config);
 
@@ -74,6 +72,9 @@ struct BoundPairExec : public MDPExec {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2007/03/23 02:12:04  trey
+ * fixed init() to take MDP* argument instead of Pomdp*
+ *
  * Revision 1.1  2007/03/23 00:26:11  trey
  * renamed MaxPlanesLowerBoundExec to BoundPairExec
  *

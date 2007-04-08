@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2007-03-23 02:11:50 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2007-04-08 22:46:57 $
    
  @file    BoundPairExec.cc
  @brief   No brief
@@ -59,11 +59,12 @@ void BoundPairExec::init(MDP* _mdp, BoundPair* _bounds)
 }
 
 // alternate initializer that reads the model and bounds from files
-void BoundPairExec::initMaxPlanes(const std::string& modelFileName,
-				  bool useFastModelParser,
+void BoundPairExec::initReadFiles(const std::string& modelFileName,
 				  const std::string& policyFileName,
 				  const ZMDPConfig& config)
 {
+  bool useFastModelParser = config.getBool("useFastModelParser");
+  std::string policyType = config.getString("policyType");
   timeval tv1, tv2;
 
   printf("BoundPairExec: reading pomdp model, useFastModelParser=%d\n",
@@ -76,10 +77,17 @@ void BoundPairExec::initMaxPlanes(const std::string& modelFileName,
 	 (tv2.tv_sec - tv1.tv_sec) + 1e-6*(tv2.tv_usec - tv1.tv_usec));
 
   MaxPlanesLowerBound* lb = new MaxPlanesLowerBound(pomdp, &config);
-
-  printf("BoundPairExec: reading policy\n");
+  printf("BoundPairExec: reading policy of type '%s'\n", policyType.c_str());
   gettimeofday(&tv1, NULL);
-  lb->readFromFile(policyFileName);
+  if (policyType == "maxPlanes") {
+    lb->readFromFile(policyFileName);
+  } else if (policyType == "cassandraAlpha") {
+    lb->readFromCassandraAlphaFile(policyFileName);
+  } else {
+    fprintf(stderr, "ERROR: BoundPairExec: unknown policy type '%s'\n",
+	    policyType.c_str());
+    exit(EXIT_FAILURE);
+  }
   gettimeofday(&tv2, NULL);
   printf("  (took %.3f seconds)\n",
 	 (tv2.tv_sec - tv1.tv_sec) + 1e-6*(tv2.tv_usec - tv1.tv_usec));
@@ -122,6 +130,9 @@ void BoundPairExec::setBelief(const belief_vector& b)
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2007/03/23 02:11:50  trey
+ * fixed init() to take MDP* argument instead of Pomdp*
+ *
  * Revision 1.1  2007/03/23 00:26:11  trey
  * renamed MaxPlanesLowerBoundExec to BoundPairExec
  *
