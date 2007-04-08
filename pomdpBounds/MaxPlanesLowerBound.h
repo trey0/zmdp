@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.16 $  $Author: trey $  $Date: 2007-03-23 00:04:59 $
+ $Revision: 1.17 $  $Author: trey $  $Date: 2007-04-08 22:54:09 $
    
  @file    MaxPlanesLowerBound.h
  @brief   No brief
@@ -75,6 +75,7 @@ struct MaxPlanesLowerBound : public IncrementalLowerBound {
   bool useMaxPlanesSupportList;
   bool useMaxPlanesCache;
   bool useMaxPlanesExtraPruning;
+  bool initialized;
   
   MaxPlanesLowerBound(const MDP* _pomdp,
 		      const ZMDPConfig* _config);
@@ -103,6 +104,7 @@ struct MaxPlanesLowerBound : public IncrementalLowerBound {
 
   void writeToFile(const std::string& outFileName) const;
   void readFromFile(const std::string& inFileName);
+  void readFromCassandraAlphaFile(const std::string& inFileName);
   int getStorage(int whichMetric) const;
 };
 
@@ -113,6 +115,9 @@ struct MaxPlanesLowerBound : public IncrementalLowerBound {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.16  2007/03/23 00:04:59  trey
+ * added an implementation of chooseAction() that uses the direct policy rather than the lookahead-one policy; should speed policy evaluation for benchmarking significantly
+ *
  * Revision 1.15  2007/01/14 00:54:10  trey
  * added hooks for logging storage space during a run
  *

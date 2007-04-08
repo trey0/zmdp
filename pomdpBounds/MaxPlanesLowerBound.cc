@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.26 $  $Author: trey $  $Date: 2007-03-23 00:04:59 $
+ $Revision: 1.27 $  $Author: trey $  $Date: 2007-04-08 22:54:09 $
    
  @file    MaxPlanesLowerBound.cc
  @brief   No brief
@@ -142,7 +142,8 @@ MaxPlanesLowerBound::MaxPlanesLowerBound(const MDP* _pomdp,
 					 const ZMDPConfig* _config) :
   pomdp((const Pomdp*) _pomdp),
   config(_config),
-  core(NULL)
+  core(NULL),
+  initialized(false)
 {
   lastPruneNumPlanes = 0;
   lastPruneNumBackups = -1;
@@ -165,6 +166,8 @@ MaxPlanesLowerBound::~MaxPlanesLowerBound(void)
 
 void MaxPlanesLowerBound::initialize(double targetPrecision)
 {
+  if (initialized) return;
+
   BlindLBInitializer blb(pomdp, this);
   blb.initialize(targetPrecision);
 
@@ -174,6 +177,7 @@ void MaxPlanesLowerBound::initialize(double targetPrecision)
       (*planeP)->numBackupsAtCreation = 0;
     }
   }
+  initialized = true;
 }
 
 double MaxPlanesLowerBound::getValue(const belief_vector& b, const MDPNode* cn) const
@@ -387,6 +391,7 @@ const LBPlane& MaxPlanesLowerBound::getBestLBPlaneConst(const belief_vector& b) 
     }
   }
 
+  assert(NULL != ret);
   return *ret;
 }
 
@@ -592,7 +597,6 @@ void MaxPlanesLowerBound::writeToFile(const std::string& outFileName) const
 
 void MaxPlanesLowerBound::readFromFile(const std::string& inFileName)
 {
-
   ifstream inFile(inFileName.c_str());
   if (!inFile) {
     cerr << "ERROR: couldn't open " << inFileName << " for reading: "
@@ -686,6 +690,44 @@ void MaxPlanesLowerBound::readFromFile(const std::string& inFileName)
   // the set of planes should have been pruned before it was written out
   lastPruneNumPlanes = planes.size();
   lastPruneNumBackups = -1;
+
+  initialized = true;
+}
+
+void MaxPlanesLowerBound::readFromCassandraAlphaFile(const std::string& inFileName)
+{
+  ifstream inFile(inFileName.c_str());
+  if (!inFile) {
+    cerr << "ERROR: couldn't open " << inFileName << " for reading: "
+	 << strerror(errno) << endl;
+    exit(EXIT_FAILURE);
+  }
+  
+  double val;
+  LBPlane plane;
+
+  // initialize elements that are the same for all planes
+  mask_set_all(plane.mask, pomdp->numStates);
+  plane.numBackupsAtCreation = -1;
+
+  while (!inFile.eof()) {
+    inFile >> plane.action;
+    plane.alpha.clear();
+    plane.alpha.resize(pomdp->numStates);
+    for (int i=0; i < pomdp->numStates; i++) {
+      inFile >> val;
+      plane.alpha.push_back(i, val);
+    }
+    addLBPlane(new LBPlane(plane));
+  }
+    
+  inFile.close();
+
+  // the set of planes should have been pruned before it was written out
+  lastPruneNumPlanes = planes.size();
+  lastPruneNumBackups = -1;
+
+  initialized = true;
 }
 
 int MaxPlanesLowerBound::getStorage(int whichMetric) const
@@ -719,6 +761,9 @@ int MaxPlanesLowerBound::getStorage(int whichMetric) const
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.26  2007/03/23 00:04:59  trey
+ * added an implementation of chooseAction() that uses the direct policy rather than the lookahead-one policy; should speed policy evaluation for benchmarking significantly
+ *
  * Revision 1.25  2007/02/22 22:01:28  trey
  * made change to support list calculation to avoid bad interactions with pruning that caused a crash; parallels an earlier change to the sawtooth upper bound
  *
