@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2007-03-24 22:37:42 $
+ $Revision: 1.3 $  $Author: trey $  $Date: 2007-04-08 22:46:21 $
    
  @file    MDPModel.h
  @brief   No brief
@@ -42,6 +42,7 @@ struct AbstractBound;
 // discrete probability distribution.  This data structure can
 // represent the belief MDP corresponding to a discrete POMDP.
 struct MDP {
+  std::string fileName; // filename model was read from (or empty string if unknown)
   int numStateDimensions, numActions;
   double discount;
 
@@ -88,6 +89,9 @@ struct MDP {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2007/03/24 22:37:42  trey
+ * removed const tag from member functions in MDP so that implementations which cache query results are possible
+ *
  * Revision 1.1  2006/11/08 16:33:45  trey
  * renamed MDP.h to MDPModel.h to avoid confusion with mdp.h, stupid case insensitive Mac OS X
  *
