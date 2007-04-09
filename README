@@ -238,11 +238,28 @@ RELEASE NOTES
 
 Changes from 1.1.0 to 1.1.1 (25 Mar 2007)
 
+* Added capability for zmdpEvaluate to read in policies in the
+  alpha vector format output by Tony Cassandra's pomdp-solve
+  with the '-t cassandraAlpha' option.  However, at this point
+  ZMDP does not output policies in this format (1.1.2).
+
+* Sped up policy evaluation by removing some unnecessary cache
+  resets (1.1.2).
+
+* Added a "margin of error" to adaptive maximum depth calculation
+  in FRTDP to avoid the potential for FRTDP to run an infinite
+  number of trials without increasing the maximum depth (although
+  this pathological behavior was never observed) (1.1.2).
+
+* Fixed invalid use of uninitialized memory in HDP implementation.  This
+  calls into question earlier performance evaluations for HDP, but
+  luckily the bug appears not to have had a significant impact (1.1.2).
+
 * Made further improvements to policy evaluation, including improved
-  caching and sample reweighting to reduce variance.
+  caching and sample reweighting to reduce variance (1.1.1).
 
 * Fixed a bug that caused a crash during policy evaluation with the
-  hallway.pomdp problem.
+  hallway.pomdp problem (1.1.1).
 
 Changes from 1.0.2 to 1.1.0 (24 Mar 2007)
 
@@ -414,4 +431,4 @@ zpomdp 0.1.0 (28 Oct 2005)
 * Initial release.
 
 ==========================================================
-$Id: README,v 1.37 2007-03-25 18:36:46 trey Exp $
+$Id: README,v 1.38 2007-04-09 00:19:12 trey Exp $
