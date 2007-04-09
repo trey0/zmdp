@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-$numTestsToRun = 14;
+$numTestsToRun = 15;
 
 sub dosys {
     my $cmd = shift;
