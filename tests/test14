@@ -1,0 +1,9 @@
+#!/usr/bin/perl
+
+$TEST_DESCRIPTION = "zmdpEvaluate with cassandraAlpha policy";
+require "testLibrary.perl";
+
+&testZmdpEvaluate(cmd => "$zmdpEvaluate -t cassandraAlpha -p ../three_state.alpha $pomdpsDir/three_state.pomdp",
+		  expectedMean => 20.827,
+		  testTolerance => 0.2,
+		  outFiles => ["scores.plot", "sim.plot"]);
