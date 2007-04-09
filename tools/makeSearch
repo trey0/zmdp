@@ -5,32 +5,38 @@
 ######################################################################
 # ADJUSTABLE PARAMETERS
 
-@SEARCHES = ({title => "RTDP" ,dir => "rtdp", opts => "-s rtdp"},
-	     {title => "LRTDP", dir => "lrtdp", opts => "-s lrtdp"},
-	     {title => "HDP", dir => "hdp", opts => "-s hdp"},
-	     {title => "HDP+L", dir => "hdpl", opts => "-s hdp --maintainLowerBound 1"},
-	     {title => "HSVI", dir => "hsvi", opts => "-s hsvi"},
-	     {title => "FRTDP", dir => "frtdp", opts => "-s frtdp"},
-	    );
+@SEARCHES = (
+    {title => "RTDP" ,dir => "rtdp", opts => "-s rtdp"},
+    {title => "LRTDP", dir => "lrtdp", opts => "-s lrtdp"},
+    {title => "HDP", dir => "hdp", opts => "-s hdp"},
+    {title => "HDP+L", dir => "hdpl", opts => "-s hdp --maintainLowerBound 1"},
+    {title => "HSVI", dir => "hsvi", opts => "-s hsvi"},
+    {title => "FRTDP", dir => "frtdp", opts => "-s frtdp"},
+);
 
-@POMDPS = ({title => "Tag", abbrev => "Tag", prob => "tagAvoid.pomdp"},
-	   {title => "RockSample[5,7]", abbrev => "RS57", prob => "RockSample_5_7.pomdp", opts => "-f --evaluationFirstEpochWallclockSeconds 0.1"},
-	   {title => "LifeSurvey1", abbrev => "LS1", prob => "ltv1.pomdp", opts => "-f"},
-#{title => "Tiger-Grid", prob => "tiger-grid.pomdp"},
-	   #{title => "Hallway", prob => "hallway.pomdp", opts => "--evaluationFirstEpochWallclockSeconds 0.1"},
-	   #{title => "Hallway2", prob => "hallway2.pomdp", opts => "--evaluationFirstEpochWallclockSeconds 0.1"},
-	   #{title => "RockSample[4,4]", prob => "RockSample_4_4.pomdp", opts => "--evaluationFirstEpochWallclockSeconds 0.1"},
-	   #{title => "RockSample[7,8]", prob => "RockSample_7_8.pomdp", opts => "-f"},
-	   #{title => "RockSample[10,10]", prob => "RockSample_10_10.pomdp", opts => "-f"},
-	  );
+@POMDPS = (
+    {title => "Tag", abbrev => "Tag", prob => "tagAvoid.pomdp"},
+    {title => "RockSample[5,7]", abbrev => "RS57", prob => "RockSample_5_7.pomdp", opts => "-f --evaluationFirstEpochWallclockSeconds 0.1"},
+    {title => "LifeSurvey1", abbrev => "LS1", prob => "ltv1.pomdp", opts => "-f"},
+);
 
-@MDPS = ({title => "large-b", abbrev => "LB", prob => "large-b.racetrack", opts => "--evaluationFirstEpochWallclockSeconds 0.1", maxY => -20},
-	 {title => "large-b-w", abbrev => "LBW", prob => "large-b-w.racetrack", opts => "--evaluationFirstEpochWallclockSeconds 0.1", maxY => -20},
-	 {title => "large-ring", abbrev => "LR", prob => "large-ring.racetrack", opts => "--evaluationFirstEpochWallclockSeconds 0.1", maxY => -10},
-	 {title => "large-ring-w", abbrev => "LRW", prob => "large-ring-w.racetrack", opts => "--evaluationFirstEpochWallclockSeconds 0.1", maxY => -10},
-#	 {title => "large-b-3", prob => "large-b-3.racetrack", opts => "--evaluationFirstEpochWallclockSeconds 0.1"},
-#	 {title => "large-ring-3", prob => "large-ring-3.racetrack", opts => "--evaluationFirstEpochWallclockSeconds 0.1"},
-	);
+    #{title => "Tiger-Grid", prob => "tiger-grid.pomdp"},
+    #{title => "Hallway", prob => "hallway.pomdp", opts => "--evaluationFirstEpochWallclockSeconds 0.1"},
+    #{title => "Hallway2", prob => "hallway2.pomdp", opts => "--evaluationFirstEpochWallclockSeconds 0.1"},
+    #{title => "RockSample[4,4]", prob => "RockSample_4_4.pomdp", opts => "--evaluationFirstEpochWallclockSeconds 0.1"},
+    #{title => "RockSample[7,8]", prob => "RockSample_7_8.pomdp", opts => "-f"},
+    #{title => "RockSample[10,10]", prob => "RockSample_10_10.pomdp", opts => "-f"},
+
+
+@MDPS = (
+    {title => "large-b", abbrev => "LB", prob => "large-b.racetrack", opts => "--evaluationFirstEpochWallclockSeconds 0.1", maxY => -20},
+    {title => "large-b-w", abbrev => "LBW", prob => "large-b-w.racetrack", opts => "--evaluationFirstEpochWallclockSeconds 0.1", maxY => -20},
+    {title => "large-ring", abbrev => "LR", prob => "large-ring.racetrack", opts => "--evaluationFirstEpochWallclockSeconds 0.1", maxY => -10},
+    {title => "large-ring-w", abbrev => "LRW", prob => "large-ring-w.racetrack", opts => "--evaluationFirstEpochWallclockSeconds 0.1", maxY => -10},
+);
+
+    #{title => "large-b-3", prob => "large-b-3.racetrack", opts => "--evaluationFirstEpochWallclockSeconds 0.1"},
+    #{title => "large-ring-3", prob => "large-ring-3.racetrack", opts => "--evaluationFirstEpochWallclockSeconds 0.1"},
 
 for (@POMDPS) {
     $_->{timeout} = 1000;
@@ -41,9 +47,10 @@ for (@MDPS) {
     $_->{type} = "mdp";
 }
 
-@PROBLEMS = (@POMDPS,
-	     @MDPS
-	     );
+@PROBLEMS = (
+    @POMDPS,
+    @MDPS
+);
 
 @LINE_STYLES = ("-*1", "-o1", "-x1","-+1", "-*3", "-o3", "-x3","-+3");
 
@@ -65,7 +72,7 @@ sub dosys {
 sub doSearch {
     my $root = "~/z";
     my $bin = "$root/bin/linux2";
-    my $zmdpBenchmark = "zmdpBenchmark -i 10000 --evaluationEpochsPerMagnitude 10";
+    my $zmdpBenchmark = "zmdpBenchmark -i 10000 --evaluationEpochsPerMagnitude 10 --storageOutputFile storage.log ";
     
     for my $searchHash (@SEARCHES) {
 	my $searchTitle = $searchHash->{title};
@@ -80,9 +87,10 @@ sub doSearch {
 	    my ($probStem,$probExt) = split(/\./, $prob, 2);
 	    $probExt =~ s/\s.*//;
 	    my $dir = "$probExt/${probStem}_$searchDir";
+	    my $ulimit = "ulimit -s 1000000 &&";
 	    if (! -e $dir) {
 		&dosys("mkdir -p $dir");
-		&dosys("-cd $dir && ulimit -s 1000000 && runWithTimeout $hardTimeout $zmdpBenchmark $searchOpts $probOpts --terminateWallclockSeconds $probTimeout $probPath >& stdout.log");
+		&dosys("-cd $dir && $ulimit runWithTimeout $hardTimeout $zmdpBenchmark $searchOpts $probOpts --terminateWallclockSeconds $probTimeout $probPath >& stdout.log");
 	    }
 	}
     }
