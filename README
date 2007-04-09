@@ -236,7 +236,7 @@ REFERENCES
 ========================================================================
 RELEASE NOTES
 
-Changes from 1.1.0 to 1.1.1 (25 Mar 2007)
+Changes from 1.1.0 to 1.1.2 (8 Apr 2007)
 
 * Added capability for zmdpEvaluate to read in policies in the
   alpha vector format output by Tony Cassandra's pomdp-solve
@@ -431,4 +431,4 @@ zpomdp 0.1.0 (28 Oct 2005)
 * Initial release.
 
 ==========================================================
-$Id: README,v 1.38 2007-04-09 00:19:12 trey Exp $
+$Id: README,v 1.39 2007-04-09 00:35:08 trey Exp $
