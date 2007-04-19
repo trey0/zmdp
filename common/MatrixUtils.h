@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.19 $  $Author: trey $  $Date: 2007-03-25 15:14:01 $
+ $Revision: 1.20 $  $Author: trey $  $Date: 2007-04-19 22:07:29 $
    
  @file    MatrixUtils.h
  @brief   No brief
@@ -175,9 +175,12 @@ namespace MatrixUtils {
       r -= b(i);
       if (r <= 0) return i;
     }
-    // should never reach this point if b is normalized properly
-    //   (up to round-off error)
-    assert(r < 1e-10);
+    if (r >= 1e-10) {
+      // should never reach this point if b is normalized properly
+      //   (up to round-off error)
+      printf("chooseFromDistribution: b=%s 1-sum(b)=%g\n", denseRep(b).c_str(), 1 - sum(b));
+      assert(0);
+    }
     return 0;
   }
 
@@ -187,9 +190,12 @@ namespace MatrixUtils {
       r -= CV_VAL(b);
       if (r <= 0) return CV_INDEX(b);
     }
-    // should never reach this point if b is normalized properly
-    //   (up to round-off error)
-    assert(r < 1e-10);
+    if (r >= 1e-10) {
+      // should never reach this point if b is normalized properly
+      //   (up to round-off error)
+      printf("chooseFromDistribution: b=%s 1-sum(b)=%g\n", sparseRep(b).c_str(), 1 - sum(b));
+      assert(0);
+    }
     return 0;
   }
 
@@ -373,6 +379,9 @@ namespace MatrixUtils {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.19  2007/03/25 15:14:01  trey
+ * removed weights argument to bootstrap confidence interval calculation
+ *
  * Revision 1.18  2007/03/24 23:17:25  trey
  * bug fix; you can now safely change the size of the state set without causing a crash in the hashable() function
  *
