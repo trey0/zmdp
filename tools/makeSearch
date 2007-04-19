@@ -82,7 +82,7 @@ sub doSearch {
 	    my $prob = $probHash->{prob};
 	    my $probOpts = $probHash->{opts} || "";
 	    my $probTimeout = $probHash->{timeout};
-	    my $hardTimeout = 1.5 * $probTimeout;
+	    my $hardTimeout = 4 * $probTimeout;
 	    my $probPath = "$root/problems.archive/$prob";
 	    my ($probStem,$probExt) = split(/\./, $prob, 2);
 	    $probExt =~ s/\s.*//;
@@ -200,6 +200,9 @@ sub doTableX {
     my $whichField = shift;
     my $outFile = shift;
 
+    printf "table $whichField $outFile\n";
+
+    printf "  determining which search algorithms have data available\n";
     my @vsearches;
     if ($whichField eq "ub") {
 	@vsearches = @SEARCHES;
@@ -215,18 +218,21 @@ sub doTableX {
 	}
     }
 
+    printf "  calculating minimum values and time taken to reach them\n";
     my %results = ();
     for my $probHash (@{$probList}) {
 	my $prob = $probHash->{prob};
 
-	# pass 1: first get the largest minimum ub value of any search strategy
+	# pass 1: first get the largest minimum value of any search strategy
 	my $maxMinVal = -99e+20;
 	$results{$prob} = {};
 	for my $searchHash (@vsearches) {
+	    my $dirDebug = $searchHash->{dir};
 	    # skip bad combination
 	    if (($searchHash->{dir} eq "hsvi")
 		and (($probHash->{prob} eq "large-ring-w.racetrack")
-		     or ($probHash->{prob} eq "large-b-w.racetrack"))) {
+		     or ($probHash->{prob} eq "large-b-w.racetrack")
+		     or ($probHash->{prob} eq "large-b.racetrack"))) {
 		#print "skipping bad combination\n";
 		next;
 	    }
@@ -247,6 +253,7 @@ sub doTableX {
 	}
     }
 
+    printf "  outputting table\n";
     my $probType = $probList->[0]->{type};
 
     my $readable = "";
@@ -274,12 +281,12 @@ sub doTableX {
     $tex .= "    ";
     for my $probHash (@{$probList}) {
 	my $probAbbrev = $probHash->{abbrev};
-	$readable .= sprintf("%8s ", $probAbbrev);
+	$readable .= sprintf("%8s    ", $probAbbrev);
 	$tex .= "& $probAbbrev ";
     }
     for my $probHash (@{$probList}) {
 	my $probAbbrev = $probHash->{abbrev};
-	$readable .= sprintf("%8s ", $probAbbrev);
+	$readable .= sprintf("%7s    ", $probAbbrev);
 	$tex .= "& $probAbbrev ";
     }
     $readable .= "\n";
@@ -297,10 +304,13 @@ sub doTableX {
     }
 
     my $numUpdatesFormat;
+    my $scaledFactor;
     if ($probType eq "pomdp") {
 	$numUpdatesFormat = "%8.1f";
+	$scaleFactor = 1000;
     } else {
 	$numUpdatesFormat = "%8.2f";
+	$scaleFactor = 1e+6;
     }
 
     for my $i (0..$#vsearches) {
@@ -312,21 +322,21 @@ sub doTableX {
 	for my $probHash (@{$probList}) {
 	    my $prob = $probHash->{prob};
 	    my $numUpdates = $results{$prob}{$searchDir}{numUpdates};
-	    my $scaledNumUpdates;
-	    if ($probType eq "pomdp") {
-		$scaledNumUpdates = $numUpdates / 1000;
-	    } else {
-		$scaledNumUpdates = $numUpdates / 10**6;
-	    }
+
+	    my $scaleRoundNumUpdates = sprintf("$numUpdatesFormat", $numUpdates/$scaleFactor);
+	    my $scaleRoundMinUpdates = sprintf("$numUpdatesFormat",
+					       $minVals{$prob}{numUpdates}/$scaleFactor);
+
 	    if ($numUpdates == 0) {
-		$readable .= sprintf("%8s ", "-");
-		$tex .= "& - ";
+		$readable .= sprintf("%8s    ", "-");
+		$tex .= "& -    ";
 	    } else {
-		$readable .= sprintf("$numUpdatesFormat ", $scaledNumUpdates);
-		if ($numUpdates == $minVals{$prob}{numUpdates}) {
-		    $tex .= sprintf("& {\\bf $numUpdatesFormat} ", $scaledNumUpdates);
+		if ($scaleRoundNumUpdates == $scaleRoundMinUpdates) {
+		    $readable .= "$scaleRoundNumUpdates *  ";
+		    $tex .= "& {\\bf $scaleRoundNumUpdates} ";
 		} else {
-		    $tex .= sprintf("& $numUpdatesFormat ", $scaledNumUpdates);
+		    $readable .= "$scaleRoundNumUpdates    ";
+		    $tex .= "& $scaleRoundNumUpdates ";
 		}
 	    }
 	}
@@ -334,14 +344,18 @@ sub doTableX {
 	    my $prob = $probHash->{prob};
 	    my $wallclock = $results{$prob}{$searchDir}{wallclock};
 	    if ($wallclock == 0) {
-		$readable .= sprintf("%8s ", "-");
+		$readable .= sprintf("%7s    ", "-");
 		$tex .= "& - ";
 	    } else {
-		$readable .= sprintf("%8.1f ", $wallclock);
-		if ($wallclock == $minVals{$prob}{wallclock}) {
-		    $tex .= sprintf("& {\\bf %.1f} ", $wallclock);
+		my $roundWallclock = sprintf("%.1lf", $wallclock);
+		my $roundMinWallclock = sprintf("%.1lf", $minVals{$prob}{wallclock});
+
+		if ($roundWallclock == $roundMinWallclock) {
+		    $readable .= sprintf("%7.1f *  ", $wallclock);
+		    $tex .= "& {\\bf $roundWallclock} ";
 		} else {
-		    $tex .= sprintf("& %.1f ", $wallclock);
+		    $readable .= sprintf("%7.1f    ", $wallclock);
+		    $tex .= "& $roundWallclock ";
 		}
 	    }
 	}
@@ -592,7 +606,7 @@ EOF
     print OCT $octScript;
     if ($OUTPUT_MODE eq "pdf") {
     	close(OCT);
-	&dosys("ps2pdf ${outStem}.ps");
+	&dosys("ps2pdf -dEmbedAllFonts=true ${outStem}.ps");
 	&dosys("rm -f ${outStem}.ps");
 	print "output written to ${outStem}.pdf\n";
     } else {
