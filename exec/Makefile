@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.6 2007-03-23 02:12:39 trey Exp $
+# $Id: Makefile,v 1.7 2007-04-19 22:17:35 trey Exp $
 #
 # Copyright (c) 2006, Trey Smith. All rights reserved.
 #
@@ -51,8 +51,8 @@ ifneq (,$(TEST))
 
 # add targets here to be built with 'make TEST=1 install'
 
-BUILDBIN_TARGET := testMDPExec
-BUILDBIN_SRCS := testMDPExec.cc
+BUILDBIN_TARGET := testExec
+BUILDBIN_SRCS := testExec.cc
 BUILDBIN_INDEP_LIBS := 
 BUILDBIN_DEP_LIBS := \
 	-lzmdpExec \
@@ -73,6 +73,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.6  2007/03/23 02:12:39  trey
+# renamed libzmdpPomdpExec.a to libzmdpExec.a for consistency
+#
 # Revision 1.5  2007/03/23 01:05:06  trey
 # added PolicyEvaluator
 #
