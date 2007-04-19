@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.9 $  $Author: trey $  $Date: 2007-03-25 21:38:18 $
+ $Revision: 1.10 $  $Author: trey $  $Date: 2007-04-19 22:08:30 $
    
  @file    PolicyEvaluator.cc
  @brief   No brief
@@ -35,6 +35,7 @@
 #include <fstream>
 
 #include "zmdpCommonDefs.h"
+#include "zmdpCommonTime.h"
 #include "MatrixUtils.h"
 #include "PolicyEvaluator.h"
 #include "MDPSim.h"
@@ -62,6 +63,8 @@ PolicyEvaluator::PolicyEvaluator(MDP* _simModel,
 
 void PolicyEvaluator::getRewardSamples(dvector& rewards, double& successRate, bool _verbose)
 {
+  timeval startTime = getTime();
+
   verbose = _verbose;
 
   useEvaluationCache = config->getBool("useEvaluationCache");
@@ -123,6 +126,9 @@ void PolicyEvaluator::getRewardSamples(dvector& rewards, double& successRate, bo
   DELETE_AND_NULL(scoresOutFile);
   DELETE_AND_NULL(sim);
   DELETE_AND_NULL(modelCache);
+
+  printf("(policy evaluation took %.3lf seconds)\n",
+	 timevalToSeconds(getTime() - startTime));
 }
 
 void PolicyEvaluator::doBatch(dvector& rewards,
@@ -363,6 +369,9 @@ void PolicyEvaluator::doBatchSimple(dvector& rewards,
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.9  2007/03/25 21:38:18  trey
+ * fixed policy evaluation to avoid discarding the cache between batches
+ *
  * Revision 1.8  2007/03/25 18:37:02  trey
  * tweaked console output
  *
