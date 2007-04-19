@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2007-03-23 00:25:55 $
+ $Revision: 1.2 $  $Author: trey $  $Date: 2007-04-19 22:08:55 $
    
  @file    MDPExec.cc
  @brief   No brief
@@ -53,7 +53,7 @@ void doit(const char* modelFileName,
 
   BoundPairExec* em = new BoundPairExec();
   printf("initializing\n");
-  em->initMaxPlanes(modelFileName, useFastModelParser, policyFileName, *config);
+  em->initReadFiles(modelFileName, policyFileName, *config);
 
   MDPExec* e = em;
 
@@ -133,6 +133,9 @@ int main(int argc, char *argv[])
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2007/03/23 00:25:55  trey
+ * renamed testPomdpExec to testMDPExec
+ *
  * Revision 1.4  2007/03/23 00:01:04  trey
  * fixed to reflect migration from PomdpExec to MDPExec base class
  *
