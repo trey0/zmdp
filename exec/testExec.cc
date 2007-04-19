@@ -1,7 +1,7 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2007-04-19 22:08:55 $
+ $Revision: 1.1 $  $Author: trey $  $Date: 2007-04-19 22:17:23 $
    
- @file    MDPExec.cc
+ @file    testExec.cc
  @brief   No brief
 
  Copyright (c) 2006, Trey Smith. All rights reserved.
@@ -41,6 +41,9 @@
 using namespace std;
 using namespace zmdp;
 
+#define NUM_TRIALS (3)
+#define NUM_STEPS_PER_TRIAL (100)
+
 void doit(const char* modelFileName,
 	  bool useFastModelParser,
 	  const char* policyFileName)
@@ -57,20 +60,24 @@ void doit(const char* modelFileName,
 
   MDPExec* e = em;
 
-  for (int i=0; i < 3; i++) {
+  for (int i=0; i < NUM_TRIALS; i++) {
     printf("new simulation run\n");
     e->setToInitialState();
     printf("  reset to initial belief\n");
-    while (1) {
+    for (int j=0; j < NUM_STEPS_PER_TRIAL; j++) {
+      printf("  step %d\n", j);
       int a = e->chooseAction();
-      printf("  chose action %d\n", a);
+      printf("    chose action %d\n", a);
       int o = e->getRandomOutcome(a);
-      printf("  simulated seeing random observation %d\n", o);
+      printf("    simulated seeing random observation %d\n", o);
       e->advanceToNextState(a,o);
-      printf("  updated belief\n");
+      printf("    updated belief\n");
       if (e->getStateIsTerminal()) {
-	printf("  belief is terminal, ending run\n");
+	printf("  [belief is terminal, ending trial]\n");
 	break;
+      } else if (j == NUM_STEPS_PER_TRIAL-1) {
+	printf("  [reached trial length limit of %d steps, ending trial]\n",
+	       NUM_STEPS_PER_TRIAL);
       }
     }
   }
@@ -133,6 +140,9 @@ int main(int argc, char *argv[])
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2007/04/19 22:08:55  trey
+ * brought testMDPExec up to date with new BoundPairExec interface
+ *
  * Revision 1.1  2007/03/23 00:25:55  trey
  * renamed testPomdpExec to testMDPExec
  *
