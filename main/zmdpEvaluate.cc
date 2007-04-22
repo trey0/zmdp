@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.21 $  $Author: trey $  $Date: 2007-04-08 22:49:08 $
+ $Revision: 1.22 $  $Author: trey $  $Date: 2007-04-22 22:43:34 $
 
  @file    zmdpEvaluate.cc
  @brief   Use to evaluate a POMDP policy in simulation.
@@ -58,24 +58,25 @@ void doit(const ZMDPConfig& config, SolverParams& p)
   }
 
   // initialize exec
-  MDPExec* e;
+  MDPExecCore* exec = NULL;
+  MDPExec* mdpExec = NULL;
   std::string policyType = config.getString("policyType");
   if (policyType == "maxPlanes" || policyType == "cassandraAlpha") {
     if (NULL == policyFileNameG) {
       fprintf(stderr, "ERROR: specified policy type requires -p argument (-h for help)\n");
       exit(EXIT_FAILURE);
     }
-    BoundPairExec* em = new BoundPairExec();
-    em->initReadFiles(plannerModelFileNameG, policyFileNameG, config);
-    e = em;
-  } else if (policyType == "lspath") {
+    BoundPairExec* bpExec = new BoundPairExec();
+    bpExec->initReadFiles(plannerModelFileNameG, policyFileNameG, config);
+    exec = mdpExec = bpExec;
+  } else if (policyType == "lspath" || policyType == "lsblind") {
     if (NULL == sourceModelFileNameG) {
       fprintf(stderr, "ERROR: lspath policy type requires -s argument (-h for help)\n");
       exit(EXIT_FAILURE);
     }
-    LSPathAndReactExec* el = new LSPathAndReactExec();
-    el->init(plannerModelFileNameG, sourceModelFileNameG, &config);
-    e = el;
+    LSPathAndReactExec* lpExec = new LSPathAndReactExec();
+    lpExec->init(sourceModelFileNameG, &config);
+    exec = lpExec;
   } else {
     fprintf(stderr, "ERROR: unknown policy type '%s' (-h for help)\n",
 	    policyType.c_str());
@@ -84,29 +85,32 @@ void doit(const ZMDPConfig& config, SolverParams& p)
 
   // initialize simulator
   Pomdp* simPomdp;
-  if (plannerModelFileNameG == simModelFileNameG) {
-    simPomdp = (Pomdp*) e->mdp;
+  bool assumeIdenticalModels = false;
+  if (mdpExec != NULL && plannerModelFileNameG == simModelFileNameG) {
+    simPomdp = (Pomdp*) mdpExec->mdp;
+    assumeIdenticalModels = true;
   } else {
-    Pomdp* plannerPomdp = (Pomdp*) e->mdp;
     simPomdp = new Pomdp(simModelFileNameG, &config);
 
-    if (! ((plannerPomdp->getNumActions() == simPomdp->getNumActions())
-	   && (plannerPomdp->getNumObservations() == simPomdp->getNumObservations()))) {
-      printf("ERROR: planner model %s and evaluation model %s must have the same number of actions and observations\n",
-	     plannerModelFileNameG, simModelFileNameG);
-      exit(EXIT_FAILURE);
+    if (mdpExec != NULL) {
+      Pomdp* plannerPomdp = (Pomdp*) mdpExec->mdp;
+      
+      if (! ((plannerPomdp->getNumActions() == simPomdp->getNumActions())
+	     && (plannerPomdp->getNumObservations() == simPomdp->getNumObservations()))) {
+	printf("ERROR: planner model %s and evaluation model %s must have the same number of actions and observations\n",
+	       plannerModelFileNameG, simModelFileNameG);
+	exit(EXIT_FAILURE);
+      }
     }
   }
-
-  // simulate running the policy many times and collect the per-run total reward values
   if (zmdpDebugLevelG >= 1) {
-    bool assumeIdenticalModels = (simPomdp == e->mdp);
     printf("If planning and sim models, evaluator can perform some optimizations:\n"
 	   "  assumeIdenticalModels=%d\n",
 	   assumeIdenticalModels);
   }
-  PolicyEvaluator eval(simPomdp, e, &config,
-		       /* assumeIdenticalModels = */ (simPomdp == e->mdp));
+
+  // simulate running the policy many times and collect the per-run total reward values
+  PolicyEvaluator eval(simPomdp, exec, &config, assumeIdenticalModels);
   dvector rewardSamples;
   double successRate;
   eval.getRewardSamples(rewardSamples, successRate, /* verbose = */ true);
@@ -286,6 +290,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.21  2007/04/08 22:49:08  trey
+ * added initial version of cassandraAlpha support; policyType parameter is now in the config file
+ *
  * Revision 1.20  2007/03/25 17:39:01  trey
  * simplified how success rate is tracked
  *
