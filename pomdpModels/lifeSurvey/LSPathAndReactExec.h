@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.4 $  $Author: trey $  $Date: 2007-03-23 00:01:20 $
+ $Revision: 1.5 $  $Author: trey $  $Date: 2007-04-22 22:42:11 $
    
  @file    LSPathAndReactExec.h
  @brief   No brief
@@ -46,18 +46,18 @@ struct LSValueEntry {
 
 typedef std::vector<LSValueEntry> LSValueVector;
 
-struct LSPathAndReactExec : public MDPExec {
+struct LSPathAndReactExec : public MDPExecCore {
   LSModel m;
   LSPath plannedPath;
   LSState currentLSState;
 
   std::vector<LSValueVector> bestValueMap;
   int numPathsEvaluated;
+  bool useBlindActionSelection;
 
   LSPathAndReactExec(void);
 
-  void init(const std::string& pomdpFileName,
-	    const std::string& lifeSurveyFileName,
+  void init(const std::string& lifeSurveyFileName,
 	    const ZMDPConfig* config);
 
   // implement PomdpExec virtual methods
@@ -85,6 +85,9 @@ struct LSPathAndReactExec : public MDPExec {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2007/03/23 00:01:20  trey
+ * fixed to reflect migration from PomdpExec to MDPExec base class
+ *
  * Revision 1.3  2006/11/08 16:42:38  trey
  * changed Pomdp constructor arguments
  *
