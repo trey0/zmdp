@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.10 $  $Author: trey $  $Date: 2007-04-19 22:08:30 $
+ $Revision: 1.11 $  $Author: trey $  $Date: 2007-04-22 22:41:19 $
    
  @file    PolicyEvaluator.cc
  @brief   No brief
@@ -48,7 +48,7 @@ using namespace sla;
 namespace zmdp {
 
 PolicyEvaluator::PolicyEvaluator(MDP* _simModel,
-				 MDPExec* _exec,
+				 MDPExecCore* _exec,
 				 const ZMDPConfig* _config,
 				 bool _assumeIdenticalModels) :
   simModel(_simModel),
@@ -227,7 +227,7 @@ void PolicyEvaluator::doBatchCache(dvector& rewards,
       simState = e->nextState;
 
       if (assumeIdenticalModels) {
-	exec->currentState = simState->s;
+	((MDPExec*) exec)->currentState = simState->s;
       } else {
 	exec->advanceToNextState(a, o);
       }
@@ -338,7 +338,7 @@ void PolicyEvaluator::doBatchSimple(dvector& rewards,
       int a = exec->chooseAction();
       sim->performAction(a);
       if (assumeIdenticalModels) {
-	exec->currentState = sim->state;
+	((MDPExec* ) exec)->currentState = sim->state;
       } else {
 	exec->advanceToNextState(a, sim->lastOutcomeIndex);
       }
@@ -369,6 +369,9 @@ void PolicyEvaluator::doBatchSimple(dvector& rewards,
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.10  2007/04/19 22:08:30  trey
+ * added debug statement about policy evaluation time
+ *
  * Revision 1.9  2007/03/25 21:38:18  trey
  * fixed policy evaluation to avoid discarding the cache between batches
  *

@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.7 $  $Author: trey $  $Date: 2007-03-25 21:38:18 $
+ $Revision: 1.8 $  $Author: trey $  $Date: 2007-04-22 22:41:19 $
    
  @file    PolicyEvaluator.h
  @brief   No brief
@@ -31,7 +31,7 @@ namespace zmdp {
 
 struct PolicyEvaluator {
   PolicyEvaluator(MDP* _simModel,
-		  MDPExec* _exec,
+		  MDPExecCore* _exec,
 		  const ZMDPConfig* _config,
 		  bool _assumeIdenticalModels);
   void getRewardSamples(dvector& rewards, double& successRate, bool _verbose);
@@ -39,7 +39,7 @@ struct PolicyEvaluator {
 protected:
   MDP* simModel;
   MDP* planningModel;
-  MDPExec* exec;
+  MDPExecCore* exec;
   const ZMDPConfig* config;
   bool assumeIdenticalModels;
   bool useEvaluationCache;
@@ -69,6 +69,9 @@ protected:
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.7  2007/03/25 21:38:18  trey
+ * fixed policy evaluation to avoid discarding the cache between batches
+ *
  * Revision 1.6  2007/03/25 17:38:25  trey
  * reworked how statistics are collected so that the benefits of reweighting show up in the confidence interval calculation
  *
