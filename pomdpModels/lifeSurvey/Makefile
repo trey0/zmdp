@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.8 2007-03-23 02:18:29 trey Exp $
+# $Id: Makefile,v 1.9 2007-04-22 22:42:33 trey Exp $
 #
 # Copyright (c) 2002-2005, Trey Smith. All rights reserved.
 #
@@ -29,7 +29,8 @@ include $(SRC_DIR)/common/options.mak
 # ADD ANY SUBDIRS THAT NEED TO BE VISITED DURING A BUILD TO THE SUBDIRS LIST
 SUBDIRS := 
 
-CFLAGS +=
+maininstall:
+	$(MAKE) $(MFLAGS) -C ../.. -fMakefile SUBDIRS='pomdpModels/lifeSurvey main' install
 
 INSTALLHEADERS_HEADERS := \
 	LSModelFile.h \
@@ -100,6 +101,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.8  2007/03/23 02:18:29  trey
+# fixed to reflect name change -lzmdpPomdpExec -> -lzmdpExec
+#
 # Revision 1.7  2006/09/12 19:46:52  trey
 # added dumpMap
 #
