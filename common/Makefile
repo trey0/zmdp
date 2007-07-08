@@ -1,5 +1,5 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.30 2007-03-24 22:38:31 trey Exp $
+# $Id: Makefile,v 1.31 2007-07-08 20:56:56 trey Exp $
 #
 # Copyright (c) 2002-2005, Trey Smith. All rights reserved.
 #
@@ -30,7 +30,7 @@ include $(SRC_DIR)/common/options.mak
 SUBDIRS := 
 
 maininstall:
-	$(MAKE) $(MFLAGS) -C .. -fMakefile SUBDIRS='mdps main' install
+	$(MAKE) $(MFLAGS) -C .. -fMakefile SUBDIRS='common main' install
 
 INSTALLHEADERS_HEADERS := \
 	zmdpCommonDefs.h \
@@ -72,6 +72,9 @@ include $(BUILD_DIR)/footer.mak
 
 ######################################################################
 # $Log: not supported by cvs2svn $
+# Revision 1.30  2007/03/24 22:38:31  trey
+# removed AbstractSim.h
+#
 # Revision 1.29  2007/01/14 01:24:17  trey
 # removed obsolete reference to boost
 #
