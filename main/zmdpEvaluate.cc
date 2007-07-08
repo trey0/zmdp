@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.22 $  $Author: trey $  $Date: 2007-04-22 22:43:34 $
+ $Revision: 1.23 $  $Author: trey $  $Date: 2007-07-08 03:38:48 $
 
  @file    zmdpEvaluate.cc
  @brief   Use to evaluate a POMDP policy in simulation.
@@ -104,7 +104,7 @@ void doit(const ZMDPConfig& config, SolverParams& p)
     }
   }
   if (zmdpDebugLevelG >= 1) {
-    printf("If planning and sim models, evaluator can perform some optimizations:\n"
+    printf("If planning and sim models are identical, evaluator can optimize:\n"
 	   "  assumeIdenticalModels=%d\n",
 	   assumeIdenticalModels);
   }
@@ -290,6 +290,9 @@ int main(int argc, char **argv) {
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.22  2007/04/22 22:43:34  trey
+ * fixed assumeIdenticalModels logic to work properly with lspath policy type; added lsblind policy type
+ *
  * Revision 1.21  2007/04/08 22:49:08  trey
  * added initial version of cassandraAlpha support; policyType parameter is now in the config file
  *
