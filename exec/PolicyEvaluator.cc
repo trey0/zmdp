@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.11 $  $Author: trey $  $Date: 2007-04-22 22:41:19 $
+ $Revision: 1.12 $  $Author: trey $  $Date: 2007-07-08 03:37:56 $
    
  @file    PolicyEvaluator.cc
  @brief   No brief
@@ -294,6 +294,7 @@ void PolicyEvaluator::doBatchCache(dvector& rewards,
 
   // pass 3: go back through logs and perform reweighting
   rewards.resize(numTrials);
+  double batchSumReward = 0.0;
   for (int i=0; i < numTrials; i++) {
     double rewardSoFar = 0.0;
     for (int j=trials[i].size()-1; j >= 0; j--) {
@@ -305,11 +306,13 @@ void PolicyEvaluator::doBatchCache(dvector& rewards,
     }
     rewards(i) = rewardSoFar;
 
-    if (verbose) {
-      (*scoresOutFile) << rewardSoFar << endl;
-    }
+    batchSumReward += rewardSoFar;
   }
-    
+
+  if (verbose) {
+    (*scoresOutFile) << batchSumReward/numTrials << endl;
+  }
+
   successRate = ((double) numTrialsReachedGoal) / numTrials;
 }
 
@@ -369,6 +372,9 @@ void PolicyEvaluator::doBatchSimple(dvector& rewards,
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.11  2007/04/22 22:41:19  trey
+ * can now evaluate policies based on the more abstract MDPExecCore object
+ *
  * Revision 1.10  2007/04/19 22:08:30  trey
  * added debug statement about policy evaluation time
  *
