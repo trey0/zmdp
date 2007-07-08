@@ -17,16 +17,18 @@ sub dosys {
 
 sub usage {
     die "usage: plotVfnHist OPTIONS\n".
-	"  -h or --help  Print this help.\n".
-	"  -p            Produce a pdf of the plot instead of displaying it\n";
+	"  -h or --help   Print this help.\n".
+	"  --ps or --pdf  Produce output file instead of displaying plot\n";
 }
 
-$doOutput = 0;
+$OUTPUT_MODE = "x11";
 for (@ARGV) {
     if ($_ eq "-h" or $_ eq "--help") {
 	&usage();
-    } elsif ($_ eq "-p") {
-	$doOutput = 1;
+    } elsif ($_ eq "--ps") {
+	$OUTPUT_MODE = "ps";
+    } elsif ($_ eq "--pdf") {
+	$OUTPUT_MODE = "pdf";
     } else {
 	die "ERROR: unknown option $_ (-h for help)\n";
     }
@@ -60,10 +62,10 @@ for ("ltab", "lcomp", "lmask", "lcompprune", "lmaskprune", "utab", "ucomp", "uma
 }
 
 $octOpts = "--silent ";
-if ($doOutput) {
+if ($OUTPUT_MODE ne "x11") {
     $outputPlot =<<"EOF";
 #############################
-__gnuplot_set__ terminal postscript
+__gnuplot_set__ terminal postscript enhanced "Times" 12
 __gnuplot_set__ output "vfnHist.ps"
 #############################
 EOF
@@ -120,7 +122,7 @@ setA = 1:$k1Size;
 setB = ($k1Size+1):$k2Size;
 $outputPlot
 
-__gnuplot_set__ key below
+__gnuplot_set__ key left
 
 bds = [-$LBWIDTH,0];
 delta = (range(bds))/numBins;
@@ -136,7 +138,7 @@ plot(
      bins,cdfs(:,LTAB),';tab+comp ($ltabB);');
 title('Lower Bound, Distribution A');
 
-__gnuplot_set__ nokey
+__gnuplot_set__ key left
 
 subplot(2,2,3);
 cdfs = calcCdfs(lbgtruth, lball, setB, bins, 0);
@@ -152,7 +154,7 @@ bds = [0,$UBWIDTH];
 delta = (range(bds))/numBins;
 bins = (bds(1):delta:bds(2));
 
-__gnuplot_set__ key below
+__gnuplot_set__ key right
 
 subplot(2,2,2);
 cdfs = calcCdfs(ubgtruth, uball, setA, bins, 1);
@@ -161,7 +163,7 @@ plot(bins,cdfs(:,UCOMP),'-+;comp ($ucompB);',
      bins,cdfs(:,UTAB),';tab+comp ($utabB);');
 title('Upper Bound, Distribution A');
 
-__gnuplot_set__ nokey
+__gnuplot_set__ right
 
 subplot(2,2,4);
 cdfs = calcCdfs(ubgtruth, uball, setB, bins, 1);
@@ -187,11 +189,15 @@ print SCR $octScript;
 close(SCR);
 print "[octave script also output to $tmpScript]\n";
 
-if ($doOutput) {
+if ($OUTPUT_MODE ne "x11") {
     close(OCT);
-    &dosys("ps2pdf vfnHist.ps");
-    &dosys("rm -f vfnHist.ps");
-    print "output written to vfnHist.pdf\n";
+    if ($OUTPUT_MODE eq "pdf") {
+	&dosys("ps2pdf vfnHist.ps");
+	&dosys("rm -f vfnHist.ps");
+	print "output written to vfnHist.pdf\n";
+    } else {
+	print "output written to vfnHist.ps\n";
+    }
 } else {
     sleep(10000);
 }
