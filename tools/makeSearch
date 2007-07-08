@@ -72,7 +72,7 @@ sub dosys {
 sub doSearch {
     my $root = "~/z";
     my $bin = "$root/bin/linux2";
-    my $zmdpBenchmark = "zmdpBenchmark -i 10000 --evaluationEpochsPerMagnitude 10 --storageOutputFile storage.log ";
+    my $zmdpBenchmark = "zmdp benchmark -i 10000 --evaluationEpochsPerMagnitude 10 --storageOutputFile storage.log ";
     
     for my $searchHash (@SEARCHES) {
 	my $searchTitle = $searchHash->{title};

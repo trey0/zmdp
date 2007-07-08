@@ -35,11 +35,11 @@ sub testZmdpSolve {
 
     my $exitStatus = $?;
     if ($exitStatus != 0) {
-	die "ERROR: zmdpSolve exited with error value $exitStatus\n";
+	die "ERROR: zmdp solve exited with error value $exitStatus\n";
     }
 
     if (!defined $done) {
-	die "ERROR: zmdpSolve did not signal successful completion by printing 'done'\n";
+	die "ERROR: zmdp solve did not signal successful completion by printing 'done'\n";
     }
 
     my $elb = $params{expectedLB};
@@ -47,25 +47,25 @@ sub testZmdpSolve {
     my $tol = $params{testTolerance};
     if (defined $elb) {
 	if (!defined $lb) {
-	    die "ERROR: zmdpSolve never printed bounds information during the run\n";
+	    die "ERROR: zmdp solve never printed bounds information during the run\n";
 	}
 	if (abs($lb - $elb) > $tol) {
-	    die "ERROR: zmdpSolve final lower bound value $lb differed from the expected value $elb by more than the testing tolerance $tol\n";
+	    die "ERROR: zmdp solve final lower bound value $lb differed from the expected value $elb by more than the testing tolerance $tol\n";
 	}
     }
     if (defined $eub) {
 	if (!defined $ub) {
-	    die "ERROR: zmdpSolve never printed bounds information during the run\n";
+	    die "ERROR: zmdp solve never printed bounds information during the run\n";
 	}
 	if (abs($ub - $eub) > $tol) {
-	    die "ERROR: zmdpSolve final upper bound value $ub differed from the expected value $eub by more than the testing tolerance $tol\n";
+	    die "ERROR: zmdp solve final upper bound value $ub differed from the expected value $eub by more than the testing tolerance $tol\n";
 	}
     }
 
     my @outFiles = @{$params{"outFiles"}};
     for (@outFiles) {
 	if (! -f $_) {
-	    die "ERROR: zmdpSolve did not generate the output file $_ as expected\n";
+	    die "ERROR: zmdp solve did not generate the output file $_ as expected\n";
 	}
     }
 
@@ -90,13 +90,13 @@ sub testZmdpBenchmark {
 
     my $exitStatus = $?;
     if ($exitStatus != 0) {
-	die "ERROR: zmdpBenchmark exited with error value $exitStatus\n";
+	die "ERROR: zmdp benchmark exited with error value $exitStatus\n";
     }
 
     my @outFiles = @{$params{"outFiles"}};
     for (@outFiles) {
 	if (! -f $_) {
-	    die "ERROR: zmdpBenchmark did not generate the output file $_ as expected\n";
+	    die "ERROR: zmdp benchmark did not generate the output file $_ as expected\n";
 	}
     }
 
@@ -113,12 +113,12 @@ sub testZmdpBenchmark {
     my $tol = $params{testTolerance};
     if (defined $elb) {
 	if (abs($lb - $elb) > $tol) {
-	    die "ERROR: zmdpBenchmark final lower bound value $lb differed from the expected value $elb by more than the testing tolerance $tol\n";
+	    die "ERROR: zmdp benchmark final lower bound value $lb differed from the expected value $elb by more than the testing tolerance $tol\n";
 	}
     }
     if (defined $eub) {
 	if (abs($ub - $eub) > $tol) {
-	    die "ERROR: zmdpBenchmark final upper bound value $ub differed from the expected value $eub by more than the testing tolerance $tol\n";
+	    die "ERROR: zmdp benchmark final upper bound value $ub differed from the expected value $eub by more than the testing tolerance $tol\n";
 	}
     }
 
@@ -147,25 +147,25 @@ sub testZmdpEvaluate {
 
     my $exitStatus = $?;
     if ($exitStatus != 0) {
-	die "ERROR: zmdpEvaluate exited with error value $exitStatus\n";
+	die "ERROR: zmdp evaluate exited with error value $exitStatus\n";
     }
 
     my @outFiles = @{$params{"outFiles"}};
     for (@outFiles) {
 	if (! -f $_) {
-	    die "ERROR: zmdpEvaluate did not generate the output file $_ as expected\n";
+	    die "ERROR: zmdp evaluate did not generate the output file $_ as expected\n";
 	}
     }
 
     if (!defined $mean) {
-	die "ERROR: zmdpEvaluate never printed the mean reward to stdout\n";
+	die "ERROR: zmdp evaluate never printed the mean reward to stdout\n";
     }
 
     my $em = $params{expectedMean};
     my $tol = $params{testTolerance};
     if (defined $em) {
 	if (abs($mean - $em) > $tol) {
-	    die "ERROR: zmdpEvaluate mean reward value $mean differed from the expected value $em by more than the testing tolerance $tol\n";
+	    die "ERROR: zmdp evaluate mean reward value $mean differed from the expected value $em by more than the testing tolerance $tol\n";
 	}
     }
 
@@ -180,9 +180,9 @@ $OS_RELEASE = `uname -r | perl -ple 's/\\..*\$//;'`;
 chop $OS_RELEASE;
 $OS = $OS_SYSNAME . $OS_RELEASE;
 
-$zmdpSolve = "../../../bin/$OS/zmdpSolve";
-$zmdpBenchmark = "../../../bin/$OS/zmdpBenchmark";
-$zmdpEvaluate = "../../../bin/$OS/zmdpEvaluate";
+$zmdpSolve = "../../../bin/$OS/zmdp solve";
+$zmdpBenchmark = "../../../bin/$OS/zmdp benchmark";
+$zmdpEvaluate = "../../../bin/$OS/zmdp evaluate";
 $mdpsDir = "../../mdps";
 $pomdpsDir = "../../pomdpModels";
 

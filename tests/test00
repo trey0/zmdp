@@ -8,7 +8,7 @@ require "testLibrary.perl";
 	       expectedUB => 20.8269,
 	       testTolerance => 0.01,
 	       outFiles => ["out.policy"]);
-&testZmdpEvaluate(cmd => "$zmdpEvaluate -p out.policy $pomdpsDir/three_state.pomdp",
+&testZmdpEvaluate(cmd => "$zmdpEvaluate $pomdpsDir/three_state.pomdp",
 		  expectedMean => 20.826,
 		  testTolerance => 1.0,
 		  outFiles => ["scores.plot", "sim.plot"]);

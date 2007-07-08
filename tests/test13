@@ -3,13 +3,12 @@
 $TEST_DESCRIPTION = "zmdpEvaluate with distinct models";
 require "testLibrary.perl";
 
-# (test both normal and fast parser)
 &testZmdpBenchmark(cmd => "$zmdpBenchmark -o out.policy ../test13.pomdp",
 		   expectedLB => 20.8260,
 		   expectedUB => 20.8269,
 		   testTolerance => 0.01,
 		   outFiles => ["bounds.plot", "inc.plot", "sim.plot"]);
-&testZmdpEvaluate(cmd => "$zmdpEvaluate -p out.policy -m ../test13.pomdp $pomdpsDir/term3.pomdp",
+&testZmdpEvaluate(cmd => "$zmdpEvaluate --plannerModel ../test13.pomdp $pomdpsDir/term3.pomdp",
 		  expectedMean => 10.442,
 		  testTolerance => 1.0,
 		  outFiles => ["scores.plot", "sim.plot"]);

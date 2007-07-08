@@ -50,7 +50,7 @@ $root = "~/z";
 $bin = "$root/bin/linux2";
 $prob = "$root/problems.archive/$PROB";
 $scriptArgs = "--searchStrategy script --backupScriptInputDir ../script";
-$zmdpBenchmark = "zmdpBenchmark -i 1000 --storageOutputFile storage.log ";
+$zmdpBenchmark = "zmdp benchmark -i 1000 --storageOutputFile storage.log ";
 
 sub dosys {
     my $cmd = shift;
