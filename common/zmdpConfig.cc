@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2006-10-30 20:23:03 $
+ $Revision: 1.4 $  $Author: trey $  $Date: 2007-07-08 20:57:24 $
    
  @file    zmdpConfig.cc
  @brief   No brief
@@ -50,8 +50,32 @@ static bool allWhiteSpace(const char* buf)
   return true;
 }
 
+static void replace_string(string& s,
+			   const string& pattern,
+			   const string& replacement) {
+  unsigned pos;
+  while (string::npos != (pos = s.find(pattern))) {
+    s.replace(pos, pattern.size(), replacement);
+  }
+}
+
+static std::vector<std::string> split(const string& stringToSplit) {
+  char *s = strdup(stringToSplit.c_str());
+  std::vector<std::string> ret;
+  
+  char *tok, *tmp = s;
+  while (0 != (tok = strtok(tmp," \t"))) {
+    tmp = 0;
+    ret.push_back(tok);
+  }
+
+  free(s);
+
+  return ret;
+}
+
 ZMDPConfig::ZMDPConfig(void) :
-  overWriteOnlyMode(false)
+  noNewFieldsAllowed(false)
 {}
 
 void ZMDPConfig::readFromStream(const std::string& _sourceName, std::istream& in)
@@ -66,12 +90,40 @@ void ZMDPConfig::readFromStream(const std::string& _sourceName, std::istream& in
     if (in.eof()) break;
     if (allWhiteSpace(buf)) continue;
     if ('#' == buf[0]) continue;
-    if (2 != sscanf(buf, "%s %s", field, val)) {
-      fprintf(stderr, "ERROR: %s:%d: syntax error, expected '<field> <value>'\n",
-	      sourceName.c_str(), lnum);
-      exit(EXIT_FAILURE);
+    if (0 == strncmp(buf, "alias", 5)) {
+      // line is an alias
+
+      // eat 'alias'
+      char* bufp = strtok(buf, " \t");
+
+      // get field
+      bufp = strtok(NULL, " \t");
+      if (NULL == bufp) {
+	fprintf(stderr, "ERROR: %s:%d: syntax error, expected 'alias <field> <value>'\n",
+		sourceName.c_str(), lnum);
+	exit(EXIT_FAILURE);
+      }
+      snprintf(field, sizeof(field), "%s", bufp);
+
+      // rest of line is value
+      bufp = strtok(NULL, "");
+      if (NULL == bufp) {
+	fprintf(stderr, "ERROR: %s:%d: syntax error, expected 'alias <field> <value>'\n",
+		sourceName.c_str(), lnum);
+	exit(EXIT_FAILURE);
+      }
+      snprintf(val, sizeof(field), "%s", bufp);
+
+      setAlias(field, val);
+    } else {
+      // line is config data
+      if (2 != sscanf(buf, "%s %s", field, val)) {
+	fprintf(stderr, "ERROR: %s:%d: syntax error, expected '<field> <value>'\n",
+		sourceName.c_str(), lnum);
+	exit(EXIT_FAILURE);
+      }
+      setString(field, val);
     }
-    setString(field, val);
   }
 }
 
@@ -139,7 +191,7 @@ bool ZMDPConfig::defined(const std::string& field) const
 
 void ZMDPConfig::setString(const std::string& field, const std::string& val)
 {
-  if (overWriteOnlyMode) {
+  if (noNewFieldsAllowed) {
     if (!defined(field)) {
       fprintf(stderr, "ERROR: unknown config field '%s' was specified\n", field.c_str());
       exit(EXIT_FAILURE);
@@ -168,13 +220,75 @@ void ZMDPConfig::setBool(const std::string& field, bool val)
   setInt(field, val);
 }
 
-void ZMDPConfig::setOverWriteOnlyMode(bool _overWriteOnlyMode)
+void ZMDPConfig::setAlias(const std::string& field, const std::string& val)
 {
-  overWriteOnlyMode = _overWriteOnlyMode;
+  aliases[field] = val;
+}
+
+std::string ZMDPConfig::expandAliases(const std::string& args)
+{
+  // pad with spaces so padded fields will match
+  string ret = (" " + args + " ");
+
+  const int numPasses = 3;
+  for (int i=0; i < numPasses; i++) {
+    FOR_EACH (pr, aliases) {
+      string field = " " + pr->first + " ";
+      string val = " " + pr->second + " ";
+      replace_string(ret, field, val);
+    }
+  }
+
+  return ret;
+}
+
+std::vector<std::string> ZMDPConfig::processArgs(const std::string& argStr)
+{
+  std::vector<std::string> args = split(expandAliases(argStr));
+  std::vector<std::string> unprocessedArgs;
+
+  bool pastOptions = false;
+  typeof(args.begin()) argp;
+  for (argp = args.begin(); argp != args.end(); argp++) {
+    string arg = *argp;
+    if (allWhiteSpace(arg.c_str())) continue;
+    
+    if (!pastOptions && '-' == arg[0]) {
+      if (arg == "--") {
+	// "end of options" marker
+	pastOptions = true;
+      } else if (arg.substr(0,2) == "--") {
+	// option
+	if (++argp == args.end()) {
+	  fprintf(stderr,
+		  "ERROR: got %s option without argument (-h for help)\n",
+		  arg.c_str());
+	  exit(EXIT_FAILURE);
+	}
+	setString(arg.substr(2), *argp);
+      } else {
+	// non-option argument
+	unprocessedArgs.push_back(arg);
+      }
+    } else {
+      // non-option argument
+      unprocessedArgs.push_back(arg);
+    }
+  }
+
+  return unprocessedArgs;
+}
+
+void ZMDPConfig::setNoNewFieldsAllowed(bool _noNewFieldsAllowed)
+{
+  noNewFieldsAllowed = _noNewFieldsAllowed;
 }
 
 void ZMDPConfig::writeToStream(std::ostream& out) const
 {
+  FOR_EACH (pr, aliases) {
+    out << "alias " << pr->first << " " << pr->second << endl;
+  }
   FOR_EACH (pr, cmap) {
     out << pr->first << " " << pr->second << endl;
   }
@@ -187,6 +301,9 @@ int zmdpDebugLevelG = 0;
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2006/10/30 20:23:03  trey
+ * added writeToStream()
+ *
  * Revision 1.2  2006/10/30 20:00:15  trey
  * USE_DEBUG_PRINT replaced with a run-time config parameter "debugLevel"
  *
