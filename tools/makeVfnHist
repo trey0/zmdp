@@ -17,11 +17,11 @@ $GTRUTH = "--useMaxPlanesMasking 0 --useMaxPlanesSupportList 0 --useMaxPlanesExt
 #$GTRUTH = "--useMaxPlanesMasking 1 --useMaxPlanesSupportList 1 --useMaxPlanesExtraPruning 0 --useSawtoothSupportList 0";
 
 @lbruns = ("ltab",
-	   #"lmaskprune", "lmask",
-	   #"lcompprune", "lcomp"
+	   "lmaskprune", "lmask",
+	   "lcompprune", "lcomp"
 	   );
 @ubruns = ("utab",
-	   #"umask", "ucomp"
+	   "umask", "ucomp"
 	   );
 
 
