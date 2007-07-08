@@ -585,9 +585,9 @@ sub doBoundsPlotPair {
 
     # set output mode
     my $outStem = "search${probType}Bounds$i";
-    if ($OUTPUT_MODE eq "pdf") {
+    if ($OUTPUT_MODE ne "x11") {
 	$octScript .= <<"EOF";
-__gnuplot_set__ terminal postscript enhanced "Helvetica" 10
+__gnuplot_set__ terminal postscript enhanced "Times" 10
 __gnuplot_set__ output "${outStem}.ps"
 EOF
     }
@@ -604,11 +604,15 @@ EOF
     $| = 1;
     select(STDOUT);
     print OCT $octScript;
-    if ($OUTPUT_MODE eq "pdf") {
+    if ($OUTPUT_MODE ne "x11") {
     	close(OCT);
-	&dosys("ps2pdf -dEmbedAllFonts=true ${outStem}.ps");
-	&dosys("rm -f ${outStem}.ps");
-	print "output written to ${outStem}.pdf\n";
+	if ($OUTPUT_MODE eq "pdf") {
+	    &dosys("ps2pdf -dEmbedAllFonts=true ${outStem}.ps");
+	    &dosys("rm -f ${outStem}.ps");
+	    print "output written to ${outStem}.pdf\n";
+	} else {
+	    print "output written to ${outStem}.ps\n";
+	}
     } else {
 	sleep(10000);
     }
@@ -632,7 +636,8 @@ sub usage {
 	"  -s             Run search algorithms (default).\n".
 	"  -b             Make bounds plots\n".
 	"  -t             Make performance tables.\n".
-	"  -p             Output plots to a pdf file\n";
+	"  --ps           Output plots to a postscript file\n".
+	"  --pdf          Output plots to a pdf file\n"
 }
 
 $target = "search";
@@ -646,7 +651,9 @@ while ($_ = shift @ARGV) {
 	$target = "table";
     } elsif ($_ eq "-b") {
 	$target = "bounds";
-    } elsif ($_ eq "-p") {
+    } elsif ($_ eq "--ps") {
+	$OUTPUT_MODE = "ps";
+    } elsif ($_ eq "--pdf") {
 	$OUTPUT_MODE = "pdf";
     } else {
 	die "ERROR: unknown option '$_' (-h for help)\n";

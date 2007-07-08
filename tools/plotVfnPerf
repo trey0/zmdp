@@ -24,16 +24,18 @@ sub dosys {
 
 sub usage {
     die "usage: plotVfnPerf OPTIONS\n".
-	"  -h or --help  Print this help.\n".
-	"  -p            Produce a pdf of the plot instead of displaying it\n";
+	"  -h or --help   Print this help.\n".
+	"  --ps or --pdf  Produce output file instead of displaying plot\n";
 }
 
-$doOutput = 0;
+$OUTPUT_MODE = "x11";
 for (@ARGV) {
     if ($_ eq "-h" or $_ eq "--help") {
 	&usage();
-    } elsif ($_ eq "-p") {
-	$doOutput = 1;
+    } elsif ($_ eq "--ps") {
+	$OUTPUT_MODE = "ps";
+    } elsif ($_ eq "--pdf") {
+	$OUTPUT_MODE = "pdf";
     } else {
 	die "ERROR: unknown option $_ (-h for help)\n";
     }
@@ -48,10 +50,10 @@ for (@dirs) {
 }
 
 $octOpts = "--silent ";
-if ($doOutput) {
+if ($OUTPUT_MODE ne "x11") {
     $outputPlot =<<"EOF";
 #############################
-__gnuplot_set__ terminal postscript
+__gnuplot_set__ terminal postscript enhanced "Times" 14
 __gnuplot_set__ output "vfnPerf.ps"
 #############################
 EOF
@@ -169,11 +171,15 @@ print SCR $octScript;
 close(SCR);
 print "[octave script also output to $tmpScript]\n";
 
-if ($doOutput) {
+if ($OUTPUT_MODE ne "x11") {
     close(OCT);
-    &dosys("ps2pdf vfnPerf.ps");
-    &dosys("rm -f vfnPerf.ps");
-    print "output written to vfnPerf.pdf\n";
+    if ($OUTPUT_MODE eq "pdf") {
+	&dosys("ps2pdf vfnPerf.ps");
+	&dosys("rm -f vfnPerf.ps");
+	print "output written to vfnPerf.pdf\n";
+    } else {
+	print "output written to vfnPerf.ps\n";
+    }
 } else {
     sleep(10000);
 }
