@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.17 $  $Author: trey $  $Date: 2007-03-24 22:43:10 $
+ $Revision: 1.18 $  $Author: trey $  $Date: 2007-07-08 20:59:30 $
    
  @file    solverUtils.h
  @brief   No brief
@@ -82,7 +82,7 @@ enum ValueReprsEnum {
 };
 
 struct SolverParams {
-  const char* cmdName;
+  const char* binaryName;
   const char* probName;
   bool usingBenchmarkFrontEnd;
 
@@ -130,6 +130,9 @@ void constructSolverObjects(SolverObjects& obj,
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.17  2007/03/24 22:43:10  trey
+ * now use MDPSim rather than abstract parent class AbstractSim
+ *
  * Revision 1.16  2007/03/22 18:24:23  trey
  * now use MDPSim in all cases; PomdpSim no longer needed
  *

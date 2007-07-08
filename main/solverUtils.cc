@@ -1,5 +1,5 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.26 $  $Author: trey $  $Date: 2007-03-25 21:39:32 $
+ $Revision: 1.27 $  $Author: trey $  $Date: 2007-07-08 20:59:30 $
 
  @file    solverUtils.cc
  @brief   No brief
@@ -40,7 +40,7 @@
 using namespace std;
 using namespace MatrixUtils;
 
-extern void usage(const char* cmdName);
+extern void usage(const char* binaryName);
 
 namespace zmdp {
 
@@ -125,7 +125,7 @@ bool endsWith(const std::string& s,
  **********************************************************************/
 
 SolverParams::SolverParams(void) :
-  cmdName(NULL),
+  binaryName(NULL),
   probName(NULL),
   usingBenchmarkFrontEnd(false)
 {}
@@ -143,6 +143,9 @@ SolverParams::SolverParams(void) :
 
 void SolverParams::setValues(const ZMDPConfig& config)
 {
+  binaryName = config.getString("binaryName").c_str();
+  probName = config.getString("simulatorModel").c_str();
+
   // set global debug level, used by parts of the codebase that do not
   // depend on ZMDPConfig
   zmdpDebugLevelG = config.getInt("debugLevel");
@@ -480,6 +483,9 @@ void constructSolverObjects(SolverObjects& obj,
 /***************************************************************************
  * REVISION HISTORY:
  * $Log: not supported by cvs2svn $
+ * Revision 1.26  2007/03/25 21:39:32  trey
+ * added conditions for disabling policy output to avoid crashing when the wrong options are specified
+ *
  * Revision 1.25  2007/03/22 18:24:23  trey
  * now use MDPSim in all cases; PomdpSim no longer needed
  *
