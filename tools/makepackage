@@ -18,7 +18,7 @@ fi
 mkdir zmdp-$VERSION
 cd zmdp-$VERSION
 zmdp
-cvs checkout src
+svn checkout file:///home/trey/projects/zmdp/svnRepository/src
 mv src/{README,COPYING} .
 rm -rf src/pomdpModels/RockExplore
 cd ..
