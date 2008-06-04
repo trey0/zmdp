@@ -236,7 +236,11 @@ REFERENCES
 ========================================================================
 RELEASE NOTES
 
-Changes from 1.1.0 to 1.1.3 (19 Apr 2007)
+Changes from 1.1.0 to 1.1.4 (4 Jun 2008)
+
+* Fixed Mac OS X-specific compile error -- the version string returned by
+  gcc changed after the transition to Intel processors, breaking a
+  conditional in the build system.
 
 * Fixed compile error in the seldom-used example program
   src/exec/testExec.cc, which was trying to use an older version of the
