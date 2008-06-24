@@ -238,9 +238,17 @@ RELEASE NOTES
 
 Changes from 1.1.0 to 1.1.4 (4 Jun 2008)
 
+* Added #include of signal.h in zmdp.cc to get sigaction() declaration.
+  g++ became more strict about requiring #includes in version 4.x.
+  (1.1.5, svn revision 5).
+  
+* Same Mac OS X version string problem cropped up again with Leopard; improved
+  the build system fix to be more robust against future changes (1.1.5,
+  svn revision 5).
+
 * Fixed Mac OS X-specific compile error -- the version string returned by
   gcc changed after the transition to Intel processors, breaking a
-  conditional in the build system.
+  conditional in the build system (1.1.4, svn revision 4).
 
 * Fixed compile error in the seldom-used example program
   src/exec/testExec.cc, which was trying to use an older version of the

@@ -70,7 +70,7 @@ sub embedFiles {
     if ($ccVersion =~ /cc \(GCC\) 3/) {
 	# command that works with gcc 3.2.2 under Linux Fedora Core 2
 	$cpp = "cpp -x c++";
-    } elsif ($ccVersion =~ /apple-darwin8-gcc/) {
+    } elsif ($ccVersion =~ /apple-darwin/) {
 	# command that works with Xcode 2.4 under Mac OS X 10.4.7
 	$cpp = "g++ -E";
     } else {

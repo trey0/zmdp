@@ -23,6 +23,7 @@
 #include <assert.h>
 #include <sys/time.h>
 #include <getopt.h>
+#include <signal.h>
 
 #include <iostream>
 #include <fstream>
