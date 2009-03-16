@@ -29,6 +29,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <errno.h>
+#include <string.h>
 
 #include <iostream>
 #include <iomanip>
@@ -53,7 +54,7 @@ static bool allWhiteSpace(const char* buf)
 static void replace_string(string& s,
 			   const string& pattern,
 			   const string& replacement) {
-  unsigned pos;
+  size_t pos;
   while (string::npos != (pos = s.find(pattern))) {
     s.replace(pos, pattern.size(), replacement);
   }

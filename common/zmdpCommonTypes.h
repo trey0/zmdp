@@ -23,17 +23,24 @@
 #ifndef INCzmdpCommonTypes_h
 #define INCzmdpCommonTypes_h
 
-#include <ext/hash_map>
 #include "sla.h"
 
-// needed before we can use hash_map<string, type>
-#if 0
-// gcc 3.0
-#define EXT_NAMESPACE std
-#else
-// gcc 3.2
-#define EXT_NAMESPACE __gnu_cxx
+#ifndef GCC_VERSION
+#  define GCC_VERSION (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__)
 #endif
+
+// needed before we can use hash_map<string, type>
+#if GCC_VERSION >= 40300
+#  include <tr1/unordered_map>
+#  define EXT_NAMESPACE std::tr1
+#  define hash_map unordered_map
+#else
+#  include <ext/hash_map>
+#  if GCC_VERSION >= 30200
+#    define EXT_NAMESPACE __gnu_cxx
+#  else
+#    define EXT_NAMESPACE std
+#  endif
 namespace EXT_NAMESPACE {
   template <>
   struct hash<std::string> {
@@ -50,6 +57,7 @@ namespace EXT_NAMESPACE {
     }
   };
 };
+#endif
 
 namespace zmdp {
 

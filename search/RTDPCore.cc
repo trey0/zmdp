@@ -25,6 +25,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <assert.h>
+#include <limits.h>
 
 #include <iostream>
 #include <fstream>

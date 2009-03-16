@@ -25,9 +25,11 @@
 
 #include <math.h>
 #include <errno.h>
+#include <string.h>
 #include <vector>
 #include <iostream>
 #include <fstream>
+#include <algorithm>
 
 #include "zmdpCommonDefs.h"
 
@@ -463,8 +465,8 @@ namespace sla {
 
   inline double kmatrix::operator()(unsigned int r, unsigned int c) const
   {
-    assert( 0 <= r < size1() );
-    assert( 0 <= c < size2() );
+    assert( (0 <= r) && (r < size1()) );
+    assert( (0 <= c) && (c < size2()) );
     // NOTE: also assumes the kmatrix has been canonicalized
 
     FOR_EACH (di, data) {

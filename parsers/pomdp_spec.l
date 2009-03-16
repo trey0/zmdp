@@ -51,7 +51,7 @@ extern void ERR_enter();   /* assumes calling program
    the reserved_token array below.
 */
 #define NUM_RESERVED_WORDS              16
-static char *reserved_str[] = {
+static const char *reserved_str[] = {
    "discount",
    "values",
    "states",

@@ -31,7 +31,7 @@
 
 typedef struct {
   unsigned int size;
-  char* data;
+  const char* data;
 } embed_buffer_t;
 
 #ifdef __EMBEDDING_NOW__

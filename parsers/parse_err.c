@@ -120,9 +120,9 @@ number and, similiarly, on a first generated-first displayed basis.
 		message is printed out. (if ERR_META is in error message)
 
 */
-	char 	*source;
+	const char 	*source;
 	int	lineno,errorid;
-	char	*modificationString;
+	const char	*modificationString;
 {
 	Err_node	*newNode;	/* node for new error */
 

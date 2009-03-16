@@ -236,7 +236,15 @@ REFERENCES
 ========================================================================
 RELEASE NOTES
 
-Changes from 1.1.0 to 1.1.4 (4 Jun 2008)
+Changes from 1.1.0 to 1.1.6 (16 Mar 2009)
+
+* Fixed several problems introduced by stricter gcc 4.3 standards
+  compliance.  Examples: added #include <string.h> and <limits.h> in
+  several places; added 'const' modifiers; now use c++0x unordered_map
+  in place of GNU hash_map extension (1.1.6, svn revision 8).
+
+* Changed 'unsigned pos' to 'size_t pos' in zmdpConfig.cc
+  for 64-bit compatibility (1.1.6, svn revision 7).
 
 * Added #include of signal.h in zmdp.cc to get sigaction() declaration.
   g++ became more strict about requiring #includes in version 4.x.

@@ -31,6 +31,7 @@
 #include <sys/time.h>
 #include <getopt.h>
 #include <errno.h>
+#include <string.h>
 
 #include <iostream>
 #include <fstream>

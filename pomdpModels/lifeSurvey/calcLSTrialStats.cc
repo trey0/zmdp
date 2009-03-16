@@ -31,6 +31,7 @@
 #include <getopt.h>
 #include <errno.h>
 #include <math.h>
+#include <string.h>
 
 #include <iostream>
 

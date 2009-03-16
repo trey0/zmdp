@@ -90,13 +90,6 @@ sub embedFiles {
     if (!$doDependencies) {
 	open(OUT, "> $outputFile") or
 	    die "ERROR: couldn't open $outputFile for writing: $!\n";
-
-#	print OUT << "EOF";
-#typedef struct {
-#  unsigned int size;
-#  char* data;
-#} embed_buffer_t;
-#EOF
         &genEscapeTable();
     }
 
