@@ -88,7 +88,7 @@ INSTALLATION INSTRUCTIONS
 
   cd zmdp-VERSION/src
   make install
-  (generates binaries in zmdp-VERSION/bin/<os_name>/, <os_name> = linux2 or darwin8)
+  (generates binaries in zmdp-VERSION/bin/<os_name>/, <os_name> = e.g. linux2, darwin8)
 
 * Test:
 
@@ -236,7 +236,11 @@ REFERENCES
 ========================================================================
 RELEASE NOTES
 
-Changes from 1.1.0 to 1.1.6 (16 Mar 2009)
+Changes from 1.1.0 to 1.1.7 (10 Sep 2009)
+
+* Tweaked build system to re-enable running ranlib over libraries.
+  Seems to be required under Mac OS X 10.6 with some versions of Xcode
+  (1.1.7, svn revision 9).
 
 * Fixed several problems introduced by stricter gcc 4.3 standards
   compliance.  Examples: added #include <string.h> and <limits.h> in

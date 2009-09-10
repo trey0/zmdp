@@ -16,7 +16,7 @@
 # permissions and limitations under the License.
 ######################################################################
 
-CFLAGS += -DZMDP_VERSION=1.1.6
+CFLAGS += -DZMDP_VERSION=1.1.7
 
 # algorithm configuration options (most of the options that used to be
 # in this file are now run-time configuration parameters; see

@@ -42,7 +42,7 @@ MAKEDEP := $(C++) -MM -MG
 
 AR := ar
 ARFLAGS := cr
-# RANLIB := ranlib
+RANLIB := ranlib
 
 INSTALL := install
 SED := sed
