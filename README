@@ -58,15 +58,16 @@ REQUIREMENTS
 
 Operating systems: Linux and Mac OS X
 
-Tested compilers:         gcc/g++ 3.2.2 under Linux Fedora Core 2
+Some tested compilers:    gcc/g++ 3.2.2 under Linux Fedora Core 2
                           gcc/g++ 4.0.1 under Linux Fedora Core 4
                           gcc/g++ 4.0.1 from XCode 2.4 under Mac OS X 10.4.8
+                          gcc/g++ 4.2.1 from XCode 3.2 under Mac OS X 10.6.4
 
 Build system tested with:
-* GNU Make 3.80
-* GNU Flex 2.5.4
-* GNU Bison 2.0
-* Perl 5.8.6
+* GNU Make 3.80, 3.81
+* GNU Flex 2.5.4, 2.5.35
+* GNU Bison 2.0, 2.3
+* Perl 5.8.6, 5.10.0
 
 Performance plotting scripts in tools directory tested with:
 * gnuplot 4.0
