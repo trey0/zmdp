@@ -241,27 +241,27 @@ Changes from 1.1.0 to 1.1.7 (10 Sep 2009)
 
 * Tweaked build system to re-enable running ranlib over libraries.
   Seems to be required under Mac OS X 10.6 with some versions of Xcode
-  (1.1.7, svn revision 9).
+  (1.1.7, svn revision 1027).
 
 * Fixed several problems introduced by stricter gcc 4.3 standards
   compliance.  Examples: added #include <string.h> and <limits.h> in
   several places; added 'const' modifiers; now use c++0x unordered_map
-  in place of GNU hash_map extension (1.1.6, svn revision 8).
+  in place of GNU hash_map extension (1.1.6, svn revision 1026).
 
 * Changed 'unsigned pos' to 'size_t pos' in zmdpConfig.cc
-  for 64-bit compatibility (1.1.6, svn revision 7).
+  for 64-bit compatibility (1.1.6, svn revision 1025).
 
 * Added #include of signal.h in zmdp.cc to get sigaction() declaration.
   g++ became more strict about requiring #includes in version 4.x.
-  (1.1.5, svn revision 5).
-  
+  (1.1.5, svn revision 1023).
+
 * Same Mac OS X version string problem cropped up again with Leopard; improved
   the build system fix to be more robust against future changes (1.1.5,
-  svn revision 5).
+  svn revision 1023).
 
 * Fixed Mac OS X-specific compile error -- the version string returned by
   gcc changed after the transition to Intel processors, breaking a
-  conditional in the build system (1.1.4, svn revision 4).
+  conditional in the build system (1.1.4, svn revision 1022).
 
 * Fixed compile error in the seldom-used example program
   src/exec/testExec.cc, which was trying to use an older version of the
