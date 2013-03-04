@@ -3,11 +3,11 @@ ZMDP Software for POMDP and MDP Planning
 
 This C++ source code implements several approximate value iteration
 algorithms for MDPs and POMDPs, including both algorithms I developed
-(FRTDP [7], HSVI2 [6]) and some earlier algorithms that work on the same
-problems (RTDP [1], LRTDP [3], and HDP [2]).  The software takes a
+(FRTDP 7_, HSVI2 6_) and some earlier algorithms that work on the same
+problems (RTDP 1_, LRTDP 3_, and HDP 2_).  The software takes a
 problem model file as input.  Currently supported model formats are Tony
-Cassandra's POMDP file format [4] and a new format I developed for
-describing problems in the racetrack domain from [1].
+Cassandra's POMDP file format 4_ and a new format I developed for
+describing problems in the racetrack domain from 1_.
 
 Special note: my implementations of some of the earlier algorithms are
 based on publications that necessarily left out a lot of detail.  It's
@@ -211,29 +211,43 @@ template for my release of zmdp.
 References
 ~~~~~~~~~~
 
+.. _1:
+
 1. `Learning to Act Using Real-Time Dynamic
    Programming. <http://www.sciencedirect.com/science/article/pii/000437029400011O>`_
    A. Barto, S. Bradke, and S. Singh.
    *Artificial Intelligence* 72(1-2): 81-138. 1995.
 
+.. _2:
+
 2. `Faster heuristic Search Algorithms for Planning with
    Uncertainty and Full Feedback. <http://dl.acm.org/citation.cfm?id=1630835>`_
    B. Bonet and H. Geffner. In *Proc. of IJCAI*, 2003.
+
+.. _3:
 
 3. `Labeled RTDP: Improving the Convergence of Real Time Dynamic Programming.
    <ftp://ftp.cs.ucla.edu/pub/stat_ser/R319.pdf>`_
    B. Bonet and H. Geffner. In *Proc. of ICAPS*, 2003.
 
+.. _4:
+
 4. `Tony's POMDP Page <http://www.cs.brown.edu/research/ai/pomdp/>`_.
    Tony Cassandra.
+
+.. _5:
 
 5. `Heuristic Search Value Iteration for
    POMDPs. <http://www.cs.cmu.edu/~trey/pubs/b2hd-smith04hsvi.html>`_
    T. Smith and R. Simmons. In  *Proc. of UAI*, 2004.
 
+.. _6:
+
 6. `Point-based POMDP Algorithms: Improved Analysis and
    Implementation. <http://www.cs.cmu.edu/~trey/pubs/b2hd-smith05hsvi.html>`_
    T. Smith and R. Simmons. In *Proc. of UAI*, 2005.
+
+.. _7:
 
 7. `Focused Real-Time Dynamic Programming for
    MDPs. <http://www.cs.cmu.edu/~trey/pubs/b2hd-smith06frtdp.html>`_
