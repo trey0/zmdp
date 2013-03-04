@@ -61,12 +61,14 @@ Some tested compilers:
  * gcc/g++ 4.2.1 from XCode 3.2 under Mac OS X 10.6.4
 
 Build system tested with:
+
  * GNU Make 3.80, 3.81
  * GNU Flex 2.5.4, 2.5.35
  * GNU Bison 2.0, 2.3
  * Perl 5.8.6, 5.10.0
 
 Performance plotting scripts in tools directory tested with:
+
  * gnuplot 4.0
  * GNU gprof 2.15.94.0.2.2
  * GNU Octave 2.1.73
@@ -88,33 +90,28 @@ Installation instructions
     make install
     (generates binaries in zmdp-VERSION/bin/<os_name>/, <os_name> = e.g. linux2, darwin8)
 
- * Test::
+ * Test (runs a suite of regression tests)::
 
     cd zmdp-VERSION/src
     make test
 
-  (runs a suite of regression tests)
-
- * Try solving an example problem::
+ * Try solving an example problem (look at results in 'out.policy')::
 
     mkdir zmdp-VERSION/results/
     cd zmdp-VERSION/results
     ../bin/<os_name>/zmdpSolve ../src/pomdpModels/three_state.pomdp
 
-  (look at results in 'out.policy')
-
  * If you want to solve one of the included RockSample problem
-   instances, generate it::
+   instances, generate it (generates RockSample_5_7.pomdp)::
 
     cd zmdp-VERSION/src/pomdpModels
     ./gen_RockSample_5_7
 
-  (generates RockSample_5_7.pomdp)
-
 Usage instructions
 ~~~~~~~~~~~~~~~~~~
 
-The installation process creates binaries in the bin/<os_name>/ directory:
+The installation process creates binaries in the ``bin/<os_name>/``
+directory:
 
 zmdpSolve
   zmdpSolve generates an output policy for a search strategy and
@@ -214,27 +211,32 @@ template for my release of zmdp.
 References
 ~~~~~~~~~~
 
-1. **Learning to Act Using Real-Time Dynamic Programming.**
+1. `Learning to Act Using Real-Time Dynamic
+   Programming. <http://www.sciencedirect.com/science/article/pii/000437029400011O>`_
    A. Barto, S. Bradke, and S. Singh.
    *Artificial Intelligence* 72(1-2): 81-138. 1995.
 
-2. **Faster heuristic Search Algorithms for Planning with
-   Uncertainty and Full Feedback.**
+2. `Faster heuristic Search Algorithms for Planning with
+   Uncertainty and Full Feedback. <http://dl.acm.org/citation.cfm?id=1630835>`_
    B. Bonet and H. Geffner. In *Proc. of IJCAI*, 2003.
 
-3. **Labeled RTDP: Improving the Convergence of Real Time Dynamic Programming.**
+3. `Labeled RTDP: Improving the Convergence of Real Time Dynamic Programming.
+   <ftp://ftp.cs.ucla.edu/pub/stat_ser/R319.pdf>`_
    B. Bonet and H. Geffner. In *Proc. of ICAPS*, 2003.
 
 4. `Tony's POMDP Page <http://www.cs.brown.edu/research/ai/pomdp/>`_.
    Tony Cassandra.
 
-5. **Heuristic Search Value Iteration for POMDPs.**
+5. `Heuristic Search Value Iteration for
+   POMDPs. <http://www.cs.cmu.edu/~trey/pubs/b2hd-smith04hsvi.html>`_
    T. Smith and R. Simmons. In  *Proc. of UAI*, 2004.
 
-6. **Point-based POMDP Algorithms: Improved Analysis and Implementation.**
+6. `Point-based POMDP Algorithms: Improved Analysis and
+   Implementation. <http://www.cs.cmu.edu/~trey/pubs/b2hd-smith05hsvi.html>`_
    T. Smith and R. Simmons. In *Proc. of UAI*, 2005.
 
-7. **Focused Real-Time Dynamic Programming for MDPs.**
+7. `Focused Real-Time Dynamic Programming for
+   MDPs. <http://www.cs.cmu.edu/~trey/pubs/b2hd-smith06frtdp.html>`_
    T. Smith and R. Simmons. In *Proc. of AAAI*, 2006.
 
 Release notes
