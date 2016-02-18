@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-$TEST_DESCRIPTION = "default use of zmdpBenchmark/zmdpEvaluate on a pomdp";
+$TEST_DESCRIPTION = "default use of zmdp benchmark/evaluate on a pomdp";
 require "testLibrary.perl";
 &testZmdpBenchmark(cmd => "$zmdpBenchmark -o out.policy $pomdpsDir/three_state.pomdp",
 		   expectedLB => 20.8260,

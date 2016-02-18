@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-$TEST_DESCRIPTION = "default use of zmdpSolve/zmdpEvaluate on a pomdp";
+$TEST_DESCRIPTION = "default use of zmdp solve/evaluate on a pomdp";
 require "testLibrary.perl";
 
 &testZmdpSolve(cmd => "$zmdpSolve $pomdpsDir/three_state.pomdp",

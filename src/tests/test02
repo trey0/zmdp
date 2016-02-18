@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-$TEST_DESCRIPTION = "default use of zmdpBenchmark on an mdp";
+$TEST_DESCRIPTION = "default use of zmdp benchmark on an mdp";
 require "testLibrary.perl";
 &testZmdpBenchmark(cmd => "$zmdpBenchmark $mdpsDir/small-b.racetrack",
 		   expectedLB => -13.2664,

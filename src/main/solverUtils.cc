@@ -270,12 +270,12 @@ void SolverParams::inferMissingValues(void)
     if (usingBenchmarkFrontEnd) {
       policyOutputFile = NULL;
       if (zmdpDebugLevelG >= 1) {
-	printf("[params] selected policyOutputFile='none' because front end is zmdpBenchmark\n");
+	printf("[params] selected policyOutputFile='none' because front end is zmdp benchmark\n");
       }
     } else {
       policyOutputFile = "out.policy";
       if (zmdpDebugLevelG >= 1) {
-	printf("[params] selected policyOutputFile='%s' because front end is zmdpSolve\n",
+	printf("[params] selected policyOutputFile='%s' because front end is zmdp solve\n",
 	       policyOutputFile);
       }
     }

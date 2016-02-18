@@ -112,7 +112,7 @@ if ($termCondition eq "eqtime") {
 	die "ERROR: got -b option without -l or -u\n";
     }
 } else {
-    # eqbackups -- terminates when zmdpBenchmark comes to the end of the script
+    # eqbackups -- terminates when zmdp benchmark comes to the end of the script
     $termArg = "";
 }
 

@@ -73,7 +73,7 @@ CustomMDP::CustomMDP(const ZMDPConfig& config)
   // embedded into the ZMDP binaries at compile time, so if you change
   // the config file you may want to recompile.  You can get more
   // information about how ZMDP handles config information by running
-  // 'zmdpSolve -h'.
+  // 'zmdp -h'.
   //
   // There are other functions you can call to extract other types of
   // parameters; e.g. getString(), getDouble(), getBool().  See

@@ -99,7 +99,7 @@ Installation instructions
 
     mkdir zmdp-VERSION/results/
     cd zmdp-VERSION/results
-    ../bin/<os_name>/zmdpSolve ../src/pomdpModels/three_state.pomdp
+    ../bin/<os_name>/zmdp solve ../src/pomdpModels/three_state.pomdp
 
  * If you want to solve one of the included RockSample problem
    instances, generate it (generates RockSample_5_7.pomdp)::
@@ -113,8 +113,8 @@ Usage instructions
 The installation process creates binaries in the ``bin/<os_name>/``
 directory:
 
-zmdpSolve
-  zmdpSolve generates an output policy for a search strategy and
+zmdp solve
+  'zmdp solve' generates an output policy for a search strategy and
   problem you select.  It runs the search strategy in an anytime
   fashion, periodically printing bounds on the value of the initial
   state to console so that you can monitor progress.  When the run ends,
@@ -124,10 +124,10 @@ zmdpSolve
   just use ctrl-C to interrupt the algorithm when you are satisfied (it
   will output the final policy before exiting).
 
-  Run ``zmdpSolve -h`` for a summary of the options and some examples.
+  Run ``zmdp -h`` for a summary of the options and some examples.
 
-zmdpBenchmark
-  zmdpBenchmark tests performance for a search strategy and problem
+zmdp benchmark
+  'zmdp benchmark' tests performance for a search strategy and problem
   you select.  As the search strategy progresses, various statistics
   are logged, such as the algorithm's bounds on the value of the initial
   state, the number of backups so far, and periodic measurements of the
@@ -141,23 +141,23 @@ zmdpBenchmark
    * sim.plot: logs some of the simulation traces so you can get a
      qualitative sense of how the policy changes
 
-  Run ``zmdpBenchmark -h`` for a summary of the options and some examples.
+  Run ``zmdp -h`` for a summary of the options and some examples.
 
-zmdpEvaluate
-  zmdpEvaluate evaluates a policy output by zmdpSolve or zmdpBenchmark.
+zmdp evaluate
+  'zmdp evaluate' evaluates a policy output by 'zmdp solve' or 'zmdp benchmark'.
   The policy is evaluated by executing a number of trials in simulation;
   the output is mean reward and a 95% confidence interval for the estimate
   of the mean under the (not necessarily correct) assumption that the
   per-trial reward is normally distributed.  Sorry, statisticians may wince...
 
-  Run ``zmdpEvaluate -h`` for a summary of the options and some examples.
+  Run ``zmdp -h`` for a summary of the options and some examples.
 
 Plotting performance
 ~~~~~~~~~~~~~~~~~~~~
 
 There are several scripts in the src/tools directory, a few of which
 are described here.  They are intended to produce performance plots
-based on the logs output by zmdpBenchmark.  Sorry, these tools are
+based on the logs output by 'zmdp benchmark'.  Sorry, these tools are
 somewhat messier / less documented than the solver itself.
 
 makeplot
@@ -171,7 +171,7 @@ usage: makeplot OPTIONS <results_directory>
 makeplot plots the upper bound, lower bound, and measured solution
 quality at testing epochs in a single graph with a logarithmic x axis.
 It looks in <results_directory> for the files bounds.plot and inc.plot,
-output by zmdpBenchmark.  By default the plot is displayed in an X window.
+output by 'zmdp benchmark'.  By default the plot is displayed in an X window.
 Using the -p option drops it into a PostScript file instead, e.g. for
 inclusion in a paper.
 

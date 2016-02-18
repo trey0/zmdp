@@ -77,7 +77,7 @@ void usage(const char* argv0) {
     "  -h or --help         Display this help\n"
     "  -f or --full         Use verbose identifiers in output model instead of numbers\n"
     "                        (useful only for debugging -- full identifiers are not\n"
-    "                         compatible with the fast parser 'zmdpSolve -f')\n"
+    "                         compatible with the fast parser 'zmdp solve -f')\n"
     "  -t or --target-list  Specify known list of targets\n";
   exit(EXIT_FAILURE);
 }

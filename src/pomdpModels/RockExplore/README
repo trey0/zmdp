@@ -17,7 +17,7 @@
 
 * The process for using ZMDP-generated policies is a bit more involved:
   * Run zmdpRockExplore and select main menu option 1 to generate RockExplore.pomdp
-  * Run 'zmdpSolve RockExplore.pomdp' to generate a ZMDP policy
+  * Run 'zmdp solve RockExplore.pomdp' to generate a ZMDP policy
   * You can now run ZMDP policies inside zmdpRockExplore, for example
     by navigating through menu choices 3->5.
 
