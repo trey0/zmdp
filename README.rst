@@ -16,13 +16,13 @@ important ways.  The original authors have not signed off on my
 implementations: use at your own risk.  (And please inform me if you
 find any errors.)
 
-More information can be found at http://www.cs.cmu.edu/~trey/zmdp
+More information can be found at http://longhorizon.org/trey/zmdp
 
 Please let me know if you have any comments!
 
-Trey Smith <trey.smith@gmail.com>
+Trey Smith <trey.smith@longhorizon.org>
 
-Copyright (c) 2005-2010, Trey Smith.
+Copyright (c) 2005-2016, Trey Smith.
 More information is in the file named COPYING.
 
 .. contents::
@@ -238,19 +238,19 @@ References
 .. _5:
 
 5. `Heuristic Search Value Iteration for
-   POMDPs. <http://www.cs.cmu.edu/~trey/pubs/b2hd-smith04hsvi.html>`_
+   POMDPs. <http://longhorizon.org/trey/pubs/b2hd-smith04hsvi.html>`_
    T. Smith and R. Simmons. In  *Proc. of UAI*, 2004.
 
 .. _6:
 
 6. `Point-based POMDP Algorithms: Improved Analysis and
-   Implementation. <http://www.cs.cmu.edu/~trey/pubs/b2hd-smith05hsvi.html>`_
+   Implementation. <http://longhorizon.org/trey/pubs/b2hd-smith05hsvi.html>`_
    T. Smith and R. Simmons. In *Proc. of UAI*, 2005.
 
 .. _7:
 
 7. `Focused Real-Time Dynamic Programming for
-   MDPs. <http://www.cs.cmu.edu/~trey/pubs/b2hd-smith06frtdp.html>`_
+   MDPs. <http://longhorizon.org/trey/pubs/b2hd-smith06frtdp.html>`_
    T. Smith and R. Simmons. In *Proc. of AAAI*, 2006.
 
 Release notes
