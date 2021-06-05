@@ -54,7 +54,7 @@ FLEX    := flex
 
 # Flex / Bison specifics
 # -b -7 -Cr
-LEXFLAGS  := -f -Ca
+LEXFLAGS  := -f -Ca --nounput
 LEX       := $(FLEX)
 LEX_PREFIX := yy
 

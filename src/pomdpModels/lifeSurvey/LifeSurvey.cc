@@ -76,7 +76,7 @@ std::string LSState::toString(void) const
   if (isTerminal()) {
     return "sterminal";
   } else {
-    char rbuf[256], buf[256];
+    char rbuf[256], buf[1024];
     assert(rewardLevelInRegion.size() < 250); /* avoid buffer overflow */
     FOR (i, rewardLevelInRegion.size()) {
       snprintf(&rbuf[i], 2, "%d", rewardLevelInRegion[i]);

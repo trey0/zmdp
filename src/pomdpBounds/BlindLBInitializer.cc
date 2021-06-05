@@ -57,7 +57,7 @@ void BlindLBInitializer::initBlindWorstCase(alpha_vector& weakAlpha)
   // set alpha to be a lower bound on the value of the best blind policy
 
   double worstStateVal;
-  int safestAction = -1;
+  // int safestAction = -1;
   double worstCaseReward = -99e+20;
   // calculate worstCaseReward = max_a min_s R(s,a)
   // safestAction = argmax_a min_s R(s,a)
@@ -67,7 +67,7 @@ void BlindLBInitializer::initBlindWorstCase(alpha_vector& weakAlpha)
       worstStateVal = std::min(worstStateVal, pomdp->R(s,a));
     }
     if (worstStateVal > worstCaseReward) {
-      safestAction = a;
+      // safestAction = a;
       worstCaseReward = worstStateVal;
     }
   }

@@ -114,7 +114,11 @@ void PropertyList::readFromFile(const string& fname, char endMarker)
   char key[1024], value[1024];
   lnum = 0;
   while (!feof(inFile)) {
-    fgets(lbuf, sizeof(lbuf), inFile);
+    if (NULL == fgets(lbuf, sizeof(lbuf), inFile)) {
+      fprintf(stderr, "ERROR: %s: line %d: fgets() failed\n",
+	      fname.c_str(), lnum);
+      exit(EXIT_FAILURE);
+    }
     lnum++;
     if (0 == strlen(lbuf)) continue;
     if ('#' == lbuf[0]) continue;
@@ -217,7 +221,11 @@ void TrackMap::readFromFile(const string& mapFileName, FILE* mapFile, int lnum)
   unsigned int i = 0;
   width = 0;
   while (!feof(mapFile)) {
-    fgets(lbuf, sizeof(lbuf), mapFile);
+    if (NULL == fgets(lbuf, sizeof(lbuf), mapFile)) {
+      fprintf(stderr, "ERROR: %s: line %d: fgets() failed\n",
+	      mapFileName.c_str(), lnum);
+      exit(EXIT_FAILURE);
+    }
     lnum++;
     if (0 == strlen(lbuf)) continue;
     if ('#' == lbuf[0]) continue;

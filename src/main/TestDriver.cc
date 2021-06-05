@@ -160,13 +160,17 @@ void TestDriver::batchTestIncremental(const ZMDPConfig& config,
 	// create a backup of the policy from the last epoch in case policy
 	// writing is interrupted
 	string cmd = string("mv ") + outPolicyFileName + " " + outPolicyFileName + ".bak >& /dev/null";
-	system(cmd.c_str());
+	if (0 != system(cmd.c_str())) {
+          fprintf(stderr, "failed to make policy backup");
+        }
 
 	so.bounds->writePolicy(outPolicyFileName, /* canModifyBounds = */ false);
 
 	// delete the backup
 	cmd = string("rm -f ") + outPolicyFileName + ".bak >& /dev/null";
-	system(cmd.c_str());
+	if (0 != system(cmd.c_str())) {
+          fprintf(stderr, "failed to delete policy backup");
+        }
       }
 
       // simulate running the policy many times and collect the per-run total reward values

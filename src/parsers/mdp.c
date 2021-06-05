@@ -172,7 +172,7 @@ int readMDP( char *filename ) {
    FILE *file;
 
    if( filename == NULL ) {
-      fprintf( stderr, "<NULL> MDP filename: %s.\n", filename );
+      fprintf( stderr, "<NULL> MDP filename.\n" );
       return( 0 );
    }
 
