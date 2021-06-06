@@ -15,8 +15,8 @@
 
  ***************************************************************************/
 
-#ifndef INCMaxPlanesLowerBound_h
-#define INCMaxPlanesLowerBound_h
+#ifndef ZMDP_SRC_POMDPBOUNDS_MAXPLANESLOWERBOUND_H_
+#define ZMDP_SRC_POMDPBOUNDS_MAXPLANESLOWERBOUND_H_
 
 /**********************************************************************
  * INCLUDES
@@ -25,7 +25,6 @@
 // this causes problems if it is included after the Lapack headers, so
 //  pre-emptively include it here.  not sure exactly what the problem is.
 #include <iostream>
-
 #include <list>
 #include <string>
 #include <vector>
@@ -102,6 +101,6 @@ struct MaxPlanesLowerBound : public IncrementalLowerBound {
   int getStorage(int whichMetric) const;
 };
 
-}; // namespace zmdp
+};  // namespace zmdp
 
-#endif // INCMaxPlanesLowerBound_h
+#endif  // ZMDP_SRC_POMDPBOUNDS_MAXPLANESLOWERBOUND_H_

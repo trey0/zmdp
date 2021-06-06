@@ -15,8 +15,8 @@
 
  ***************************************************************************/
 
-#ifndef INCGenericDiscreteMDP_h
-#define INCGenericDiscreteMDP_h
+#ifndef ZMDP_SRC_MDPS_GENERICDISCRETEMDP_H_
+#define ZMDP_SRC_MDPS_GENERICDISCRETEMDP_H_
 
 #include <iostream>
 #include <string>
@@ -56,6 +56,6 @@ struct GenericDiscreteMDP : public CassandraModel {
   AbstractBound *newUpperBound(const ZMDPConfig *_config);
 };
 
-}; // namespace zmdp
+};  // namespace zmdp
 
-#endif // INCGenericDiscreteMDP_h
+#endif  // ZMDP_SRC_MDPS_GENERICDISCRETEMDP_H_

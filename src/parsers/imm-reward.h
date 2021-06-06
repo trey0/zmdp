@@ -24,9 +24,9 @@
 
     Header file for imm-reward.c
 */
-#ifndef IMM_REWARD_H
+#ifndef ZMDP_SRC_PARSERS_IMM_REWARD_H_
 
-#define IMM_REWARD_H
+#define ZMDP_SRC_PARSERS_IMM_REWARD_H_
 
 #include "sparse-matrix.h"
 
@@ -64,7 +64,6 @@ typedef enum { ir_none, ir_value, ir_vector, ir_matrix } IR_Type;
 
 typedef struct Imm_Reward_Node_Struct *Imm_Reward_List;
 struct Imm_Reward_Node_Struct {
-
   IR_Type type;
 
   int action;
@@ -97,4 +96,4 @@ extern double getImmediateReward(int action, int cur_state, int next_state,
 } /* extern "C" */
 #endif
 
-#endif
+#endif  //  ZMDP_SRC_PARSERS_IMM_REWARD_H_

@@ -15,6 +15,8 @@
 
  ***************************************************************************/
 
+#include "BlindLBInitializer.h"
+
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -23,7 +25,6 @@
 #include <fstream>
 #include <iostream>
 
-#include "BlindLBInitializer.h"
 #include "MatrixUtils.h"
 #include "Pomdp.h"
 #include "zmdpCommonDefs.h"
@@ -78,7 +79,8 @@ void BlindLBInitializer::initBlindWorstCase(alpha_vector &weakAlpha) {
     }
   }
   if (pomdp->maxHorizon != -1) {
-    longTermFactor = std::min(longTermFactor, (double)pomdp->maxHorizon);
+    longTermFactor =
+        std::min(longTermFactor, static_cast<double>(pomdp->maxHorizon));
   }
   assert(longTermFactor != POMDP_LONG_TERM_UNBOUNDED);
 
@@ -144,4 +146,4 @@ void BlindLBInitializer::initBlind(double targetPrecision) {
   }
 }
 
-}; // namespace zmdp
+};  // namespace zmdp

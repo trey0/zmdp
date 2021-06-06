@@ -20,11 +20,13 @@
  ***************************************************************************/
 
 #include "zmdpCommonTime.h"
+
 #include <assert.h>
-#include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+
+#include <iostream>
 
 namespace zmdp {
 
@@ -32,12 +34,12 @@ namespace zmdp {
 //   wait
 void fsleep(double seconds) {
   timeval tv;
-  int tfloor = (int)seconds;
+  int tfloor = static_cast<int>(seconds);
   tv.tv_sec = tfloor;
-  tv.tv_usec = (int)((seconds - tfloor) * 1.0e+6);
+  tv.tv_usec = static_cast<int>((seconds - tfloor) * 1.0e+6);
 
   int activeFds = select(0, 0, 0, 0, &tv);
-  assert(activeFds != -1); // select returns -1 on error
+  assert(activeFds != -1);  // select returns -1 on error
 }
 
 void StopWatch::restart(void) { gettimeofday(&startTime, 0); }
@@ -51,8 +53,8 @@ double StopWatch::elapsedTime(void) {
 
 struct timeval secondsToTimeval(double d) {
   timeval a;
-  a.tv_sec = (int)d;
-  a.tv_usec = (int)(1e+6 * (d - a.tv_sec));
+  a.tv_sec = static_cast<int>(d);
+  a.tv_usec = static_cast<int>(1e+6 * (d - a.tv_sec));
   return a;
 }
 
@@ -93,4 +95,4 @@ timeval getTime(void) {
   return tv;
 }
 
-}; // namespace zmdp
+};  // namespace zmdp

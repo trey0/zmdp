@@ -15,6 +15,8 @@
 
  ***************************************************************************/
 
+#include "StateLog.h"
+
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -26,7 +28,6 @@
 #include <queue>
 
 #include "MatrixUtils.h"
-#include "StateLog.h"
 
 using namespace std;
 using namespace sla;
@@ -98,7 +99,7 @@ void StateIndex::writeToFile(const std::string &outFile) const {
   }
 
   if (zmdpDebugLevelG >= 1) {
-    printf("wrote index of %d states to %s\n", (int)entries.size(),
+    printf("wrote index of %d states to %s\n", static_cast<int>(entries.size()),
            outFile.c_str());
   }
 }
@@ -126,10 +127,8 @@ void StateIndex::readFromFile(const std::string &inFile) {
 
     // strip whitespace, ignore empty lines and comments
     s = stripWhiteSpace(buf);
-    if (0 == s.size())
-      continue;
-    if ('#' == s[0])
-      continue;
+    if (0 == s.size()) continue;
+    if ('#' == s[0]) continue;
 
     if (string::npos != s.find("state")) {
       if (accum.filled() > 0) {
@@ -156,8 +155,8 @@ void StateIndex::readFromFile(const std::string &inFile) {
   }
 
   if (zmdpDebugLevelG >= 1) {
-    printf("read index of %d states from %s\n", (int)entries.size(),
-           inFile.c_str());
+    printf("read index of %d states from %s\n",
+           static_cast<int>(entries.size()), inFile.c_str());
   }
 }
 
@@ -187,8 +186,8 @@ void StateIndex::writeBoundValuesToFile(const std::string &outFile,
   }
 
   if (zmdpDebugLevelG >= 1) {
-    printf("wrote bound values for %d states to %s\n", (int)entries.size(),
-           outFile.c_str());
+    printf("wrote bound values for %d states to %s\n",
+           static_cast<int>(entries.size()), outFile.c_str());
   }
 }
 
@@ -223,8 +222,8 @@ void StateIndex::writeQValuesToFile(const std::string &outFile,
   }
 
   if (zmdpDebugLevelG >= 1) {
-    printf("wrote bound values for %d states to %s\n", (int)entries.size(),
-           outFile.c_str());
+    printf("wrote bound values for %d states to %s\n",
+           static_cast<int>(entries.size()), outFile.c_str());
   }
 }
 
@@ -253,7 +252,7 @@ void StateLog::writeToFile(const std::string &outFile) const {
   FOR_EACH(e, entries) { out << (*e) << endl; }
 
   if (zmdpDebugLevelG >= 1) {
-    printf("wrote log of %d backups to %s\n", (int)entries.size(),
+    printf("wrote log of %d backups to %s\n", static_cast<int>(entries.size()),
            outFile.c_str());
   }
 }
@@ -278,10 +277,8 @@ void StateLog::readFromFile(const std::string &inFile) {
 
     // strip whitespace, ignore empty lines and comments
     s = stripWhiteSpace(buf);
-    if (0 == s.size())
-      continue;
-    if ('#' == s[0])
-      continue;
+    if (0 == s.size()) continue;
+    if ('#' == s[0]) continue;
 
     if (1 != sscanf(s.c_str(), "%d", &id)) {
       fprintf(stderr, "ERROR: %s:%d: syntax error, expected '<index>'\n",
@@ -292,11 +289,11 @@ void StateLog::readFromFile(const std::string &inFile) {
   }
 
   if (zmdpDebugLevelG >= 1) {
-    printf("read log of %d backups from %s\n", (int)entries.size(),
+    printf("read log of %d backups from %s\n", static_cast<int>(entries.size()),
            inFile.c_str());
   }
 }
 
 int StateLog::getLogEntry(int i) const { return entries[i]; }
 
-}; // namespace zmdp
+};  // namespace zmdp

@@ -25,9 +25,9 @@
         This module contains all the constant and type definitions
 needed for the "pomdp_err.c" module.
 */
-#ifndef PARSE_ERR_H
+#ifndef ZMDP_SRC_PARSERS_PARSE_ERR_H_
 
-#define PARSE_ERR_H
+#define ZMDP_SRC_PARSERS_PARSE_ERR_H_
 
 /***********************************************************************/
 /****************************  CONSTANTS  ******************************/
@@ -36,18 +36,14 @@ needed for the "pomdp_err.c" module.
 #define DEBUG 1 /* set this constant to zero when not debugging */
 
 /* Special values */
-#define NO_LINE                                                                \
-  -1 /* Value line number will take                                            \
-     when a particular error message                                           \
-     does not have an associated                                               \
-     line number                                                               \
-     */
 
-#define ERR_META                                                               \
-  '@' /* Special character found in error messages                             \
-      that indicates an insertion point                                        \
-      for another string.                                                      \
-      */
+/* Value line number will take when a particular error message does not
+ * have an associated line number */
+#define NO_LINE -1
+
+/* Special character found in error messages that indicates an insertion
+ * point for another string. */
+#define ERR_META '@'
 
 /* Currently defined error messages */
 #define NBR_ERRORS 29
@@ -78,9 +74,9 @@ needed for the "pomdp_err.c" module.
 #define ERROR_MSSG_23 "Syntax error."
 #define ERROR_MSSG_24 "Bad probability sum for start belief state"
 #define ERROR_MSSG_25 "The keyword 'reset' is not allowed in this context"
-#define ERROR_MSSG_26                                                          \
+#define ERROR_MSSG_26 \
   "Observations not valid in MDP, or missing observations in POMDP"
-#define ERROR_MSSG_27                                                          \
+#define ERROR_MSSG_27 \
   "This type of starting state specification is not valid for an MDP."
 #define ERROR_MSSG_28 "Not a valid reward syntax for this problem type."
 
@@ -142,9 +138,9 @@ typedef struct enode {
 
   int errorNumber; /* which error was it */
 
-  char *modString; /* additional information for output, to
-                   be inserted into error message where the
-                   ERR_META character is found  */
+  /* additional information for output, to be inserted into error
+     message where the ERR_META character is found */
+  char *modString;
 
   struct enode *nextError; /* pointer to next node */
 } Err_node;
@@ -163,5 +159,5 @@ void ERR_cleanUp(void);
 } /* extern "C" */
 #endif
 
-#endif
+#endif  // ZMDP_SRC_PARSERS_PARSE_ERR_H_
 /*************************************************************************/

@@ -15,15 +15,19 @@
 
  ***************************************************************************/
 
-#ifndef INCsla_h
-#define INCsla_h
+#ifndef ZMDP_SRC_COMMON_SLA_H_
+#define ZMDP_SRC_COMMON_SLA_H_
 
-#include <algorithm>
+#include <assert.h>
 #include <errno.h>
-#include <fstream>
-#include <iostream>
 #include <math.h>
 #include <string.h>
+
+#include <algorithm>
+#include <fstream>
+#include <iostream>
+#include <string>
+#include <utility>
 #include <vector>
 
 #include "zmdpCommonDefs.h"
@@ -286,9 +290,11 @@ bool dominates(const dvector &x, const dvector &y, double eps);
 // return true if for all i: x(i) >= y(i) - eps
 bool dominates(const cvector &x, const cvector &y, double eps);
 
-template <class T> void read_from_file(T &x, const std::string &file_name);
+template <class T>
+void read_from_file(T &x, const std::string &file_name);
 
-template <class T> void write_to_file(const T &x, const std::string &file_name);
+template <class T>
+void write_to_file(const T &x, const std::string &file_name);
 
 /**********************************************************************
  * DVECTOR FUNCTIONS
@@ -298,17 +304,17 @@ inline void dvector::operator*=(double s) {
   FOR_EACH(di, data) { (*di) *= s; }
 }
 
-#define DVECTOR_OPERATOR(OP)                                                   \
-  inline void dvector::operator OP(const dvector &x) {                         \
-    typeof(x.data.begin()) xi;                                                 \
-                                                                               \
-    assert(size() == x.size());                                                \
-                                                                               \
-    xi = x.data.begin();                                                       \
-    FOR_EACH(di, data) {                                                       \
-      (*di) OP(*xi);                                                           \
-      xi++;                                                                    \
-    }                                                                          \
+#define DVECTOR_OPERATOR(OP)                           \
+  inline void dvector::operator OP(const dvector &x) { \
+    typeof(x.data.begin()) xi;                         \
+                                                       \
+    assert(size() == x.size());                        \
+                                                       \
+    xi = x.data.begin();                               \
+    FOR_EACH(di, data) {                               \
+      (*di) OP(*xi);                                   \
+      xi++;                                            \
+    }                                                  \
   }
 
 DVECTOR_OPERATOR(+=);
@@ -329,10 +335,10 @@ inline void dvector::read(std::istream &in) {
 
 #if 0
     std::cout << "dense read: size = " << data.size() << std::endl;
-    FOR (i, data.size()) {
+    FOR(i, data.size()) {
       if (i == 10) {
-	std::cout << "..." << std::endl;
-	break;
+        std::cout << "..." << std::endl;
+        break;
       }
       std::cout << i << " " << data[i] << std::endl;
     }
@@ -663,8 +669,7 @@ inline double norm_inf(const cvector &x) {
   double val, max = 0.0;
   FOR_EACH(xi, x.data) {
     val = fabs(xi->value);
-    if (val > max)
-      max = val;
+    if (val > max) max = val;
   }
   return max;
 }
@@ -673,8 +678,7 @@ inline double norm_inf(const dvector &x) {
   double val, max = 0.0;
   FOR_EACH(xi, x.data) {
     val = fabs(*xi);
-    if (val > max)
-      max = val;
+    if (val > max) max = val;
   }
   return max;
 }
@@ -794,8 +798,7 @@ void emult_cc_internal(cvector &result, T xbegin, T xend, U ybegin, U yend) {
   U yi = ybegin;
   for (T xi = xbegin; xi != xend; xi++) {
     while (1) {
-      if (yi == yend)
-        return;
+      if (yi == yend) return;
       if (yi->index >= xi->index) {
         if (yi->index == xi->index) {
           result.push_back(xi->index, xi->value * yi->value);
@@ -882,8 +885,7 @@ inline void max_assign(dvector &result, const dvector &x) {
 
   FOR_EACH(ri, result.data) {
     xval = *xi;
-    if (xval > (*ri))
-      (*ri) = xval;
+    if (xval > (*ri)) (*ri) = xval;
     xi++;
   }
 }
@@ -903,8 +905,7 @@ double inner_prod_cvector_internal(T xbegin, T xend, U ybegin, U yend) {
   U yi = ybegin;
   for (T xi = xbegin; xi != xend; xi++) {
     while (1) {
-      if (yi == yend)
-        return sum;
+      if (yi == yend) return sum;
       if (yi->index >= xi->index) {
         if (yi->index == xi->index) {
           sum += xi->value * yi->value;
@@ -943,20 +944,20 @@ inline void add(cvector &result, const cvector &x, const cvector &y) {
   assert(x.size() == y.size());
   result.resize(x.size());
 
-#define CHECK_X()                                                              \
-  if (xi == xend) {                                                            \
-    xdone = true;                                                              \
-    goto main_loop_done;                                                       \
-  } else {                                                                     \
-    xind = xi->index;                                                          \
+#define CHECK_X()        \
+  if (xi == xend) {      \
+    xdone = true;        \
+    goto main_loop_done; \
+  } else {               \
+    xind = xi->index;    \
   }
 
-#define CHECK_Y()                                                              \
-  if (yi == yend) {                                                            \
-    ydone = true;                                                              \
-    goto main_loop_done;                                                       \
-  } else {                                                                     \
-    yind = yi->index;                                                          \
+#define CHECK_Y()        \
+  if (yi == yend) {      \
+    ydone = true;        \
+    goto main_loop_done; \
+  } else {               \
+    yind = yi->index;    \
   }
 
   xi = x.data.begin();
@@ -1008,20 +1009,20 @@ inline void subtract(cvector &result, const cvector &x, const cvector &y) {
   assert(x.size() == y.size());
   result.resize(x.size());
 
-#define CHECK_X()                                                              \
-  if (xi == xend) {                                                            \
-    xdone = true;                                                              \
-    goto main_loop_done;                                                       \
-  } else {                                                                     \
-    xind = xi->index;                                                          \
+#define CHECK_X()        \
+  if (xi == xend) {      \
+    xdone = true;        \
+    goto main_loop_done; \
+  } else {               \
+    xind = xi->index;    \
   }
 
-#define CHECK_Y()                                                              \
-  if (yi == yend) {                                                            \
-    ydone = true;                                                              \
-    goto main_loop_done;                                                       \
-  } else {                                                                     \
-    yind = yi->index;                                                          \
+#define CHECK_Y()        \
+  if (yi == yend) {      \
+    ydone = true;        \
+    goto main_loop_done; \
+  } else {               \
+    yind = yi->index;    \
   }
 
   xi = x.data.begin();
@@ -1067,8 +1068,7 @@ main_loop_done:
 // return true if for all i: x(i) >= y(i) - eps
 inline bool dominates(const dvector &x, const dvector &y, double eps) {
   FOR(i, x.size()) {
-    if (x(i) < y(i) - eps)
-      return false;
+    if (x(i) < y(i) - eps) return false;
   }
   return true;
 }
@@ -1082,20 +1082,20 @@ inline bool dominates(const cvector &x, const cvector &y, double eps) {
 
   assert(x.size() == y.size());
 
-#define CHECK_X()                                                              \
-  if (xi == xend) {                                                            \
-    xdone = true;                                                              \
-    goto main_loop_done;                                                       \
-  } else {                                                                     \
-    xind = xi->index;                                                          \
+#define CHECK_X()        \
+  if (xi == xend) {      \
+    xdone = true;        \
+    goto main_loop_done; \
+  } else {               \
+    xind = xi->index;    \
   }
 
-#define CHECK_Y()                                                              \
-  if (yi == yend) {                                                            \
-    ydone = true;                                                              \
-    goto main_loop_done;                                                       \
-  } else {                                                                     \
-    yind = yi->index;                                                          \
+#define CHECK_Y()        \
+  if (yi == yend) {      \
+    ydone = true;        \
+    goto main_loop_done; \
+  } else {               \
+    yind = yi->index;    \
   }
 
   xi = x.data.begin();
@@ -1109,22 +1109,19 @@ inline bool dominates(const cvector &x, const cvector &y, double eps) {
   while (1) {
     if (xind < yind) {
       // x(xind) == xi->value, y(xind) == 0
-      if (xi->value < -eps)
-        return false;
+      if (xi->value < -eps) return false;
       xi++;
       CHECK_X();
     } else if (xind == yind) {
       // x(xind) == xi->value, y(xind) == yi->value
-      if (xi->value < yi->value - eps)
-        return false;
+      if (xi->value < yi->value - eps) return false;
       xi++;
       yi++;
       CHECK_X();
       CHECK_Y();
     } else {
       // x(yind) == 0, y(yind) == yi->value
-      if (0 < yi->value - eps)
-        return false;
+      if (0 < yi->value - eps) return false;
       yi++;
       CHECK_Y();
     }
@@ -1133,20 +1130,19 @@ inline bool dominates(const cvector &x, const cvector &y, double eps) {
 main_loop_done:
   if (!xdone) {
     for (; xi != xend; xi++) {
-      if (xi->value < -eps)
-        return false;
+      if (xi->value < -eps) return false;
     }
   } else if (!ydone) {
     for (; yi != yend; yi++) {
-      if (0 < yi->value - eps)
-        return false;
+      if (0 < yi->value - eps) return false;
     }
   }
 
   return true;
 }
 
-template <class T> void read_from_file(T &x, const std::string &file_name) {
+template <class T>
+void read_from_file(T &x, const std::string &file_name) {
   std::ifstream in(file_name.c_str());
   if (!in) {
     std::cerr << "ERROR: couldn't open " << file_name
@@ -1169,7 +1165,7 @@ void write_to_file(const T &x, const std::string &file_name) {
   out.close();
 }
 
-} // namespace sla
+}  // namespace sla
 
 /**********************************************************************
  * TYPE ALIASES
@@ -1182,4 +1178,4 @@ typedef sla::cvector alpha_vector;
 typedef sla::dvector outcome_prob_vector;
 typedef sla::dvector obs_prob_vector;
 
-#endif // INCsla_h
+#endif  // ZMDP_SRC_COMMON_SLA_H_

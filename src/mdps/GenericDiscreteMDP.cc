@@ -19,6 +19,8 @@
  * INCLUDES
  ***************************************************************************/
 
+#include "GenericDiscreteMDP.h"
+
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -30,7 +32,6 @@
 
 #include "CassandraParser.h"
 #include "FastParser.h"
-#include "GenericDiscreteMDP.h"
 #include "MatrixUtils.h"
 #include "slaMatrixUtils.h"
 #include "zmdpCommonDefs.h"
@@ -66,14 +67,13 @@ const state_vector &GenericDiscreteMDP::getInitialState(void) {
 }
 
 bool GenericDiscreteMDP::getIsTerminalState(const state_vector &sv) {
-  int s = (int)sv(0);
+  int s = static_cast<int>(sv(0));
   return isTerminalState[s];
 }
 
-outcome_prob_vector &
-GenericDiscreteMDP::getOutcomeProbVector(outcome_prob_vector &result,
-                                         const state_vector &sv, int a) {
-  int s = (int)sv(0);
+outcome_prob_vector &GenericDiscreteMDP::getOutcomeProbVector(
+    outcome_prob_vector &result, const state_vector &sv, int a) {
+  int s = static_cast<int>(sv(0));
 
   // extract the non-zero entries of column s of Ttr[a] and
   // pack them into the dense result vector.
@@ -92,7 +92,7 @@ state_vector &GenericDiscreteMDP::getNextState(state_vector &result,
   // values... unfortunately, the current interface design has
   // getNextState() as a 'const' method, so we can't cache anything.
 
-  int s = (int)sv(0);
+  int s = static_cast<int>(sv(0));
 
   // return the row in which the 'o'th non-zero entry in column s of
   // Ttr[a] appears.  this corresponds to the 'o'th entry in the dense
@@ -106,11 +106,11 @@ state_vector &GenericDiscreteMDP::getNextState(state_vector &result,
     }
   }
 
-  assert(0); // never reach this point
+  assert(0);  // never reach this point
 }
 
 double GenericDiscreteMDP::getReward(const state_vector &sv, int a) {
-  int s = (int)sv(0);
+  int s = static_cast<int>(sv(0));
   return R(s, a);
 }
 
@@ -126,13 +126,14 @@ double GenericDiscreteMDP::getLongTermFactor(void) {
     }
   }
   if (maxHorizon != -1) {
-    longTermFactor = std::min(longTermFactor, (double)maxHorizon);
+    longTermFactor = std::min(longTermFactor, static_cast<double>(maxHorizon));
   }
   if (MDP_LONG_TERM_UNBOUNDED == longTermFactor) {
-    fprintf(stderr, "ERROR: using modelType='mdp', but the model is "
-                    "undiscounted and no maxHorizon\n"
-                    "       was specified; the solver cannot generate any "
-                    "initial bounds\n");
+    fprintf(stderr,
+            "ERROR: using modelType='mdp', but the model is "
+            "undiscounted and no maxHorizon\n"
+            "       was specified; the solver cannot generate any "
+            "initial bounds\n");
     exit(EXIT_FAILURE);
   }
   return longTermFactor;
@@ -142,7 +143,7 @@ struct GenericDiscreteLowerBound : public AbstractBound {
   GenericDiscreteMDP *x;
   double globalLowerBound;
 
-  GenericDiscreteLowerBound(GenericDiscreteMDP *_x) : x(_x) {}
+  explicit GenericDiscreteLowerBound(GenericDiscreteMDP *_x) : x(_x) {}
   void initialize(double targetPrecision) {
     // maxMinReward = max_a min_s R(s,a)
     double maxMinReward = -99e+20;
@@ -165,7 +166,7 @@ struct GenericDiscreteUpperBound : public AbstractBound {
   GenericDiscreteMDP *x;
   double globalUpperBound;
 
-  GenericDiscreteUpperBound(GenericDiscreteMDP *_x) : x(_x) {}
+  explicit GenericDiscreteUpperBound(GenericDiscreteMDP *_x) : x(_x) {}
   void initialize(double targetPrecision) {
     // maxReward = max_a max_s R(s,a)
     double maxReward = -99e+20;
@@ -187,4 +188,4 @@ AbstractBound *GenericDiscreteMDP::newUpperBound(const ZMDPConfig *_config) {
   return new GenericDiscreteUpperBound(this);
 }
 
-}; // namespace zmdp
+};  // namespace zmdp

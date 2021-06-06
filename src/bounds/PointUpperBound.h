@@ -15,8 +15,8 @@
 
  ***************************************************************************/
 
-#ifndef INCPointUpperBound_h
-#define INCPointUpperBound_h
+#ifndef ZMDP_SRC_BOUNDS_POINTUPPERBOUND_H_
+#define ZMDP_SRC_BOUNDS_POINTUPPERBOUND_H_
 
 /**********************************************************************
  * INCLUDES
@@ -60,6 +60,6 @@ struct PointUpperBound : public IncrementalUpperBound {
   int getStorage(int whichMetric) const;
 };
 
-}; // namespace zmdp
+};  // namespace zmdp
 
-#endif // INCPointUpperBound_h
+#endif  // ZMDP_SRC_BOUNDS_POINTUPPERBOUND_H_

@@ -15,8 +15,8 @@
 
  ***************************************************************************/
 
-#ifndef INCSawtoothUpperBound_h
-#define INCSawtoothUpperBound_h
+#ifndef ZMDP_SRC_POMDPBOUNDS_SAWTOOTHUPPERBOUND_H_
+#define ZMDP_SRC_POMDPBOUNDS_SAWTOOTHUPPERBOUND_H_
 
 #include <list>
 
@@ -84,6 +84,6 @@ struct SawtoothUpperBound : public IncrementalUpperBound {
   int getStorage(int whichMetric) const;
 };
 
-}; // namespace zmdp
+};  // namespace zmdp
 
-#endif // INCBoundFunction_h
+#endif  // ZMDP_SRC_POMDPBOUNDS_SAWTOOTHUPPERBOUND_H_

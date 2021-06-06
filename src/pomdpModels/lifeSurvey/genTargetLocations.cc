@@ -32,7 +32,9 @@
 using namespace std;
 using namespace zmdp;
 
-static double unitRand(void) { return ((double)rand()) / RAND_MAX; }
+static double unitRand(void) {
+  return (static_cast<double>(rand())) / RAND_MAX;
+}
 
 void usage(const char *binaryName) {
   cerr << "usage: " << binaryName
@@ -54,30 +56,29 @@ int main(int argc, char *argv[]) {
   double noiseFactor = 0;
   while (1) {
     char optchar = getopt_long(argc, argv, shortOptions, longOptions, NULL);
-    if (optchar == -1)
-      break;
+    if (optchar == -1) break;
 
     switch (optchar) {
-    case 'h': // help
-      usage(argv[0]);
-      break;
+      case 'h':  // help
+        usage(argv[0]);
+        break;
 
-    case 's': // seed
-      seed = atoi(optarg);
-      break;
+      case 's':  // seed
+        seed = atoi(optarg);
+        break;
 
-    case 'n': // noise
-      noiseFactor = atof(optarg);
-      break;
+      case 'n':  // noise
+        noiseFactor = atof(optarg);
+        break;
 
-    case '?': // unknown option
-    case ':': // option with missing parameter
-      // getopt() prints an informative error message
-      cerr << endl;
-      usage(argv[0]);
-      break;
-    default:
-      abort(); // never reach this point
+      case '?':  // unknown option
+      case ':':  // option with missing parameter
+        // getopt() prints an informative error message
+        cerr << endl;
+        usage(argv[0]);
+        break;
+      default:
+        abort();  // never reach this point
     }
   }
   if (argc - optind != 1) {
@@ -100,7 +101,7 @@ int main(int argc, char *argv[]) {
   // add noise to priors (if any)
   std::vector<double> noisyPriors = m.regionPriors;
   if (noiseFactor > 0) {
-    for (int r = 0; r < (int)noisyPriors.size(); r++) {
+    for (int r = 0; r < static_cast<int>(noisyPriors.size()); r++) {
       double noise = (2 * unitRand() * noiseFactor) - noiseFactor;
       noisyPriors[r] *= (1.0 + noise);
     }
@@ -108,8 +109,8 @@ int main(int argc, char *argv[]) {
 
   // set locations of targets
   std::vector<LSPos> targets;
-  for (int x = 0; x < (int)m.grid.width; x++) {
-    for (int y = 0; y < (int)m.grid.height; y++) {
+  for (int x = 0; x < static_cast<int>(m.grid.width); x++) {
+    for (int y = 0; y < static_cast<int>(m.grid.height); y++) {
       unsigned char r = m.grid.getCell(LSPos(x, y));
       if (LS_OBSTACLE != r) {
         double prob = noisyPriors[r];
@@ -124,10 +125,10 @@ int main(int argc, char *argv[]) {
 
   // write the resulting target map back out to stdout
   printf("noise=%lf seed=%d numTargets=%d\n", noiseFactor, seed,
-         (int)targets.size());
+         static_cast<int>(targets.size()));
   m.grid.writeToFile(stdout, /* showCoords = */ true, /* binaryMap = */ true);
   printf("--");
-  for (int i = 0; i < (int)targets.size(); i++) {
+  for (int i = 0; i < static_cast<int>(targets.size()); i++) {
     if (i % 5 == 0) {
       printf("\n");
     }

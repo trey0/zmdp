@@ -57,8 +57,7 @@ void readTrace(std::vector<TraceEntry> &result, const char *fname) {
   result.clear();
   while (fgets(buf, sizeof(buf), f)) {
     lnum++;
-    if (0 == strlen(buf) || '#' == buf[0])
-      continue;
+    if (0 == strlen(buf) || '#' == buf[0]) continue;
     if (2 != sscanf(buf, "%d %d", &e.a, &e.o)) {
       fprintf(stderr,
               "%s:%d: syntax error, expected integers '<a> <o>' on each line\n",
@@ -171,7 +170,8 @@ void doit(const char *lifeSurveyFileName, const char *targetListFileName,
   debugGrid.writeToFile(stdout, /* showCoords = */ true);
   printf("\n");
 
-  printf("ACTIONS_LOOK_TOTAL %d %d\n", numLooks, (int)trace.size());
+  printf("ACTIONS_LOOK_TOTAL %d %d\n", numLooks,
+         static_cast<int>(trace.size()));
   printf("SAMPLES_GOOD_TOTAL %d %d\n", numGoodSamples, numSamples);
   printf("ILLEGAL_ACTIONS %d\n", numIllegalActions);
   printf("REWARD %.3lf\n", netSum);
@@ -192,26 +192,25 @@ int main(int argc, char *argv[]) {
 
   while (1) {
     char optchar = getopt_long(argc, argv, shortOptions, longOptions, NULL);
-    if (optchar == -1)
-      break;
+    if (optchar == -1) break;
 
     switch (optchar) {
-    case 'h': // help
-      usage(argv[0]);
-      break;
+      case 'h':  // help
+        usage(argv[0]);
+        break;
 
-    case 'v': // verbose
-      verboseG = true;
-      break;
+      case 'v':  // verbose
+        verboseG = true;
+        break;
 
-    case '?': // unknown option
-    case ':': // option with missing parameter
-      // getopt() prints an informative error message
-      cerr << endl;
-      usage(argv[0]);
-      break;
-    default:
-      abort(); // never reach this point
+      case '?':  // unknown option
+      case ':':  // option with missing parameter
+        // getopt() prints an informative error message
+        cerr << endl;
+        usage(argv[0]);
+        break;
+      default:
+        abort();  // never reach this point
     }
   }
   if (3 != argc - optind) {

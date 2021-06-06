@@ -15,8 +15,8 @@
 
  ***************************************************************************/
 
-#ifndef INCIncrementalUpperBound_h
-#define INCIncrementalUpperBound_h
+#ifndef ZMDP_SRC_BOUNDS_INCREMENTALUPPERBOUND_H_
+#define ZMDP_SRC_BOUNDS_INCREMENTALUPPERBOUND_H_
 
 #include <iostream>
 #include <string>
@@ -34,6 +34,6 @@ struct IncrementalUpperBound : public AbstractBound {
   virtual void update(MDPNode &cn, int *maxUBActionP) = 0;
 };
 
-}; // namespace zmdp
+};  // namespace zmdp
 
-#endif // INCIncrementalUpperBound_h
+#endif  // ZMDP_SRC_BOUNDS_INCREMENTALUPPERBOUND_H_

@@ -20,8 +20,8 @@
 
  ***************************************************************************/
 
-#ifndef INCRockExplorePolicy_h
-#define INCRockExplorePolicy_h
+#ifndef ZMDP_SRC_POMDPMODELS_ROCKEXPLORE_ROCKEXPLOREPOLICY_H_
+#define ZMDP_SRC_POMDPMODELS_ROCKEXPLORE_ROCKEXPLOREPOLICY_H_
 
 #include <iostream>
 #include <map>
@@ -111,7 +111,7 @@ struct HeuristicPolicy : public MDPExecCore {
 
 struct QMDPPolicy : public HeuristicPolicy {
   REValueFunction vfn;
-  QMDPPolicy(const REValueFunction &_vfn) : vfn(_vfn) {}
+  explicit QMDPPolicy(const REValueFunction &_vfn) : vfn(_vfn) {}
 
   // Chooses an action according to the QMDP heuristic.
   int chooseAction(void);
@@ -119,7 +119,7 @@ struct QMDPPolicy : public HeuristicPolicy {
 
 struct VotingPolicy : public HeuristicPolicy {
   REValueFunction vfn;
-  VotingPolicy(const REValueFunction &_vfn) : vfn(_vfn) {}
+  explicit VotingPolicy(const REValueFunction &_vfn) : vfn(_vfn) {}
 
   // Chooses an action according to the voting heuristic.
   int chooseAction(void);
@@ -127,7 +127,7 @@ struct VotingPolicy : public HeuristicPolicy {
 
 struct MostLikelyPolicy : public HeuristicPolicy {
   REValueFunction vfn;
-  MostLikelyPolicy(const REValueFunction &_vfn) : vfn(_vfn) {}
+  explicit MostLikelyPolicy(const REValueFunction &_vfn) : vfn(_vfn) {}
 
   // Chooses an action according to the most likely state heuristic.
   int chooseAction(void);
@@ -135,7 +135,7 @@ struct MostLikelyPolicy : public HeuristicPolicy {
 
 struct DualModePolicy : public HeuristicPolicy {
   REValueFunction vfn;
-  DualModePolicy(const REValueFunction &_vfn) : vfn(_vfn) {}
+  explicit DualModePolicy(const REValueFunction &_vfn) : vfn(_vfn) {}
 
   // Chooses an action according to the dual-mode heuristic.
   int chooseAction(void);
@@ -153,6 +153,6 @@ extern MDPExecCore *getPolicy(int policyType);
 // Returns the string name of the specified policy type.
 extern const char *getPolicyName(int policyType);
 
-}; // namespace zmdp
+};  // namespace zmdp
 
-#endif // INCRockExplorePolicy_h
+#endif  // ZMDP_SRC_POMDPMODELS_ROCKEXPLORE_ROCKEXPLOREPOLICY_H_

@@ -15,8 +15,8 @@
 
  ***************************************************************************/
 
-#ifndef INCHSVI_h
-#define INCHSVI_h
+#ifndef ZMDP_SRC_SEARCH_HSVI_H_
+#define ZMDP_SRC_SEARCH_HSVI_H_
 
 #include "RTDPCore.h"
 
@@ -50,6 +50,6 @@ struct HSVI : public RTDPCore {
   bool doTrial(MDPNode &cn);
 };
 
-}; // namespace zmdp
+};  // namespace zmdp
 
-#endif /* INCHSVI_h */
+#endif  // ZMDP_SRC_SEARCH_HSVI_H_

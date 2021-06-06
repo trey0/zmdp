@@ -15,8 +15,8 @@
 
  ***************************************************************************/
 
-#ifndef INCsolverUtils_h
-#define INCsolverUtils_h
+#ifndef ZMDP_SRC_MAIN_SOLVERUTILS_H_
+#define ZMDP_SRC_MAIN_SOLVERUTILS_H_
 
 #include <iostream>
 
@@ -101,6 +101,6 @@ struct SolverObjects {
 void constructSolverObjects(SolverObjects &obj, SolverParams &p,
                             const ZMDPConfig &config);
 
-}; // namespace zmdp
+};  // namespace zmdp
 
-#endif // INCsolverUtils_h
+#endif  // ZMDP_SRC_MAIN_SOLVERUTILS_H_

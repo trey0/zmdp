@@ -19,7 +19,9 @@
  * INCLUDES
  ***************************************************************************/
 
-//#include <assert.h>
+// #include <assert.h>
+#include "BoundPairExec.h"
+
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -29,7 +31,6 @@
 #include <fstream>
 #include <iostream>
 
-#include "BoundPairExec.h"
 #include "MatrixUtils.h"
 #include "MaxPlanesLowerBound.h"
 #include "zmdpCommonDefs.h"
@@ -110,4 +111,4 @@ void BoundPairExec::advanceToNextState(int a, int o) {
 
 void BoundPairExec::setBelief(const belief_vector &b) { currentState = b; }
 
-}; // namespace zmdp
+};  // namespace zmdp

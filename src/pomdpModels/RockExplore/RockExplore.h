@@ -20,8 +20,8 @@
 
  ***************************************************************************/
 
-#ifndef INCRockExplore_h
-#define INCRockExplore_h
+#ifndef ZMDP_SRC_POMDPMODELS_ROCKEXPLORE_ROCKEXPLORE_H_
+#define ZMDP_SRC_POMDPMODELS_ROCKEXPLORE_ROCKEXPLORE_H_
 
 #include <iostream>
 #include <map>
@@ -49,7 +49,7 @@ namespace zmdp {
 #define RE_REWARD_EXIT (15)
 #define RE_DISCOUNT (0.95)
 #define RE_NUM_ROCKS (4)
-#define RE_ROCK_POSITIONS                                                      \
+#define RE_ROCK_POSITIONS \
   { 1, 3, 2, 1, 3, 1, 0, 0 }
 
 /**********************************************************************
@@ -82,25 +82,25 @@ struct REAction {
   REAction(void) {}
 
   // Generates an action struct given an action index.
-  REAction(int ai) {
+  explicit REAction(int ai) {
     switch (ai) {
-    case 0:
-      init(ACT_MOVE, REPos(0, 1), -1);
-      break;
-    case 1:
-      init(ACT_MOVE, REPos(1, 0), -1);
-      break;
-    case 2:
-      init(ACT_MOVE, REPos(0, -1), -1);
-      break;
-    case 3:
-      init(ACT_MOVE, REPos(-1, 0), -1);
-      break;
-    case 4:
-      init(ACT_SAMPLE, REPos(0, 0), -1);
-      break;
-    default:
-      init(ACT_CHECK, REPos(0, 0), ai - 5);
+      case 0:
+        init(ACT_MOVE, REPos(0, 1), -1);
+        break;
+      case 1:
+        init(ACT_MOVE, REPos(1, 0), -1);
+        break;
+      case 2:
+        init(ACT_MOVE, REPos(0, -1), -1);
+        break;
+      case 3:
+        init(ACT_MOVE, REPos(-1, 0), -1);
+        break;
+      case 4:
+        init(ACT_SAMPLE, REPos(0, 0), -1);
+        break;
+      default:
+        init(ACT_CHECK, REPos(0, 0), ai - 5);
     }
   }
 
@@ -180,6 +180,6 @@ struct RockExplore : public REBasicPomdp {
 
 extern RockExplore m;
 
-}; // namespace zmdp
+};  // namespace zmdp
 
-#endif // INCRockExplore_h
+#endif  // ZMDP_SRC_POMDPMODELS_ROCKEXPLORE_ROCKEXPLORE_H_

@@ -19,6 +19,8 @@
 
  ***************************************************************************/
 
+#include "RTDPCore.h"
+
 #include <assert.h>
 #include <limits.h>
 #include <stdio.h>
@@ -32,7 +34,6 @@
 #include "BoundPairCore.h"
 #include "MatrixUtils.h"
 #include "Pomdp.h"
-#include "RTDPCore.h"
 #include "StateLog.h"
 #include "zmdpCommonDefs.h"
 #include "zmdpCommonTime.h"
@@ -149,8 +150,7 @@ void RTDPCore::trackBackup(const MDPNode &backedUpNode) {
 }
 
 void RTDPCore::maybeLogBackups(void) {
-  if (!useLogBackups && qValuesOutputFile == "none")
-    return;
+  if (!useLogBackups && qValuesOutputFile == "none") return;
 
   StateIndex index(problem->getNumStateDimensions());
   StateLog log(&index);
@@ -175,4 +175,4 @@ void RTDPCore::maybeLogBackups(void) {
 
 void RTDPCore::finishLogging(void) { maybeLogBackups(); }
 
-}; // namespace zmdp
+};  // namespace zmdp

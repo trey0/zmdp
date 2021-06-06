@@ -1,3 +1,6 @@
+#ifndef ZMDP_SRC_MAIN_ZMDPMAINCONFIG_H_
+#define ZMDP_SRC_MAIN_ZMDPMAINCONFIG_H_
+
 /********** tell emacs we use -*- c++ -*- style comments *******************
  Copyright (c) 2002-2006, Trey Smith.  All rights reserved.
 
@@ -19,3 +22,5 @@
 #include "zmdpConfig.h"
 
 EMBED_FILE(defaultConfig, "zmdp.config");
+
+#endif  // ZMDP_SRC_MAIN_ZMDPMAINCONFIG_H_

@@ -19,6 +19,8 @@
  * INCLUDES
  ***************************************************************************/
 
+#include "CassandraParser.h"
+
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -28,7 +30,6 @@
 #include <fstream>
 #include <iostream>
 
-#include "CassandraParser.h"
 #include "MatrixUtils.h"
 #include "slaMatrixUtils.h"
 #include "sla_cassandra.h"
@@ -133,4 +134,4 @@ void CassandraParser::readModelFromFile(CassandraModel &p, bool expectPomdp) {
   deallocateMDP();
 }
 
-}; // namespace zmdp
+};  // namespace zmdp

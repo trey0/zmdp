@@ -15,10 +15,11 @@
 
  ***************************************************************************/
 
-#ifndef INCLSPathAndReactExec_h
-#define INCLSPathAndReactExec_h
+#ifndef ZMDP_SRC_POMDPMODELS_LIFESURVEY_LSPATHANDREACTEXEC_H_
+#define ZMDP_SRC_POMDPMODELS_LIFESURVEY_LSPATHANDREACTEXEC_H_
 
 #include <stdio.h>
+
 #include <string>
 #include <vector>
 
@@ -68,6 +69,6 @@ struct LSPathAndReactExec : public MDPExecCore {
   bool dominates(const LSValueEntry &val1, const LSValueEntry &val2);
 };
 
-} // namespace zmdp
+}  // namespace zmdp
 
-#endif // INCLSPathAndReactExec_h
+#endif  // ZMDP_SRC_POMDPMODELS_LIFESURVEY_LSPATHANDREACTEXEC_H_

@@ -15,8 +15,8 @@
 
  ***************************************************************************/
 
-#ifndef INCMatrixUtils_h
-#define INCMatrixUtils_h
+#ifndef ZMDP_SRC_COMMON_MATRIXUTILS_H_
+#define ZMDP_SRC_COMMON_MATRIXUTILS_H_
 
 /**********************************************************************
  * INCLUDES
@@ -24,18 +24,18 @@
 
 // iostream causes problems if it is included after the Lapack headers, so
 //  pre-emptively include it here.  not sure exactly what the problem is.
-#include <iostream>
+#include <math.h>
 
 #include <algorithm>
 #include <functional>
-#include <math.h>
+#include <iostream>
 #include <sstream>
+#include <string>
 #include <vector>
 
+#include "slaMatrixUtils.h"
 #include "zmdpCommonDefs.h"
 #include "zmdpCommonTypes.h"
-
-#include "slaMatrixUtils.h"
 
 namespace MatrixUtils {
 
@@ -94,7 +94,9 @@ inline void init_matrix_utils(void) {
 }
 
 // Generate a sample from a uniform distribution over [0,1].
-inline double unit_rand(void) { return ((double)std::rand()) / RAND_MAX; }
+inline double unit_rand(void) {
+  return (static_cast<double>(std::rand())) / RAND_MAX;
+}
 
 // Generate a matrix where each sample is drawn according to unit_rand().
 inline void rand_matrix(dmatrix &result, int num_rows, int num_cols) {
@@ -159,8 +161,7 @@ inline int chooseFromDistribution(const dvector &b) {
   double r = unit_rand();
   FOR(i, b.size()) {
     r -= b(i);
-    if (r <= 0)
-      return i;
+    if (r <= 0) return i;
   }
   if (r >= 1e-10) {
     // should never reach this point if b is normalized properly
@@ -176,8 +177,7 @@ inline int chooseFromDistribution(const cvector &b) {
   double r = unit_rand();
   FOR_CV(b) {
     r -= CV_VAL(b);
-    if (r <= 0)
-      return CV_INDEX(b);
+    if (r <= 0) return CV_INDEX(b);
   }
   if (r >= 1e-10) {
     // should never reach this point if b is normalized properly
@@ -195,8 +195,7 @@ inline const char *hashable(const dvector &b) {
 
   if (b.size() > n) {
     n = b.size();
-    if (NULL != buf)
-      delete[] buf;
+    if (NULL != buf) delete[] buf;
     buf = new char[n * HASH_VECTOR_LEN + 1];
   }
 
@@ -213,8 +212,7 @@ inline const char *hashable(const cvector &b) {
 
   if (b.size() > n) {
     n = b.size();
-    if (NULL != buf)
-      delete[] buf;
+    if (NULL != buf) delete[] buf;
     buf = new char[n * HASH_VECTOR_LEN + 1];
   }
 
@@ -242,7 +240,7 @@ void calc_avg_stdev_collection(_ForwardIterator start, _ForwardIterator end,
   if (n > 1) {
     stdev = sqrt((sqsum - (sum * sum) / n) / (n - 1));
   } else {
-    stdev = -1; // not enough samples
+    stdev = -1;  // not enough samples
   }
 }
 
@@ -250,7 +248,7 @@ void calc_avg_stdev_collection(_ForwardIterator start, _ForwardIterator end,
 inline double getQuantile(const dvector &sortedVals, double p) {
   int n = sortedVals.size();
   double x = p * n - 0.5;
-  int i = (int)floor(x);
+  int i = static_cast<int>(floor(x));
   double r = x - i;
   assert(0 <= i && (i + 1) < n);
   return sortedVals(i) + r * (sortedVals(i + 1) - sortedVals(i));
@@ -271,13 +269,14 @@ inline void calc_bootstrap_mean_quantile(const dvector &vals, double alpha,
   mean = sum / n;
 
   assert(0.0 < alpha && alpha < 1.0);
-  const int numSamplesInQuantile = 50; // totally arbitrary
-  int numBootstrapSamples = (int)(numSamplesInQuantile / (alpha / 2));
+  const int numSamplesInQuantile = 50;  // totally arbitrary
+  int numBootstrapSamples =
+      static_cast<int>(numSamplesInQuantile / (alpha / 2));
   dvector bvals(numBootstrapSamples);
   for (int i = 0; i < numBootstrapSamples; i++) {
     sum = 0.0;
     for (int j = 0; j < n; j++) {
-      int k = (int)(unit_rand() * n);
+      int k = static_cast<int>(unit_rand() * n);
       sum += vals(k);
     }
     bvals(i) = sum / n;
@@ -350,6 +349,6 @@ inline std::string denseRep(const dvector &v) {
   return out.str();
 }
 
-}; // namespace MatrixUtils
+};  // namespace MatrixUtils
 
-#endif // INCMatrixUtils_h
+#endif  // ZMDP_SRC_COMMON_MATRIXUTILS_H_

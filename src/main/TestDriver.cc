@@ -19,6 +19,8 @@
  * INCLUDES
  ***************************************************************************/
 
+#include "TestDriver.h"
+
 #include <assert.h>
 #include <limits.h>
 #include <stdio.h>
@@ -27,11 +29,11 @@
 
 #include <fstream>
 #include <iostream>
+#include <string>
 
 #include "BoundPairExec.h"
 #include "MatrixUtils.h"
 #include "PolicyEvaluator.h"
-#include "TestDriver.h"
 #include "zmdpCommonDefs.h"
 #include "zmdpCommonTime.h"
 
@@ -175,20 +177,21 @@ void TestDriver::batchTestIncremental(
 #if 0
       // collect policy evaluation statistics and write a line to the log file
       double avg, stdev;
-      calc_avg_stdev_collection(rewardSamples.data.begin(), rewardSamples.data.end(),
-				avg, stdev);
+      calc_avg_stdev_collection(rewardSamples.data.begin(),
+                                rewardSamples.data.end(),
+                                avg, stdev);
 
       incPlotFile << timeSoFar
-		  << " " << avg
-		  << " " << (stdev/::sqrt(numIterations)*1.96)
-		  << " " << successRate << endl;
+                  << " " << avg
+                  << " " << (stdev/::sqrt(numIterations)*1.96)
+                  << " " << successRate << endl;
 #endif
 
       // calculate summary statistics, mean and 95% confidence interval for the
       // mean
       double mean, quantile1, quantile2;
       calc_bootstrap_mean_quantile(rewardSamples,
-                                   0.05, // 95% confidence interval
+                                   0.05,  // 95% confidence interval
                                    mean, quantile1, quantile2);
 
       incPlotFile << timeSoFar << " " << mean << " " << quantile1 << " "
@@ -244,4 +247,4 @@ void TestDriver::batchTestIncremental(
   so.solver->finishLogging();
 }
 
-}; // namespace zmdp
+};  // namespace zmdp

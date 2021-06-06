@@ -15,15 +15,14 @@
 
  ***************************************************************************/
 
-#ifndef INCBoundPairExec_h
-#define INCBoundPairExec_h
+#ifndef ZMDP_SRC_EXEC_BOUNDPAIREXEC_H_
+#define ZMDP_SRC_EXEC_BOUNDPAIREXEC_H_
 
 /**********************************************************************
  * INCLUDES
  **********************************************************************/
 
 #include <iostream>
-
 #include <string>
 #include <vector>
 
@@ -60,6 +59,6 @@ struct BoundPairExec : public MDPExec {
   void setBelief(const belief_vector &b);
 };
 
-}; // namespace zmdp
+};  // namespace zmdp
 
-#endif // INCBoundPairExec_h
+#endif  // ZMDP_SRC_EXEC_BOUNDPAIREXEC_H_

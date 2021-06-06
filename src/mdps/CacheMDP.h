@@ -15,8 +15,8 @@
 
  ***************************************************************************/
 
-#ifndef INCCacheMDP_h
-#define INCCacheMDP_h
+#ifndef ZMDP_SRC_MDPS_CACHEMDP_H_
+#define ZMDP_SRC_MDPS_CACHEMDP_H_
 
 #include <iostream>
 #include <string>
@@ -74,7 +74,7 @@ struct CacheMDP : public MDP {
   CMDPNodeTable nodeTable;
   state_vector initialSI;
 
-  CacheMDP(MDP *_problem);
+  explicit CacheMDP(MDP *_problem);
   ~CacheMDP(void);
 
   const state_vector &getInitialState(void);
@@ -95,6 +95,6 @@ struct CacheMDP : public MDP {
   CMDPNode *getNodeX(const state_vector &s);
 };
 
-}; // namespace zmdp
+};  // namespace zmdp
 
-#endif // INCCacheMDP_h
+#endif  // ZMDP_SRC_MDPS_CACHEMDP_H_

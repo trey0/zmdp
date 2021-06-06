@@ -15,9 +15,10 @@
 
  ***************************************************************************/
 
-#ifndef INCTestDriver_h
-#define INCTestDriver_h
+#ifndef ZMDP_SRC_MAIN_TESTDRIVER_H_
+#define ZMDP_SRC_MAIN_TESTDRIVER_H_
 
+#include <string>
 #include <vector>
 
 #include "solverUtils.h"
@@ -25,7 +26,7 @@
 namespace zmdp {
 
 class TestDriver {
-public:
+ public:
   MDPSim *sim;
   dvector rewardSamples;
 
@@ -48,6 +49,6 @@ public:
                             const char *outPolicyFileName);
 };
 
-}; // namespace zmdp
+};  // namespace zmdp
 
-#endif // INCTestDriver_h
+#endif  // ZMDP_SRC_MAIN_TESTDRIVER_H_

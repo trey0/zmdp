@@ -19,6 +19,8 @@
  * INCLUDES
  ***************************************************************************/
 
+#include "RockExplore.h"
+
 #include <assert.h>
 #include <errno.h>
 #include <getopt.h>
@@ -32,8 +34,6 @@
 #include <map>
 #include <queue>
 #include <sstream>
-
-#include "RockExplore.h"
 
 using namespace std;
 
@@ -82,65 +82,65 @@ REActionResult RockExplore::getActionResult(int si, int ai) {
         REBeliefEntry(1.0, getStateId(getTerminalState())));
   } else {
     switch (a.actionType) {
-    case ACT_MOVE:
-      // Apply the change in position.
-      nextState.robotPos.x += a.deltaPos.x;
-      nextState.robotPos.y += a.deltaPos.y;
+      case ACT_MOVE:
+        // Apply the change in position.
+        nextState.robotPos.x += a.deltaPos.x;
+        nextState.robotPos.y += a.deltaPos.y;
 
-      // Check if the move stays on the map.
-      if (0 <= nextState.robotPos.x && nextState.robotPos.x < RE_WIDTH &&
-          0 <= nextState.robotPos.y && nextState.robotPos.y < RE_HEIGHT) {
-        // New position is in bounds.  Transition to the new position
-        // and apply the move cost.
-        result.reward = RE_COST_MOVE;
-        result.outcomes.push_back(REBeliefEntry(1.0, getStateId(nextState)));
-      } else if (nextState.robotPos.x == RE_WIDTH) {
-        // Reached exit area.  Transition to terminal state and receive
-        // the reward for exiting.
-        result.reward = RE_REWARD_EXIT;
-        result.outcomes.push_back(
-            REBeliefEntry(1.0, getStateId(getTerminalState())));
-      } else {
-        // Illegal attempt to move off the map.  No change in position and
-        // apply the illegal action cost.
-        result.reward = RE_COST_ILLEGAL;
-        result.outcomes.push_back(REBeliefEntry(1.0, si));
-      }
-      break;
-    case ACT_SAMPLE: {
-      bool samplingInEmptyCell = true;
-      for (int r = 0; r < RE_NUM_ROCKS; r++) {
-        if (s.robotPos == rockPos[r]) {
-          // Sampling rock r
-          if (s.rockIsGood[r]) {
-            // Rock r is good
-            result.reward = RE_REWARD_SAMPLE_GOOD;
-          } else {
-            // Rock r is bad
-            result.reward = RE_COST_SAMPLE_BAD;
-          }
-          // After sampling, set the rock to be 'bad' so that no further
-          // reward can be gained from sampling it a second time.
-          nextState.rockIsGood[r] = false;
-          // Record that the location was not an empty cell.
-          samplingInEmptyCell = false;
-          break;
+        // Check if the move stays on the map.
+        if (0 <= nextState.robotPos.x && nextState.robotPos.x < RE_WIDTH &&
+            0 <= nextState.robotPos.y && nextState.robotPos.y < RE_HEIGHT) {
+          // New position is in bounds.  Transition to the new position
+          // and apply the move cost.
+          result.reward = RE_COST_MOVE;
+          result.outcomes.push_back(REBeliefEntry(1.0, getStateId(nextState)));
+        } else if (nextState.robotPos.x == RE_WIDTH) {
+          // Reached exit area.  Transition to terminal state and receive
+          // the reward for exiting.
+          result.reward = RE_REWARD_EXIT;
+          result.outcomes.push_back(
+              REBeliefEntry(1.0, getStateId(getTerminalState())));
+        } else {
+          // Illegal attempt to move off the map.  No change in position and
+          // apply the illegal action cost.
+          result.reward = RE_COST_ILLEGAL;
+          result.outcomes.push_back(REBeliefEntry(1.0, si));
         }
+        break;
+      case ACT_SAMPLE: {
+        bool samplingInEmptyCell = true;
+        for (int r = 0; r < RE_NUM_ROCKS; r++) {
+          if (s.robotPos == rockPos[r]) {
+            // Sampling rock r
+            if (s.rockIsGood[r]) {
+              // Rock r is good
+              result.reward = RE_REWARD_SAMPLE_GOOD;
+            } else {
+              // Rock r is bad
+              result.reward = RE_COST_SAMPLE_BAD;
+            }
+            // After sampling, set the rock to be 'bad' so that no further
+            // reward can be gained from sampling it a second time.
+            nextState.rockIsGood[r] = false;
+            // Record that the location was not an empty cell.
+            samplingInEmptyCell = false;
+            break;
+          }
+        }
+        if (samplingInEmptyCell) {
+          // Sampling empty cell.  Apply illegal action cost.
+          result.reward = RE_COST_ILLEGAL;
+        }
+        result.outcomes.push_back(REBeliefEntry(1.0, getStateId(nextState)));
+        break;
       }
-      if (samplingInEmptyCell) {
-        // Sampling empty cell.  Apply illegal action cost.
-        result.reward = RE_COST_ILLEGAL;
-      }
-      result.outcomes.push_back(REBeliefEntry(1.0, getStateId(nextState)));
-      break;
-    }
-    case ACT_CHECK:
-      // Apply check cost and no change in state.
-      result.reward = RE_COST_CHECK;
-      result.outcomes.push_back(REBeliefEntry(1.0, si));
-      break;
-    default:
-      assert(0); // never reach this point
+      case ACT_CHECK:
+        // Apply check cost and no change in state.
+        result.reward = RE_COST_CHECK;
+        result.outcomes.push_back(REBeliefEntry(1.0, si));
+        break;
+      default:
+        assert(0);  // never reach this point
     }
   }
 
@@ -283,7 +283,7 @@ RERockProbs RockExplore::getRockProbs(const REBelief &b) const {
   result.resize(RE_NUM_ROCKS, 0.0);
 
   // Iterate through the outcomes in the belief vector.
-  for (int i = 0; i < (int)b.size(); i++) {
+  for (int i = 0; i < static_cast<int>(b.size()); i++) {
     // Translate from the state index of the outcome, b[i].index, to the
     // corresponding state struct s.
     REState s = states[b[i].index];
@@ -343,13 +343,12 @@ REBelief RockExplore::getBelief(const REPos &robotPos,
         break;
       }
     }
-    if (reachedLastCombination)
-      break;
+    if (reachedLastCombination) break;
   }
 
 #if 0
   cout << "getBelief: ";
-  for (int i=0; i < (int)result.size(); i++) {
+  for (int i=0; i < static_cast<int>(result.size()); i++) {
     cout << result[i].prob << "," << getStateString(result[i].index) << " ";
   }
   cout << endl;
@@ -386,4 +385,4 @@ std::string RockExplore::getStateString(const REState &s) {
 
 RockExplore m;
 
-}; // namespace zmdp
+};  // namespace zmdp

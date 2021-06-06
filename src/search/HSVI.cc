@@ -15,6 +15,8 @@
 
  ***************************************************************************/
 
+#include "HSVI.h"
+
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -24,7 +26,6 @@
 #include <iostream>
 #include <queue>
 
-#include "HSVI.h"
 #include "MatrixUtils.h"
 #include "Pomdp.h"
 #include "zmdpCommonDefs.h"
@@ -65,7 +66,8 @@ void HSVI::getMaxExcessUncOutcome(MDPNode &cn, int depth,
       }
 #if 0
       printf("    a=%d o=%d obsProb=%g nslb=%g nsub=%g nsdiff=%g width=%g\n",
-	     r.maxUBAction, o, e->obsProb, sn.lbVal, sn.ubVal, sn.ubVal - sn.lbVal, width);
+             r.maxUBAction, o, e->obsProb, sn.lbVal, sn.ubVal,
+             sn.ubVal - sn.lbVal, width);
 #endif
     }
   }
@@ -174,11 +176,11 @@ bool HSVI::doTrial(MDPNode &cn) {
              updateQualityRatio, maxDepth);
     }
   }
-#endif // if USE_HSVI_ADAPTIVE_DEPTH
+#endif  // if USE_HSVI_ADAPTIVE_DEPTH
 
   numTrials++;
 
   return (cn.ubVal - cn.lbVal < targetPrecision);
 }
 
-}; // namespace zmdp
+};  // namespace zmdp

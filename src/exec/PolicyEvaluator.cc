@@ -19,7 +19,9 @@
  * INCLUDES
  ***************************************************************************/
 
-//#include <assert.h>
+// #include <assert.h>
+#include "PolicyEvaluator.h"
+
 #include <assert.h>
 #include <limits.h>
 #include <stdio.h>
@@ -27,13 +29,14 @@
 #include <sys/time.h>
 #include <unistd.h>
 
+#include <algorithm>
 #include <fstream>
 #include <iostream>
+#include <vector>
 
 #include "CacheMDP.h"
 #include "MDPSim.h"
 #include "MatrixUtils.h"
-#include "PolicyEvaluator.h"
 #include "zmdpCommonDefs.h"
 #include "zmdpCommonTime.h"
 
@@ -46,9 +49,14 @@ namespace zmdp {
 PolicyEvaluator::PolicyEvaluator(MDP *_simModel, MDPExecCore *_exec,
                                  const ZMDPConfig *_config,
                                  bool _assumeIdenticalModels)
-    : simModel(_simModel), exec(_exec), config(_config),
-      assumeIdenticalModels(_assumeIdenticalModels), sim(NULL),
-      simOutFile(NULL), scoresOutFile(NULL), modelCache(NULL) {}
+    : simModel(_simModel),
+      exec(_exec),
+      config(_config),
+      assumeIdenticalModels(_assumeIdenticalModels),
+      sim(NULL),
+      simOutFile(NULL),
+      scoresOutFile(NULL),
+      modelCache(NULL) {}
 
 void PolicyEvaluator::getRewardSamples(dvector &rewards, double &successRate,
                                        bool _verbose) {
@@ -110,10 +118,10 @@ void PolicyEvaluator::getRewardSamples(dvector &rewards, double &successRate,
   successRate = successRateSum / numBatches;
 
   // cleanup
-#define DELETE_AND_NULL(x)                                                     \
-  if (NULL != (x)) {                                                           \
-    delete (x);                                                                \
-    (x) = NULL;                                                                \
+#define DELETE_AND_NULL(x) \
+  if (NULL != (x)) {       \
+    delete (x);            \
+    (x) = NULL;            \
   }
 
   DELETE_AND_NULL(simOutFile);
@@ -152,12 +160,12 @@ void PolicyEvaluator::doBatchCache(dvector &rewards, double &successRate,
   ofstream *simOutFileTmp = simOutFile;
 
   // pass 0: clear old count data if any
-  for (int si = 0; si < (int)modelCache->nodeTable.size(); si++) {
+  for (int si = 0; si < static_cast<int>(modelCache->nodeTable.size()); si++) {
     CMDPNode *cn = modelCache->nodeTable[si];
     for (int a = 0; a < modelCache->getNumActions(); a++) {
       CMDPQEntry *Qa = cn->Q[a];
       if (NULL != Qa) {
-        for (int o = 0; o < (int)Qa->getNumOutcomes(); o++) {
+        for (int o = 0; o < static_cast<int>(Qa->getNumOutcomes()); o++) {
           CMDPEdge *e = Qa->outcomes[o];
           if (NULL != e) {
             e->userInt = -1;
@@ -172,7 +180,7 @@ void PolicyEvaluator::doBatchCache(dvector &rewards, double &successRate,
   int numTrialsReachedGoal = 0;
   for (int i = 0; i < numTrials; i++) {
     if (i >= numTracesToLog) {
-      simOutFileTmp = NULL; // stop logging
+      simOutFileTmp = NULL;  // stop logging
     }
 
     if (simOutFileTmp) {
@@ -184,7 +192,6 @@ void PolicyEvaluator::doBatchCache(dvector &rewards, double &successRate,
     for (int j = 0;
          (j < evaluationMaxStepsPerTrial) || (0 == evaluationMaxStepsPerTrial);
          j++) {
-
       int a;
       if (-1 == simState->userInt) {
         a = exec->chooseAction();
@@ -213,7 +220,7 @@ void PolicyEvaluator::doBatchCache(dvector &rewards, double &successRate,
       simState = e->nextState;
 
       if (assumeIdenticalModels) {
-        ((MDPExec *)exec)->currentState = simState->s;
+        (reinterpret_cast<MDPExec *>(exec))->currentState = simState->s;
       } else {
         exec->advanceToNextState(a, o);
       }
@@ -239,14 +246,14 @@ void PolicyEvaluator::doBatchCache(dvector &rewards, double &successRate,
   }
 
   // pass 2: collate counts and calculate reweighting coefficients
-  for (int si = 0; si < (int)modelCache->nodeTable.size(); si++) {
+  for (int si = 0; si < static_cast<int>(modelCache->nodeTable.size()); si++) {
     CMDPNode *cn = modelCache->nodeTable[si];
     for (int a = 0; a < modelCache->getNumActions(); a++) {
       CMDPQEntry *Qa = cn->Q[a];
       if (NULL != Qa) {
         double probSum = 0.0;
         double cntSum = 0;
-        for (int o = 0; o < (int)Qa->getNumOutcomes(); o++) {
+        for (int o = 0; o < static_cast<int>(Qa->getNumOutcomes()); o++) {
           CMDPEdge *e = Qa->outcomes[o];
           if (NULL != e) {
             if (-1 != e->userInt) {
@@ -256,9 +263,9 @@ void PolicyEvaluator::doBatchCache(dvector &rewards, double &successRate,
           }
         }
 #if 0
-	printf("s=%d a=%d probSum=%lf cntSum=%lf\n", si, a, probSum, cntSum);
+        printf("s=%d a=%d probSum=%lf cntSum=%lf\n", si, a, probSum, cntSum);
 #endif
-        for (int o = 0; o < (int)Qa->getNumOutcomes(); o++) {
+        for (int o = 0; o < static_cast<int>(Qa->getNumOutcomes()); o++) {
           CMDPEdge *e = Qa->outcomes[o];
           if (NULL != e) {
             if (-1 != e->userInt) {
@@ -268,8 +275,8 @@ void PolicyEvaluator::doBatchCache(dvector &rewards, double &successRate,
                 e->userDouble = 1.0;
               }
 #if 0
-	      printf("  o=%d n=%d opv(o)=%lf reweight=%lf\n",
-		     o, e->userInt, Qa->opv(o), e->userDouble);
+              printf("  o=%d n=%d opv(o)=%lf reweight=%lf\n",
+                     o, e->userInt, Qa->opv(o), e->userDouble);
 #endif
             }
           }
@@ -300,7 +307,7 @@ void PolicyEvaluator::doBatchCache(dvector &rewards, double &successRate,
     (*scoresOutFile) << batchSumReward / numTrials << endl;
   }
 
-  successRate = ((double)numTrialsReachedGoal) / numTrials;
+  successRate = (static_cast<double>(numTrialsReachedGoal)) / numTrials;
 }
 
 void PolicyEvaluator::doBatchSimple(dvector &rewards, double &successRate,
@@ -315,7 +322,7 @@ void PolicyEvaluator::doBatchSimple(dvector &rewards, double &successRate,
   rewards.resize(numTrials);
   for (int i = 0; i < numTrials; i++) {
     if (i >= numTracesToLog) {
-      sim->simOutFile = NULL; // stop logging
+      sim->simOutFile = NULL;  // stop logging
     }
 
     sim->restart();
@@ -326,7 +333,7 @@ void PolicyEvaluator::doBatchSimple(dvector &rewards, double &successRate,
       int a = exec->chooseAction();
       sim->performAction(a);
       if (assumeIdenticalModels) {
-        ((MDPExec *)exec)->currentState = sim->state;
+        (reinterpret_cast<MDPExec *>(exec))->currentState = sim->state;
       } else {
         exec->advanceToNextState(a, sim->lastOutcomeIndex);
       }
@@ -349,7 +356,7 @@ void PolicyEvaluator::doBatchSimple(dvector &rewards, double &successRate,
     fflush(stdout);
   }
 
-  successRate = ((double)numTrialsReachedGoal) / numTrials;
+  successRate = (static_cast<double>(numTrialsReachedGoal)) / numTrials;
 }
 
-}; // namespace zmdp
+};  // namespace zmdp

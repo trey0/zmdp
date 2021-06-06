@@ -18,8 +18,8 @@
 
  ***************************************************************************/
 
-#ifndef INCsla_mask_h
-#define INCsla_mask_h
+#ifndef ZMDP_SRC_COMMON_SLA_MASK_H_
+#define ZMDP_SRC_COMMON_SLA_MASK_H_
 
 #include "sla.h"
 
@@ -83,8 +83,7 @@ inline bool mask_subset(const cvector &x, const mvector &m) {
   mi = m.data.begin();
   for (xi = x.data.begin(); xi != xend; xi++) {
     for (; mi != mend; mi++) {
-      if (xi->index < mi->index)
-        return false;
+      if (xi->index < mi->index) return false;
       if (xi->index == mi->index) {
         mi++;
         goto next_xi;
@@ -92,7 +91,7 @@ inline bool mask_subset(const cvector &x, const mvector &m) {
     }
     return false;
 
-  next_xi:;
+  next_xi : {}
   }
   return true;
 }
@@ -130,7 +129,7 @@ inline void mask_copy(cvector &result, const cvector &x, const mvector &m) {
     }
     break;
 
-  next_xi:;
+  next_xi : {}
   }
   result.canonicalize();
 }
@@ -143,6 +142,6 @@ inline bool mask_dominates(const cvector &x, const cvector &y, double eps,
 
 // void mask_mult( cvector, cvector, cmatrix, mask );
 
-} // namespace sla
+}  // namespace sla
 
-#endif // INCsla_mask_h
+#endif  // ZMDP_SRC_COMMON_SLA_MASK_H_

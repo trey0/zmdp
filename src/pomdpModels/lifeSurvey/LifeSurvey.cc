@@ -19,6 +19,8 @@
  * INCLUDES
  ***************************************************************************/
 
+#include "LifeSurvey.h"
+
 #include <assert.h>
 #include <errno.h>
 #include <getopt.h>
@@ -34,7 +36,6 @@
 #include <queue>
 #include <vector>
 
-#include "LifeSurvey.h"
 #include "zmdpCommonDefs.h"
 
 using namespace std;
@@ -61,10 +62,11 @@ std::string LSState::toString(void) const {
   if (isTerminal()) {
     return "sterminal";
   } else {
-    char rbuf[256], buf[1024];
+    char eltbuf[2], rbuf[256], buf[1024];
     assert(rewardLevelInRegion.size() < 250); /* avoid buffer overflow */
-    FOR(i, rewardLevelInRegion.size()) {
-      snprintf(&rbuf[i], 2, "%d", rewardLevelInRegion[i]);
+    FOR(i, std::min(sizeof(rbuf), rewardLevelInRegion.size())) {
+      snprintf(eltbuf, sizeof(eltbuf), "%1d", rewardLevelInRegion[i]);
+      rbuf[i] = eltbuf[0];
     }
     snprintf(buf, sizeof(buf), "sx%dy%dd%du%dn%d%d%dr%s", pos.x, pos.y,
              lastMoveDirection, usedLookaheadInThisCell, lifeInNeighborCell[0],
@@ -111,23 +113,23 @@ int LSAction::toInt(void) const {
 
 std::string LSAction::toString(void) const {
   switch (toInt()) {
-  case 0:
-    return "ane";
-  case 1:
-    return "ae";
-  case 2:
-    return "ase";
-  case 3:
-    return "anes";
-  case 4:
-    return "aes";
-  case 5:
-    return "ases";
-  case 6:
-    return "alook";
-  default:
-    assert(0); // never reach this point
-    return NULL;
+    case 0:
+      return "ane";
+    case 1:
+      return "ae";
+    case 2:
+      return "ase";
+    case 3:
+      return "anes";
+    case 4:
+      return "aes";
+    case 5:
+      return "ases";
+    case 6:
+      return "alook";
+    default:
+      assert(0);  // never reach this point
+      return NULL;
   }
 }
 
@@ -194,7 +196,7 @@ int LSStateTable::getStateIndex(const LSState &s) {
   } else {
 #if 0
     printf("getStateIndex: found %d (touched=%d)\n", sloc->second,
-	   states[sloc->second].touched);
+           states[sloc->second].touched);
 #endif
     return sloc->second;
   }
@@ -255,24 +257,10 @@ void LSModel::calculateRegionReachable(LSGrid &result, const LSGrid &g, int r) {
              (1 == result.getCellBounded(getNeighbor(pos, LS_SE))))) {
           result.setCell(pos, 1);
 #if 0
-	  printf("setCell: %d,%d\n", pos.x, pos.y);
+          printf("setCell: %d,%d\n", pos.x, pos.y);
 #endif
           numChanges++;
         }
-#if 0
-	else {
-	  if (0 == result.getCell(pos)) {
-	    LSPos pne = getNeighbor(pos, LS_NE);
-	    LSPos pe =  getNeighbor(pos, LS_E);
-	    LSPos pse = getNeighbor(pos, LS_SE);
-	    printf("notSet:  %d,%d -- %d,%d=%d %d,%d=%d %d,%d=%d\n",
-		   pos.x, pos.y,
-		   pne.x, pne.y, result.getCellBounded(pne),
-		   pe.x,  pe.y,  result.getCellBounded(pe),
-		   pse.x, pse.y, result.getCellBounded(pse));
-	  }
-	}
-#endif
       }
     }
 #if 0
@@ -288,15 +276,15 @@ void LSModel::calculateRegionReachable(LSGrid &result, const LSGrid &g, int r) {
 
 LSPos LSModel::getNeighbor(const LSPos &pos, int dir) const {
   switch (dir) {
-  case LS_NE:
-    return LSPos(pos.x + 1, pos.y + 1);
-  case LS_E:
-    return LSPos(pos.x + 1, pos.y);
-  case LS_SE:
-    return LSPos(pos.x, pos.y - 1);
-  default:
-    assert(0); /* never reach this point */
-    return LSPos();
+    case LS_NE:
+      return LSPos(pos.x + 1, pos.y + 1);
+    case LS_E:
+      return LSPos(pos.x + 1, pos.y);
+    case LS_SE:
+      return LSPos(pos.x, pos.y - 1);
+    default:
+      assert(0); /* never reach this point */
+      return LSPos();
   }
 }
 
@@ -340,130 +328,130 @@ void LSModel::getOutcomes(std::vector<LSOutcome> &outcomes, double &reward,
 
   LSAction a(ai);
   switch (a.type) {
-  case LS_ACT_MOVE: { /* move or sampling move */
-    /* update position-related information */
-    nextState.pos = getNeighbor(s.pos, a.moveDirection);
-    nextState.lastMoveDirection = a.moveDirection;
-    nextState.usedLookaheadInThisCell = 0;
+    case LS_ACT_MOVE: { /* move or sampling move */
+      /* update position-related information */
+      nextState.pos = getNeighbor(s.pos, a.moveDirection);
+      nextState.lastMoveDirection = a.moveDirection;
+      nextState.usedLookaheadInThisCell = 0;
 
-    int nextCellRegion = mfile.grid.getCellBounded(nextState.pos);
-    if (/* move into an obstacle? */
-        (LS_OBSTACLE == nextCellRegion)
-        /* move turns too sharply? */
-        || (LS_NE == s.lastMoveDirection && LS_SE == a.moveDirection) ||
-        (LS_SE == s.lastMoveDirection && LS_NE == a.moveDirection)) {
-      /* illegal move -- no state change and incur a penalty */
-      outc.prob = 1.0;
-      outc.nextState = s.toInt();
-      outcomes.push_back(outc);
-      reward = -LS_PENALTY_ILLEGAL;
-      return;
-    }
+      int nextCellRegion = mfile.grid.getCellBounded(nextState.pos);
+      if (/* move into an obstacle? */
+          (LS_OBSTACLE == nextCellRegion)
+          /* move turns too sharply? */
+          || (LS_NE == s.lastMoveDirection && LS_SE == a.moveDirection) ||
+          (LS_SE == s.lastMoveDirection && LS_NE == a.moveDirection)) {
+        /* illegal move -- no state change and incur a penalty */
+        outc.prob = 1.0;
+        outc.nextState = s.toInt();
+        outcomes.push_back(outc);
+        reward = -LS_PENALTY_ILLEGAL;
+        return;
+      }
 
-    /* update reward level */
-    double actionCost = a.useSample ? LS_COST_SAMPLING_MOVE : LS_COST_MOVE;
-    int oldRewardLevel = s.rewardLevelInRegion[nextCellRegion];
-    int newRewardLevel;
-    if (s.lifeInNeighborCell[a.moveDirection]) {
-      newRewardLevel = a.useSample ? 3 : 2;
-    } else {
-      newRewardLevel = 1;
-    }
-    double actionReward = getReward(oldRewardLevel, newRewardLevel);
-    nextState.rewardLevelInRegion[nextCellRegion] =
-        std::max(newRewardLevel, oldRewardLevel);
+      /* update reward level */
+      double actionCost = a.useSample ? LS_COST_SAMPLING_MOVE : LS_COST_MOVE;
+      int oldRewardLevel = s.rewardLevelInRegion[nextCellRegion];
+      int newRewardLevel;
+      if (s.lifeInNeighborCell[a.moveDirection]) {
+        newRewardLevel = a.useSample ? 3 : 2;
+      } else {
+        newRewardLevel = 1;
+      }
+      double actionReward = getReward(oldRewardLevel, newRewardLevel);
+      nextState.rewardLevelInRegion[nextCellRegion] =
+          std::max(newRewardLevel, oldRewardLevel);
 
-    if (mfile.grid.getAtExit(nextState.pos)) {
-      /* we entered an exit hex -- transition to the terminal state */
-      outc.prob = 1.0;
-      outc.nextState = LSState::getTerminalState().toInt();
-      outcomes.push_back(outc);
-      reward = actionReward - actionCost;
-      return;
-    }
+      if (mfile.grid.getAtExit(nextState.pos)) {
+        /* we entered an exit hex -- transition to the terminal state */
+        outc.prob = 1.0;
+        outc.nextState = LSState::getTerminalState().toInt();
+        outcomes.push_back(outc);
+        reward = actionReward - actionCost;
+        return;
+      }
 
-    /* canonicalize state by quashing useless reward level information
-       about unreachable regions */
-    FOR(r, nextState.rewardLevelInRegion.size()) {
-      if (LS_UNREACHABLE != nextState.rewardLevelInRegion[r]) {
-        if (!regionReachable[r].getCell(nextState.pos)) {
-          nextState.rewardLevelInRegion[r] = LS_UNREACHABLE;
+      /* canonicalize state by quashing useless reward level information
+         about unreachable regions */
+      FOR(r, nextState.rewardLevelInRegion.size()) {
+        if (LS_UNREACHABLE != nextState.rewardLevelInRegion[r]) {
+          if (!regionReachable[r].getCell(nextState.pos)) {
+            nextState.rewardLevelInRegion[r] = LS_UNREACHABLE;
+          }
         }
       }
-    }
 
-    /* generate outcomes for different possible nextState.lifeInNeighborCell
-     * values */
-    double np[3];
-    FOR(j, 3) {
-      np[j] = getLifePrior(getNeighbor(nextState.pos, j));
+      /* generate outcomes for different possible nextState.lifeInNeighborCell
+       * values */
+      double np[3];
+      FOR(j, 3) {
+        np[j] = getLifePrior(getNeighbor(nextState.pos, j));
 #if 0
       LSPos npos = getNeighbor(nextState.pos, j);
       printf("pos=%d,%d npos=%d,%d region=%d np=%lf\n",
-	     nextState.pos.x, nextState.pos.y, npos.x, npos.y,
-	     mfile.grid.getCell(npos),
-	     getLifePrior(npos));
+             nextState.pos.x, nextState.pos.y, npos.x, npos.y,
+             mfile.grid.getCell(npos),
+             getLifePrior(npos));
 #endif
-    }
-    switch (a.moveDirection) {
-    case LS_NE:
-      /* new SE cell is old E cell */
-      np[LS_SE] = s.lifeInNeighborCell[LS_E] ? 1.0 : 0.0;
-      break;
-    case LS_E:
-      /* no overlap */
-      break;
-    case LS_SE:
-      /* new NE cell is old E cell */
-      np[LS_NE] = s.lifeInNeighborCell[LS_E] ? 1.0 : 0.0;
-      break;
-    default:
-      assert(0); // never reach this point
-    }
-    FOR(i, 8) {
-      outc.prob = 1.0;
-      int i0 = i;
-      for (int j = 2; j >= 0; j--) {
-        int nset = i0 % 2;
-        i0 /= 2;
-        nextState.lifeInNeighborCell[j] = nset;
-        outc.prob *= nset ? np[j] : (1 - np[j]);
+      }
+      switch (a.moveDirection) {
+        case LS_NE:
+          /* new SE cell is old E cell */
+          np[LS_SE] = s.lifeInNeighborCell[LS_E] ? 1.0 : 0.0;
+          break;
+        case LS_E:
+          /* no overlap */
+          break;
+        case LS_SE:
+          /* new NE cell is old E cell */
+          np[LS_NE] = s.lifeInNeighborCell[LS_E] ? 1.0 : 0.0;
+          break;
+        default:
+          assert(0);  // never reach this point
+      }
+      FOR(i, 8) {
+        outc.prob = 1.0;
+        int i0 = i;
+        for (int j = 2; j >= 0; j--) {
+          int nset = i0 % 2;
+          i0 /= 2;
+          nextState.lifeInNeighborCell[j] = nset;
+          outc.prob *= nset ? np[j] : (1 - np[j]);
 #if 0
-	printf("i=%d j=%d np[j]=%lf nset=%d probterm=%lf\n",
-	       i, j, np[j], nset, (nset ? np[j] : (1-np[j])));
+        printf("i=%d j=%d np[j]=%lf nset=%d probterm=%lf\n",
+               i, j, np[j], nset, (nset ? np[j] : (1-np[j])));
 #endif
+        }
+        if (outc.prob != 0.0) {
+          outc.nextState = nextState.toInt();
+          outcomes.push_back(outc);
+        }
       }
-      if (outc.prob != 0.0) {
-        outc.nextState = nextState.toInt();
-        outcomes.push_back(outc);
-      }
-    }
-    reward = actionReward - actionCost;
-    return;
-  } /* case LS_ACT_MOVE */
-
-  case LS_ACT_LOOK:
-    if (s.usedLookaheadInThisCell) {
-      /* can only use lookahead action once in any given cell */
-      outc.prob = 1.0;
-      outc.nextState = s.toInt();
-      outcomes.push_back(outc);
-      reward = -LS_PENALTY_ILLEGAL;
+      reward = actionReward - actionCost;
       return;
-    }
+    } /* case LS_ACT_MOVE */
 
-    /* mark look action as used, incur cost */
-    nextState.usedLookaheadInThisCell = 1;
+    case LS_ACT_LOOK:
+      if (s.usedLookaheadInThisCell) {
+        /* can only use lookahead action once in any given cell */
+        outc.prob = 1.0;
+        outc.nextState = s.toInt();
+        outcomes.push_back(outc);
+        reward = -LS_PENALTY_ILLEGAL;
+        return;
+      }
 
-    outc.prob = 1.0;
-    outc.nextState = nextState.toInt();
-    outcomes.push_back(outc);
-    reward = -LS_COST_LOOKAHEAD;
-    return;
+      /* mark look action as used, incur cost */
+      nextState.usedLookaheadInThisCell = 1;
 
-  default:
-    assert(0); // never reach this point
-    return;
+      outc.prob = 1.0;
+      outc.nextState = nextState.toInt();
+      outcomes.push_back(outc);
+      reward = -LS_COST_LOOKAHEAD;
+      return;
+
+    default:
+      assert(0);  // never reach this point
+      return;
   }
 }
 
@@ -569,13 +557,13 @@ void LSModel::writeToFile(FILE *outFile, bool fullIdentifiers) {
   printf("numStates=%d\n", numStates);
 #if 0
   double maxMax = -99e+20;
-  FOR (si, numStates) {
+  FOR(si, numStates) {
     LSStateEntry& e = tableG.getState(si);
     LSState s = e.s;
     printf("s=%s prevState=%s mir=%lf\n", s.toString().c_str(),
-	   LSState(e.prevState).toString().c_str(), e.maxIncomingReward);
+           LSState(e.prevState).toString().c_str(), e.maxIncomingReward);
     double cap = 0;
-    FOR (i, s.rewardLevelInRegion.size()) {
+    FOR(i, s.rewardLevelInRegion.size()) {
       int rewardLevel = std::min(3, s.rewardLevelInRegion[i]);
       cap += getReward(0, rewardLevel);
     }
@@ -702,8 +690,7 @@ void LSModel::readTargetList(std::vector<LSPos> &result, const char *fname) {
   result.clear();
   while (fgets(buf, sizeof(buf), f)) {
     lnum++;
-    if (0 == strlen(buf) || '#' == buf[0])
-      continue;
+    if (0 == strlen(buf) || '#' == buf[0]) continue;
     if (2 != sscanf(buf, "%d %d", &p.x, &p.y)) {
       fprintf(stderr,
               "%s:%d: syntax error, expected integers '<x> <y>' on each line\n",
@@ -725,4 +712,4 @@ bool LSModel::getInTargetList(const LSPos &pos,
   return false;
 }
 
-}; // namespace zmdp
+};  // namespace zmdp

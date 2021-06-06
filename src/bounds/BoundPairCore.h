@@ -15,8 +15,8 @@
 
  ***************************************************************************/
 
-#ifndef INCBoundPairCore_h
-#define INCBoundPairCore_h
+#ifndef ZMDP_SRC_BOUNDS_BOUNDPAIRCORE_H_
+#define ZMDP_SRC_BOUNDS_BOUNDPAIRCORE_H_
 
 #include <iostream>
 #include <string>
@@ -74,6 +74,6 @@ struct BoundPairCore {
   static int getSimulatedOutcome(MDPNode &cn, int a);
 };
 
-}; // namespace zmdp
+};  // namespace zmdp
 
-#endif // INCBoundPairCore_h
+#endif  // ZMDP_SRC_BOUNDS_BOUNDPAIRCORE_H_

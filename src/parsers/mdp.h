@@ -24,9 +24,9 @@
 
      header file for mdp.c
 */
-#ifndef MDP_H
+#ifndef ZMDP_SRC_PARSERS_MDP_H_
 
-#define MDP_H
+#define ZMDP_SRC_PARSERS_MDP_H_
 
 #include <stdio.h>
 
@@ -50,7 +50,7 @@ typedef enum {
  */
 #define NUM_VALUE_TYPES 2
 typedef enum { REWARD_value_type, COST_value_type } Value_Type;
-#define VALUE_TYPE_STRINGS                                                     \
+#define VALUE_TYPE_STRINGS \
   { "cost", "reward" }
 
 #define DEFAULT_DISCOUNT_FACTOR 1.0
@@ -79,10 +79,12 @@ extern I_Matrix IQ;  /* Immediate values for MDP only */
 extern Matrix *P;  /* Transition Probabilities */
 extern Matrix *R;  /* Observation Probabilities */
 extern Matrix *QI; /* The immediate values, for MDPs only */
-extern Matrix Q;   /* Immediate values for state action pairs.  These
-                      are expectations computed from immediate values:
-                      either the QI for MDPs or the special
-                      representation for the POMDPs */
+
+/* Immediate values for state action pairs.  These
+   are expectations computed from immediate values:
+   either the QI for MDPs or the special
+   representation for the POMDPs */
+extern Matrix Q;
 
 extern double *gInitialBelief; /* For POMDPs */
 extern int gInitialState;      /* For MDPs   */
@@ -113,4 +115,4 @@ int readMDPFile(FILE *file);
 } /* extern "C" */
 #endif
 
-#endif /* MDP_H */
+#endif  // ZMDP_SRC_PARSERS_MDP_H_

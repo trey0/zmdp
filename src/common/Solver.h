@@ -15,8 +15,8 @@
 
  ***************************************************************************/
 
-#ifndef INCSolver_h
-#define INCSolver_h
+#ifndef ZMDP_SRC_COMMON_SOLVER_H_
+#define ZMDP_SRC_COMMON_SOLVER_H_
 
 #include "MDPModel.h"
 #include "zmdpConfig.h"
@@ -24,7 +24,7 @@
 namespace zmdp {
 
 class Solver {
-public:
+ public:
   virtual ~Solver(void) {}
 
   // sets up the problem
@@ -49,6 +49,6 @@ public:
   virtual void finishLogging(void) {}
 };
 
-}; // namespace zmdp
+};  // namespace zmdp
 
-#endif // INCSolver_h
+#endif  // ZMDP_SRC_COMMON_SOLVER_H_

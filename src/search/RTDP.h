@@ -15,8 +15,8 @@
 
  ***************************************************************************/
 
-#ifndef INCRTDP_h
-#define INCRTDP_h
+#ifndef ZMDP_SRC_SEARCH_RTDP_H_
+#define ZMDP_SRC_SEARCH_RTDP_H_
 
 #include "RTDPCore.h"
 
@@ -29,6 +29,6 @@ struct RTDP : public RTDPCore {
   bool doTrial(MDPNode &cn);
 };
 
-}; // namespace zmdp
+};  // namespace zmdp
 
-#endif /* INCRTDP_h */
+#endif  // ZMDP_SRC_SEARCH_RTDP_H_

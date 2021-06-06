@@ -15,13 +15,15 @@
 
  ***************************************************************************/
 
-#ifndef INCzmdpCommonTypes_h
-#define INCzmdpCommonTypes_h
+#ifndef ZMDP_SRC_COMMON_ZMDPCOMMONTYPES_H_
+#define ZMDP_SRC_COMMON_ZMDPCOMMONTYPES_H_
+
+#include <string>
 
 #include "sla.h"
 
 #ifndef GCC_VERSION
-#define GCC_VERSION                                                            \
+#define GCC_VERSION \
   (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__)
 #endif
 
@@ -38,19 +40,21 @@
 #define EXT_NAMESPACE std
 #endif
 namespace EXT_NAMESPACE {
-template <> struct hash<std::string> {
+template <>
+struct hash<std::string> {
   size_t operator()(const std::string &s) const {
     hash<char const *> h;
     return h(s.c_str());
   }
 };
-template <class T> struct hash<T *> {
+template <class T>
+struct hash<T *> {
   size_t operator()(T *p) const {
     hash<size_t> h;
     return h((size_t)p);
   }
 };
-}; // namespace EXT_NAMESPACE
+};  // namespace EXT_NAMESPACE
 #endif
 
 namespace zmdp {
@@ -71,12 +75,13 @@ std::ostream &operator<<(std::ostream &out, const ValueInterval &v);
 // when you assign option_type<T> = T or option_type<T> = option_type<T>.
 // it performs copy-by-reference when you assign option_type<T> = T*.
 // the name comes from the "'a option" type in ML.
-template <class _T> struct option_type {
+template <class _T>
+struct option_type {
   typedef _T value_type;
 
   option_type(void) : val(NULL) {}
-  option_type(_T *_val) : val(_val) {}
-  option_type(const _T &ref) { copyByValue(&ref); }
+  explicit option_type(_T *_val) : val(_val) {}
+  explicit option_type(const _T &ref) { copyByValue(&ref); }
   option_type(const option_type<_T> &rhs) { copyByValue(rhs.val); }
   ~option_type(void) { unbind(); }
   option_type<_T> &operator=(_T *_val) {
@@ -101,7 +106,7 @@ template <class _T> struct option_type {
   bool defined(void) const { return NULL != val; }
   _T *pointer(void) const { return val; }
 
-protected:
+ protected:
   _T *val;
 
   void copyByValue(const _T *_val) {
@@ -119,11 +124,11 @@ protected:
   }
 };
 
-}; // namespace zmdp
+};  // namespace zmdp
 
 // we'll redundantly declare the debug level here (also declared in
 // zmdpConfig.h) so that files that don't depend anything else in
 // zmdpConfig.h don't need to include it.
 extern int zmdpDebugLevelG;
 
-#endif // INCzmdpCommonTypes_h
+#endif  // ZMDP_SRC_COMMON_ZMDPCOMMONTYPES_H_

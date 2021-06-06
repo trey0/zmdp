@@ -19,8 +19,8 @@
 
  ***************************************************************************/
 
-#ifndef INCMDPCache_h
-#define INCMDPCache_h
+#ifndef ZMDP_SRC_BOUNDS_MDPCACHE_H_
+#define ZMDP_SRC_BOUNDS_MDPCACHE_H_
 
 #include <iostream>
 #include <string>
@@ -67,6 +67,6 @@ typedef EXT_NAMESPACE::hash_map<std::string, MDPNode *> MDPHash;
 
 int getNodeCacheStorage(const MDPHash *lookup, int whichMetric);
 
-}; // namespace zmdp
+};  // namespace zmdp
 
-#endif // INCMDPCache_h
+#endif  // ZMDP_SRC_BOUNDS_MDPCACHE_H_

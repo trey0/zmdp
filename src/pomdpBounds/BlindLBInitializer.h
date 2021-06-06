@@ -15,8 +15,8 @@
 
  ***************************************************************************/
 
-#ifndef INCBlindLBInitializer_h
-#define INCBlindLBInitializer_h
+#ifndef ZMDP_SRC_POMDPBOUNDS_BLINDLBINITIALIZER_H_
+#define ZMDP_SRC_POMDPBOUNDS_BLINDLBINITIALIZER_H_
 
 #include "AbstractBound.h"
 #include "MatrixUtils.h"
@@ -32,11 +32,11 @@ struct BlindLBInitializer {
   BlindLBInitializer(const MDP *_pomdp, MaxPlanesLowerBound *_bound);
   void initialize(double targetPrecision);
 
-protected:
+ protected:
   void initBlind(double targetPrecision);
   void initBlindWorstCase(alpha_vector &weakAlpha);
 };
 
-}; // namespace zmdp
+};  // namespace zmdp
 
-#endif /* INCBlindLBInitializer_h */
+#endif  // ZMDP_SRC_POMDPBOUNDS_BLINDLBINITIALIZER_H_

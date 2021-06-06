@@ -15,8 +15,8 @@
 
  ***************************************************************************/
 
-#ifndef INCScriptedUpdater_h
-#define INCScriptedUpdater_h
+#ifndef ZMDP_SRC_SEARCH_SCRIPTEDUPDATER_H_
+#define ZMDP_SRC_SEARCH_SCRIPTEDUPDATER_H_
 
 #include "RTDPCore.h"
 #include "StateLog.h"
@@ -36,6 +36,6 @@ struct ScriptedUpdater : public RTDPCore {
   void finishLogging(void);
 };
 
-}; // namespace zmdp
+};  // namespace zmdp
 
-#endif /* INCRTDP_h */
+#endif  // ZMDP_SRC_SEARCH_SCRIPTEDUPDATER_H_

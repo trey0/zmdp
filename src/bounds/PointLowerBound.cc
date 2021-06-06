@@ -19,17 +19,19 @@
  * INCLUDES
  ***************************************************************************/
 
-//#include <assert.h>
+// #include <assert.h>
+#include "PointLowerBound.h"
+
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 
+#include <algorithm>
 #include <fstream>
 #include <iostream>
 
 #include "MatrixUtils.h"
-#include "PointLowerBound.h"
 #include "zmdpCommonDefs.h"
 
 using namespace std;
@@ -98,17 +100,17 @@ void PointLowerBound::update(MDPNode &cn) {
 
 int PointLowerBound::getStorage(int whichMetric) const {
   switch (whichMetric) {
-  case ZMDP_S_NUM_ELTS:
-  case ZMDP_S_NUM_ENTRIES:
-    return initBound->getStorage(whichMetric);
+    case ZMDP_S_NUM_ELTS:
+    case ZMDP_S_NUM_ENTRIES:
+      return initBound->getStorage(whichMetric);
 
-  case ZMDP_S_NUM_ELTS_TABULAR:
-  case ZMDP_S_NUM_ENTRIES_TABULAR:
-    return getNodeCacheStorage(core->lookup, whichMetric);
+    case ZMDP_S_NUM_ELTS_TABULAR:
+    case ZMDP_S_NUM_ENTRIES_TABULAR:
+      return getNodeCacheStorage(core->lookup, whichMetric);
 
-  default:
-    assert(0); // never reach this point
+    default:
+      assert(0);  // never reach this point
   }
 }
 
-}; // namespace zmdp
+};  // namespace zmdp

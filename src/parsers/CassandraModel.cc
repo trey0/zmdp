@@ -19,6 +19,8 @@
  * INCLUDES
  ***************************************************************************/
 
+#include "CassandraModel.h"
+
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -28,8 +30,6 @@
 #include <fstream>
 #include <iostream>
 
-#include "CassandraModel.h"
-
 using namespace std;
 
 namespace zmdp {
@@ -38,8 +38,9 @@ CassandraModel::CassandraModel(void) : numStates(-1), numObservations(-1) {}
 
 void CassandraModel::checkForTerminalStates(void) {
   if (zmdpDebugLevelG >= 1) {
-    printf("model initialization -- marking zero-reward absorbing states as "
-           "terminal\n");
+    printf(
+        "model initialization -- marking zero-reward absorbing states as "
+        "terminal\n");
   }
   isTerminalState.resize(numStates, /* initialValue = */ true);
   FOR(s, numStates) {
@@ -58,10 +59,10 @@ void CassandraModel::debugDensity(void) {
 
   // use doubles to avoid int overflow (e.g. T_size is sometimes larger than
   // MAX_INT)
-  T_size = ((double)T[0].size1()) * T[0].size2() * numActions;
+  T_size = (static_cast<double>(T[0].size1())) * T[0].size2() * numActions;
   T_filled = 0;
   if (-1 != numObservations) {
-    O_size = ((double)O[0].size1()) * O[0].size2() * numActions;
+    O_size = (static_cast<double>(O[0].size1())) * O[0].size2() * numActions;
     O_filled = 0;
   }
   FOR(a, numActions) {
@@ -79,4 +80,4 @@ void CassandraModel::debugDensity(void) {
   }
 }
 
-}; // namespace zmdp
+};  // namespace zmdp

@@ -19,7 +19,9 @@
  * INCLUDES
  ***************************************************************************/
 
-//#include <assert.h>
+// #include <assert.h>
+#include "MDPExec.h"
+
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -29,7 +31,6 @@
 #include <fstream>
 #include <iostream>
 
-#include "MDPExec.h"
 #include "MatrixUtils.h"
 #include "zmdpCommonDefs.h"
 
@@ -56,4 +57,4 @@ int MDPExec::getRandomOutcome(int a) const {
       mdp->getOutcomeProbVector(opv, currentState, a));
 }
 
-}; // namespace zmdp
+};  // namespace zmdp

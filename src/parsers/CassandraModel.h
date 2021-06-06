@@ -15,8 +15,8 @@
 
  ***************************************************************************/
 
-#ifndef INCCassandraModel_h
-#define INCCassandraModel_h
+#ifndef ZMDP_SRC_PARSERS_CASSANDRAMODEL_H_
+#define ZMDP_SRC_PARSERS_CASSANDRAMODEL_H_
 
 #include <iostream>
 #include <string>
@@ -53,6 +53,6 @@ struct CassandraModel : public MDP {
   void debugDensity(void);
 };
 
-}; // namespace zmdp
+};  // namespace zmdp
 
-#endif // INCCassandraModel_h
+#endif  // ZMDP_SRC_PARSERS_CASSANDRAMODEL_H_

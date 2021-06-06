@@ -15,8 +15,8 @@
 
  ***************************************************************************/
 
-#ifndef INCFRTDP_h
-#define INCFRTDP_h
+#ifndef ZMDP_SRC_SEARCH_FRTDP_H_
+#define ZMDP_SRC_SEARCH_FRTDP_H_
 
 #include "RTDPCore.h"
 
@@ -53,6 +53,6 @@ struct FRTDP : public RTDPCore {
   void derivedClassInit(void);
 };
 
-}; // namespace zmdp
+};  // namespace zmdp
 
-#endif /* INCRTDP_h */
+#endif  // ZMDP_SRC_SEARCH_FRTDP_H_

@@ -15,8 +15,8 @@
 
  ***************************************************************************/
 
-#ifndef INCAbstractBound_h
-#define INCAbstractBound_h
+#ifndef ZMDP_SRC_BOUNDS_ABSTRACTBOUND_H_
+#define ZMDP_SRC_BOUNDS_ABSTRACTBOUND_H_
 
 #include <iostream>
 #include <string>
@@ -50,6 +50,6 @@ struct AbstractBound {
   virtual int getStorage(int whichMetric) const { return 0; }
 };
 
-}; // namespace zmdp
+};  // namespace zmdp
 
-#endif // INCAbstractBound_h
+#endif  // ZMDP_SRC_BOUNDS_ABSTRACTBOUND_H_

@@ -15,8 +15,8 @@
 
  ***************************************************************************/
 
-#ifndef INCPointLowerBound_h
-#define INCPointLowerBound_h
+#ifndef ZMDP_SRC_BOUNDS_POINTLOWERBOUND_H_
+#define ZMDP_SRC_BOUNDS_POINTLOWERBOUND_H_
 
 /**********************************************************************
  * INCLUDES
@@ -57,6 +57,6 @@ struct PointLowerBound : public IncrementalLowerBound {
   int getStorage(int whichMetric) const;
 };
 
-}; // namespace zmdp
+};  // namespace zmdp
 
-#endif // INCPointLowerBound_h
+#endif  // ZMDP_SRC_BOUNDS_POINTLOWERBOUND_H_

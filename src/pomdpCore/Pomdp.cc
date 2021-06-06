@@ -19,6 +19,8 @@
  * INCLUDES
  ***************************************************************************/
 
+#include "Pomdp.h"
+
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -32,7 +34,6 @@
 #include "FastParser.h"
 #include "MatrixUtils.h"
 #include "MaxPlanesLowerBound.h"
-#include "Pomdp.h"
 #include "SawtoothUpperBound.h"
 #include "slaMatrixUtils.h"
 #include "zmdpCommonDefs.h"
@@ -66,7 +67,7 @@ const belief_vector &Pomdp::getInitialBelief(void) const {
 
 obs_prob_vector &Pomdp::getObsProbVector(obs_prob_vector &result,
                                          const belief_vector &b, int a) const {
-  dvector tmp; // FIX: for efficiency, should tmp be a cvector?
+  dvector tmp;  // FIX: for efficiency, should tmp be a cvector?
   // --- overall: result = O_a' * T_a' * b
   // tmp = T_a' * b
   mult(tmp, Ttr[a], b);
@@ -113,4 +114,4 @@ bool Pomdp::getIsTerminalState(const state_vector &s) {
   return (nonTerminalSum < 1e-10);
 }
 
-}; // namespace zmdp
+};  // namespace zmdp

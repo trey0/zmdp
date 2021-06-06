@@ -19,7 +19,8 @@
  * INCLUDES
  ***************************************************************************/
 
-//#include <assert.h>
+#include "LSPathAndReactExec.h"
+
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -29,7 +30,6 @@
 #include <fstream>
 #include <iostream>
 
-#include "LSPathAndReactExec.h"
 #include "LifeSurvey.h"
 #include "MatrixUtils.h"
 #include "Pomdp.h"
@@ -50,8 +50,7 @@ LSPathAndReactExec::LSPathAndReactExec(void) {}
 void LSPathAndReactExec::init(const std::string &lifeSurveyFileName,
                               const ZMDPConfig *config) {
   useBlindActionSelection = (config->getString("policyType") == "lsblind");
-  if (useBlindActionSelection)
-    return;
+  if (useBlindActionSelection) return;
 
   timeval tv1, tv2;
   printf("LSPathAndReactExec: reading LifeSurvey model\n");
@@ -65,15 +64,14 @@ void LSPathAndReactExec::init(const std::string &lifeSurveyFileName,
 }
 
 void LSPathAndReactExec::setToInitialState(void) {
-  if (useBlindActionSelection)
-    return;
+  if (useBlindActionSelection) return;
 
   std::vector<LSOutcome> initStates;
   m.getInitialStateDistribution(initStates);
 
   // (reduce state distribution to a deterministic state)
   assert(initStates.size() > 0);
-  currentLSState = initStates[0].nextState;
+  currentLSState = LSState(initStates[0].nextState);
   FOR(i, 3) {
     // assume no life unless life is positively sensed
     currentLSState.lifeInNeighborCell[i] = 0;
@@ -153,8 +151,8 @@ int LSPathAndReactExec::chooseAction(void) {
 
 #if 0
   printf("chooseAction: s=%s a=%s\n",
-	 currentLSState.toString().c_str(),
-	 a.toString().c_str());
+         currentLSState.toString().c_str(),
+         a.toString().c_str());
 #endif
 
   return a.toInt();
@@ -165,8 +163,8 @@ void LSPathAndReactExec::advanceToNextState(int ai, int oi) {
 #if 0
   LSAction a(ai);
   printf("advanceToNextState: a=%s o=%s\n",
-	 a.toString().c_str(),
-	 o.toString().c_str());
+         a.toString().c_str(),
+         o.toString().c_str());
 #endif
 
   // get possible next outcomes according to probabilistic LS model
@@ -175,7 +173,7 @@ void LSPathAndReactExec::advanceToNextState(int ai, int oi) {
   m.getOutcomes(outcomes, reward, currentLSState, ai);
 
   // reduce distribution to deterministic next state
-  LSState nextLSState = outcomes[0].nextState;
+  LSState nextLSState(outcomes[0].nextState);
 
   // muck with lifeInNeighborCell to follow the right deterministic logic
   if (o.isNull) {
@@ -353,8 +351,7 @@ bool LSPathAndReactExec::getValueIsDominated(const LSPathEntry &pe,
   LSValueVector &vec = bestValueMap[3 * (f.grid.width * pe.pos.y + pe.pos.x) +
                                     pe.lastMoveDirection];
   FOR_EACH(entryP, vec) {
-    if (dominates(*entryP, val))
-      return true;
+    if (dominates(*entryP, val)) return true;
   }
 
   // val is not dominated by any existing entry in vec; add
@@ -370,10 +367,9 @@ bool LSPathAndReactExec::dominates(const LSValueEntry &val1,
   }
   assert(val1.regionCounts.size() == val2.regionCounts.size());
   FOR(i, val1.regionCounts.size()) {
-    if (val1.regionCounts[i] < val2.regionCounts[i])
-      return false;
+    if (val1.regionCounts[i] < val2.regionCounts[i]) return false;
   }
   return true;
 }
 
-}; // namespace zmdp
+};  // namespace zmdp

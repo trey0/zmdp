@@ -20,8 +20,8 @@
 
  ***************************************************************************/
 
-#ifndef INCBasicPomdp_h
-#define INCBasicPomdp_h
+#ifndef ZMDP_SRC_POMDPMODELS_ROCKEXPLORE_REBASICPOMDP_H_
+#define ZMDP_SRC_POMDPMODELS_ROCKEXPLORE_REBASICPOMDP_H_
 
 #include <iostream>
 #include <map>
@@ -158,6 +158,6 @@ struct REBasicPomdp {
 
 extern REBasicPomdp *modelG;
 
-}; // namespace zmdp
+};  // namespace zmdp
 
-#endif // INCREBasicPomdp_h
+#endif  // ZMDP_SRC_POMDPMODELS_ROCKEXPLORE_REBASICPOMDP_H_

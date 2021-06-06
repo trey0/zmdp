@@ -15,8 +15,8 @@
 
  ***************************************************************************/
 
-#ifndef INCMDPExec_h
-#define INCMDPExec_h
+#ifndef ZMDP_SRC_EXEC_MDPEXEC_H_
+#define ZMDP_SRC_EXEC_MDPEXEC_H_
 
 /**********************************************************************
  * INCLUDES
@@ -55,6 +55,6 @@ struct MDPExec : public MDPExecCore {
   int getRandomOutcome(int a) const;
 };
 
-}; // namespace zmdp
+};  // namespace zmdp
 
-#endif // INCMDPExec_h
+#endif  // ZMDP_SRC_EXEC_MDPEXEC_H_

@@ -15,6 +15,8 @@
 
  ***************************************************************************/
 
+#include "ScriptedUpdater.h"
+
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -26,7 +28,6 @@
 
 #include "MatrixUtils.h"
 #include "Pomdp.h"
-#include "ScriptedUpdater.h"
 #include "zmdpCommonDefs.h"
 #include "zmdpCommonTime.h"
 
@@ -42,8 +43,9 @@ ScriptedUpdater::ScriptedUpdater(void)
 void ScriptedUpdater::readFiles(void) {
   std::string backupScriptInputDir = config->getString("backupScriptInputDir");
   if (backupScriptInputDir == "none") {
-    fprintf(stderr, "ERROR: when using searchStrategy='script' you must "
-                    "specify backupScriptInputDir (-h for help)\n");
+    fprintf(stderr,
+            "ERROR: when using searchStrategy='script' you must "
+            "specify backupScriptInputDir (-h for help)\n");
     exit(EXIT_FAILURE);
   }
   std::string stateIndexInputFile =
@@ -74,7 +76,7 @@ bool ScriptedUpdater::doTrial(MDPNode &cn) {
 
   bool firstInTrial = true;
   int dummy;
-  while (currentLogEntry < (int)backupsLog->size()) {
+  while (currentLogEntry < static_cast<int>(backupsLog->size())) {
     int id = backupsLog->getLogEntry(currentLogEntry++);
     const state_vector &s = *stateIndex->entries[id];
 
@@ -102,4 +104,4 @@ void ScriptedUpdater::finishLogging(void) {
   stateIndex->writeBoundValuesToFile(boundValuesOutputFile, *bounds);
 }
 
-}; // namespace zmdp
+};  // namespace zmdp

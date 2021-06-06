@@ -25,9 +25,9 @@
   *****
 
 */
-#ifndef SPARSE_MATRIX_H
+#ifndef ZMDP_SRC_PARSERS_SPARSE_MATRIX_H_
 
-#define SPARSE_MATRIX_H
+#define ZMDP_SRC_PARSERS_SPARSE_MATRIX_H_
 
 #define POS_ZERO_TOLERANCE 0.0000000001
 #define NEG_ZERO_TOLERANCE -0.0000000001
@@ -48,15 +48,16 @@ struct I_Matrix_Row_Node_Struct {
   I_Matrix_Row_Node next;
 };
 
-/*  A matrix in intermediate form will be a linked list for each row
-    and a count of the number of non-zero entries for each row.
-    */
+/* A matrix in intermediate form will be a linked list for each row and
+   a count of the number of non-zero entries for each row. */
 struct I_Matrix_Struct {
   int num_rows;
-  I_Matrix_Row_Node *row; /* An array of pointers for the head of
-                             each row's linked list */
-  int *row_length;        /* An array for the current lengths of
-                           each row. */
+
+  /* An array of pointers for the head of each row's linked list */
+  I_Matrix_Row_Node *row;
+
+  /* An array for the current lengths of each row. */
+  int *row_length;
 };
 typedef struct I_Matrix_Struct *I_Matrix;
 
@@ -102,4 +103,4 @@ extern double getEntryMatrix(Matrix matrix, int row, int col);
 } /* extern "C" */
 #endif
 
-#endif
+#endif  // ZMDP_SRC_PARSERS_SPARSE_MATRIX_H_

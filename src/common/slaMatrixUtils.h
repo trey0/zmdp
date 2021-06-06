@@ -15,8 +15,8 @@
 
  ***************************************************************************/
 
-#ifndef INCslaMatrixUtils_h
-#define INCslaMatrixUtils_h
+#ifndef ZMDP_SRC_COMMON_SLAMATRIXUTILS_H_
+#define ZMDP_SRC_COMMON_SLAMATRIXUTILS_H_
 
 /**********************************************************************
  * INCLUDES
@@ -24,11 +24,11 @@
 
 // iostream causes problems if it is included after the Lapack headers, so
 //  pre-emptively include it here.  not sure exactly what the problem is.
-#include <iostream>
+#include <math.h>
 
 #include <algorithm>
 #include <functional>
-#include <math.h>
+#include <iostream>
 #include <vector>
 
 #include "zmdpCommonDefs.h"
@@ -51,9 +51,9 @@
 
 #define FOR_CM_MAJOR(c, M) for (unsigned c = 0; c < M.size2(); c++)
 
-#define FOR_CM_MINOR(c, M)                                                     \
-  typeof(M.data.begin()) __cm_begin = M.data.begin() + M.col_starts[c];        \
-  typeof(M.data.begin()) __cm_end = M.data.begin() + M.col_starts[c + 1];      \
+#define FOR_CM_MINOR(c, M)                                                \
+  typeof(M.data.begin()) __cm_begin = M.data.begin() + M.col_starts[c];   \
+  typeof(M.data.begin()) __cm_end = M.data.begin() + M.col_starts[c + 1]; \
   for (typeof(M.data.begin()) __cm_j = __cm_begin; __cm_j != __cm_end; __cm_j++)
 
 #define CM_VAL(M) (__cm_j->value)
@@ -97,6 +97,6 @@ inline void set_to_zero(dvector &v) { v.resize(v.size()); }
 
 inline void set_to_zero(cvector &v) { v.resize(v.size()); }
 
-} // namespace MatrixUtils
+}  // namespace MatrixUtils
 
-#endif // INCslaMatrixUtils_h
+#endif  // ZMDP_SRC_COMMON_SLAMATRIXUTILS_H_

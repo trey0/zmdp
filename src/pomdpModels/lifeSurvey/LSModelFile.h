@@ -15,20 +15,19 @@
 
  ***************************************************************************/
 
-#ifndef INCLSModelFile_h
-#define INCLSModelFile_h
+#ifndef ZMDP_SRC_POMDPMODELS_LIFESURVEY_LSMODELFILE_H_
+#define ZMDP_SRC_POMDPMODELS_LIFESURVEY_LSMODELFILE_H_
 
 #include <stdio.h>
+
 #include <string>
 #include <vector>
 
 #define LS_OBSTACLE (100)
 
 #define LS_BASE_NUM_OBSERVATIONS (3)
-#define LS_NUM_OBSERVATIONS                                                    \
-  (LS_BASE_NUM_OBSERVATIONS * LS_BASE_NUM_OBSERVATIONS *                       \
-       LS_BASE_NUM_OBSERVATIONS +                                              \
-   1)
+#define _N LS_BASE_NUM_OBSERVATIONS
+#define LS_NUM_OBSERVATIONS (_N * _N * _N + 1)
 
 namespace zmdp {
 
@@ -76,6 +75,6 @@ struct LSModelFile {
   void writeToFile(FILE *outFile) const;
 };
 
-} // namespace zmdp
+}  // namespace zmdp
 
-#endif // INCLSModelFile_h
+#endif  // ZMDP_SRC_POMDPMODELS_LIFESURVEY_LSMODELFILE_H_

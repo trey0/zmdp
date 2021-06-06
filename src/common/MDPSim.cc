@@ -19,6 +19,8 @@
  * INCLUDES
  ***************************************************************************/
 
+#include "MDPSim.h"
+
 #include <assert.h>
 #include <math.h>
 #include <stdio.h>
@@ -28,7 +30,6 @@
 #include <iostream>
 #include <sstream>
 
-#include "MDPSim.h"
 #include "MatrixUtils.h"
 
 using namespace std;
@@ -93,4 +94,4 @@ void MDPSim::performAction(int a) {
   }
 }
 
-}; // namespace zmdp
+};  // namespace zmdp

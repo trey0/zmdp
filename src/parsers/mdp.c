@@ -26,12 +26,13 @@
   the global variables for the problem for use in all the other files.
 
 */
+#include "mdp.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/time.h>
 
 #include "imm-reward.h"
-#include "mdp.h"
 #include "sparse-matrix.h"
 
 #define DOUBLE_DISPLAY_PRECISION 4
@@ -80,7 +81,7 @@ Matrix *P; /* Transition Probabilities */
 Matrix *R; /* Observation Probabilities */
 
 Matrix Q; /* Immediate values for state action pairs.  These are
-           expectations computed from immediate values. */
+             expectations computed from immediate values. */
 
 /* Normal variables */
 
@@ -93,7 +94,6 @@ int gInitialState = INVALID_STATE;
 
 /***************************************************************************/
 double *newBeliefState() {
-
   return ((double *)calloc(gNumStates, sizeof(double)));
 } /* *newBeliefState */
 /***************************************************************************/
@@ -101,19 +101,15 @@ int transformBeliefState(double *pi, double *pi_hat, int a, int obs) {
   double denom;
   int i, j, cur_state, next_state;
 
-  if (gProblemType != POMDP_problem_type)
-    return (0);
+  if (gProblemType != POMDP_problem_type) return (0);
 
   /* zero out all elements since we will acumulate probabilities
      as we loop */
-  for (i = 0; i < gNumStates; i++)
-    pi_hat[i] = 0.0;
+  for (i = 0; i < gNumStates; i++) pi_hat[i] = 0.0;
 
   for (cur_state = 0; cur_state < gNumStates; cur_state++) {
-
     for (j = P[a]->row_start[cur_state];
          j < P[a]->row_start[cur_state] + P[a]->row_length[cur_state]; j++) {
-
       next_state = P[a]->col[j];
 
       pi_hat[next_state] += pi[cur_state] * P[a]->mat_val[j] *
@@ -124,14 +120,11 @@ int transformBeliefState(double *pi, double *pi_hat, int a, int obs) {
 
   /* Normalize */
   denom = 0.0;
-  for (i = 0; i < gNumStates; i++)
-    denom += pi_hat[i];
+  for (i = 0; i < gNumStates; i++) denom += pi_hat[i];
 
-  if (IS_ZERO(denom))
-    return (0);
+  if (IS_ZERO(denom)) return (0);
 
-  for (i = 0; i < gNumStates; i++)
-    pi_hat[i] /= denom;
+  for (i = 0; i < gNumStates; i++) pi_hat[i] /= denom;
 
   return (1);
 } /* transformBeliefState */
@@ -141,11 +134,9 @@ void copyBeliefState(double *copy, double *pi) {
    */
   int i;
 
-  if ((pi == NULL) || (copy == NULL))
-    return;
+  if ((pi == NULL) || (copy == NULL)) return;
 
-  for (i = 0; i < gNumStates; i++)
-    copy[i] = pi[i];
+  for (i = 0; i < gNumStates; i++) copy[i] = pi[i];
 
 } /* copyBeliefState */
 /**********************************************************************/
@@ -206,18 +197,15 @@ void allocateIntermediateMDP() {
      action.  */
   IP = (I_Matrix *)malloc(gNumActions * sizeof(*IP));
 
-  for (a = 0; a < gNumActions; a++)
-    IP[a] = newIMatrix(gNumStates);
+  for (a = 0; a < gNumActions; a++) IP[a] = newIMatrix(gNumStates);
 
   /* Only need observation probabilities if it is a POMDP */
   if (gProblemType == POMDP_problem_type) {
-
     /* We need an intermediate matrix for observation probs. for each
        action.  */
     IR = (I_Matrix *)malloc(gNumActions * sizeof(*IR));
 
-    for (a = 0; a < gNumActions; a++)
-      IR[a] = newIMatrix(gNumStates);
+    for (a = 0; a < gNumActions; a++) IR[a] = newIMatrix(gNumStates);
 
     /* Note that the immediate values are stored in a special way, so
        we do not need to allocate anything at this time. */
@@ -288,7 +276,6 @@ void deallocateIntermediateMDP() {
   int a;
 
   for (a = 0; a < gNumActions; a++) {
-
     destroyIMatrix(IP[a]);
 
     if (gProblemType == POMDP_problem_type) {
@@ -315,24 +302,20 @@ void computeRewards() {
 
   for (a = 0; a < gNumActions; a++)
     for (i = 0; i < gNumStates; i++) {
-
       sum = 0.0;
 
       /* Note: 'j' is not a state. It is an index into an array */
       for (j = P[a]->row_start[i]; j < P[a]->row_start[i] + P[a]->row_length[i];
            j++) {
-
         next_state = P[a]->col[j];
 
         if (gProblemType == POMDP_problem_type) {
-
           inner_sum = 0.0;
 
           /* Note: 'z' is not a state. It is an index into an array */
           for (z = R[a]->row_start[next_state];
                z < (R[a]->row_start[next_state] + R[a]->row_length[next_state]);
                z++) {
-
             obs = R[a]->col[z];
 
             inner_sum +=
@@ -380,7 +363,6 @@ void convertMatrices() {
   /* First convert the intermediate sparse matrices for trans. and obs. */
 
   for (a = 0; a < gNumActions; a++) {
-
     if (zmdpDebugLevelG >= 1) {
       printf("pomdp_spec: transforming transition matrix [a=%d]\n", a);
     }
@@ -400,8 +382,7 @@ void convertMatrices() {
 
   free(IP);
 
-  if (gProblemType == POMDP_problem_type)
-    free(IR);
+  if (gProblemType == POMDP_problem_type) free(IR);
 
   /* Calculate expected immediate rewards for action-state pairs, but
      do it in the sparse matrix representation to eliminate zeroes */
@@ -431,8 +412,7 @@ int writeMDP(char *filename) {
   FILE *file;
   int a, i, j, obs;
 
-  if ((file = fopen(filename, "w")) == NULL)
-    return (0);
+  if ((file = fopen(filename, "w")) == NULL) return (0);
 
   fprintf(file, "discount: %.6f\n", gDiscount);
 
@@ -454,27 +434,27 @@ int writeMDP(char *filename) {
         fprintf(file, "T: %d : %d : %d %.6f\n", a, i, P[a]->col[j],
                 P[a]->mat_val[j]);
 
-  if (gProblemType == POMDP_problem_type)
+  if (gProblemType == POMDP_problem_type) {
     for (a = 0; a < gNumActions; a++)
       for (j = 0; j < gNumStates; j++)
         for (obs = R[a]->row_start[j];
              obs < R[a]->row_start[j] + R[a]->row_length[j]; obs++)
           fprintf(file, "O: %d : %d : %d %.6f\n", a, j, R[a]->col[obs],
                   R[a]->mat_val[obs]);
+  }
 
-  if (gProblemType == POMDP_problem_type)
+  if (gProblemType == POMDP_problem_type) {
     for (a = 0; a < gNumActions; a++)
       for (i = Q->row_start[a]; i < Q->row_start[a] + Q->row_length[a]; i++)
         fprintf(file, "R: %d : %d : * : * %.6f\n", a, Q->col[i], Q->mat_val[i]);
-
-  else
+  } else {
     for (a = 0; a < gNumActions; a++)
       for (i = Q->row_start[a]; i < Q->row_start[a] + Q->row_length[a]; i++)
         fprintf(file, "R: %d : %d : * %.6f\n", a, Q->col[i], Q->mat_val[i]);
+  }
 
   fclose(file);
   return (1);
-
 } /* writeMDP */
 /**********************************************************************/
 void deallocateMDP() {
@@ -483,8 +463,7 @@ void deallocateMDP() {
   for (a = 0; a < gNumActions; a++) {
     destroyMatrix(P[a]);
 
-    if (gProblemType == POMDP_problem_type)
-      destroyMatrix(R[a]);
+    if (gProblemType == POMDP_problem_type) destroyMatrix(R[a]);
   } /* for a */
 
   free(P);
@@ -497,7 +476,6 @@ void deallocateMDP() {
   destroyMatrix(Q);
 
   destroyImmRewards();
-
 } /* deallocateMDP */
 /**********************************************************************/
 void displayMDPSlice(int state) {
@@ -507,8 +485,7 @@ void displayMDPSlice(int state) {
   */
   int a, j, obs;
 
-  if ((state < 0) || (state >= gNumStates) || (gNumStates < 1))
-    return;
+  if ((state < 0) || (state >= gNumStates) || (gNumStates < 1)) return;
 
   printf("MDP slice for state: %d\n", state);
 
@@ -518,16 +495,16 @@ void displayMDPSlice(int state) {
       printf("\tP( s=%d | s=%d, a=%d ) = %.6f\n", P[a]->col[j], state, a,
              P[a]->mat_val[j]);
 
-  if (gProblemType == POMDP_problem_type)
+  if (gProblemType == POMDP_problem_type) {
     for (a = 0; a < gNumActions; a++)
       for (obs = R[a]->row_start[state];
            obs < R[a]->row_start[state] + R[a]->row_length[state]; obs++)
         printf("\tP( o=%d | s=%d, a=%d ) = %.6f\n", R[a]->col[obs], state, a,
                R[a]->mat_val[obs]);
+  }
 
   for (a = 0; a < gNumActions; a++)
     printf("\tQ( s=%d, a=%d ) = %5.6f\n", state, a,
            getEntryMatrix(Q, a, state));
-
 } /* displayMDPSlice */
 /**********************************************************************/

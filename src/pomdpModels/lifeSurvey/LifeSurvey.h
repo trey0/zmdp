@@ -15,8 +15,8 @@
 
  ***************************************************************************/
 
-#ifndef INCLifeSurvey_h
-#define INCLifeSurvey_h
+#ifndef ZMDP_SRC_POMDPMODELS_LIFESURVEY_LIFESURVEY_H_
+#define ZMDP_SRC_POMDPMODELS_LIFESURVEY_LIFESURVEY_H_
 
 #include <map>
 #include <vector>
@@ -66,7 +66,7 @@ struct LSState {
   std::vector<int> rewardLevelInRegion;
 
   LSState(void) {}
-  LSState(int si);
+  explicit LSState(int si);
   int toInt(void) const;
   bool isTerminal(void) const;
   std::string toString(void) const;
@@ -79,7 +79,7 @@ struct LSAction {
   int moveDirection;
 
   LSAction(void) {}
-  LSAction(int ai);
+  explicit LSAction(int ai);
   int toInt(void) const;
   std::string toString(void) const;
 };
@@ -89,7 +89,7 @@ struct LSObservation {
   int lifeInNeighborConfidence[3];
 
   LSObservation(void) {}
-  LSObservation(int oi);
+  explicit LSObservation(int oi);
   int toInt(void) const;
   std::string toString(void) const;
 };
@@ -148,6 +148,6 @@ struct LSModel {
 
 extern LSStateTable tableG;
 
-} // namespace zmdp
+}  // namespace zmdp
 
-#endif // INCLifeSurvey_h
+#endif  // ZMDP_SRC_POMDPMODELS_LIFESURVEY_LIFESURVEY_H_

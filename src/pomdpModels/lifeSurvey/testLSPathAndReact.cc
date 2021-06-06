@@ -81,26 +81,25 @@ int main(int argc, char *argv[]) {
   bool useFastModelParser = false;
   while (1) {
     char optchar = getopt_long(argc, argv, shortOptions, longOptions, NULL);
-    if (optchar == -1)
-      break;
+    if (optchar == -1) break;
 
     switch (optchar) {
-    case 'h': // help
-      usage(argv[0]);
-      break;
+      case 'h':  // help
+        usage(argv[0]);
+        break;
 
-    case 'f': // help
-      useFastModelParser = true;
-      break;
+      case 'f':  // help
+        useFastModelParser = true;
+        break;
 
-    case '?': // unknown option
-    case ':': // option with missing parameter
-      // getopt() prints an informative error message
-      cerr << endl;
-      usage(argv[0]);
-      break;
-    default:
-      abort(); // never reach this point
+      case '?':  // unknown option
+      case ':':  // option with missing parameter
+        // getopt() prints an informative error message
+        cerr << endl;
+        usage(argv[0]);
+        break;
+      default:
+        abort();  // never reach this point
     }
   }
   if (2 != argc - optind) {

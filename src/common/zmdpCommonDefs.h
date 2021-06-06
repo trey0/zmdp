@@ -15,15 +15,15 @@
 
  ***************************************************************************/
 
-#ifndef INCzmdpCommonDefs_h
-#define INCzmdpCommonDefs_h
+#ifndef ZMDP_SRC_COMMON_ZMDPCOMMONDEFS_H_
+#define ZMDP_SRC_COMMON_ZMDPCOMMONDEFS_H_
 
 namespace zmdp {
 
 #undef FOR_EACH
-#define FOR_EACH(elt, collection)                                              \
-  for (typeof((collection).begin()) elt = (collection).begin(),                \
-                                    __end = (collection).end();                \
+#define FOR_EACH(elt, collection)                               \
+  for (typeof((collection).begin()) elt = (collection).begin(), \
+                                    __end = (collection).end(); \
        elt != __end; elt++)
 
 #undef FOR
@@ -71,6 +71,6 @@ _ForwardIterator eraseElement(_CollectionType &c, _ForwardIterator i) {
   return ip1;
 }
 
-}; // namespace zmdp
+}  // namespace zmdp
 
-#endif // INCzmdpCommonDefs_h
+#endif  // ZMDP_SRC_COMMON_ZMDPCOMMONDEFS_H_

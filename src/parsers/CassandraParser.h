@@ -15,8 +15,8 @@
 
  ***************************************************************************/
 
-#ifndef INCCassandraParser_h
-#define INCCassandraParser_h
+#ifndef ZMDP_SRC_PARSERS_CASSANDRAPARSER_H_
+#define ZMDP_SRC_PARSERS_CASSANDRAPARSER_H_
 
 #include <iostream>
 #include <string>
@@ -33,10 +33,10 @@ struct CassandraParser {
                                       const std::string &fileName);
   void readPomdpFromFile(CassandraModel &pomdp, const std::string &fileName);
 
-protected:
+ protected:
   void readModelFromFile(CassandraModel &problem, bool expectPomdp);
 };
 
-}; // namespace zmdp
+};  // namespace zmdp
 
-#endif // INCCassandraParser_h
+#endif  // ZMDP_SRC_PARSERS_CASSANDRAPARSER_H_

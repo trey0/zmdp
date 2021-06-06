@@ -15,8 +15,8 @@
 
  ***************************************************************************/
 
-#ifndef INCFastParser_h
-#define INCFastParser_h
+#ifndef ZMDP_SRC_PARSERS_FASTPARSER_H_
+#define ZMDP_SRC_PARSERS_FASTPARSER_H_
 
 #include <iostream>
 #include <string>
@@ -33,13 +33,13 @@ struct FastParser {
                                       const std::string &fileName);
   void readPomdpFromFile(CassandraModel &pomdp, const std::string &fileName);
 
-protected:
+ protected:
   void readModelFromFile(CassandraModel &problem, bool expectPomdp);
   void readModelFromStream(CassandraModel &problem, std::istream &in,
                            bool expectPomdp);
   void readStartVector(CassandraModel &problem, char *data, bool expectPomdp);
 };
 
-}; // namespace zmdp
+};  // namespace zmdp
 
-#endif // INCFastParser_h
+#endif  // ZMDP_SRC_PARSERS_FASTPARSER_H_

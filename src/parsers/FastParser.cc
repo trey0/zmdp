@@ -19,6 +19,8 @@
  * INCLUDES
  ***************************************************************************/
 
+#include "FastParser.h"
+
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -28,7 +30,6 @@
 #include <fstream>
 #include <iostream>
 
-#include "FastParser.h"
 #include "MatrixUtils.h"
 #include "slaMatrixUtils.h"
 #include "sla_cassandra.h"
@@ -49,8 +50,7 @@ static void trimTrailingWhiteSpace(char *s) {
   int n = strlen(s);
   int i;
   for (i = n - 1; i >= 0; i--) {
-    if (!isspace(s[i]))
-      break;
+    if (!isspace(s[i])) break;
   }
   s[i + 1] = '\0';
 }
@@ -131,11 +131,9 @@ void FastParser::readModelFromStream(CassandraModel &p, std::istream &in,
       exit(EXIT_FAILURE);
     }
 
-    if ('#' == buf[0])
-      continue;
+    if ('#' == buf[0]) continue;
     trimTrailingWhiteSpace(buf);
-    if ('\0' == buf[0])
-      continue;
+    if ('\0' == buf[0]) continue;
 
     if (inPreamble) {
       if (PM_PREFIX_MATCHES("discount:")) {
@@ -198,11 +196,11 @@ void FastParser::readModelFromStream(CassandraModel &p, std::istream &in,
         // the statement is not one that is expected in the preamble,
         // check that we are ready to transition to parsing the body
 
-#define FP_CHECK_SET(VAR, NAME)                                                \
-  if (!(VAR)) {                                                                \
-    cerr << "ERROR: " << p.fileName << ": line " << lineNumber                 \
-         << ": at end of preamble, no '" << (NAME) << "' statement found"      \
-         << endl;                                                              \
+#define FP_CHECK_SET(VAR, NAME)                                           \
+  if (!(VAR)) {                                                           \
+    cerr << "ERROR: " << p.fileName << ": line " << lineNumber            \
+         << ": at end of preamble, no '" << (NAME) << "' statement found" \
+         << endl;                                                         \
   }
 
         FP_CHECK_SET(discountSet, "discount");
@@ -303,7 +301,8 @@ void FastParser::readModelFromStream(CassandraModel &p, std::istream &in,
                 "ERROR: %s: outgoing transition probabilities do not sum to 1 "
                 "for:\n"
                 "  state %d, action %d, transition sum = %.10lf\n",
-                p.fileName.c_str(), (int)s, (int)a, sum(checkTmp));
+                p.fileName.c_str(), static_cast<int>(s), static_cast<int>(a),
+                sum(checkTmp));
         exit(EXIT_FAILURE);
       }
     }
@@ -327,7 +326,8 @@ void FastParser::readModelFromStream(CassandraModel &p, std::istream &in,
           fprintf(stderr,
                   "ERROR: %s: observation probabilities do not sum to 1 for:\n"
                   "  state %d, action %d, observation sum = %.10lf\n",
-                  p.fileName.c_str(), (int)s, (int)a, sum(checkTmp));
+                  p.fileName.c_str(), static_cast<int>(s), static_cast<int>(a),
+                  sum(checkTmp));
           exit(EXIT_FAILURE);
         }
       }
@@ -363,17 +363,17 @@ void FastParser::readStartVector(CassandraModel &p, char *data,
     // POMDP case
 
     int i;
-    char *tok;
+    char *tok, *saveptr = NULL;
     double val;
 
     p.initialBelief.resize(p.numStates);
 
     // consume 'start:' token at the beginning of the statement
-    tok = strtok(data, " ");
+    tok = strtok_r(data, " ", &saveptr);
 
     for (i = 0; i < p.numStates; i++) {
       if (NULL != tok) {
-        tok = strtok(NULL, " ");
+        tok = strtok_r(NULL, " ", &saveptr);
       }
       if (NULL == tok) {
         if (0 == i) {
@@ -387,7 +387,7 @@ void FastParser::readStartVector(CassandraModel &p, char *data,
                  << "all states" << endl;
             exit(EXIT_FAILURE);
           }
-          p.initialBelief.push_back((int)startState, 1.0);
+          p.initialBelief.push_back(static_cast<int>(startState), 1.0);
           return;
         } else {
           cout << "ERROR: " << p.fileName
@@ -429,4 +429,4 @@ void FastParser::readStartVector(CassandraModel &p, char *data,
   }
 }
 
-}; // namespace zmdp
+};  // namespace zmdp

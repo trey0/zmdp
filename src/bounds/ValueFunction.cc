@@ -19,17 +19,19 @@
  * INCLUDES
  ***************************************************************************/
 
-//#include <assert.h>
+// #include <assert.h>
+#include "ValueFunction.h"
+
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 
+#include <algorithm>
 #include <fstream>
 #include <iostream>
 
 #include "MatrixUtils.h"
-#include "ValueFunction.h"
 #include "zmdpCommonDefs.h"
 
 using namespace std;
@@ -52,12 +54,11 @@ bool ValueFunction::consistentWith(const ValueFunction &rhs, int numSamples,
   FOR(i, numSamples) {
     rand_vector(bd, numStates);
     copy(b, bd);
-    b *= (1.0 / norm_1(b)); // normalize so components add to 1
+    b *= (1.0 / norm_1(b));  // normalize so components add to 1
     selfint = getValueAt(b);
     rhsint = rhs.getValueAt(b);
     if (debug) {
       cout << "b' = " << sparseRep(b) << endl;
-      ;
       cout << "lhs = " << selfint << endl;
       cout << "rhs = " << rhsint << endl << endl;
     }
@@ -71,4 +72,4 @@ bool ValueFunction::consistentWith(const ValueFunction &rhs, int numSamples,
   return true;
 }
 
-}; // namespace zmdp
+};  // namespace zmdp

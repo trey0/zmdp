@@ -15,8 +15,8 @@
 
  ***************************************************************************/
 
-#ifndef INCMDPModel_h
-#define INCMDPModel_h
+#ifndef ZMDP_SRC_COMMON_MDPMODEL_H_
+#define ZMDP_SRC_COMMON_MDPMODEL_H_
 
 #include <iostream>
 #include <string>
@@ -38,7 +38,7 @@ struct AbstractBound;
 // represent the belief MDP corresponding to a discrete POMDP.
 struct MDP {
   std::string
-      fileName; // filename model was read from (or empty string if unknown)
+      fileName;  // filename model was read from (or empty string if unknown)
   int numStateDimensions, numActions;
   double discount;
 
@@ -80,6 +80,6 @@ struct MDP {
   virtual AbstractBound *newUpperBound(const ZMDPConfig *_config) = 0;
 };
 
-}; // namespace zmdp
+};  // namespace zmdp
 
-#endif // INCMDP_h
+#endif  // ZMDP_SRC_COMMON_MDPMODEL_H_

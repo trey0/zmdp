@@ -19,6 +19,8 @@
  * INCLUDES
  ***************************************************************************/
 
+#include "CacheMDP.h"
+
 #include <assert.h>
 #include <errno.h>
 #include <getopt.h>
@@ -31,7 +33,6 @@
 #include <iostream>
 #include <map>
 
-#include "CacheMDP.h"
 #include "MatrixUtils.h"
 #include "Solver.h"
 
@@ -75,9 +76,9 @@ state_vector &CacheMDP::getNextState(state_vector &result,
   int spi = getQ(*getNode(s), a)->outcomes[o]->nextState->si;
 
 #if 0
-  int si = (int) (s(0));
+  int si = static_cast<int>(s(0));
   printf("getNextState si=%d a=%d o=%d spi=%d\n",
-	 si, a, o, spi);
+         si, a, o, spi);
   static int cnt = 0;
   if (cnt++ > 1000) exit(0);
 #endif
@@ -93,7 +94,7 @@ double CacheMDP::getReward(const state_vector &s, int a) {
   double reward = getQ(*getNode(s), a)->immediateReward;
 
 #if 0
-  int si = (int) (s(0));
+  int si = static_cast<int>(s(0));
   printf("getReward si=%d a=%d r=%.1lf\n", si, a, reward);
 #endif
 
@@ -108,7 +109,7 @@ const state_vector &CacheMDP::translateState(state_vector &result,
 
 CMDPNode *CacheMDP::getNode(const state_vector &s) {
   assert(s.size() == 1 && s.data.size() == 1);
-  int si = ((int)s(0));
+  int si = static_cast<int>(s(0));
   return nodeTable[si];
 }
 
@@ -159,4 +160,4 @@ CMDPQEntry *CacheMDP::getQ(CMDPNode &cn, int a) {
   }
 }
 
-}; // namespace zmdp
+};  // namespace zmdp

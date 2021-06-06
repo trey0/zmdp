@@ -15,6 +15,8 @@
 
  ***************************************************************************/
 
+#include "FastInfUBInitializer.h"
+
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -23,7 +25,6 @@
 #include <fstream>
 #include <iostream>
 
-#include "FastInfUBInitializer.h"
 #include "FullObsUBInitializer.h"
 #include "MatrixUtils.h"
 #include "Pomdp.h"
@@ -130,7 +131,6 @@ void FastInfUBInitializer::initFIB(double targetPrecision) {
       cout << ".";
       cout.flush();
     }
-
   } while (maxResidual > targetPrecision);
 
   if (zmdpDebugLevelG >= 1) {
@@ -160,4 +160,4 @@ void FastInfUBInitializer::initFIB(double targetPrecision) {
   copy(bound->cornerPts, dalpha);
 }
 
-}; // namespace zmdp
+};  // namespace zmdp

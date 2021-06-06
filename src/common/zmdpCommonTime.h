@@ -15,8 +15,8 @@
 
  ***************************************************************************/
 
-#ifndef INCzmdpCommonTime_h
-#define INCzmdpCommonTime_h
+#ifndef ZMDP_SRC_COMMON_ZMDPCOMMONTIME_H_
+#define ZMDP_SRC_COMMON_ZMDPCOMMONTIME_H_
 
 #include <sys/time.h>
 #include <sys/types.h>
@@ -27,12 +27,12 @@ namespace zmdp {
 void fsleep(double seconds);
 
 class StopWatch {
-public:
+ public:
   StopWatch(void) { restart(); }
   void restart(void);
   double elapsedTime(void);
 
-protected:
+ protected:
   struct timeval startTime;
 };
 
@@ -43,6 +43,6 @@ timeval operator+(const timeval &a, const timeval &b);
 bool operator<(const timeval &a, const timeval &b);
 timeval getTime(void);
 
-}; // namespace zmdp
+}  // namespace zmdp
 
-#endif // INCzmdpCommonTime_h
+#endif  // ZMDP_SRC_COMMON_ZMDPCOMMONTIME_H_

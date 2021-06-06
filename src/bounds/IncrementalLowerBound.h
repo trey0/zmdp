@@ -15,8 +15,8 @@
 
  ***************************************************************************/
 
-#ifndef INCIncrementalLowerBound_h
-#define INCIncrementalLowerBound_h
+#ifndef ZMDP_SRC_BOUNDS_INCREMENTALLOWERBOUND_H_
+#define ZMDP_SRC_BOUNDS_INCREMENTALLOWERBOUND_H_
 
 #include <iostream>
 #include <string>
@@ -39,6 +39,6 @@ struct IncrementalLowerBound : public AbstractBound {
   }
 };
 
-}; // namespace zmdp
+};  // namespace zmdp
 
-#endif // INCIncrementalLowerBound_h
+#endif  // ZMDP_SRC_BOUNDS_INCREMENTALLOWERBOUND_H_

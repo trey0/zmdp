@@ -23,9 +23,9 @@
   *****
 */
 
-#ifndef PARSE_CONSTANT_H
+#ifndef ZMDP_SRC_PARSERS_PARSE_CONSTANT_H_
 
-#define PARSE_CONSTANT_H
+#define ZMDP_SRC_PARSERS_PARSE_CONSTANT_H_
 
 typedef enum { CONST_INT, CONST_STRING, CONST_FLOAT } Const_Type;
 
@@ -48,4 +48,4 @@ extern int yywrap(void);
 } /* extern "C" */
 #endif
 
-#endif
+#endif  // ZMDP_SRC_PARSERS_PARSE_CONSTANT_H_

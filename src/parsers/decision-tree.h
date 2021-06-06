@@ -19,8 +19,8 @@
 
  ***************************************************************************/
 
-#ifndef INCdecision_tree_h
-#define INCdecision_tree_h
+#ifndef ZMDP_SRC_PARSERS_DECISION_TREE_H_
+#define ZMDP_SRC_PARSERS_DECISION_TREE_H_
 
 /**********************************************************************
    See an example of how to use this library in testDecisionTree.c.
@@ -62,4 +62,4 @@ extern void dtDeallocate(void);
    stdout.  Intended for debugging. */
 extern void dtDebugPrint(const char *header);
 
-#endif // INCdecision_tree_h
+#endif  // ZMDP_SRC_PARSERS_DECISION_TREE_H_

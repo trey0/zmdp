@@ -34,6 +34,8 @@
   -Trey Smith, Feb. 2006
  **********************************************************************/
 
+#include "RTDP.h"
+
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -45,7 +47,6 @@
 
 #include "MatrixUtils.h"
 #include "Pomdp.h"
-#include "RTDP.h"
 #include "zmdpCommonDefs.h"
 #include "zmdpCommonTime.h"
 
@@ -98,4 +99,4 @@ bool RTDP::doTrial(MDPNode &cn) {
   return false;
 }
 
-}; // namespace zmdp
+};  // namespace zmdp

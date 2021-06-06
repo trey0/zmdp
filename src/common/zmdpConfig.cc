@@ -19,6 +19,8 @@
  * INCLUDES
  ***************************************************************************/
 
+#include "zmdpConfig.h"
+
 #include <assert.h>
 #include <errno.h>
 #include <stdio.h>
@@ -30,9 +32,9 @@
 #include <iomanip>
 #include <iostream>
 #include <sstream>
+#include <string>
 
 #include "zmdpCommonDefs.h"
-#include "zmdpConfig.h"
 
 using namespace std;
 
@@ -40,8 +42,7 @@ namespace zmdp {
 
 static bool allWhiteSpace(const char *buf) {
   for (const char *p = buf; *p != '\0'; p++) {
-    if (!isspace(*p))
-      return false;
+    if (!isspace(*p)) return false;
   }
   return true;
 }
@@ -58,8 +59,8 @@ static std::vector<std::string> split(const string &stringToSplit) {
   char *s = strdup(stringToSplit.c_str());
   std::vector<std::string> ret;
 
-  char *tok, *tmp = s;
-  while (0 != (tok = strtok(tmp, " \t"))) {
+  char *tok, *tmp = s, *saveptr = NULL;
+  while (0 != (tok = strtok_r(tmp, " \t", &saveptr))) {
     tmp = 0;
     ret.push_back(tok);
   }
@@ -80,20 +81,18 @@ void ZMDPConfig::readFromStream(const std::string &_sourceName,
   while (1) {
     in.getline(buf, sizeof(buf));
     lnum++;
-    if (in.eof())
-      break;
-    if (allWhiteSpace(buf))
-      continue;
-    if ('#' == buf[0])
-      continue;
+    if (in.eof()) break;
+    if (allWhiteSpace(buf)) continue;
+    if ('#' == buf[0]) continue;
     if (0 == strncmp(buf, "alias", 5)) {
       // line is an alias
 
       // eat 'alias'
-      char *bufp = strtok(buf, " \t");
+      char *saveptr = NULL;
+      char *bufp = strtok_r(buf, " \t", &saveptr);
 
       // get field
-      bufp = strtok(NULL, " \t");
+      bufp = strtok_r(NULL, " \t", &saveptr);
       if (NULL == bufp) {
         fprintf(
             stderr,
@@ -104,7 +103,7 @@ void ZMDPConfig::readFromStream(const std::string &_sourceName,
       snprintf(field, sizeof(field), "%s", bufp);
 
       // rest of line is value
-      bufp = strtok(NULL, "");
+      bufp = strtok_r(NULL, "", &saveptr);
       if (NULL == bufp) {
         fprintf(
             stderr,
@@ -240,8 +239,7 @@ std::vector<std::string> ZMDPConfig::processArgs(const std::string &argStr) {
   typeof(args.begin()) argp;
   for (argp = args.begin(); argp != args.end(); argp++) {
     string arg = *argp;
-    if (allWhiteSpace(arg.c_str()))
-      continue;
+    if (allWhiteSpace(arg.c_str())) continue;
 
     if (!pastOptions && '-' == arg[0]) {
       if (arg == "--") {
@@ -280,6 +278,6 @@ void ZMDPConfig::writeToStream(std::ostream &out) const {
   FOR_EACH(pr, cmap) { out << pr->first << " " << pr->second << endl; }
 }
 
-}; // namespace zmdp
+};  // namespace zmdp
 
 int zmdpDebugLevelG = 0;

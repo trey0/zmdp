@@ -18,8 +18,8 @@
 
  ***************************************************************************/
 
-#ifndef INCRockSample_h
-#define INCRockSample_h
+#ifndef ZMDP_SRC_POMDPMODELS_ROCKEXPLORE_ROCKSAMPLE_H_
+#define ZMDP_SRC_POMDPMODELS_ROCKEXPLORE_ROCKSAMPLE_H_
 
 #include <iostream>
 #include <string>
@@ -66,7 +66,7 @@ struct RockSample : public MDP {
 
   // You can declare any additional variables you need here.
 
-  RockSample(const ZMDPConfig &config);
+  explicit RockSample(const ZMDPConfig &config);
   ~RockSample(void);
 
   const state_vector &getInitialState(void) const;
@@ -84,4 +84,4 @@ struct RockSample : public MDP {
   AbstractBound *newUpperBound(const ZMDPConfig *_config) const;
 };
 
-#endif // INCRockSample_h
+#endif  // ZMDP_SRC_POMDPMODELS_ROCKEXPLORE_ROCKSAMPLE_H_

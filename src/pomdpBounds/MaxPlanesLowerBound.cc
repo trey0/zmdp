@@ -19,7 +19,8 @@
  * INCLUDES
  ***************************************************************************/
 
-//#include <assert.h>
+#include "MaxPlanesLowerBound.h"
+
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -30,7 +31,6 @@
 
 #include "BlindLBInitializer.h"
 #include "MatrixUtils.h"
-#include "MaxPlanesLowerBound.h"
 #include "zmdpCommonDefs.h"
 #include "zmdpCommonTime.h"
 
@@ -124,7 +124,9 @@ void LBPlane::write(std::ostream &out, bool useMaxPlanesMasking) const {
 
 MaxPlanesLowerBound::MaxPlanesLowerBound(const MDP *_pomdp,
                                          const ZMDPConfig *_config)
-    : pomdp((const Pomdp *)_pomdp), config(_config), core(NULL),
+    : pomdp((const Pomdp *)_pomdp),
+      config(_config),
+      core(NULL),
       initialized(false) {
   lastPruneNumPlanes = 0;
   lastPruneNumBackups = -1;
@@ -143,8 +145,7 @@ MaxPlanesLowerBound::~MaxPlanesLowerBound(void) {
 }
 
 void MaxPlanesLowerBound::initialize(double targetPrecision) {
-  if (initialized)
-    return;
+  if (initialized) return;
 
   BlindLBInitializer blb(pomdp, this);
   blb.initialize(targetPrecision);
@@ -286,16 +287,19 @@ void MaxPlanesLowerBound::setPlaneForNode(MDPNode &cn, LBPlane *newPlane) {
     if (newLB < cn.lbVal - ZMDP_BOUNDS_PRUNE_EPS) {
 #if 0
       // debug
-      LBPlane* oldPlane = ((MaxPlanesLowerBoundData*) cn.boundsData)->bestPlane;
-      printf("setPlaneForNode: ignoring new plane: newLB=%lf cn.lbVal=%lf diff=%lg ip=%lf\n",
-	     newLB, cn.lbVal, (newLB-cn.lbVal), inner_prod(oldPlane->alpha, cn.s));
+      LBPlane* oldPlane =
+        (reinterpret_cast<MaxPlanesLowerBoundData*>(cn.boundsData))->bestPlane;
+      printf("setPlaneForNode: ignoring new plane: newLB=%lf cn.lbVal=%lf "
+             "diff=%lg ip=%lf\n",
+             newLB, cn.lbVal, (newLB-cn.lbVal),
+             inner_prod(oldPlane->alpha, cn.s));
       LBPlane* newPlane = &lowerBound->getBestLBPlane(cn.s);
       printf("setPlaneForNode: newPlane=%p oldPlane=%p\n",
-	     newPlane, oldPlane);
+             newPlane, oldPlane);
 #endif
       return;
     }
-    MaxPlanesData *bdata = (MaxPlanesData *)cn.boundsData;
+    MaxPlanesData *bdata = reinterpret_cast<MaxPlanesData *>(cn.boundsData);
     LBPlane *oldPlane = bdata->bestPlane;
     if (NULL != oldPlane) {
       // remove &bdata->bestPlane from oldPlane->backPointers
@@ -318,16 +322,19 @@ const LBPlane &MaxPlanesLowerBound::getPlaneForNode(MDPNode &cn) {
   if (useMaxPlanesCache) {
 #if 0
     // old version, did more harm than good
-    int n = ((MaxPlanesData*) cn.boundsData)->lastSetPlaneNumBackups;
-    if (numBackups > (int) std::max((double) (n + CB_CACHE_INCREMENT), n * CB_CACHE_FACTOR)) {
+    int n = (reinterpret_cast<MaxPlanesData *>(cn.boundsData))
+      ->lastSetPlaneNumBackups;
+    if (numBackups >
+        static_cast<int>(std::max(static_cast<double>(n + CB_CACHE_INCREMENT),
+                                  n * CB_CACHE_FACTOR))) {
       LBPlane& newPlane = lowerBound->getBestLBPlane(cn.s);
       setPlaneForNode(cn, &newPlane);
       return newPlane;
     } else {
-      return *((MaxPlanesData*) cn.boundsData)->bestPlane;
+      return *(reinterpret_cast<MaxPlanesData *>(cn.boundsData))->bestPlane;
     }
 #endif
-    MaxPlanesData *bdata = (MaxPlanesData *)cn.boundsData;
+    MaxPlanesData *bdata = reinterpret_cast<MaxPlanesData *>(cn.boundsData);
     return getBestLBPlaneWithCache(cn.s, bdata->bestPlane,
                                    bdata->lastSetPlaneNumBackups);
   } else {
@@ -336,8 +343,8 @@ const LBPlane &MaxPlanesLowerBound::getPlaneForNode(MDPNode &cn) {
 }
 
 // return the alpha such that alpha * b has the highest value
-const LBPlane &
-MaxPlanesLowerBound::getBestLBPlaneConst(const belief_vector &b) const {
+const LBPlane &MaxPlanesLowerBound::getBestLBPlaneConst(
+    const belief_vector &b) const {
   const PlaneSet *planesToCheck;
   if (useMaxPlanesSupportList) {
     planesToCheck = &supportList[b.data[0].index];
@@ -350,8 +357,7 @@ MaxPlanesLowerBound::getBestLBPlaneConst(const belief_vector &b) const {
   FOR_EACH(pr, *planesToCheck) {
     const LBPlane *al = *pr;
     if (useMaxPlanesMasking) {
-      if (!mask_subset(b, al->mask))
-        continue;
+      if (!mask_subset(b, al->mask)) continue;
     }
     val = inner_prod(al->alpha, b);
     if (val > maxval) {
@@ -385,11 +391,9 @@ LBPlane &MaxPlanesLowerBound::getBestLBPlaneWithCache(
 
   FOR_EACH(pr, *planesToCheck) {
     LBPlane *al = *pr;
-    if (al->numBackupsAtCreation < lastSetPlaneNumBackups)
-      continue;
+    if (al->numBackupsAtCreation < lastSetPlaneNumBackups) continue;
     if (useMaxPlanesMasking) {
-      if (!mask_subset(b, al->mask))
-        continue;
+      if (!mask_subset(b, al->mask)) continue;
     }
     val = inner_prod(al->alpha, b);
     if (val > maxval) {
@@ -454,7 +458,7 @@ void MaxPlanesLowerBound::prunePlanes(int numBackups) {
       memberP++;
     }
     candidateP++;
-  nextCandidate:;
+  nextCandidate : {}
   }
 
   if (zmdpDebugLevelG >= 1) {
@@ -462,7 +466,7 @@ void MaxPlanesLowerBound::prunePlanes(int numBackups) {
          << planes.size() << endl;
     if (useMaxPlanesExtraPruning) {
       printf("[lower bound] refCount was used for %d of %d deletions\n",
-             numRefCountDeletions, (int)(oldNum - planes.size()));
+             numRefCountDeletions, static_cast<int>(oldNum - planes.size()));
     }
   }
   lastPruneNumPlanes = planes.size();
@@ -474,7 +478,7 @@ void MaxPlanesLowerBound::prunePlanes(int numBackups) {
 void MaxPlanesLowerBound::maybePrune(int numBackups) {
   unsigned int nextPruneNumPlanes =
       max(lastPruneNumPlanes + PRUNE_PLANES_INCREMENT,
-          (int)(lastPruneNumPlanes * PRUNE_PLANES_FACTOR));
+          static_cast<int>(lastPruneNumPlanes * PRUNE_PLANES_FACTOR));
   if (planes.size() > nextPruneNumPlanes) {
     prunePlanes(numBackups);
   }
@@ -590,79 +594,69 @@ void MaxPlanesLowerBound::readFromFile(const std::string &inFileName) {
 
     // strip whitespace, ignore empty lines and comments
     s = stripWhiteSpace(buf);
-    if (0 == s.size())
-      continue;
-    if ('#' == s[0])
-      continue;
+    if (0 == s.size()) continue;
+    if ('#' == s[0]) continue;
 
     // ignore these types of lines because they contain redundant information
-    if (s == "{")
-      continue;
-    if (s == "}" or s == "},")
-      continue;
-    if (s == "[")
-      continue;
-    if (s == "]" or s == "],")
-      continue;
-    if (string::npos != s.find("numPlanes"))
-      continue;
-    if (string::npos != s.find("planes"))
-      continue;
-    if (string::npos != s.find("numEntries"))
-      continue;
-    if (string::npos != s.find("entries"))
-      continue;
+    if (s == "{") continue;
+    if (s == "}" || s == "},") continue;
+    if (s == "[") continue;
+    if (s == "]" || s == "],") continue;
+    if (string::npos != s.find("numPlanes")) continue;
+    if (string::npos != s.find("planes")) continue;
+    if (string::npos != s.find("numEntries")) continue;
+    if (string::npos != s.find("entries")) continue;
 
   parseLineAgain:
     switch (parseState) {
-    case 0:
-      /* at the beginning of the file, check that this is the right type of
-       * policy */
-      if (string::npos != s.find("policyType") &&
-          string::npos != s.find("MaxPlanesLowerBound")) {
-        parseState = 1;
-      } else {
-        fprintf(stderr,
-                "ERROR: %s: line %d: expected 'policyType => "
-                "\"MaxPlanesLowerBound\"'\n",
-                inFileName.c_str(), lnum);
-        exit(EXIT_FAILURE);
-      }
-      break;
-    case 1:
-      /* at the start of a plane, read the action */
-      if (string::npos != s.find("action") &&
-          (1 == sscanf(s.c_str(), "action => %d", &plane.action))) {
-        plane.alpha.resize(pomdp->numStates);
-        parseState = 2;
-      } else {
-        fprintf(stderr, "ERROR: %s: line %d: expected 'action => <int>'\n",
-                inFileName.c_str(), lnum);
-        exit(EXIT_FAILURE);
-      }
-      break;
-    case 2:
-      if (string::npos != s.find("action")) {
-        /* finding the 'action' keyword indicates we are at the start of
-           another plane; finish up the plane we were working on and
-           reparse the current line in parse state 1 */
-        mask_set_to_one(plane.mask, plane.alpha);
-        addLBPlane(new LBPlane(plane));
-        parseState = 1;
-        goto parseLineAgain;
-      } else if (2 == sscanf(s.c_str(), "%d, %lf", &entryIndex, &entryVal)) {
-        /* push another entry into the plane */
-        plane.alpha.push_back(entryIndex, entryVal);
-      } else {
-        printf("s=[%s]\n", s.c_str());
-        fprintf(stderr,
-                "ERROR: %s: line %d: expected entry '<int>, <double>'\n",
-                inFileName.c_str(), lnum);
-        exit(EXIT_FAILURE);
-      }
-      break;
-    default:
-      assert(0); // never reach this point
+      case 0:
+        /* at the beginning of the file, check that this is the right type of
+         * policy */
+        if (string::npos != s.find("policyType") &&
+            string::npos != s.find("MaxPlanesLowerBound")) {
+          parseState = 1;
+        } else {
+          fprintf(stderr,
+                  "ERROR: %s: line %d: expected 'policyType => "
+                  "\"MaxPlanesLowerBound\"'\n",
+                  inFileName.c_str(), lnum);
+          exit(EXIT_FAILURE);
+        }
+        break;
+      case 1:
+        /* at the start of a plane, read the action */
+        if (string::npos != s.find("action") &&
+            (1 == sscanf(s.c_str(), "action => %d", &plane.action))) {
+          plane.alpha.resize(pomdp->numStates);
+          parseState = 2;
+        } else {
+          fprintf(stderr, "ERROR: %s: line %d: expected 'action => <int>'\n",
+                  inFileName.c_str(), lnum);
+          exit(EXIT_FAILURE);
+        }
+        break;
+      case 2:
+        if (string::npos != s.find("action")) {
+          /* finding the 'action' keyword indicates we are at the start of
+             another plane; finish up the plane we were working on and
+             reparse the current line in parse state 1 */
+          mask_set_to_one(plane.mask, plane.alpha);
+          addLBPlane(new LBPlane(plane));
+          parseState = 1;
+          goto parseLineAgain;
+        } else if (2 == sscanf(s.c_str(), "%d, %lf", &entryIndex, &entryVal)) {
+          /* push another entry into the plane */
+          plane.alpha.push_back(entryIndex, entryVal);
+        } else {
+          printf("s=[%s]\n", s.c_str());
+          fprintf(stderr,
+                  "ERROR: %s: line %d: expected entry '<int>, <double>'\n",
+                  inFileName.c_str(), lnum);
+          exit(EXIT_FAILURE);
+        }
+        break;
+      default:
+        assert(0);  // never reach this point
     }
   }
 
@@ -719,27 +713,27 @@ void MaxPlanesLowerBound::readFromCassandraAlphaFile(
 
 int MaxPlanesLowerBound::getStorage(int whichMetric) const {
   switch (whichMetric) {
-  case ZMDP_S_NUM_ELTS:
-    // return number of planes
-    return planes.size();
+    case ZMDP_S_NUM_ELTS:
+      // return number of planes
+      return planes.size();
 
-  case ZMDP_S_NUM_ENTRIES: {
-    // return total number of entries in all planes
-    int entryCount = 0;
-    FOR_EACH(planeP, planes) {
-      const LBPlane &p = **planeP;
-      entryCount += p.alpha.filled();
-      if (useMaxPlanesMasking) {
-        entryCount += p.mask.filled();
+    case ZMDP_S_NUM_ENTRIES: {
+      // return total number of entries in all planes
+      int entryCount = 0;
+      FOR_EACH(planeP, planes) {
+        const LBPlane &p = **planeP;
+        entryCount += p.alpha.filled();
+        if (useMaxPlanesMasking) {
+          entryCount += p.mask.filled();
+        }
       }
+      return entryCount;
     }
-    return entryCount;
-  }
 
-  default:
-    /* N/A */
-    return 0;
+    default:
+      /* N/A */
+      return 0;
   }
 }
 
-}; // namespace zmdp
+};  // namespace zmdp

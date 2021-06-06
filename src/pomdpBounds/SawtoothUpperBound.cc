@@ -19,6 +19,8 @@
  * INCLUDES
  ***************************************************************************/
 
+#include "SawtoothUpperBound.h"
+
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -28,7 +30,6 @@
 #include <list>
 
 #include "FastInfUBInitializer.h"
-#include "SawtoothUpperBound.h"
 #include "zmdpCommonDefs.h"
 #include "zmdpCommonTime.h"
 
@@ -99,8 +100,7 @@ double SawtoothUpperBound::getBVValue(const belief_vector &b,
   bool bdone = false;
 
   for (; ci != cend; ci++) {
-    if (0.0 == ci->value)
-      continue;
+    if (0.0 == ci->value) continue;
 
     // advance until bi->index >= ci->index
     while (1) {
@@ -108,8 +108,7 @@ double SawtoothUpperBound::getBVValue(const belief_vector &b,
         bdone = true;
         goto breakCiLoop;
       }
-      if (bi->index >= ci->index)
-        break;
+      if (bi->index >= ci->index) break;
       bi++;
     }
 
@@ -124,8 +123,7 @@ double SawtoothUpperBound::getBVValue(const belief_vector &b,
 breakCiLoop:
   if (bdone) {
     for (; ci != cend; ci++) {
-      if (0.0 != ci->value)
-        return 99e+20;
+      if (0.0 != ci->value) return 99e+20;
     }
   }
 
@@ -232,7 +230,7 @@ void SawtoothUpperBound::prune(int numBackups) {
       opponentP++;
     }
     candidateP++;
-  nextCandidate:;
+  nextCandidate : {}
   }
 
   if (zmdpDebugLevelG >= 1) {
@@ -244,8 +242,9 @@ void SawtoothUpperBound::prune(int numBackups) {
 }
 
 void SawtoothUpperBound::maybePrune(int numBackups) {
-  unsigned int nextPruneNumPts = max(lastPruneNumPts + PRUNE_PTS_INCREMENT,
-                                     (int)(lastPruneNumPts * PRUNE_PTS_FACTOR));
+  unsigned int nextPruneNumPts =
+      max(lastPruneNumPts + PRUNE_PTS_INCREMENT,
+          static_cast<int>(lastPruneNumPts * PRUNE_PTS_FACTOR));
   if (pts.size() > nextPruneNumPts) {
     prune(numBackups);
   }
@@ -347,8 +346,7 @@ double SawtoothUpperBound::getNewUBValueSimple(MDPNode &cn, int *maxUBActionP) {
     }
   }
 
-  if (NULL != maxUBActionP)
-    *maxUBActionP = maxUBAction;
+  if (NULL != maxUBActionP) *maxUBActionP = maxUBAction;
 
   if (zmdpDebugLevelG >= 1) {
     cout << "** newUpperBound: elapsed time = "
@@ -386,14 +384,12 @@ double SawtoothUpperBound::getNewUBValueUseCache(MDPNode &cn,
 
     // if the best action after the update is one that we have already
     //    updated, we're done
-    if (updatedAction[maxUBAction])
-      break;
+    if (updatedAction[maxUBAction]) break;
   }
 
   double maxVal = cachedUpperBound(maxUBAction);
 
-  if (NULL != maxUBActionP)
-    *maxUBActionP = maxUBAction;
+  if (NULL != maxUBActionP) *maxUBActionP = maxUBAction;
 
   if (zmdpDebugLevelG >= 1) {
     cout << "** newUpperBound: elapsed time = "
@@ -427,25 +423,25 @@ void SawtoothUpperBound::setUBForNode(MDPNode &cn, double newUB, bool addBV) {
 
 int SawtoothUpperBound::getStorage(int whichMetric) const {
   switch (whichMetric) {
-  case ZMDP_S_NUM_ELTS:
-    // return number of belief/value pairs -- each corner point counts as 1
-    return pts.size() + cornerPts.size();
+    case ZMDP_S_NUM_ELTS:
+      // return number of belief/value pairs -- each corner point counts as 1
+      return pts.size() + cornerPts.size();
 
-  case ZMDP_S_NUM_ENTRIES: {
-    // return total number of entries in all belief/value pairs
-    int entryCount = 0;
-    FOR_EACH(ptP, pts) {
-      const BVPair &p = **ptP;
-      entryCount += p.b.filled() + 1; // (add one for the value)
+    case ZMDP_S_NUM_ENTRIES: {
+      // return total number of entries in all belief/value pairs
+      int entryCount = 0;
+      FOR_EACH(ptP, pts) {
+        const BVPair &p = **ptP;
+        entryCount += p.b.filled() + 1;  // (add one for the value)
+      }
+      // each corner point counts as one entry
+      return entryCount + cornerPts.size();
     }
-    // each corner point counts as one entry
-    return entryCount + cornerPts.size();
-  }
 
-  default:
-    /* N/A */
-    return 0;
+    default:
+      /* N/A */
+      return 0;
   }
 }
 
-}; // namespace zmdp
+};  // namespace zmdp

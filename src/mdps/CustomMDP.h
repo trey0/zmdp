@@ -15,8 +15,8 @@
 
  ***************************************************************************/
 
-#ifndef INCCustomMDP_h
-#define INCCustomMDP_h
+#ifndef ZMDP_SRC_MDPS_CUSTOMMDP_H_
+#define ZMDP_SRC_MDPS_CUSTOMMDP_H_
 
 #include <iostream>
 #include <string>
@@ -34,7 +34,7 @@ struct CustomMDP : public MDP {
 
   // You can declare any additional variables you need here.
 
-  CustomMDP(const ZMDPConfig &config);
+  explicit CustomMDP(const ZMDPConfig &config);
   ~CustomMDP(void);
 
   const state_vector &getInitialState(void);
@@ -52,6 +52,6 @@ struct CustomMDP : public MDP {
   AbstractBound *newUpperBound(const ZMDPConfig *_config);
 };
 
-}; // namespace zmdp
+};  // namespace zmdp
 
-#endif // INCCustomMDP_h
+#endif  // ZMDP_SRC_MDPS_CUSTOMMDP_H_

@@ -19,8 +19,8 @@
 
  ***************************************************************************/
 
-#ifndef INCHDP_h
-#define INCHDP_h
+#ifndef ZMDP_SRC_SEARCH_HDP_H_
+#define ZMDP_SRC_SEARCH_HDP_H_
 
 #include "RTDPCore.h"
 
@@ -53,6 +53,6 @@ struct HDP : public RTDPCore {
   void derivedClassInit(void);
 };
 
-}; // namespace zmdp
+};  // namespace zmdp
 
-#endif /* INCHDP_h */
+#endif  // ZMDP_SRC_SEARCH_HDP_H_

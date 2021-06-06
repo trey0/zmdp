@@ -25,11 +25,10 @@
 
 #include "RockExplore.h"
 #include "zmdpCommonTime.h"
-//#include "solverUtils.h"
+// #include "solverUtils.h"
 #include "RockExplorePolicy.h"
+#include "zmdpMainConfig.cc"  // embed default config file
 #include "zmdpMainConfig.h"
-
-#include "zmdpMainConfig.cc" // embed default config file
 
 using namespace std;
 // using namespace MatrixUtils;
@@ -67,10 +66,11 @@ struct RockExploreSim {
 
     if (doVisualize) {
       // Display current state and belief
-      printf("Current map is:\n"
-             "\n"
-             "%s\n",
-             m.getMap(si, b).c_str());
+      printf(
+          "Current map is:\n"
+          "\n"
+          "%s\n",
+          m.getMap(si, b).c_str());
     }
 
     int ai = policy->chooseAction();
@@ -194,7 +194,7 @@ EvalResult evaluatePolicy(int policyType) {
 
   double stdev = sqrt(variance);
   stdev = sqrt(variance);
-  result.conf95 = 1.96 * stdev / sqrt((double)n);
+  result.conf95 = 1.96 * stdev / sqrt(static_cast<double>(n));
   printf(" %.3lf +/- %.3lf\n", result.mean, result.conf95);
 
   delete policy;
@@ -204,8 +204,9 @@ EvalResult evaluatePolicy(int policyType) {
 void doEvaluateOne(void) {
   int policyType = getUserPolicyType();
   EvalResult result = evaluatePolicy(policyType);
-  printf("\n"
-         "Expected discounted reward 95%% confidence interval:\n");
+  printf(
+      "\n"
+      "Expected discounted reward 95%% confidence interval:\n");
   printf("  %-10s   %8.3lf +/- %7.3lf\n", getPolicyName(policyType),
          result.mean, result.conf95);
 }
@@ -215,8 +216,9 @@ void doEvaluateAll(void) {
   for (int i = 1; i <= NUM_POLICIES; i++) {
     results[i] = evaluatePolicy(i);
   }
-  printf("\n"
-         "Expected discounted reward 95%% confidence interval:\n");
+  printf(
+      "\n"
+      "Expected discounted reward 95%% confidence interval:\n");
   for (int i = 1; i <= NUM_POLICIES; i++) {
     printf("  %-10s   %8.3lf +/- %7.3lf\n", getPolicyName(i), results[i].mean,
            results[i].conf95);
@@ -236,13 +238,14 @@ void doDisplayMDPPolicy(void) {
   s.isTerminalState = false;
   s.rockIsGood.resize(RE_NUM_ROCKS);
 
-  printf("MDP policy:\n"
-         "\n");
+  printf(
+      "MDP policy:\n"
+      "\n");
   for (int rgood = 0; rgood < (1 << RE_NUM_ROCKS); rgood++) {
     printf("r");
     for (int r = 0; r < RE_NUM_ROCKS; r++) {
       s.rockIsGood[r] = rgood & (1 << (RE_NUM_ROCKS - r - 1));
-      printf("%d", (int)s.rockIsGood[r]);
+      printf("%d", static_cast<int>(s.rockIsGood[r]));
     }
     printf(":\n");
 
@@ -266,47 +269,48 @@ int main(int argc, char **argv) {
   rand();
 
   while (1) {
-    printf("\nMain menu\n"
-           "\n"
-           "  1 - Write out the RockExplore model to RockExplore.pomdp\n"
-           "  2 - Manually control the robot in the simulator\n"
-           "  3 - Visualize a policy in the simulator\n"
-           "  4 - Evaluate the quality of one policy\n"
-           "  5 - Evaluate the quality of all policies (takes a while)\n"
-           "  6 - Display the MDP policy\n"
-           "\n"
-           "Your choice (ctrl-C to quit): ");
+    printf(
+        "\nMain menu\n"
+        "\n"
+        "  1 - Write out the RockExplore model to RockExplore.pomdp\n"
+        "  2 - Manually control the robot in the simulator\n"
+        "  3 - Visualize a policy in the simulator\n"
+        "  4 - Evaluate the quality of one policy\n"
+        "  5 - Evaluate the quality of all policies (takes a while)\n"
+        "  6 - Display the MDP policy\n"
+        "\n"
+        "Your choice (ctrl-C to quit): ");
     fflush(stdout);
 
     int choice = getUserChoice();
 
     switch (choice) {
-    case 1:
-      m.writeCassandraModel("RockExplore.pomdp");
-      printf("\nModel written to RockExplore.pomdp\n");
-      exit(0);
-      break;
-    case 2:
-      doManual();
-      exit(0);
-    case 3:
-      doVisualize();
-      exit(0);
-      break;
-    case 4:
-      doEvaluateOne();
-      exit(0);
-      break;
-    case 5:
-      doEvaluateAll();
-      exit(0);
-      break;
-    case 6:
-      doDisplayMDPPolicy();
-      exit(0);
-      break;
-    default:
-      printf("\n*** Sorry, I didn't understand that choice ***\n");
+      case 1:
+        m.writeCassandraModel("RockExplore.pomdp");
+        printf("\nModel written to RockExplore.pomdp\n");
+        exit(0);
+        break;
+      case 2:
+        doManual();
+        exit(0);
+      case 3:
+        doVisualize();
+        exit(0);
+        break;
+      case 4:
+        doEvaluateOne();
+        exit(0);
+        break;
+      case 5:
+        doEvaluateAll();
+        exit(0);
+        break;
+      case 6:
+        doDisplayMDPPolicy();
+        exit(0);
+        break;
+      default:
+        printf("\n*** Sorry, I didn't understand that choice ***\n");
     }
   }
 

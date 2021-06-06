@@ -15,6 +15,8 @@
 
  ***************************************************************************/
 
+#include "FRTDP.h"
+
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -24,7 +26,6 @@
 #include <iostream>
 #include <queue>
 
-#include "FRTDP.h"
 #include "MatrixUtils.h"
 #include "Pomdp.h"
 #include "zmdpCommonDefs.h"
@@ -55,12 +56,12 @@ void FRTDP::getNodeHandler(MDPNode &cn) {
 }
 
 void FRTDP::staticGetNodeHandler(MDPNode &s, void *handlerData) {
-  FRTDP *x = (FRTDP *)handlerData;
+  FRTDP *x = reinterpret_cast<FRTDP *>(handlerData);
   x->getNodeHandler(s);
 }
 
 double &FRTDP::getPrio(const MDPNode &cn) {
-  return ((FRTDPExtraNodeData *)cn.searchData)->prio;
+  return (reinterpret_cast<FRTDPExtraNodeData *>(cn.searchData))->prio;
 }
 
 void FRTDP::getMaxPrioOutcome(MDPNode &cn, int a, FRTDPUpdateResult &r) const {
@@ -79,11 +80,11 @@ void FRTDP::getMaxPrioOutcome(MDPNode &cn, int a, FRTDPUpdateResult &r) const {
 #if 0
       MDPNode& sn = *e->nextState;
       printf("    a=%d o=%d obsProb=%g nslb=%g nsub=%g nsprio=%g prio=%g\n",
-	     a, o, e->obsProb, sn.lbVal, sn.ubVal, getPrio(sn), prio);
+             a, o, e->obsProb, sn.lbVal, sn.ubVal, getPrio(sn), prio);
       if (getPrio(*e->nextState) < -99e+20) {
-	MDPNode& sn = *e->nextState;
-	printf("ns: s=[%s] [%g .. %g] prio=%g\n",
-	       denseRep(sn.s).c_str(), sn.lbVal, sn.ubVal, getPrio(sn));
+        MDPNode& sn = *e->nextState;
+        printf("ns: s=[%s] [%g .. %g] prio=%g\n",
+               denseRep(sn.s).c_str(), sn.lbVal, sn.ubVal, getPrio(sn));
       }
 #endif
     }
@@ -119,7 +120,7 @@ void FRTDP::trialRecurse(MDPNode &cn, double logOcc, int depth) {
 #if 0
   // now done in update() itself
   getPrio(cn) = std::min(getPrio(cn), (excessWidth <= 0)
-			 ? RT_PRIO_MINUS_INFINITY : log(excessWidth));
+                         ? RT_PRIO_MINUS_INFINITY : log(excessWidth));
 #endif
 
   if (zmdpDebugLevelG >= 1) {
@@ -130,9 +131,9 @@ void FRTDP::trialRecurse(MDPNode &cn, double logOcc, int depth) {
 
 #if 0
   printf("  tr: maxUBAction=%d ubResidual=%g\n",
-	 r.maxUBAction, r.ubResidual);
+         r.maxUBAction, r.ubResidual);
   printf("  tr: maxPrioOutcome=%d maxPrio=%g\n",
-	 r.maxPrioOutcome, r.maxPrio);
+         r.maxPrioOutcome, r.maxPrio);
 #endif
 
   if (depth > oldMaxDepth) {
@@ -204,8 +205,9 @@ bool FRTDP::doTrial(MDPNode &cn) {
   }
 
 #if 0
-  printf("endTrial: oldQualitySum=%g oldNumUpdates=%d newQualitySum=%g newNumUpdates=%d\n",
-	 oldQualitySum, oldNumUpdates, newQualitySum, newNumUpdates);
+  printf("endTrial: oldQualitySum=%g oldNumUpdates=%d newQualitySum=%g "
+         "newNumUpdates=%d\n",
+         oldQualitySum, oldNumUpdates, newQualitySum, newNumUpdates);
 #endif
 
   numTrials++;
@@ -217,4 +219,4 @@ void FRTDP::derivedClassInit(void) {
   bounds->addGetNodeHandler(&FRTDP::staticGetNodeHandler, this);
 }
 
-}; // namespace zmdp
+};  // namespace zmdp

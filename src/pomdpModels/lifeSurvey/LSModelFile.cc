@@ -15,6 +15,8 @@
 
  ***************************************************************************/
 
+#include "LSModelFile.h"
+
 #include <assert.h>
 #include <errno.h>
 #include <stdio.h>
@@ -27,7 +29,6 @@
 #include <map>
 #include <vector>
 
-#include "LSModelFile.h"
 #include "zmdpCommonDefs.h"
 
 using namespace std;
@@ -122,8 +123,8 @@ static std::string parseRow(const char *inRow, int isOdd,
 LSGrid::LSGrid(void) : width(0), height(0) {}
 
 unsigned char LSGrid::getCellBounded(const LSPos &pos) const {
-  if (0 <= pos.x && pos.x < ((int)width) && 0 <= pos.y &&
-      pos.y < ((int)height)) {
+  if (0 <= pos.x && pos.x < (static_cast<int>(width)) && 0 <= pos.y &&
+      pos.y < (static_cast<int>(height))) {
     return getCell(pos);
   } else {
     return LS_OBSTACLE;
@@ -133,7 +134,7 @@ unsigned char LSGrid::getCellBounded(const LSPos &pos) const {
 bool LSGrid::getAtExit(const LSPos &pos) const {
   /* exiting is legal if there are no non-obstacle cells further to the
      east of this cell in the same row */
-  for (int x = pos.x + 1; x < (int)width; x++) {
+  for (int x = pos.x + 1; x < static_cast<int>(width); x++) {
     if (LS_OBSTACLE != getCell(LSPos(x, pos.y))) {
       return false;
     }
@@ -146,8 +147,7 @@ void LSGrid::writeToFile(FILE *outFile, bool showCoords, bool binaryMap) const {
   if (showCoords) {
     y = height;
     fprintf(outFile, "  ");
-    if ((y % 2) == 1)
-      fputc(' ', outFile);
+    if ((y % 2) == 1) fputc(' ', outFile);
     for (unsigned int x = (y + 1) / 2; x < width; x++) {
       fprintf(outFile, "%d ", x % 10);
     }
@@ -158,8 +158,7 @@ void LSGrid::writeToFile(FILE *outFile, bool showCoords, bool binaryMap) const {
     if (showCoords) {
       fprintf(outFile, "%d ", y % 10);
     }
-    if ((y % 2) == 1)
-      fputc(' ', outFile);
+    if ((y % 2) == 1) fputc(' ', outFile);
     for (unsigned int x = (y + 1) / 2; x < width; x++) {
       unsigned char cell = getCell(LSPos(x, y));
       char outCell;
@@ -230,13 +229,10 @@ void LSModelFile::readFromFile(const std::string &fname) {
   lnum = 0;
   while (NULL != fgets(lbuf, sizeof(lbuf), modelFile)) {
     lnum++;
-    if (strlen(lbuf) <= 1)
-      continue;
-    if ('#' == lbuf[0])
-      continue;
-    if ('-' == lbuf[0])
-      goto preambleDone;
-    lbuf[strlen(lbuf) - 1] = '\0'; // truncate newline
+    if (strlen(lbuf) <= 1) continue;
+    if ('#' == lbuf[0]) continue;
+    if ('-' == lbuf[0]) goto preambleDone;
+    lbuf[strlen(lbuf) - 1] = '\0';  // truncate newline
     if (2 != sscanf(lbuf, "%s %[-0-9.eE \t]", key, value)) {
       fprintf(stderr,
               "ERROR: %s: line %d: syntax error, expected '<key> <value>'\n",
@@ -287,7 +283,7 @@ preambleDone:
         exit(EXIT_FAILURE);
       }
     }
-    lbuf[strlen(lbuf) - 1] = '\0'; // truncate trailing newline
+    lbuf[strlen(lbuf) - 1] = '\0';  // truncate trailing newline
     rows.push_back(parseRow(lbuf, rows.size() % 2, fname, lnum));
   }
 
@@ -295,7 +291,8 @@ preambleDone:
   int maxRowWidth = 0;
   FOR(y0, rows.size()) {
     int y = rows.size() - y0 - 1;
-    maxRowWidth = std::max(maxRowWidth, (int)((y + 1) / 2 + rows[y0].size()));
+    maxRowWidth =
+        std::max(maxRowWidth, static_cast<int>((y + 1) / 2 + rows[y0].size()));
   }
 
   /* allocate final map data structure */
@@ -325,12 +322,13 @@ preambleDone:
     }
   }
 
-  if ((int)regionPriors.size() != grid.getMaxCellValue()) {
+  if (static_cast<int>(regionPriors.size()) != grid.getMaxCellValue()) {
     int n = grid.getMaxCellValue();
     fprintf(stderr,
             "ERROR: %s: number of regionPriors (%d) should match number of "
             "regions in map (a-%c=%d)\n",
-            fname.c_str(), (int)regionPriors.size(), (char)((n - 1) + 97), n);
+            fname.c_str(), static_cast<int>(regionPriors.size()),
+            static_cast<char>((n - 1) + 97), n);
     exit(EXIT_FAILURE);
   }
 }
@@ -348,4 +346,4 @@ void LSModelFile::writeToFile(FILE *outFile) const {
   grid.writeToFile(outFile);
 }
 
-}; // namespace zmdp
+};  // namespace zmdp

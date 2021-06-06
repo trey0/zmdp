@@ -33,6 +33,8 @@
   -Trey Smith, Feb. 2006
  **********************************************************************/
 
+#include "LRTDP.h"
+
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -42,7 +44,6 @@
 #include <iostream>
 #include <stack>
 
-#include "LRTDP.h"
 #include "MatrixUtils.h"
 #include "Pomdp.h"
 #include "zmdpCommonDefs.h"
@@ -63,12 +64,12 @@ void LRTDP::getNodeHandler(MDPNode &cn) {
 }
 
 void LRTDP::staticGetNodeHandler(MDPNode &s, void *handlerData) {
-  LRTDP *x = (LRTDP *)handlerData;
+  LRTDP *x = reinterpret_cast<LRTDP *>(handlerData);
   x->getNodeHandler(s);
 }
 
 bool &LRTDP::getIsSolved(const MDPNode &cn) {
-  return ((LRTDPExtraNodeData *)cn.searchData)->isSolved;
+  return (reinterpret_cast<LRTDPExtraNodeData *>(cn.searchData))->isSolved;
 }
 
 void LRTDP::cacheQ(MDPNode &cn) {
@@ -91,8 +92,7 @@ bool LRTDP::checkSolved(MDPNode &cn) {
   NodeStack open, closed;
   int a;
 
-  if (!getIsSolved(cn))
-    open.push(&cn);
+  if (!getIsSolved(cn)) open.push(&cn);
   while (!open.empty()) {
     MDPNode &n = *open.pop();
     closed.push(&n);
@@ -195,4 +195,4 @@ void LRTDP::derivedClassInit(void) {
   bounds->addGetNodeHandler(&LRTDP::staticGetNodeHandler, this);
 }
 
-}; // namespace zmdp
+};  // namespace zmdp

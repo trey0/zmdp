@@ -15,8 +15,8 @@
 
  ***************************************************************************/
 
-#ifndef INCMDPSim_h
-#define INCMDPSim_h
+#ifndef ZMDP_SRC_COMMON_MDPSIM_H_
+#define ZMDP_SRC_COMMON_MDPSIM_H_
 
 #include "MDPModel.h"
 
@@ -31,7 +31,7 @@ struct MDPSim {
   int elapsedTime;
   int lastOutcomeIndex;
 
-  MDPSim(MDP *_model);
+  explicit MDPSim(MDP *_model);
 
   MDP *getModel(void) { return model; }
   void restart(void);
@@ -39,6 +39,6 @@ struct MDPSim {
   const state_vector &getInformationState(void) const { return state; }
 };
 
-}; // namespace zmdp
+};  // namespace zmdp
 
-#endif // INCMDPSim_h
+#endif  // ZMDP_SRC_COMMON_MDPSIM_H_

@@ -15,8 +15,8 @@
 
  ***************************************************************************/
 
-#ifndef INCValueFunction_h
-#define INCValueFunction_h
+#ifndef ZMDP_SRC_BOUNDS_VALUEFUNCTION_H_
+#define ZMDP_SRC_BOUNDS_VALUEFUNCTION_H_
 
 /**********************************************************************
  * INCLUDES
@@ -24,9 +24,8 @@
 
 // this causes problems if it is included after the Lapack headers, so
 //  pre-emptively include it here.  not sure exactly what the problem is.
-#include <iostream>
-
 #include <ext/hash_map>
+#include <iostream>
 #include <string>
 #include <vector>
 
@@ -40,7 +39,7 @@
 namespace zmdp {
 
 class ValueFunction {
-public:
+ public:
   int numStates;
 
   ValueFunction(void) : numStates(-1) {}
@@ -51,6 +50,6 @@ public:
                       bool debug = false) const;
 };
 
-}; // namespace zmdp
+};  // namespace zmdp
 
-#endif // INCValueFunction_h
+#endif  // ZMDP_SRC_BOUNDS_VALUEFUNCTION_H_

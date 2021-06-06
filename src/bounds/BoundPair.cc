@@ -15,17 +15,19 @@
 
  ***************************************************************************/
 
+#include "BoundPair.h"
+
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 
+#include <algorithm>
 #include <fstream>
 #include <iostream>
 #include <queue>
 
 #include "AbstractBound.h"
-#include "BoundPair.h"
 #include "MatrixUtils.h"
 #include "MaxPlanesLowerBound.h"
 #include "Pomdp.h"
@@ -43,7 +45,10 @@ namespace zmdp {
 BoundPair::BoundPair(bool _maintainLowerBound, bool _maintainUpperBound,
                      bool _useUpperBoundRunTimeActionSelection,
                      bool _dualPointBounds)
-    : problem(NULL), config(NULL), lowerBound(NULL), upperBound(NULL),
+    : problem(NULL),
+      config(NULL),
+      lowerBound(NULL),
+      upperBound(NULL),
       maintainLowerBound(_maintainLowerBound),
       maintainUpperBound(_maintainUpperBound),
       useUpperBoundRunTimeActionSelection(_useUpperBoundRunTimeActionSelection),
@@ -87,8 +92,7 @@ void BoundPair::updateDualPointBounds(MDPNode &cn, int *maxUBActionP) {
   cn.ubVal = maxUBVal;
 #endif
 
-  if (NULL != maxUBActionP)
-    *maxUBActionP = maxUBAction;
+  if (NULL != maxUBActionP) *maxUBActionP = maxUBAction;
 }
 
 void BoundPair::initialize(MDP *_problem, const ZMDPConfig *_config) {
@@ -134,12 +138,12 @@ MDPNode *BoundPair::getNode(const state_vector &s) {
     if (maintainUpperBound) {
       upperBound->initNodeBound(cn);
     } else {
-      cn.ubVal = -1; // n/a
+      cn.ubVal = -1;  // n/a
     }
     if (maintainLowerBound) {
       lowerBound->initNodeBound(cn);
     } else {
-      cn.lbVal = -1; // n/a
+      cn.lbVal = -1;  // n/a
     }
     (*lookup)[hs] = &cn;
 
@@ -310,11 +314,12 @@ ValueInterval BoundPair::getQValue(const state_vector &s, int a) const {
 
 void BoundPair::writePolicy(const std::string &outFileName,
                             bool canModifyBounds) {
-  MaxPlanesLowerBound *mlb = (MaxPlanesLowerBound *)lowerBound;
+  MaxPlanesLowerBound *mlb =
+      reinterpret_cast<MaxPlanesLowerBound *>(lowerBound);
   if (canModifyBounds) {
     mlb->prunePlanes(numBackups);
   }
   mlb->writeToFile(outFileName);
 }
 
-}; // namespace zmdp
+};  // namespace zmdp

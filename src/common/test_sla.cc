@@ -93,10 +93,11 @@ void test_cvector(void) {
   cout << "--xc: size=" << xc.size() << " data=" << xc(0) << " " << xc(1) << " "
        << xc(2) << " " << xc(3) << " " << xc(4) << endl;
 
-  string xs = "4 "
-              "2 "
-              "0 7 "
-              "3 9 ";
+  string xs =
+      "4 "
+      "2 "
+      "0 7 "
+      "3 9 ";
   istringstream iss(xs);
   xc.read(iss);
   cout << "--xc: size=4 data=7 0 0 9" << endl;
@@ -143,10 +144,11 @@ void test_kmatrix(void) {
        << " filled=" << Ak.filled() << " data=" << Ak(0, 0) << " " << Ak(0, 1)
        << " " << Ak(1, 0) << " " << Ak(1, 1) << endl;
 
-  string As = "2 2 "
-              "2 "
-              "0 1 5 "
-              "1 0 7 ";
+  string As =
+      "2 2 "
+      "2 "
+      "0 1 5 "
+      "1 0 7 ";
   istringstream iss(As);
   Ak.read(iss);
   Ak.canonicalize();
@@ -178,10 +180,11 @@ void test_cmatrix(void) {
        << " filled=" << Ac.filled() << " data=" << Ac(0, 0) << " " << Ac(0, 1)
        << " " << Ac(1, 0) << " " << Ac(1, 1) << endl;
 
-  string As = "2 2 "
-              "2 "
-              "0 1 5 "
-              "1 0 7 ";
+  string As =
+      "2 2 "
+      "2 "
+      "0 1 5 "
+      "1 0 7 ";
   istringstream iss(As);
   Ac.read(iss);
   cout << "--Ac: size=2 2 filled=2 data=0 5 7 0" << endl;
@@ -213,10 +216,11 @@ void test_conversions(void) {
   cout << "  xd2: size=" << xd2.size() << " data=" << xd2(0) << " " << xd2(1)
        << " " << xd2(2) << endl;
 
-  string As = "2 2 "
-              "2 "
-              "0 1 5 "
-              "1 0 7 ";
+  string As =
+      "2 2 "
+      "2 "
+      "0 1 5 "
+      "1 0 7 ";
   istringstream iss(As);
   Ak.read(iss);
   Ak.canonicalize();
@@ -267,29 +271,32 @@ void test_unary(void) {
   double s;
   dvector xd;
 
-  istringstream iss("5 "
-                    "3 "
-                    "1 2 "
-                    "3 5 "
-                    "4 -3 ");
+  istringstream iss(
+      "5 "
+      "3 "
+      "1 2 "
+      "3 5 "
+      "4 -3 ");
   xc.read(iss);
   s = norm_1(xc);
 
   cout << "--s=10" << endl;
   cout << "  s=" << s << endl;
 
-  istringstream iss2("5 "
-                     "2 "
-                     "3 6 "
-                     "4 -1 ");
+  istringstream iss2(
+      "5 "
+      "2 "
+      "3 6 "
+      "4 -1 ");
   xc.read(iss2);
   s = norm_1(xc);
 
   cout << "--s=7" << endl;
   cout << "  s=" << s << endl;
 
-  istringstream iss3("5 "
-                     "0 2 0 5 -3");
+  istringstream iss3(
+      "5 "
+      "0 2 0 5 -3");
   xd.read(iss3);
   s = norm_inf(xd);
 
@@ -298,8 +305,9 @@ void test_unary(void) {
 
   // reusing iss again causes a weird error...
   // but valgrind is happy, so i won't look into it further
-  istringstream iss4("5 "
-                     "0 2 0 5 -7");
+  istringstream iss4(
+      "5 "
+      "0 2 0 5 -7");
   xd.read(iss4);
   s = norm_inf(xd);
 
@@ -313,21 +321,24 @@ void test_binary(void) {
   cmatrix Ac;
   double s;
 
-  istringstream iss("2 2 "
-                    "3 "
-                    "0 0 2 "
-                    "0 1 5 "
-                    "1 0 3 ");
+  istringstream iss(
+      "2 2 "
+      "3 "
+      "0 0 2 "
+      "0 1 5 "
+      "1 0 3 ");
   Ac.read(iss);
 
-  istringstream iss2("2 "
-                     "2 "
-                     "0 7 "
-                     "1 11 ");
+  istringstream iss2(
+      "2 "
+      "2 "
+      "0 7 "
+      "1 11 ");
   xc.read(iss2);
 
-  istringstream iss3("2 "
-                     "7 11 ");
+  istringstream iss3(
+      "2 "
+      "7 11 ");
   xd.read(iss3);
 
   mult(yd, Ac, xc);
@@ -350,20 +361,22 @@ void test_binary(void) {
   cout << "--zc: 483 231" << endl;
   cout << "  zc: " << zc(0) << " " << zc(1) << endl;
 
-  istringstream iss4("7 "
-                     "4 "
-                     "1 2 "
-                     "2 3 "
-                     "4 5 "
-                     "5 7 ");
+  istringstream iss4(
+      "7 "
+      "4 "
+      "1 2 "
+      "2 3 "
+      "4 5 "
+      "5 7 ");
   xc.read(iss4);
 
-  istringstream iss5("7 "
-                     "4 "
-                     "2 11 "
-                     "3 13 "
-                     "5 17 "
-                     "6 19 ");
+  istringstream iss5(
+      "7 "
+      "4 "
+      "2 11 "
+      "3 13 "
+      "5 17 "
+      "6 19 ");
   yc.read(iss5);
 
   emult(zc, xc, yc);
@@ -397,19 +410,21 @@ void test_binary(void) {
   cout << "--s: 170" << endl;
   cout << "  s: " << s << endl;
 
-  istringstream iss6("7 "
-                     "4 "
-                     "1 2 "
-                     "2 3 "
-                     "4 5 "
-                     "5 7 ");
+  istringstream iss6(
+      "7 "
+      "4 "
+      "1 2 "
+      "2 3 "
+      "4 5 "
+      "5 7 ");
   xc.read(iss6);
 
-  istringstream iss7("7 "
-                     "3 "
-                     "1 1 "
-                     "4 4 "
-                     "5 6 ");
+  istringstream iss7(
+      "7 "
+      "3 "
+      "1 1 "
+      "4 4 "
+      "5 6 ");
   yc.read(iss7);
 
   bool xdy = dominates(xc, yc, 0);
@@ -426,19 +441,21 @@ void test_mask(void) {
   cvector xc, yc, zc;
   cvector zm;
 
-  istringstream iss1("7 "
-                     "4 "
-                     "1 2 "
-                     "2 3 "
-                     "4 5 "
-                     "5 7 ");
+  istringstream iss1(
+      "7 "
+      "4 "
+      "1 2 "
+      "2 3 "
+      "4 5 "
+      "5 7 ");
   xc.read(iss1);
 
-  istringstream iss2("7 "
-                     "3 "
-                     "1 1 "
-                     "4 4 "
-                     "5 6 ");
+  istringstream iss2(
+      "7 "
+      "3 "
+      "1 1 "
+      "4 4 "
+      "5 6 ");
   yc.read(iss2);
 
   bool xsy = mask_subset(xc, yc);
@@ -457,8 +474,9 @@ void test_mask(void) {
   cout << "--ymdx: 0" << endl;
   cout << "  ymdx: " << ymdx << endl;
 
-  istringstream iss3("7 "
-                     "1 1 1 1 1 1 1");
+  istringstream iss3(
+      "7 "
+      "1 1 1 1 1 1 1");
   zd.read(iss3);
   copy(zc, zd);
 

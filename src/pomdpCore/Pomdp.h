@@ -15,8 +15,8 @@
 
  ***************************************************************************/
 
-#ifndef INCPomdp_h
-#define INCPomdp_h
+#ifndef ZMDP_SRC_POMDPCORE_POMDP_H_
+#define ZMDP_SRC_POMDPCORE_POMDP_H_
 
 #include <iostream>
 #include <string>
@@ -71,13 +71,13 @@ struct Pomdp : public CassandraModel {
     return getNextBelief(result, s, a, o);
   }
 
-protected:
+ protected:
   void readFromFileCassandra(const std::string &fileName);
   void readFromFileFast(const std::string &fileName);
 
   void debugDensity(void);
 };
 
-}; // namespace zmdp
+};  // namespace zmdp
 
-#endif // INCPomdp_h
+#endif  // ZMDP_SRC_POMDPCORE_POMDP_H_

@@ -61,7 +61,7 @@ int main(int argc, char *argv[]) {
   // know the number of states... the rest of the pomdp model
   // is not used
   Pomdp *p = new Pomdp();
-  p->numStates = 500000; // random number of states
+  p->numStates = 500000;  // random number of states
 
   MaxPlanesLowerBound m(/* mdp = */ p);
   m.readFromFile(inFileName);

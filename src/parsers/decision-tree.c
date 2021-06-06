@@ -15,12 +15,12 @@
 
  ***************************************************************************/
 
+#include "decision-tree.h"
+
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include "decision-tree.h"
 
 /**********************************************************************
  * MACROS
@@ -110,18 +110,17 @@ static void dtInitTable(DTTable *t, int numEntries) {
 }
 
 static void dtDestroyNode(DTNode *n) {
-  if (NULL == n)
-    return;
+  if (NULL == n) return;
 
   switch (n->type) {
-  case DT_VAL:
-    /* nothing to do */
-    break;
-  case DT_TABLE:
-    dtDestroyTable(&n->data.subTree);
-    break;
-  default:
-    assert(0 /* never reach this point */);
+    case DT_VAL:
+      /* nothing to do */
+      break;
+    case DT_TABLE:
+      dtDestroyTable(&n->data.subTree);
+      break;
+    default:
+      assert(0 /* never reach this point */);
   }
 
   free(n);
@@ -145,15 +144,15 @@ static DTNode *dtDeepCopyNode(const DTNode *in) {
     out = NULL;
   } else {
     switch (in->type) {
-    case DT_VAL:
-      out = dtNewNodeVal(in->data.val);
-      break;
-    case DT_TABLE:
-      out = dtNewNodeTable(in->data.subTree.numEntries);
-      dtDeepCopyTable(&out->data.subTree, &in->data.subTree);
-      break;
-    default:
-      assert(0 /* never reach this point */);
+      case DT_VAL:
+        out = dtNewNodeVal(in->data.val);
+        break;
+      case DT_TABLE:
+        out = dtNewNodeTable(in->data.subTree.numEntries);
+        dtDeepCopyTable(&out->data.subTree, &in->data.subTree);
+        break;
+      default:
+        assert(0 /* never reach this point */);
     }
   }
 
@@ -178,16 +177,16 @@ static DTNode *dtConvertToTable(DTNode *in, int numEntries) {
   assert(NULL != in);
 
   switch (in->type) {
-  case DT_VAL:
-    out = dtNewNodeTable(numEntries);
-    out->data.subTree.defaultEntry = dtNewNodeVal(in->data.val);
-    dtDestroyNode(in);
-    break;
-  case DT_TABLE:
-    out = in;
-    break;
-  default:
-    assert(0 /* never reach this point */);
+    case DT_VAL:
+      out = dtNewNodeTable(numEntries);
+      out->data.subTree.defaultEntry = dtNewNodeVal(in->data.val);
+      dtDestroyNode(in);
+      break;
+    case DT_TABLE:
+      out = in;
+      break;
+    default:
+      assert(0 /* never reach this point */);
   }
 
   return out;
@@ -249,16 +248,16 @@ static double dtGetInternal(DTNode *node, int *vec, int index) {
   assert(NULL != node);
 
   switch (node->type) {
-  case DT_VAL:
-    return node->data.val;
-  case DT_TABLE:
-    entry = node->data.subTree.entries[vec[index]];
-    if (NULL == entry) {
-      entry = node->data.subTree.defaultEntry;
-    }
-    return dtGetInternal(entry, vec, index + 1);
-  default:
-    assert(0 /* never reach this point */);
+    case DT_VAL:
+      return node->data.val;
+    case DT_TABLE:
+      entry = node->data.subTree.entries[vec[index]];
+      if (NULL == entry) {
+        entry = node->data.subTree.defaultEntry;
+      }
+      return dtGetInternal(entry, vec, index + 1);
+    default:
+      assert(0 /* never reach this point */);
   }
 }
 
@@ -278,15 +277,15 @@ static void dtDebugPrintNode(DTNode *n, int indent) {
   }
 
   switch (n->type) {
-  case DT_VAL:
-    dtSpaces(indent);
-    printf("val = %lf\n", n->data.val);
-    break;
-  case DT_TABLE:
-    dtDebugPrintTable(&n->data.subTree, indent);
-    break;
-  default:
-    assert(0 /* never reach this point */);
+    case DT_VAL:
+      dtSpaces(indent);
+      printf("val = %lf\n", n->data.val);
+      break;
+    case DT_TABLE:
+      dtDebugPrintTable(&n->data.subTree, indent);
+      break;
+    default:
+      assert(0 /* never reach this point */);
   }
 }
 
@@ -306,7 +305,7 @@ static void dtDebugPrintTable(DTTable *t, int indent) {
       printf("entry %d:\n", i);
       dtDebugPrintNode(t->entries[i], indent + 4);
     }
-  };
+  }
 }
 
 /**********************************************************************
@@ -315,8 +314,7 @@ static void dtDebugPrintTable(DTTable *t, int indent) {
 
 void dtInit(int numActions, int numStates, int numObservations) {
   /* guard to prevent double initialization */
-  if (NULL != gTree)
-    return;
+  if (NULL != gTree) return;
 
   gTableSizes = (int *)malloc(DT_TABLE_DEPTH * sizeof(int));
   gTableSizes[0] = numActions;

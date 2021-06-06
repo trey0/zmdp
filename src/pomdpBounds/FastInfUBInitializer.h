@@ -15,8 +15,8 @@
 
  ***************************************************************************/
 
-#ifndef INCFastInfUBInitializer_h
-#define INCFastInfUBInitializer_h
+#ifndef ZMDP_SRC_POMDPBOUNDS_FASTINFUBINITIALIZER_H_
+#define ZMDP_SRC_POMDPBOUNDS_FASTINFUBINITIALIZER_H_
 
 #include "MatrixUtils.h"
 #include "Pomdp.h"
@@ -32,11 +32,11 @@ struct FastInfUBInitializer {
   FastInfUBInitializer(const MDP *problem, SawtoothUpperBound *_bound);
   void initialize(double targetPrecision);
 
-protected:
+ protected:
   void initMDP(double targetPrecision);
   void initFIB(double targetPrecision);
 };
 
-}; // namespace zmdp
+};  // namespace zmdp
 
-#endif /* INCFastInfUBInitializer_h */
+#endif  // ZMDP_SRC_POMDPBOUNDS_FASTINFUBINITIALIZER_H_

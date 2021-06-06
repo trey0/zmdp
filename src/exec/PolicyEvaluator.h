@@ -15,8 +15,10 @@
 
  ***************************************************************************/
 
-#ifndef INCPolicyEvaluator_h
-#define INCPolicyEvaluator_h
+#ifndef ZMDP_SRC_EXEC_POLICYEVALUATOR_H_
+#define ZMDP_SRC_EXEC_POLICYEVALUATOR_H_
+
+#include <string>
 
 #include "CacheMDP.h"
 #include "MDPExec.h"
@@ -29,7 +31,7 @@ struct PolicyEvaluator {
                   bool _assumeIdenticalModels);
   void getRewardSamples(dvector &rewards, double &successRate, bool _verbose);
 
-protected:
+ protected:
   MDP *simModel;
   MDP *planningModel;
   MDPExecCore *exec;
@@ -55,6 +57,6 @@ protected:
                      int numTracesToLog);
 };
 
-}; // namespace zmdp
+};  // namespace zmdp
 
-#endif // INCPolicyEvaluator_h
+#endif  // ZMDP_SRC_EXEC_POLICYEVALUATOR_H_

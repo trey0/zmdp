@@ -15,8 +15,8 @@
 
  ***************************************************************************/
 
-#ifndef INCBoundPair_h
-#define INCBoundPair_h
+#ifndef ZMDP_SRC_BOUNDS_BOUNDPAIR_H_
+#define ZMDP_SRC_BOUNDS_BOUNDPAIR_H_
 
 #include <iostream>
 #include <string>
@@ -59,6 +59,6 @@ struct BoundPair : public BoundPairCore {
   void writePolicy(const std::string &outFileName, bool canModifyBounds);
 };
 
-}; // namespace zmdp
+};  // namespace zmdp
 
-#endif // INCBoundPair_h
+#endif  // ZMDP_SRC_BOUNDS_BOUNDPAIR_H_

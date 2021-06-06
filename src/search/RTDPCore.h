@@ -19,8 +19,8 @@
 
  ***************************************************************************/
 
-#ifndef INCRTDPCore_h
-#define INCRTDPCore_h
+#ifndef ZMDP_SRC_SEARCH_RTDPCORE_H_
+#define ZMDP_SRC_SEARCH_RTDPCORE_H_
 
 #include <stack>
 
@@ -28,9 +28,8 @@
 #include "MatrixUtils.h"
 #include "Solver.h"
 
-#define RT_CLEAR_STD_STACK(x)                                                  \
-  while (!(x).empty())                                                         \
-    (x).pop();
+#define RT_CLEAR_STD_STACK(x) \
+  while (!(x).empty()) (x).pop();
 #define RT_IDX_PLUS_INFINITY (INT_MAX)
 #define RT_PRIO_MINUS_INFINITY (-99e+20)
 #define RT_PRIO_IMPROVEMENT_CONSTANT (0.5)
@@ -105,6 +104,6 @@ struct RTDPCore : public Solver {
   void finishLogging(void);
 };
 
-}; // namespace zmdp
+};  // namespace zmdp
 
-#endif /* INCRTDPCore_h */
+#endif  // ZMDP_SRC_SEARCH_RTDPCORE_H_

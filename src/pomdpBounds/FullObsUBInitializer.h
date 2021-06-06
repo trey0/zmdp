@@ -15,8 +15,8 @@
 
  ***************************************************************************/
 
-#ifndef INCFullObsUBInitializer_h
-#define INCFullObsUBInitializer_h
+#ifndef ZMDP_SRC_POMDPBOUNDS_FULLOBSUBINITIALIZER_H_
+#define ZMDP_SRC_POMDPBOUNDS_FULLOBSUBINITIALIZER_H_
 
 #include "Pomdp.h"
 
@@ -25,7 +25,7 @@
 namespace zmdp {
 
 class FullObsUBInitializer {
-public:
+ public:
   dvector alpha;
   const Pomdp *pomdp;
 
@@ -34,6 +34,6 @@ public:
   void valueIteration(const Pomdp *_pomdp, double eps);
 };
 
-}; // namespace zmdp
+};  // namespace zmdp
 
-#endif // INCFullObsUBInitializer_h
+#endif  // ZMDP_SRC_POMDPBOUNDS_FULLOBSUBINITIALIZER_H_

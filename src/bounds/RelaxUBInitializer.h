@@ -15,11 +15,12 @@
 
  ***************************************************************************/
 
-#ifndef INCRelaxUBInitializer_h
-#define INCRelaxUBInitializer_h
+#ifndef ZMDP_SRC_BOUNDS_RELAXUBINITIALIZER_H_
+#define ZMDP_SRC_BOUNDS_RELAXUBINITIALIZER_H_
 
 #include "AbstractBound.h"
 #include "MDPCache.h"
+#include "MDPModel.h"
 #include "MatrixUtils.h"
 
 namespace zmdp {
@@ -52,6 +53,6 @@ struct RelaxUBInitializer : public AbstractBound {
   int getStorage(int whichMetric) const;
 };
 
-}; // namespace zmdp
+};  // namespace zmdp
 
-#endif /* INCRelaxUBInitializer_h */
+#endif  // ZMDP_SRC_BOUNDS_RELAXUBINITIALIZER_H_

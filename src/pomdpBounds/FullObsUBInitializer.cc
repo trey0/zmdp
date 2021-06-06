@@ -19,6 +19,8 @@
  * INCLUDES
  ***************************************************************************/
 
+#include "FullObsUBInitializer.h"
+
 #include <assert.h>
 #include <math.h>
 #include <stdio.h>
@@ -28,7 +30,6 @@
 #include <algorithm>
 #include <iostream>
 
-#include "FullObsUBInitializer.h"
 #include "MatrixUtils.h"
 
 using namespace std;
@@ -39,15 +40,15 @@ namespace zmdp {
 void FullObsUBInitializer::nextAlphaAction(dvector &result, int a) {
 #if 0
   alpha_vector x(numStates), y(numStates);
-  x = matrix_column<bmatrix>( pomdp->R, a );
-  y = pomdp->discount * prod( pomdp->T[a], alpha );
+  x = matrix_column<bmatrix>(pomdp->R, a);
+  y = pomdp->discount * prod(pomdp->T[a], alpha);
   cout << "x = " << maxRep(x) << endl;
   cout << "y = " << maxRep(y) << endl;
 #endif
 #if 0
   alpha_vector sum(numStates);
-  sum = matrix_column<bmatrix>( pomdp->R, a )
-    + pomdp->discount * prod( pomdp->T[a], alpha );
+  sum = matrix_column<bmatrix>(pomdp->R, a)
+    + pomdp->discount * prod(pomdp->T[a], alpha);
   cout << "a = " << a << endl
        << "sum = " << maxRep(sum) << endl;
   return sum;
@@ -61,8 +62,8 @@ void FullObsUBInitializer::nextAlphaAction(dvector &result, int a) {
   result += R_xa;
 
 #if 0
-  return matrix_column<bmatrix>( pomdp->R, a )
-    + pomdp->discount * prod( pomdp->T[a], alpha );
+  return matrix_column<bmatrix>(pomdp->R, a)
+    + pomdp->discount * prod(pomdp->T[a], alpha);
 #endif
 }
 
@@ -75,8 +76,7 @@ double FullObsUBInitializer::valueIterationOneStep(void) {
   FOR(a, pomdp->numActions) {
     nextAlphaAction(naa, a);
     FOR(s, pomdp->getBeliefSize()) {
-      if (naa(s) > nextAlpha(s))
-        nextAlpha(s) = naa(s);
+      if (naa(s) > nextAlpha(s)) nextAlpha(s) = naa(s);
     }
   }
 
@@ -130,4 +130,4 @@ void FullObsUBInitializer::valueIteration(const Pomdp *_pomdp, double eps) {
   cout << "residual = " << residual << endl;
 }
 
-}; // namespace zmdp
+};  // namespace zmdp

@@ -19,6 +19,8 @@
  * INCLUDES
  ***************************************************************************/
 
+#include "CustomMDP.h"
+
 #include <assert.h>
 #include <errno.h>
 #include <getopt.h>
@@ -31,7 +33,6 @@
 #include <iostream>
 #include <map>
 
-#include "CustomMDP.h"
 #include "MatrixUtils.h"
 #include "Solver.h"
 
@@ -121,20 +122,19 @@ bool CustomMDP::getIsTerminalState(const state_vector &s) {
 
   // In the example problem, x=n-1 is the only terminal state.  Notice
   // how we extract x from the state vector first.
-  int x = (int)s(0);
+  int x = static_cast<int>(s(0));
   return (x == (myNumStates - 1));
 }
 
-outcome_prob_vector &
-CustomMDP::getOutcomeProbVector(outcome_prob_vector &result,
-                                const state_vector &s, int a) {
+outcome_prob_vector &CustomMDP::getOutcomeProbVector(
+    outcome_prob_vector &result, const state_vector &s, int a) {
   // USER CUSTOMIZE
 
   // getOutcomeProbVector(result,s,a) sets <result> to be a vector of outcome
   // probabilities given that in state s you apply action a.
 
   // This code returns outcome probabilities for the example problem.
-  int x = (int)s(0);
+  int x = static_cast<int>(s(0));
   if (x == (myNumStates - 1)) {
     // x=n-1 is a terminal state.  Therefore, the outcome must loop back
     // to x=n-1 with probability 1.  Note that in this function we are
@@ -144,29 +144,29 @@ CustomMDP::getOutcomeProbVector(outcome_prob_vector &result,
     result(0) = 1;
   } else {
     switch (a) {
-    case ACTION_MOVE_LEFT:
-      if (x == 0) {
-        // We need a special case for x=0 because we don't want the robot
-        // to be able to move off the left-hand side of the map.  We will
-        // loop back to x=0 with probability 1.
-        result.resize(1);
-        result(0) = 1;
-      } else {
-        // For other positions, there will be a 90% chance of success and 10% of
-        // failure.
+      case ACTION_MOVE_LEFT:
+        if (x == 0) {
+          // We need a special case for x=0 because we don't want the robot
+          // to be able to move off the left-hand side of the map.  We will
+          // loop back to x=0 with probability 1.
+          result.resize(1);
+          result(0) = 1;
+        } else {
+          // For other positions, there will be a 90% chance of success and 10%
+          // of failure.
+          result.resize(2);
+          result(0) = 0.9;
+          result(1) = 0.1;
+        }
+        break;
+      case ACTION_MOVE_RIGHT:
+        // 90% chance of success and 10% of failure.
         result.resize(2);
         result(0) = 0.9;
         result(1) = 0.1;
-      }
-      break;
-    case ACTION_MOVE_RIGHT:
-      // 90% chance of success and 10% of failure.
-      result.resize(2);
-      result(0) = 0.9;
-      result(1) = 0.1;
-      break;
-    default:
-      assert(0); // never reach this point
+        break;
+      default:
+        assert(0);  // never reach this point
     }
   }
 
@@ -186,7 +186,7 @@ state_vector &CustomMDP::getNextState(state_vector &result,
   // probability vector returned by getOutcomeProbVector().
 
   // This code returns the next state for the example problem.
-  int oldX = (int)s(0);
+  int oldX = static_cast<int>(s(0));
   int newX;
 
   if (oldX == (myNumStates - 1)) {
@@ -203,18 +203,18 @@ state_vector &CustomMDP::getNextState(state_vector &result,
     }
 
     switch (o) {
-    case 0:
-      // o=0 corresponds to the high-probability 'success' outcome in the
-      // getOutcomeProbVector() return value.
-      newX = oldX + successDX;
-      break;
-    case 1:
-      // o=1 corresponds to the low-probability 'slip' outcome in the
-      // getOutcomeProbVector() return value.
-      newX = oldX;
-      break;
-    default:
-      assert(0); // never reach this point
+      case 0:
+        // o=0 corresponds to the high-probability 'success' outcome in the
+        // getOutcomeProbVector() return value.
+        newX = oldX + successDX;
+        break;
+      case 1:
+        // o=1 corresponds to the low-probability 'slip' outcome in the
+        // getOutcomeProbVector() return value.
+        newX = oldX;
+        break;
+      default:
+        assert(0);  // never reach this point
     }
   }
 
@@ -234,7 +234,7 @@ double CustomMDP::getReward(const state_vector &s, int a) {
 
   // In the example problem, all moves have reward -1 (i.e. cost 1), except
   // for the terminal state, which must be a zero-reward absorbing state.
-  int x = (int)s(0);
+  int x = static_cast<int>(s(0));
   if (x == myNumStates - 1) {
     return 0;
   } else {
@@ -276,7 +276,7 @@ double CustomMDP::getInitialUpperBoundValue(const state_vector &s) {
 struct CustomLowerBound : public AbstractBound {
   CustomMDP *x;
 
-  CustomLowerBound(CustomMDP *_x) : x(_x) {}
+  explicit CustomLowerBound(CustomMDP *_x) : x(_x) {}
   void initialize(double targetPrecision) {}
   double getValue(const state_vector &s, const MDPNode *cn) const {
     return x->getInitialLowerBoundValue(s);
@@ -286,7 +286,7 @@ struct CustomLowerBound : public AbstractBound {
 struct CustomUpperBound : public AbstractBound {
   CustomMDP *x;
 
-  CustomUpperBound(CustomMDP *_x) : x(_x) {}
+  explicit CustomUpperBound(CustomMDP *_x) : x(_x) {}
   void initialize(double targetPrecision) {}
   double getValue(const state_vector &s, const MDPNode *cn) const {
     return x->getInitialUpperBoundValue(s);
@@ -301,4 +301,4 @@ AbstractBound *CustomMDP::newUpperBound(const ZMDPConfig *_config) {
   return new CustomUpperBound(this);
 }
 
-}; // namespace zmdp
+};  // namespace zmdp

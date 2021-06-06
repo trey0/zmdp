@@ -23,9 +23,9 @@
   *****
 */
 
-#ifndef PARSE_HASH_H
+#ifndef ZMDP_SRC_PARSERS_PARSE_HASH_H_
 
-#define PARSE_HASH_H
+#define ZMDP_SRC_PARSERS_PARSE_HASH_H_
 
 #define HASH_TABLE_SIZE 255
 
@@ -52,4 +52,4 @@ extern int H_lookup(char *str, Mnemonic_Type type);
 } /* extern "C" */
 #endif
 
-#endif
+#endif  // ZMDP_SRC_PARSERS_PARSE_HASH_H_

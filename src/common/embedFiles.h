@@ -19,8 +19,8 @@
 
  ***************************************************************************/
 
-#ifndef INCembedFiles_h
-#define INCembedFiles_h
+#ifndef ZMDP_SRC_COMMON_EMBEDFILES_H_
+#define ZMDP_SRC_COMMON_EMBEDFILES_H_
 
 #include <errno.h>
 #include <stdio.h>
@@ -51,4 +51,4 @@ inline void embedWriteToFile(const char *fileName, const embed_buffer_t &buf) {
   fclose(outFile);
 }
 
-#endif // INCembedFiles_h
+#endif  // ZMDP_SRC_COMMON_EMBEDFILES_H_

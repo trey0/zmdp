@@ -18,8 +18,8 @@
 
  ***************************************************************************/
 
-#ifndef INCLRTDP_h
-#define INCLRTDP_h
+#ifndef ZMDP_SRC_SEARCH_LRTDP_H_
+#define ZMDP_SRC_SEARCH_LRTDP_H_
 
 #include "RTDPCore.h"
 
@@ -45,6 +45,6 @@ struct LRTDP : public RTDPCore {
   void derivedClassInit(void);
 };
 
-}; // namespace zmdp
+};  // namespace zmdp
 
-#endif /* INCLRTDP_h */
+#endif  // ZMDP_SRC_SEARCH_LRTDP_H_

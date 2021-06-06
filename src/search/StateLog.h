@@ -15,8 +15,8 @@
 
  ***************************************************************************/
 
-#ifndef INCStateLog_h
-#define INCStateLog_h
+#ifndef ZMDP_SRC_SEARCH_STATELOG_H_
+#define ZMDP_SRC_SEARCH_STATELOG_H_
 
 #include <iostream>
 #include <string>
@@ -35,7 +35,7 @@ struct StateIndex {
   std::vector<state_vector *> entries;
   EXT_NAMESPACE::hash_map<std::string, int> lookup;
 
-  StateIndex(int _numStateDimensions);
+  explicit StateIndex(int _numStateDimensions);
   ~StateIndex(void);
   int getStateId(const state_vector &s);
   void writeToFile(const std::string &outFile) const;
@@ -51,7 +51,7 @@ struct StateLog {
   std::vector<int> entries;
   StateIndex *index;
 
-  StateLog(StateIndex *_index);
+  explicit StateLog(StateIndex *_index);
   void addState(const state_vector &s);
   void writeToFile(const std::string &outFile) const;
 
@@ -60,6 +60,6 @@ struct StateLog {
   int getLogEntry(int i) const;
 };
 
-}; // namespace zmdp
+};  // namespace zmdp
 
-#endif // INCStateLog_h
+#endif  // ZMDP_SRC_SEARCH_STATELOG_H_

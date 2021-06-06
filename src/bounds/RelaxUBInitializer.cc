@@ -15,17 +15,20 @@
 
  ***************************************************************************/
 
+#include "RelaxUBInitializer.h"
+
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 
+#include <algorithm>
 #include <fstream>
 #include <iostream>
+#include <string>
 
 #include "MDPModel.h"
 #include "MatrixUtils.h"
-#include "RelaxUBInitializer.h"
 #include "zmdpCommonDefs.h"
 #include "zmdpCommonTime.h"
 
@@ -139,10 +142,8 @@ int RelaxUBInitializer::getMaxUBAction(MDPNode &cn, double *maxUBValP,
     }
   }
 
-  if (NULL != maxUBValP)
-    *maxUBValP = maxUBVal;
-  if (NULL != secondBestUBValP)
-    *secondBestUBValP = secondBestUBVal;
+  if (NULL != maxUBValP) *maxUBValP = maxUBVal;
+  if (NULL != secondBestUBValP) *secondBestUBValP = secondBestUBVal;
   return maxUBAction;
 }
 
@@ -157,9 +158,10 @@ void RelaxUBInitializer::trialRecurse(MDPNode &cn, double costSoFar,
   double actionPrio = costSoFar + cn.ubVal;
   if (altActionPrio > actionPrio) {
     if (zmdpDebugLevelG >= 1) {
-      printf("  RB trialRecurse: depth=%d [%g .. %g] costSoFar=%g "
-             "altActionPrio=%g actionPrio=%g (terminating)\n",
-             depth, cn.lbVal, cn.ubVal, costSoFar, altActionPrio, actionPrio);
+      printf(
+          "  RB trialRecurse: depth=%d [%g .. %g] costSoFar=%g "
+          "altActionPrio=%g actionPrio=%g (terminating)\n",
+          depth, cn.lbVal, cn.ubVal, costSoFar, altActionPrio, actionPrio);
     }
     return;
   }
@@ -180,10 +182,11 @@ void RelaxUBInitializer::trialRecurse(MDPNode &cn, double costSoFar,
   }
 
   if (zmdpDebugLevelG >= 1) {
-    printf("  RB trialRecurse: depth=%d a=%d o=%d [%g .. %g] altActionPrio=%g "
-           "actionPrio=%g \n",
-           depth, maxUBAction, bestOutcome, cn.lbVal, cn.ubVal, altActionPrio,
-           actionPrio);
+    printf(
+        "  RB trialRecurse: depth=%d a=%d o=%d [%g .. %g] altActionPrio=%g "
+        "actionPrio=%g \n",
+        depth, maxUBAction, bestOutcome, cn.lbVal, cn.ubVal, altActionPrio,
+        actionPrio);
     printf("  RB trialRecurse: s=%s\n", sparseRep(cn.s).c_str());
   }
 
@@ -250,4 +253,4 @@ int RelaxUBInitializer::getStorage(int whichMetric) const {
   return getNodeCacheStorage(lookup, whichMetric);
 }
 
-}; // namespace zmdp
+};  // namespace zmdp

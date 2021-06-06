@@ -15,11 +15,12 @@
 
  ***************************************************************************/
 
-#ifndef INCzmdpConfig_h
-#define INCzmdpConfig_h
+#ifndef ZMDP_SRC_COMMON_ZMDPCONFIG_H_
+#define ZMDP_SRC_COMMON_ZMDPCONFIG_H_
 
 #include <iostream>
 #include <map>
+#include <string>
 #include <vector>
 
 namespace zmdp {
@@ -59,8 +60,8 @@ struct ZMDPConfig {
   void writeToStream(std::ostream &out) const;
 };
 
-}; // namespace zmdp
+};  // namespace zmdp
 
 extern int zmdpDebugLevelG;
 
-#endif // INCzmdpConfig_h
+#endif  // ZMDP_SRC_COMMON_ZMDPCONFIG_H_

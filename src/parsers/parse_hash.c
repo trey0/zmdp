@@ -24,16 +24,17 @@
 */
 
 #include "parse_hash.h"
-#include "mdp.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "mdp.h"
 
 Node *Hash_Table;
 
 /**********************************************************************/
 void H_create() {
-
   Hash_Table = (Node *)calloc(HASH_TABLE_SIZE, sizeof(*Hash_Table));
 
   /* Need these to start at zero! */
@@ -66,30 +67,27 @@ int H_string(char *str) {
   max = strlen(str) - 1;
 
   switch (max) {
-  case 0:
-    return (str[0] % HASH_TABLE_SIZE);
-  case 1:
-    return ((str[0] * str[1]) % HASH_TABLE_SIZE);
-  case 2:
-    return ((str[0] * str[1] + str[2]) % HASH_TABLE_SIZE);
-  default:
-    return ((str[0] * str[1] * str[max - 1] + str[max]) % HASH_TABLE_SIZE);
+    case 0:
+      return (str[0] % HASH_TABLE_SIZE);
+    case 1:
+      return ((str[0] * str[1]) % HASH_TABLE_SIZE);
+    case 2:
+      return ((str[0] * str[1] + str[2]) % HASH_TABLE_SIZE);
+    default:
+      return ((str[0] * str[1] * str[max - 1] + str[max]) % HASH_TABLE_SIZE);
 
   } /* switch */
 
 } /* H_string */
 /**********************************************************************/
 int H_match(char *str, Mnemonic_Type type, Node node) {
-
   if (node == NULL) {
     fprintf(stderr, "**ERR: Null node in H_match().\n");
     exit(-1);
   }
 
-  if (type != node->type)
-    return 0;
-  if (strcmp(str, node->str) != 0)
-    return 0;
+  if (type != node->type) return 0;
+  if (strcmp(str, node->str) != 0) return 0;
 
   return 1;
 } /* H_match */
@@ -110,8 +108,7 @@ int H_enter(char *str, Mnemonic_Type type) {
   while (temp != NULL) {
     trail = temp;
     /* if already in the list then there's a duplicate */
-    if (H_match(str, type, temp) == 1)
-      return 0;
+    if (H_match(str, type, temp) == 1) return 0;
     temp = temp->next;
   } /* while */
 
@@ -124,18 +121,18 @@ int H_enter(char *str, Mnemonic_Type type) {
 
   /* Set number and increment appropriate value */
   switch (type) {
-  case nt_state:
-    temp->number = gNumStates++;
-    break;
-  case nt_action:
-    temp->number = gNumActions++;
-    break;
-  case nt_observation:
-    temp->number = gNumObservations++;
-    break;
-  default:
-    fprintf(stderr, "**ERR: Bad type in H_enter()\n");
-    exit(-1);
+    case nt_state:
+      temp->number = gNumStates++;
+      break;
+    case nt_action:
+      temp->number = gNumActions++;
+      break;
+    case nt_observation:
+      temp->number = gNumObservations++;
+      break;
+    default:
+      fprintf(stderr, "**ERR: Bad type in H_enter()\n");
+      exit(-1);
   }
 
   /* Add to hash table */
@@ -162,8 +159,7 @@ int H_lookup(char *str, Mnemonic_Type type) {
   temp = Hash_Table[hash];
   while (temp != NULL) {
     /* if already in the list then there's a duplicate */
-    if (H_match(str, type, temp) == 1)
-      return temp->number;
+    if (H_match(str, type, temp) == 1) return temp->number;
     temp = temp->next;
   } /* while */
 

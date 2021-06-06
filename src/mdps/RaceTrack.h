@@ -15,8 +15,8 @@
 
  ***************************************************************************/
 
-#ifndef INCRaceTrack_h
-#define INCRaceTrack_h
+#ifndef ZMDP_SRC_MDPS_RACETRACK_H_
+#define ZMDP_SRC_MDPS_RACETRACK_H_
 
 #include <iostream>
 #include <string>
@@ -30,7 +30,7 @@ namespace zmdp {
 struct TrackMap;
 
 class RaceTrack : public MDP {
-public:
+ public:
   double errorProbability;
   bool useErrorIsWind;
   bool useMaxCost;
@@ -40,7 +40,7 @@ public:
 
   RaceTrack(void);
   ~RaceTrack(void);
-  RaceTrack(const std::string &specFileName);
+  explicit RaceTrack(const std::string &specFileName);
 
   void readFromFile(const std::string &specFileName);
 
@@ -68,6 +68,6 @@ public:
   AbstractBound *newUpperBound(const ZMDPConfig *_config);
 };
 
-}; // namespace zmdp
+};  // namespace zmdp
 
-#endif // INCRaceTrack_h
+#endif  // ZMDP_SRC_MDPS_RACETRACK_H_

@@ -29,11 +29,11 @@
 #include "MatrixUtils.h"
 #include "PolicyEvaluator.h"
 #include "TestDriver.h"
+#include "embedFiles.h"
 #include "solverUtils.h"
 #include "zmdpCommonTime.h"
+#include "zmdpMainConfig.cc"  // embed default config file
 #include "zmdpMainConfig.h"
-
-#include "zmdpMainConfig.cc" // embed default config file
 
 using namespace std;
 using namespace MatrixUtils;
@@ -46,9 +46,10 @@ bool userTerminatedG = false;
 void sigIntHandler(int sig) {
   userTerminatedG = true;
 
-  printf("*** received SIGINT, user pressed control-C ***\n"
-         "terminating run and writing output policy as soon as the solver "
-         "returns control\n");
+  printf(
+      "*** received SIGINT, user pressed control-C ***\n"
+      "terminating run and writing output policy as soon as the solver "
+      "returns control\n");
   fflush(stdout);
 }
 
@@ -71,15 +72,16 @@ void doSolve(const ZMDPConfig &config) {
   p.setValues(config);
 
   printf("%05d reading model file and allocating data structures\n",
-         (int)run.elapsedTime());
+         static_cast<int>(run.elapsedTime()));
   SolverObjects so;
   constructSolverObjects(so, p, config);
 
   // initialize the solver
-  printf("%05d calculating initial heuristics\n", (int)run.elapsedTime());
+  printf("%05d calculating initial heuristics\n",
+         static_cast<int>(run.elapsedTime()));
   so.solver->planInit(so.sim->getModel(), &config);
   printf("%05d finished initialization, beginning to improve policy\n",
-         (int)run.elapsedTime());
+         static_cast<int>(run.elapsedTime()));
 
   setSignalHandler(SIGINT, &sigIntHandler);
 
@@ -107,7 +109,8 @@ void doSolve(const ZMDPConfig &config) {
           so.solver->getValueAt(so.sim->getModel()->getInitialState());
       printf(
           "%05d %6d calls to solver, bounds [%8.4f .. %8.4f], regret <= %g\n",
-          (int)elapsed, numSolverCalls, intv.l, intv.u, (intv.u - intv.l));
+          static_cast<int>(elapsed), numSolverCalls, intv.l, intv.u,
+          (intv.u - intv.l));
       lastPrintTime = elapsed;
     }
   }
@@ -115,20 +118,21 @@ void doSolve(const ZMDPConfig &config) {
   // say why the run ended
   if (reachedTargetPrecision) {
     printf("%05d terminating run; reached target regret bound of %g\n",
-           (int)run.elapsedTime(), p.terminateRegretBound);
+           static_cast<int>(run.elapsedTime()), p.terminateRegretBound);
   } else if (reachedTimeout) {
     printf("%05d terminating run; passed specified timeout of %g seconds\n",
-           (int)run.elapsedTime(), p.terminateWallclockSeconds);
+           static_cast<int>(run.elapsedTime()), p.terminateWallclockSeconds);
   } else {
     printf("%05d terminating run; caught SIGINT from user\n",
-           (int)run.elapsedTime());
+           static_cast<int>(run.elapsedTime()));
   }
 
   // write out a policy
   if (NULL == p.policyOutputFile) {
-    printf("%05d (not outputting policy)\n", (int)run.elapsedTime());
+    printf("%05d (not outputting policy)\n",
+           static_cast<int>(run.elapsedTime()));
   } else {
-    printf("%05d writing policy to '%s'\n", (int)run.elapsedTime(),
+    printf("%05d writing policy to '%s'\n", static_cast<int>(run.elapsedTime()),
            p.policyOutputFile);
     assert(so.bounds->lowerBound != NULL);
     so.bounds->writePolicy(p.policyOutputFile, /* canModifyBounds = */ true);
@@ -136,12 +140,13 @@ void doSolve(const ZMDPConfig &config) {
 
   // finish up logging (if any, according to params specified in the config
   // file)
-  printf("%05d finishing logging (e.g., writing qValuesOutputFile if it was "
-         "requested)\n",
-         (int)run.elapsedTime());
+  printf(
+      "%05d finishing logging (e.g., writing qValuesOutputFile if it was "
+      "requested)\n",
+      static_cast<int>(run.elapsedTime()));
   so.solver->finishLogging();
 
-  printf("%05d done\n", (int)run.elapsedTime());
+  printf("%05d done\n", static_cast<int>(run.elapsedTime()));
 }
 
 void doBenchmark(const ZMDPConfig &config) {
@@ -194,8 +199,9 @@ void doEvaluate(const ZMDPConfig &config) {
     exec = mdpExec = bpExec;
   } else if (policyType == "lspath" || policyType == "lsblind") {
     if (policyType == "lspath" && 0 == strcmp(customModelFileName, "none")) {
-      fprintf(stderr, "ERROR: lspath policy type requires --customModel "
-                      "argument (-h for help)\n");
+      fprintf(stderr,
+              "ERROR: lspath policy type requires --customModel "
+              "argument (-h for help)\n");
       exit(EXIT_FAILURE);
     }
     LSPathAndReactExec *lpExec = new LSPathAndReactExec();
@@ -211,28 +217,30 @@ void doEvaluate(const ZMDPConfig &config) {
   Pomdp *simPomdp;
   bool assumeIdenticalModels = false;
   if (mdpExec != NULL && plannerModelFileName == simModelFileName) {
-    simPomdp = (Pomdp *)mdpExec->mdp;
+    simPomdp = reinterpret_cast<Pomdp *>(mdpExec->mdp);
     assumeIdenticalModels = true;
   } else {
     simPomdp = new Pomdp(simModelFileName, &config);
 
     if (mdpExec != NULL) {
-      Pomdp *plannerPomdp = (Pomdp *)mdpExec->mdp;
+      Pomdp *plannerPomdp = reinterpret_cast<Pomdp *>(mdpExec->mdp);
 
       if (!((plannerPomdp->getNumActions() == simPomdp->getNumActions()) &&
             (plannerPomdp->getNumObservations() ==
              simPomdp->getNumObservations()))) {
-        printf("ERROR: planner model %s and evaluation model %s must have the "
-               "same number of actions and observations\n",
-               plannerModelFileName, simModelFileName);
+        printf(
+            "ERROR: planner model %s and evaluation model %s must have the "
+            "same number of actions and observations\n",
+            plannerModelFileName, simModelFileName);
         exit(EXIT_FAILURE);
       }
     }
   }
   if (zmdpDebugLevelG >= 1) {
-    printf("If planning and sim models are identical, evaluator can optimize:\n"
-           "  assumeIdenticalModels=%d\n",
-           assumeIdenticalModels);
+    printf(
+        "If planning and sim models are identical, evaluator can optimize:\n"
+        "  assumeIdenticalModels=%d\n",
+        assumeIdenticalModels);
   }
 
   // simulate running the policy many times and collect the per-run total reward
@@ -245,7 +253,7 @@ void doEvaluate(const ZMDPConfig &config) {
   // output summary statistics, mean and 95% confidence interval for the mean
   double mean, quantile1, quantile2;
   calc_bootstrap_mean_quantile(rewardSamples,
-                               0.05, // 95% confidence interval
+                               0.05,  // 95% confidence interval
                                mean, quantile1, quantile2);
   printf("REWARD_MEAN_CONF95MIN_CONF95MAX %.3lf %.3lf %.3lf\n", mean, quantile1,
          quantile2);
@@ -500,8 +508,9 @@ int main(int argc, char **argv) {
       configFileName = argv[argi];
     } else if (args == "--genConfig") {
       if (++argi == argc) {
-        fprintf(stderr, "ERROR: found --genConfig option without argument (use "
-                        "-h for help)\n");
+        fprintf(stderr,
+                "ERROR: found --genConfig option without argument (use "
+                "-h for help)\n");
         exit(EXIT_FAILURE);
       }
       embedWriteToFile(argv[argi], defaultConfig);
@@ -529,8 +538,9 @@ int main(int argc, char **argv) {
 
   // check not too many non-option (unprocessed) arguments
   if (nonOptionArgs.size() > 2) {
-    fprintf(stderr, "ERROR: expected at most two arguments without flags (use "
-                    "-h for help)\n");
+    fprintf(stderr,
+            "ERROR: expected at most two arguments without flags (use "
+            "-h for help)\n");
     exit(EXIT_FAILURE);
   }
 
@@ -569,15 +579,15 @@ int main(int argc, char **argv) {
   // fill in default value of policyOutputFile, depends on command
   if (config.getString("policyOutputFile") == "-") {
     switch (cmd) {
-    case CMD_SOLVE:
-      config.setString("policyOutputFile", "out.policy");
-      break;
-    case CMD_BENCHMARK:
-    case CMD_EVALUATE:
-      config.setString("policyOutputFile", "none");
-      break;
-    default:
-      assert(0); // never reach this point
+      case CMD_SOLVE:
+        config.setString("policyOutputFile", "out.policy");
+        break;
+      case CMD_BENCHMARK:
+      case CMD_EVALUATE:
+        config.setString("policyOutputFile", "none");
+        break;
+      default:
+        assert(0);  // never reach this point
     }
   }
 
@@ -590,17 +600,17 @@ int main(int argc, char **argv) {
 
   // the main show
   switch (cmd) {
-  case CMD_SOLVE:
-    doSolve(config);
-    break;
-  case CMD_BENCHMARK:
-    doBenchmark(config);
-    break;
-  case CMD_EVALUATE:
-    doEvaluate(config);
-    break;
-  default:
-    assert(0); // never reach this point
+    case CMD_SOLVE:
+      doSolve(config);
+      break;
+    case CMD_BENCHMARK:
+      doBenchmark(config);
+      break;
+    case CMD_EVALUATE:
+      doEvaluate(config);
+      break;
+    default:
+      assert(0);  // never reach this point
   }
 
   return 0;

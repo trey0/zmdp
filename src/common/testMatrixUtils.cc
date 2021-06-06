@@ -66,8 +66,8 @@ int main(void) {
   cout << "scale_columns(q,m) = " << scale_columns(q, m) << endl;
 
 #if 0
-  cout << "m(range(1,3),1) = " << sub_vector(m,range(1,3),1) << endl;
-  cout << "m(1,range(1,3)) = " << sub_vector(m,1,range(1,3)) << endl;
+  cout << "m(range(1, 3), 1) = " << sub_vector(m, range(1, 3), 1) << endl;
+  cout << "m(1, range(1, 3)) = " << sub_vector(m, 1, range(1, 3)) << endl;
   cout << "max_elt(m) = " << max_elt(m) << endl;
   cout << "min_elt(m) = " << min_elt(m) << endl;
   cout << "eabs(m) = " << eabs(m) << endl;

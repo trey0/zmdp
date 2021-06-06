@@ -34,6 +34,8 @@
   -Trey Smith, Feb. 2006
  **********************************************************************/
 
+#include "HDP.h"
+
 #include <assert.h>
 #include <limits.h>
 #include <stdio.h>
@@ -44,7 +46,6 @@
 #include <iostream>
 #include <stack>
 
-#include "HDP.h"
 #include "MatrixUtils.h"
 #include "Pomdp.h"
 #include "zmdpCommonDefs.h"
@@ -67,20 +68,20 @@ void HDP::getNodeHandler(MDPNode &cn) {
 }
 
 void HDP::staticGetNodeHandler(MDPNode &s, void *handlerData) {
-  HDP *x = (HDP *)handlerData;
+  HDP *x = reinterpret_cast<HDP *>(handlerData);
   x->getNodeHandler(s);
 }
 
 bool &HDP::getIsSolved(const MDPNode &cn) {
-  return ((HDPExtraNodeData *)cn.searchData)->isSolved;
+  return (reinterpret_cast<HDPExtraNodeData *>(cn.searchData))->isSolved;
 }
 
 int &HDP::getLow(const MDPNode &cn) {
-  return ((HDPExtraNodeData *)cn.searchData)->low;
+  return (reinterpret_cast<HDPExtraNodeData *>(cn.searchData))->low;
 }
 
 int &HDP::getIdx(const MDPNode &cn) {
-  return ((HDPExtraNodeData *)cn.searchData)->idx;
+  return (reinterpret_cast<HDPExtraNodeData *>(cn.searchData))->idx;
 }
 
 void HDP::cacheQ(MDPNode &cn) {
@@ -165,11 +166,9 @@ bool HDP::trialRecurse(MDPNode &cn, int depth) {
     bounds->update(cn, NULL);
     trackBackup(cn);
     return true;
-  }
-
-  // try to label
-  else if (getIdx(cn) == getLow(cn)) {
-    printf("  marking %d nodes solved\n", (int)nodeStack.size());
+  } else if (getIdx(cn) == getLow(cn)) {
+    // try to label
+    printf("  marking %d nodes solved\n", static_cast<int>(nodeStack.size()));
     while (nodeStack.top() != &cn) {
       MDPNode &sn = *nodeStack.pop();
       getIsSolved(sn) = true;
@@ -210,4 +209,4 @@ void HDP::derivedClassInit(void) {
   bounds->addGetNodeHandler(&HDP::staticGetNodeHandler, this);
 }
 
-}; // namespace zmdp
+};  // namespace zmdp

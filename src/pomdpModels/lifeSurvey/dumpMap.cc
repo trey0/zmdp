@@ -44,18 +44,15 @@ using namespace zmdp;
  **********************************************************************/
 
 static bool endsWith(const std::string &s, const std::string &suffix) {
-  if (s.size() < suffix.size())
-    return false;
+  if (s.size() < suffix.size()) return false;
   return (s.substr(s.size() - suffix.size()) == suffix);
 }
 
 static std::string replaceSuffix(const std::string &s,
                                  const std::string &suffix,
                                  const std::string &replacement) {
-  if (s.size() < suffix.size())
-    return s;
-  if (s.substr(s.size() - suffix.size()) != suffix)
-    return s;
+  if (s.size() < suffix.size()) return s;
+  if (s.substr(s.size() - suffix.size()) != suffix) return s;
 
   std::string ret = s;
   ret.replace(ret.size() - suffix.size(), suffix.size(), replacement);
@@ -80,22 +77,21 @@ int main(int argc, char *argv[]) {
 
   while (1) {
     char optchar = getopt_long(argc, argv, shortOptions, longOptions, NULL);
-    if (optchar == -1)
-      break;
+    if (optchar == -1) break;
 
     switch (optchar) {
-    case 'h': // help
-      usage(argv[0]);
-      break;
+      case 'h':  // help
+        usage(argv[0]);
+        break;
 
-    case '?': // unknown option
-    case ':': // option with missing parameter
-      // getopt() prints an informative error message
-      cerr << endl;
-      usage(argv[0]);
-      break;
-    default:
-      abort(); // never reach this point
+      case '?':  // unknown option
+      case ':':  // option with missing parameter
+        // getopt() prints an informative error message
+        cerr << endl;
+        usage(argv[0]);
+        break;
+      default:
+        abort();  // never reach this point
     }
   }
   if (!(1 <= argc - optind && argc - optind <= 2)) {

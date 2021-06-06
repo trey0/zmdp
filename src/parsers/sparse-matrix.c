@@ -27,11 +27,11 @@
 
 */
 
+#include "sparse-matrix.h"
+
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
-
-#include "sparse-matrix.h"
 
 /**********************************************************************/
 /********************  Routines for row linked lists  *****************/
@@ -70,8 +70,7 @@ I_Matrix_Row_Node removeRowNode(I_Matrix_Row_Node row, int col, int *count) {
   I_Matrix_Row_Node temp_node, cur_node, trail_node;
 
   /* Case if list is empty */
-  if (row == NULL)
-    return (NULL);
+  if (row == NULL) return (NULL);
 
   /* Case of removing first item in the list */
   if (row->column == col) {
@@ -85,7 +84,6 @@ I_Matrix_Row_Node removeRowNode(I_Matrix_Row_Node row, int col, int *count) {
   trail_node = row;
   cur_node = row->next;
   while (cur_node != NULL) {
-
     /* Then bingo!  We found the one to remove */
     if (cur_node->column == col) {
       trail_node->next = cur_node->next;
@@ -122,7 +120,7 @@ I_Matrix_Row_Node addEntryToRow(I_Matrix_Row_Node row, int col, double value,
      This can be used to build up probabilities in a matrix piecemeal.
      */
   I_Matrix_Row_Node new_node, cur_node, trail_node;
-  trail_node = 0; // avoid warning
+  trail_node = 0;  // avoid warning
 
   /* Case if we attempt to add a zero entry.  We need to see if there */
   /* is already a non-zero entry for it in the list, and if so remove */
@@ -152,11 +150,9 @@ I_Matrix_Row_Node addEntryToRow(I_Matrix_Row_Node row, int col, double value,
 
   cur_node = row;
   while (cur_node != NULL) {
-
     /* Case if we should simply replace (or accumulate)
        the current value */
     if (cur_node->column == col) {
-
       if (accumulate)
         cur_node->value += value;
       else
@@ -191,9 +187,7 @@ I_Matrix_Row_Node addEntryToRow(I_Matrix_Row_Node row, int col, double value,
 } /* addEntryToRow */
 /**********************************************************************/
 void displayRow(I_Matrix_Row_Node row) {
-
-  if (row == NULL)
-    printf("<empty>");
+  if (row == NULL) printf("<empty>");
 
   while (row != NULL) {
     printf("[%d] %.3f ", row->column, row->value);
@@ -226,8 +220,7 @@ void destroyIMatrix(I_Matrix i_matrix) {
 
   free(i_matrix->row_length);
 
-  for (i = 0; i < i_matrix->num_rows; i++)
-    destroyRow(i_matrix->row[i]);
+  for (i = 0; i < i_matrix->num_rows; i++) destroyRow(i_matrix->row[i]);
   free(i_matrix->row);
 
   free(i_matrix);
@@ -235,7 +228,6 @@ void destroyIMatrix(I_Matrix i_matrix) {
 } /* destroyIMatrix */
 /**********************************************************************/
 int addEntryToIMatrix(I_Matrix i_matrix, int row, int col, double value) {
-
   assert((i_matrix != NULL) && (row >= 0) && (row < i_matrix->num_rows));
 
   i_matrix->row[row] = addEntryToRow(i_matrix->row[row], col, value,
@@ -264,8 +256,7 @@ int countEntriesInIMatrix(I_Matrix i_matrix) {
   int i;
   int total = 0;
 
-  for (i = 0; i < i_matrix->num_rows; i++)
-    total += i_matrix->row_length[i];
+  for (i = 0; i < i_matrix->num_rows; i++) total += i_matrix->row_length[i];
 
   return (total);
 } /* countEntriesInIMatrix */
@@ -315,7 +306,6 @@ Matrix newMatrix(int num_rows, int num_non_zero) {
 } /* newMatrix */
 /**********************************************************************/
 void destroyMatrix(Matrix matrix) {
-
   free(matrix->row_length);
   free(matrix->row_start);
   free(matrix->col);
@@ -340,13 +330,11 @@ Matrix transformIMatrix(I_Matrix i_matrix) {
 
   /* Now go through and set the values */
   for (row = 0; row < i_matrix->num_rows; row++) {
-
     matrix->row_start[row] = index;
     matrix->row_length[row] = i_matrix->row_length[row];
 
     cur_node = i_matrix->row[row];
     while (cur_node != NULL) {
-
       matrix->col[index] = cur_node->column;
       matrix->mat_val[index] = cur_node->value;
       index++;
@@ -379,8 +367,7 @@ void displayMatrix(Matrix matrix) {
     printf("(len=%d, sum=%.1f)Row=%d: ", matrix->row_length[i],
            sumRowValues(matrix, i), i);
 
-    if (matrix->row_length[i] == 0)
-      printf("<empty>");
+    if (matrix->row_length[i] == 0) printf("<empty>");
 
     for (j = matrix->row_start[i];
          j < matrix->row_start[i] + matrix->row_length[i]; j++)
@@ -403,8 +390,7 @@ double getEntryMatrix(Matrix matrix, int row, int col) {
   for (j = matrix->row_start[row];
        j < matrix->row_start[row] + matrix->row_length[row]; j++)
 
-    if (matrix->col[j] == col)
-      return (matrix->mat_val[j]);
+    if (matrix->col[j] == col) return (matrix->mat_val[j]);
 
   return (0.0);
 } /* getEntryMatrix */

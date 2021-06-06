@@ -19,6 +19,8 @@
  * INCLUDES
  ***************************************************************************/
 
+#include "RaceTrack.h"
+
 #include <assert.h>
 #include <errno.h>
 #include <getopt.h>
@@ -32,7 +34,6 @@
 #include <map>
 
 #include "MatrixUtils.h"
-#include "RaceTrack.h"
 #include "Solver.h"
 
 using namespace std;
@@ -104,12 +105,9 @@ void PropertyList::readFromFile(const string &fname, char endMarker) {
   lnum = 0;
   while (NULL != fgets(lbuf, sizeof(lbuf), inFile)) {
     lnum++;
-    if (0 == strlen(lbuf))
-      continue;
-    if ('#' == lbuf[0])
-      continue;
-    if (endMarker == lbuf[0])
-      break;
+    if (0 == strlen(lbuf)) continue;
+    if ('#' == lbuf[0]) continue;
+    if (endMarker == lbuf[0]) break;
     if (2 != sscanf(lbuf, "%s %s", key, value)) {
       fprintf(stderr,
               "ERROR: %s: line %d: syntax error, expected '<key> <value>'\n",
@@ -144,10 +142,8 @@ TrackMap::TrackMap(void) {
 }
 
 TrackMap::~TrackMap(void) {
-  if (NULL != open)
-    delete[] open;
-  if (NULL != finish)
-    delete[] finish;
+  if (NULL != open) delete[] open;
+  if (NULL != finish) delete[] finish;
 }
 
 // Plots a line from the center of cell (x0,y0) to the center of cell
@@ -173,14 +169,12 @@ int TrackMap::lineType(int x0, int y0, int dx, int dy) const {
 
   // Set up what it means to 'plot' a cell.
   int tx, ty;
-#define RT_PLOT(A, B)                                                          \
-  {                                                                            \
-    tx = x0 + c11 * A + c12 * B;                                               \
-    ty = y0 + c21 * A + c22 * B;                                               \
-    if (getIsFinish(tx, ty))                                                   \
-      return RT_FINISH;                                                        \
-    if (!getIsOpen(tx, ty))                                                    \
-      return RT_CRASH;                                                         \
+#define RT_PLOT(A, B)                          \
+  {                                            \
+    tx = x0 + c11 * A + c12 * B;               \
+    ty = y0 + c21 * A + c22 * B;               \
+    if (getIsFinish(tx, ty)) return RT_FINISH; \
+    if (!getIsOpen(tx, ty)) return RT_CRASH;   \
   }
 
   // Plot the line.
@@ -189,14 +183,12 @@ int TrackMap::lineType(int x0, int y0, int dx, int dy) const {
   int y = 0;
   int eps = ady;
   while (x < adx) {
-    if (eps < adx)
-      RT_PLOT(x, y);
+    if (eps < adx) RT_PLOT(x, y);
     eps += 2 * ady;
     if (eps >= adx) {
       y++;
       eps -= 2 * adx;
-      if (eps > -adx)
-        RT_PLOT(x, y);
+      if (eps > -adx) RT_PLOT(x, y);
     }
     x++;
   }
@@ -213,10 +205,8 @@ void TrackMap::readFromFile(const string &mapFileName, FILE *mapFile,
   width = 0;
   while (NULL != fgets(lbuf, sizeof(lbuf), mapFile)) {
     lnum++;
-    if (0 == strlen(lbuf))
-      continue;
-    if ('#' == lbuf[0])
-      continue;
+    if (0 == strlen(lbuf)) continue;
+    if ('#' == lbuf[0]) continue;
     if (0 == width) {
       width = strlen(lbuf);
     } else {
@@ -255,7 +245,7 @@ void TrackMap::readFromFile(const string &mapFileName, FILE *mapFile,
 struct RTLowerBound : public AbstractBound {
   RaceTrack *problem;
 
-  RTLowerBound(RaceTrack *_problem) : problem(_problem) {}
+  explicit RTLowerBound(RaceTrack *_problem) : problem(_problem) {}
   void initialize(double targetPrecision) {}
   double getValue(const state_vector &s, const MDPNode *cn) const;
 };
@@ -286,12 +276,12 @@ double RTLowerBound::getValue(const state_vector &s, const MDPNode *cn) const {
 #if RT_UPPER_TRIVIAL
 
 struct RTUpperBound : public AbstractBound {
-  RTUpperBound(const RaceTrack *_problem) {}
+  explicit RTUpperBound(const RaceTrack *_problem) {}
   void initialize(double targetPrecision) {}
   double getValue(const state_vector &s, const MDPNode *cn) const { return 0; }
 };
 
-#else // if RT_UPPER_TRIVIAL
+#else  // if RT_UPPER_TRIVIAL
 
 struct RTUpperBound : public AbstractBound {
   const RaceTrack *problem;
@@ -299,15 +289,14 @@ struct RTUpperBound : public AbstractBound {
   int minFinishY, maxFinishY;
   bool initialized;
 
-  RTUpperBound(const RaceTrack *_problem)
+  explicit RTUpperBound(const RaceTrack *_problem)
       : problem(_problem), initialized(false) {}
   void initialize(void);
   double getValue(const state_vector &s, const MDPNode *cn) const;
 };
 
 void RTUpperBound::initialize(void) {
-  if (initialized)
-    return;
+  if (initialized) return;
 
   TrackMap *t = problem->tmap;
   minFinishX = minFinishY = 9999;
@@ -317,14 +306,10 @@ void RTUpperBound::initialize(void) {
   for (int y = 0; y < h; y++) {
     for (int x = 0; x < w; x++) {
       if (t->getIsFinish(x, y)) {
-        if (x < minFinishX)
-          minFinishX = x;
-        if (x > maxFinishX)
-          maxFinishX = x;
-        if (y < minFinishY)
-          minFinishY = y;
-        if (y > maxFinishY)
-          maxFinishY = y;
+        if (x < minFinishX) minFinishX = x;
+        if (x > maxFinishX) maxFinishX = x;
+        if (y < minFinishY) minFinishY = y;
+        if (y > maxFinishY) maxFinishY = y;
       }
     }
   }
@@ -345,9 +330,8 @@ int rtGetDist(int x, int xmin, int xmax) {
 
 int rtGetMinTime(int x, int xmin, int xmax, int v) {
   int dist = rtGetDist(x, xmin, xmax);
-  if (0 == dist)
-    return 0;
-  return (int)(-v + sqrt(v * v + 2 * dist));
+  if (0 == dist) return 0;
+  return static_cast<int>(-v + sqrt(v * v + 2 * dist));
 }
 
 double RTUpperBound::getValue(const state_vector &s, const MDPNode *cn) const {
@@ -357,8 +341,8 @@ double RTUpperBound::getValue(const state_vector &s, const MDPNode *cn) const {
   if (IS_INITIAL_STATE(s) || IS_TERMINAL_STATE(s)) {
     minCost = 0;
   } else {
-    int x = (int)s(0);
-    int y = (int)s(1);
+    int x = static_cast<int>(s(0));
+    int y = static_cast<int>(s(1));
 
 #if 1
     // a weak 'tie-breaking' heuristic based on Manhattan distance
@@ -371,8 +355,8 @@ double RTUpperBound::getValue(const state_vector &s, const MDPNode *cn) const {
     // stronger heuristic using velocity and acceleration, still
     //   does not take obstacles into account.
     // not sure this heuristic is valid -- check the math
-    int vx = (int)s(2);
-    int vy = (int)s(3);
+    int vx = static_cast<int>(s(2));
+    int vy = static_cast<int>(s(3));
     int xtime = rtGetMinTime(x, minFinishX, maxFinishX, vx);
     int ytime = rtGetMinTime(y, minFinishY, maxFinishY, vy);
     int t = std::max(xtime, ytime);
@@ -388,7 +372,7 @@ double RTUpperBound::getValue(const state_vector &s, const MDPNode *cn) const {
   // return 0;
 }
 
-#endif // if RT_UPPER_TRIVIAL / else
+#endif  // if RT_UPPER_TRIVIAL / else
 
 /**********************************************************************
  * MAIN FUNCTIONS
@@ -400,8 +384,7 @@ RaceTrack::RaceTrack(const std::string &specFileName) {
 }
 
 RaceTrack::~RaceTrack(void) {
-  if (NULL != tmap)
-    delete tmap;
+  if (NULL != tmap) delete tmap;
 }
 
 void RaceTrack::readFromFile(const std::string &specFileName) {
@@ -421,7 +404,7 @@ void RaceTrack::readFromFile(const std::string &specFileName) {
   if (useMaxCost) {
     maxCost = atof(plist.getValue("maxCost").c_str());
   } else {
-    maxCost = -1; // n/a
+    maxCost = -1;  // n/a
   }
   useErrorIsWind = atoi(plist.getValue("useErrorIsWind").c_str());
 
@@ -439,9 +422,8 @@ bool RaceTrack::getIsTerminalState(const state_vector &s) {
   return isTerminal;
 }
 
-outcome_prob_vector &
-RaceTrack::getOutcomeProbVector(outcome_prob_vector &result,
-                                const state_vector &s, int a) {
+outcome_prob_vector &RaceTrack::getOutcomeProbVector(
+    outcome_prob_vector &result, const state_vector &s, int a) {
   if (IS_INITIAL_STATE(s)) {
     // transition to one of the starting line cells (uniform probability
     // distribution)
@@ -470,21 +452,21 @@ RaceTrack::getOutcomeProbVector(outcome_prob_vector &result,
       result(RT_SLIP) = errorProbability;
     }
 
-    int oldX = (int)s(0);
-    int oldY = (int)s(1);
-    int oldVX = (int)s(2);
-    int oldVY = (int)s(3);
+    int oldX = static_cast<int>(s(0));
+    int oldY = static_cast<int>(s(1));
+    int oldVX = static_cast<int>(s(2));
+    int oldVY = static_cast<int>(s(3));
     int ax = (a / 3) - 1;
     int ay = (a % 3) - 1;
 
     // the rest of the code determines if either the normal or slip case
     // causes a crash or successful finish... if so, move probability
     // mass from that outcome to outcome RT_FINISH or RT_CRASH.
-#define RT_CHECK_OUTCOME(WHICH_OUTCOME, AX, AY)                                \
-  lineType = tmap->lineType(oldX, oldY, oldVX + AX, oldVY + AY);               \
-  if (RT_NORMAL != lineType) {                                                 \
-    result(lineType) += result(WHICH_OUTCOME);                                 \
-    result(WHICH_OUTCOME) = 0;                                                 \
+#define RT_CHECK_OUTCOME(WHICH_OUTCOME, AX, AY)                  \
+  lineType = tmap->lineType(oldX, oldY, oldVX + AX, oldVY + AY); \
+  if (RT_NORMAL != lineType) {                                   \
+    result(lineType) += result(WHICH_OUTCOME);                   \
+    result(WHICH_OUTCOME) = 0;                                   \
   }
 
     int lineType, o;
@@ -520,36 +502,36 @@ state_vector &RaceTrack::getNextState(state_vector &result,
     result = s;
   } else {
     switch (o) {
-    case RT_FINISH:
-      // 'finish' outcome: transition to terminal state
-      result = terminalState;
-      break;
-    case RT_CRASH:
-      // 'crash' outcome: reset to bogus initial state
-      result = bogusInitialState;
-      break;
-    default:
-      // commanded acceleration
-      int ax = (a / 3) - 1;
-      int ay = (a % 3) - 1;
-      // account for errors
-      if (useErrorIsWind) {
-        ax += dax[o];
-        ay += day[o];
-      } else {
-        if (RT_SLIP == o) {
-          ax = 0;
-          ay = 0;
+      case RT_FINISH:
+        // 'finish' outcome: transition to terminal state
+        result = terminalState;
+        break;
+      case RT_CRASH:
+        // 'crash' outcome: reset to bogus initial state
+        result = bogusInitialState;
+        break;
+      default:
+        // commanded acceleration
+        int ax = (a / 3) - 1;
+        int ay = (a % 3) - 1;
+        // account for errors
+        if (useErrorIsWind) {
+          ax += dax[o];
+          ay += day[o];
+        } else {
+          if (RT_SLIP == o) {
+            ax = 0;
+            ay = 0;
+          }
         }
-      }
-      sla::dvector tmp(4);
-      // integrate acceleration into velocity
-      tmp(2) = s(2) + ax;
-      tmp(3) = s(3) + ay;
-      // integrate velocity into position
-      tmp(0) = s(0) + tmp(2);
-      tmp(1) = s(1) + tmp(3);
-      copy(result, tmp);
+        sla::dvector tmp(4);
+        // integrate acceleration into velocity
+        tmp(2) = s(2) + ax;
+        tmp(3) = s(3) + ay;
+        // integrate velocity into position
+        tmp(0) = s(0) + tmp(2);
+        tmp(1) = s(1) + tmp(3);
+        copy(result, tmp);
     }
   }
 
@@ -591,4 +573,4 @@ AbstractBound *RaceTrack::newUpperBound(const ZMDPConfig *_config) {
   return new RTUpperBound(this);
 }
 
-}; // namespace zmdp
+};  // namespace zmdp

@@ -18,13 +18,14 @@
 
  ***************************************************************************/
 
-#ifndef INCsla_cassandra_h
-#define INCsla_cassandra_h
+#ifndef ZMDP_SRC_PARSERS_SLA_CASSANDRA_H_
+#define ZMDP_SRC_PARSERS_SLA_CASSANDRA_H_
 
 #include <errno.h>
+#include <math.h>
+
 #include <fstream>
 #include <iostream>
-#include <math.h>
 #include <vector>
 
 #include "mdp.h"
@@ -71,6 +72,6 @@ inline void copy(kmatrix &result, CassandraMatrix A, int numColumns) {
   result.canonicalize();
 }
 
-} // namespace sla
+}  // namespace sla
 
-#endif // INCsla_cassandra_h
+#endif  // ZMDP_SRC_PARSERS_SLA_CASSANDRA_H_

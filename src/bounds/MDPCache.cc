@@ -15,6 +15,8 @@
 
  ***************************************************************************/
 
+#include "MDPCache.h"
+
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -25,7 +27,6 @@
 #include <queue>
 
 #include "AbstractBound.h"
-#include "MDPCache.h"
 #include "MatrixUtils.h"
 
 using namespace std;
@@ -47,16 +48,16 @@ int getNodeCacheStorage(const MDPHash *lookup, int whichMetric) {
   }
 
   switch (whichMetric) {
-  case ZMDP_S_NUM_ELTS_TABULAR:
-    return eltCount;
+    case ZMDP_S_NUM_ELTS_TABULAR:
+      return eltCount;
 
-  case ZMDP_S_NUM_ENTRIES_TABULAR:
-    return entryCount;
+    case ZMDP_S_NUM_ENTRIES_TABULAR:
+      return entryCount;
 
-  default:
-    /* N/A */
-    return 0;
+    default:
+      /* N/A */
+      return 0;
   }
 }
 
-}; // namespace zmdp
+};  // namespace zmdp

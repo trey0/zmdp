@@ -19,6 +19,8 @@
 
  ***************************************************************************/
 
+#include "BoundPairCore.h"
+
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -28,7 +30,6 @@
 #include <iostream>
 #include <queue>
 
-#include "BoundPairCore.h"
 #include "MatrixUtils.h"
 #include "Pomdp.h"
 #include "zmdpCommonDefs.h"
@@ -77,4 +78,4 @@ int BoundPairCore::getSimulatedOutcome(MDPNode &cn, int a) {
   return result;
 }
 
-}; // namespace zmdp
+};  // namespace zmdp

@@ -30,11 +30,14 @@ SUBDIRS = common parsers mdps bounds search exec pomdpCore pomdpBounds pomdpMode
 
 include $(BUILD_DIR)/toplevel.mak
 
-cpplint:
-	find . \( -name "*.h" -o -name "*.c" -o -name "*.cc" \) -print0 | xargs -0 cpplint
-
 test:
 	cd tests && ./testAll
+
+cpplint:
+	find . \( -name "*.h" -o -name "*.cc" \) -print | grep -v \.tab\.cc | grep -v \.yy\.cc | xargs cpplint
+
+clang-format:
+	find . \( -name "*.h" -o -name "*.c" -o -name "*.cc" \) -exec clang-format --style=Google -i {} \;
 
 ######################################################################
 # DO NOT MODIFY BELOW THIS POINT
