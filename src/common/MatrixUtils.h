@@ -310,7 +310,7 @@ inline std::string sparseRep(const cvector &v, int num_to_print) {
   FOR_CV(v) { sorted.push_back(IndPair(CV_INDEX(v), CV_VAL(v))); }
   sort(sorted.begin(), sorted.end(), AbsValGreater());
   std::ostringstream out;
-  num_to_print = std::min((size_t)num_to_print, sorted.size());
+  num_to_print = std::min(static_cast<size_t>(num_to_print), sorted.size());
   if (0 == num_to_print) {
     out << "(no non-zero entries)";
   } else {
@@ -326,7 +326,7 @@ inline std::string sparseRep(const dvector &v) {
   FOR(i, v.size()) { sorted.push_back(IndPair(i, v(i))); }
   sort(sorted.begin(), sorted.end(), AbsValGreater());
   std::ostringstream out;
-  int num_to_print = std::min((size_t)8, sorted.size());
+  int num_to_print = std::min(static_cast<size_t>(8), sorted.size());
   if (0 == num_to_print) {
     out << "(no non-zero entries)";
   } else {

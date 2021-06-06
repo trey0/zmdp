@@ -51,7 +51,7 @@ template <class T>
 struct hash<T *> {
   size_t operator()(T *p) const {
     hash<size_t> h;
-    return h((size_t)p);
+    return h(static_cast<size_t>(p));
   }
 };
 };  // namespace EXT_NAMESPACE
