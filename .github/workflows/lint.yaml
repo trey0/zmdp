@@ -1,0 +1,19 @@
+name: Check for lint errors
+
+on:
+  push:
+    branches: ['master']
+  pull_request:
+    branches: ['master']
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-20.04
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: cpplint
+      run: docker build . -f ./docker/Dockerfile_cpplint -t cpplint
