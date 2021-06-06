@@ -1,5 +1,4 @@
-#!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: example-pomdp-buildrc.mak,v 1.4 2006-04-28 17:57:41 trey Exp $
+#!gmake 	# Tell emacs about this file: -*- Makefile -*-
 #
 # Copyright (c) 1996-2005, Carnegie Mellon University. All rights reserved.
 #
@@ -34,20 +33,3 @@
 # and symlinks them to .)  note: not compatible with SKIP_LOCALS.
 
 # PUT_MY_BINARIES_RIGHT_HERE_THANK_YOU_VERY_MUCH := 1
-
-######################################################################
-# $Log: not supported by cvs2svn $
-# Revision 1.3  2005/10/28 03:34:41  trey
-# switched to simpler license
-#
-# Revision 1.2  2005/10/28 02:24:42  trey
-# added copyright headers
-#
-# Revision 1.1  2004/11/09 18:33:06  trey
-# adjusted to new project name
-#
-# Revision 1.1  2004/05/21 19:16:58  trey
-# branched example-buildrc.mak into two files, one for atacama and one for microraptor; added COMPILER_DIRECTORY_WITH_SLASH configuration variable
-#
-#
-#

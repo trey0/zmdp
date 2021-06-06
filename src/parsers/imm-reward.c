@@ -5,14 +5,14 @@
   Copyright 1998, 1999, Anthony R. Cassandra
 
                            All Rights Reserved
-                           
+
   Permission to use, copy, modify, and distribute this software and its
   documentation for any purpose other than its incorporation into a
   commercial product is hereby granted without fee, provided that the
   above copyright notice appear in all copies and that both that
   copyright notice and this permission notice appear in supporting
   documentation.
-  
+
   ANTHONY CASSANDRA DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
   INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR ANY
   PARTICULAR PURPOSE.  IN NO EVENT SHALL ANTHONY CASSANDRA BE LIABLE FOR
@@ -52,9 +52,9 @@ is not a notion of observation in MDPs) so we merely need a sparse NxN
 matrix for each action.  This will require us to keep track of the
 type of problem we have loaded.
 
-However, even for the MDP case we would like to take advantage of any 
-wildcard character shortcuts, so we use this module for both the MDP 
-and POMDP case.  However, things will be slightly different depending 
+However, even for the MDP case we would like to take advantage of any
+wildcard character shortcuts, so we use this module for both the MDP
+and POMDP case.  However, things will be slightly different depending
 upon the type of problem being parsed (in gProblemType).
 
 Here's how this module interacts with the parser: When the Parser sees
@@ -86,15 +86,15 @@ run through the entire list, setting the value each time we see a
 specification for it.  In this way we will be left with the last value
 that was specified in the file.  */
 
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <assert.h>
 #include <string.h>
 
+#include "decision-tree.h"
+#include "imm-reward.h"
 #include "mdp.h"
 #include "sparse-matrix.h"
-#include "imm-reward.h"
-#include "decision-tree.h"
 
 #define USE_DECISION_TREE (1)
 
@@ -102,7 +102,7 @@ that was specified in the file.  */
    at a time, so we will keep the intermediate matrix as a global
    variable.  When we start to enter a line we will initial it and
    when we are finished we will convert it and store the sparse matrix
-   into the node of the linked list.  */ 
+   into the node of the linked list.  */
 I_Matrix gCurIMatrix = NULL;
 
 /* We will have most of the information we need when we first start to
@@ -118,90 +118,91 @@ Imm_Reward_List gImmRewardList = NULL;
 void destroyImmRewards() {
   Imm_Reward_List temp;
 
-  while( gImmRewardList != NULL ) {
+  while (gImmRewardList != NULL) {
 
     temp = gImmRewardList;
     gImmRewardList = gImmRewardList->next;
 
-    switch( temp->type ) {
+    switch (temp->type) {
     case ir_vector:
-      free( temp->rep.vector );
+      free(temp->rep.vector);
       break;
 
     case ir_matrix:
-      destroyMatrix( temp->rep.matrix );
+      destroyMatrix(temp->rep.matrix);
       break;
 
     case ir_value:
     default:
       break;
-    }  /* switch */
+    } /* switch */
 
-    free( temp );
+    free(temp);
 
-  }  /* while */
+  } /* while */
 
 #if USE_DECISION_TREE
   dtDeallocate();
 #endif
 
-}  /* destroyImmRewardList */
+} /* destroyImmRewardList */
 /**********************************************************************/
-Imm_Reward_List appendImmRewardList( Imm_Reward_List list, Imm_Reward_List node ) {
+Imm_Reward_List appendImmRewardList(Imm_Reward_List list,
+                                    Imm_Reward_List node) {
   Imm_Reward_List temp = list;
 
-  if( temp == NULL )
-    return( node );
+  if (temp == NULL)
+    return (node);
 
-  while( temp->next != NULL ) 
+  while (temp->next != NULL)
     temp = temp->next;
 
   temp->next = node;
 
-  return( list );
+  return (list);
 
-}  /* appendImmRewardList */
+} /* appendImmRewardList */
 /**********************************************************************/
-void newImmReward( int action, int cur_state, int next_state, int obs ) {
-  
+void newImmReward(int action, int cur_state, int next_state, int obs) {
+
   /* First we will allocate a new node for this entry */
-  gCurImmRewardNode = (Imm_Reward_List) malloc( sizeof(*gCurImmRewardNode ));
-  
+  gCurImmRewardNode = (Imm_Reward_List)malloc(sizeof(*gCurImmRewardNode));
+
   gCurImmRewardNode->action = action;
   gCurImmRewardNode->cur_state = cur_state;
   gCurImmRewardNode->next_state = next_state;
   gCurImmRewardNode->obs = obs;
   gCurImmRewardNode->next = NULL;
 
-  switch( gProblemType ) {
+  switch (gProblemType) {
 
   case POMDP_problem_type:
-    if( obs == NOT_PRESENT) {
-      
-      if( next_state == NOT_PRESENT ) {
-       
-	/* This is the situation where we will need to keep a sparse 
-	   matrix, so let us initialize the global I_Matrix variable */
-	
-       gCurIMatrix = newIMatrix( gNumStates );
-       gCurImmRewardNode->rep.matrix = NULL;
-       gCurImmRewardNode->type = ir_matrix;
-       
-     } /* next_state == NOT_PRESENT */
-      
+    if (obs == NOT_PRESENT) {
+
+      if (next_state == NOT_PRESENT) {
+
+        /* This is the situation where we will need to keep a sparse
+           matrix, so let us initialize the global I_Matrix variable */
+
+        gCurIMatrix = newIMatrix(gNumStates);
+        gCurImmRewardNode->rep.matrix = NULL;
+        gCurImmRewardNode->type = ir_matrix;
+
+      } /* next_state == NOT_PRESENT */
+
       else { /* we will need a vector of numbers, not a matrix */
-	
-	gCurImmRewardNode->rep.vector = (double *) calloc( gNumObservations,
-							  sizeof(double));
-	gCurImmRewardNode->type = ir_vector;
-	
-      }  /* else need vector, not matrix */
-      
-    }  /* obs == NOT_PRESENT */
-    
-    else {  /* We only need a single value, so let us just initialize it */
+
+        gCurImmRewardNode->rep.vector =
+            (double *)calloc(gNumObservations, sizeof(double));
+        gCurImmRewardNode->type = ir_vector;
+
+      } /* else need vector, not matrix */
+
+    } /* obs == NOT_PRESENT */
+
+    else { /* We only need a single value, so let us just initialize it */
       /* to zero */
-      
+
       gCurImmRewardNode->rep.value = 0.0;
       gCurImmRewardNode->type = ir_value;
     }
@@ -209,259 +210,254 @@ void newImmReward( int action, int cur_state, int next_state, int obs ) {
 
   case MDP_problem_type:
     /* for this case we completely ignor 'obs' parameters */
-      
-    if( next_state == NOT_PRESENT ) {
-       
-      if( cur_state == NOT_PRESENT ) {
-	/* This is the situation where we will need to keep a sparse 
-	   matrix, so let us initialize the global I_Matrix variable.
-	   */
-	
-	gCurIMatrix = newIMatrix( gNumStates );
-	gCurImmRewardNode->rep.matrix = NULL;
-	gCurImmRewardNode->type = ir_matrix;
-	
+
+    if (next_state == NOT_PRESENT) {
+
+      if (cur_state == NOT_PRESENT) {
+        /* This is the situation where we will need to keep a sparse
+           matrix, so let us initialize the global I_Matrix variable.
+           */
+
+        gCurIMatrix = newIMatrix(gNumStates);
+        gCurImmRewardNode->rep.matrix = NULL;
+        gCurImmRewardNode->type = ir_matrix;
+
       } /* cur_state == NOT_PRESENT */
-      
+
       else { /* we will need a vector of numbers, not a matrix */
-	
-	gCurImmRewardNode->rep.vector = (double *) calloc( gNumStates,
-							  sizeof(double));
-	gCurImmRewardNode->type = ir_vector;
-	
-      }  /* else need vector, not matrix */
-      
-    }  /* next_state == NOT_PRESENT */
-    
-    else {  /* We only need a single value, so let us just initialize it */
+
+        gCurImmRewardNode->rep.vector =
+            (double *)calloc(gNumStates, sizeof(double));
+        gCurImmRewardNode->type = ir_vector;
+
+      } /* else need vector, not matrix */
+
+    } /* next_state == NOT_PRESENT */
+
+    else { /* We only need a single value, so let us just initialize it */
       /* to zero */
-      
+
       gCurImmRewardNode->rep.value = 0.0;
       gCurImmRewardNode->type = ir_value;
     }
     break;
-    
+
   default:
-    fprintf( stderr, "**ERR** newImmReward: Unreckognised problem type.\n");
-    exit( -1 );
+    fprintf(stderr, "**ERR** newImmReward: Unreckognised problem type.\n");
+    exit(-1);
     break;
 
-  }  /* switch */
+  } /* switch */
 
-}  /* newImmReward */
+} /* newImmReward */
 /**********************************************************************/
-void enterImmReward( int cur_state, int next_state, int obs, 
-		    double value ) {
+void enterImmReward(int cur_state, int next_state, int obs, double value) {
 
-/* cur_state is ignored for a POMDP, and obs is ignored for an MDP */
+  /* cur_state is ignored for a POMDP, and obs is ignored for an MDP */
 
-  assert( gCurImmRewardNode != NULL );
+  assert(gCurImmRewardNode != NULL);
 
-  switch( gCurImmRewardNode->type ) {
+  switch (gCurImmRewardNode->type) {
   case ir_value:
     gCurImmRewardNode->rep.value = value;
     break;
 
   case ir_vector:
-    if( gProblemType == POMDP_problem_type )
+    if (gProblemType == POMDP_problem_type)
       gCurImmRewardNode->rep.vector[obs] = value;
     else
       gCurImmRewardNode->rep.vector[next_state] = value;
     break;
 
   case ir_matrix:
-    if( gProblemType == POMDP_problem_type )
-      addEntryToIMatrix( gCurIMatrix, next_state, obs, value );
+    if (gProblemType == POMDP_problem_type)
+      addEntryToIMatrix(gCurIMatrix, next_state, obs, value);
     else
-      addEntryToIMatrix( gCurIMatrix, cur_state, next_state, value );
+      addEntryToIMatrix(gCurIMatrix, cur_state, next_state, value);
     break;
 
   default:
-    fprintf( stderr, "** ERR ** Unreckognized IR_Type in enterImmReward().\n");
-    exit( -1 );
+    fprintf(stderr, "** ERR ** Unreckognized IR_Type in enterImmReward().\n");
+    exit(-1);
     break;
-  }  /* switch */
+  } /* switch */
 
-}  /* enterImmReward */
+} /* enterImmReward */
 /**********************************************************************/
-void irAddToDecisionTree(Imm_Reward_List node)
-{
+void irAddToDecisionTree(Imm_Reward_List node) {
   int i, j, k;
   Matrix m;
 
-  assert( node != NULL );
+  assert(node != NULL);
 
-  /* ensure the decision tree is initialized (ok to call dtInit() more than once) */
+  /* ensure the decision tree is initialized (ok to call dtInit() more than
+   * once) */
   dtInit(gNumActions, gNumStates, gNumObservations);
 
-  switch( node->type ) {
+  switch (node->type) {
   case ir_value:
-    if ( gProblemType == POMDP_problem_type ) { /* pomdp */
-      dtAdd(node->action, node->cur_state, node->next_state, node->obs, node->rep.value);
+    if (gProblemType == POMDP_problem_type) { /* pomdp */
+      dtAdd(node->action, node->cur_state, node->next_state, node->obs,
+            node->rep.value);
     } else { /* mdp */
-      dtAdd(node->action, node->cur_state, node->next_state, WILDCARD_SPEC, node->rep.value);
+      dtAdd(node->action, node->cur_state, node->next_state, WILDCARD_SPEC,
+            node->rep.value);
     }
     break;
-    
+
   case ir_vector:
-    if ( gProblemType == POMDP_problem_type ) { /* pomdp */
-      for (i=0; i < gNumObservations; i++) {
-	dtAdd(node->action, node->cur_state, node->next_state, i, node->rep.vector[i]);
+    if (gProblemType == POMDP_problem_type) { /* pomdp */
+      for (i = 0; i < gNumObservations; i++) {
+        dtAdd(node->action, node->cur_state, node->next_state, i,
+              node->rep.vector[i]);
       }
     } else { /* mdp */
-      for (i=0; i < gNumStates; i++) {
-	dtAdd(node->action, node->cur_state, i, WILDCARD_SPEC, node->rep.vector[i]);
+      for (i = 0; i < gNumStates; i++) {
+        dtAdd(node->action, node->cur_state, i, WILDCARD_SPEC,
+              node->rep.vector[i]);
       }
     }
     break;
-    
+
   case ir_matrix:
     m = node->rep.matrix;
-    for (i=0; i < m->num_rows; i++) {
-      for (j=0; j < m->row_length[i]; j++) {
-	k = m->row_start[i] + j;
-	if( gProblemType == POMDP_problem_type )  { /* pomdp */
-	  dtAdd(node->action, node->cur_state, i, m->col[k], m->mat_val[k]);
-	} else { /* mdp */
-	  dtAdd(node->action, i, m->col[k], WILDCARD_SPEC, m->mat_val[k]);
-	}
+    for (i = 0; i < m->num_rows; i++) {
+      for (j = 0; j < m->row_length[i]; j++) {
+        k = m->row_start[i] + j;
+        if (gProblemType == POMDP_problem_type) { /* pomdp */
+          dtAdd(node->action, node->cur_state, i, m->col[k], m->mat_val[k]);
+        } else { /* mdp */
+          dtAdd(node->action, i, m->col[k], WILDCARD_SPEC, m->mat_val[k]);
+        }
       }
     }
     break;
-    
+
   default:
     assert(0 /* never reach this point */);
-  }  /* switch */
+  } /* switch */
 }
 /**********************************************************************/
 void doneImmReward() {
-  
-  if( gCurImmRewardNode == NULL )
+
+  if (gCurImmRewardNode == NULL)
     return;
 
-  switch( gCurImmRewardNode->type ) {
+  switch (gCurImmRewardNode->type) {
   case ir_value:
   case ir_vector:
     /* Do nothing for these cases */
     break;
-    
+
   case ir_matrix:
-    gCurImmRewardNode->rep.matrix = transformIMatrix( gCurIMatrix );
-    destroyIMatrix( gCurIMatrix );
+    gCurImmRewardNode->rep.matrix = transformIMatrix(gCurIMatrix);
+    destroyIMatrix(gCurIMatrix);
     gCurIMatrix = NULL;
     break;
 
   default:
-    fprintf( stderr, "** ERR ** Unreckognized IR_Type in doneImmReward().\n");
-    exit( -1 );
+    fprintf(stderr, "** ERR ** Unreckognized IR_Type in doneImmReward().\n");
+    exit(-1);
     break;
-  }  /* switch */
+  } /* switch */
 
 #if USE_DECISION_TREE
   irAddToDecisionTree(gCurImmRewardNode);
 #endif
 
-  gImmRewardList = appendImmRewardList( gImmRewardList,
-				       gCurImmRewardNode );
+  gImmRewardList = appendImmRewardList(gImmRewardList, gCurImmRewardNode);
   gCurImmRewardNode = NULL;
 
-}  /* doneImmReward */
+} /* doneImmReward */
 /**********************************************************************/
-double getImmediateReward( int action, int cur_state, int next_state,
-			   int obs ) {
+double getImmediateReward(int action, int cur_state, int next_state, int obs) {
 #if USE_DECISION_TREE
   return dtGet(action, cur_state, next_state, obs);
 #else
   Imm_Reward_List temp = gImmRewardList;
   double return_value = 0.0;
 
-  assert(( action >= 0) && (action < gNumActions)
-	 && (cur_state >= 0) && (cur_state < gNumStates)
-	 && (next_state >= 0) && (next_state < gNumStates));
+  assert((action >= 0) && (action < gNumActions) && (cur_state >= 0) &&
+         (cur_state < gNumStates) && (next_state >= 0) &&
+         (next_state < gNumStates));
 
-  while( temp != NULL ) {
-    
-    if((( temp->action == WILDCARD_SPEC )
-	|| ( temp->action == action ))) {
+  while (temp != NULL) {
 
-      switch( temp->type ) {
+    if (((temp->action == WILDCARD_SPEC) || (temp->action == action))) {
+
+      switch (temp->type) {
       case ir_value:
 
-	if( gProblemType == POMDP_problem_type ) {
-	  if((( temp->next_state == WILDCARD_SPEC )
-	      || ( temp->next_state == next_state))
-	     && ((temp->obs == WILDCARD_SPEC)
-		 || (temp->obs == obs ))
-	     && ((temp->cur_state == WILDCARD_SPEC)
-		 || (temp->cur_state == cur_state ))) {
+        if (gProblemType == POMDP_problem_type) {
+          if (((temp->next_state == WILDCARD_SPEC) ||
+               (temp->next_state == next_state)) &&
+              ((temp->obs == WILDCARD_SPEC) || (temp->obs == obs)) &&
+              ((temp->cur_state == WILDCARD_SPEC) ||
+               (temp->cur_state == cur_state))) {
 
-	    
-	    return_value = temp->rep.value;
-	    
-	  }  /* if we have a match */
-	}  /* if POMDP */
+            return_value = temp->rep.value;
 
-	else {  /* then it is an MDP */
-	  if((( temp->cur_state == WILDCARD_SPEC )
-	      || ( temp->cur_state == cur_state))
-	     && ((temp->next_state == WILDCARD_SPEC)
-		 || (temp->next_state == next_state ))) {
-	    
-	    return_value = temp->rep.value;
-	    
-	  }  /* if we have a match */
-	}
-	     break;
-    
+          } /* if we have a match */
+        }   /* if POMDP */
+
+        else { /* then it is an MDP */
+          if (((temp->cur_state == WILDCARD_SPEC) ||
+               (temp->cur_state == cur_state)) &&
+              ((temp->next_state == WILDCARD_SPEC) ||
+               (temp->next_state == next_state))) {
+
+            return_value = temp->rep.value;
+
+          } /* if we have a match */
+        }
+        break;
+
       case ir_vector:
 
-	if( gProblemType == POMDP_problem_type ) {
-	  if((( temp->next_state == WILDCARD_SPEC )
-	      || ( temp->next_state == next_state))
-	     && ((temp->cur_state == WILDCARD_SPEC)
-		 || (temp->cur_state == cur_state ))) {
-	    
-	    return_value = temp->rep.vector[obs];
-	  }
-	}  /* if POMDP */
+        if (gProblemType == POMDP_problem_type) {
+          if (((temp->next_state == WILDCARD_SPEC) ||
+               (temp->next_state == next_state)) &&
+              ((temp->cur_state == WILDCARD_SPEC) ||
+               (temp->cur_state == cur_state))) {
 
-	else {  /* it is an MDP */
-	  if(( temp->cur_state == WILDCARD_SPEC )
-	     || ( temp->cur_state == cur_state)) {
-	    
-	    return_value = temp->rep.vector[next_state];
-	  }
-	}
+            return_value = temp->rep.vector[obs];
+          }
+        } /* if POMDP */
 
-	break;
-    
+        else { /* it is an MDP */
+          if ((temp->cur_state == WILDCARD_SPEC) ||
+              (temp->cur_state == cur_state)) {
+
+            return_value = temp->rep.vector[next_state];
+          }
+        }
+
+        break;
+
       case ir_matrix:
-	if( gProblemType == POMDP_problem_type )  {
-	  if(( temp->cur_state == WILDCARD_SPEC )
-	     || (temp->cur_state == cur_state ))
-	    return_value = getEntryMatrix( temp->rep.matrix, next_state,
-					obs );
-	}
-	else
-	  return_value = getEntryMatrix( temp->rep.matrix, cur_state,
-					next_state );
+        if (gProblemType == POMDP_problem_type) {
+          if ((temp->cur_state == WILDCARD_SPEC) ||
+              (temp->cur_state == cur_state))
+            return_value = getEntryMatrix(temp->rep.matrix, next_state, obs);
+        } else
+          return_value =
+              getEntryMatrix(temp->rep.matrix, cur_state, next_state);
 
-	break;
+        break;
 
       default:
-	fprintf( stderr, 
-		"** ERR ** Unreckognized IR_Type in getImmediateReward().\n");
-	exit( -1 );
-	break;
-      }  /* switch */
+        fprintf(stderr,
+                "** ERR ** Unreckognized IR_Type in getImmediateReward().\n");
+        exit(-1);
+        break;
+      } /* switch */
 
-    
-    }  /* If we have a partially matching node */
+    } /* If we have a partially matching node */
 
     temp = temp->next;
-  }  /* while */
+  } /* while */
 
-  return( return_value );
+  return (return_value);
 #endif /* if USE_DECISION_TREE / else */
-}  /* getImmediateReward */
+} /* getImmediateReward */
 /**********************************************************************/

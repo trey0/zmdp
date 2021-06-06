@@ -1,5 +1,4 @@
-#!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: installheaders.mak,v 1.4 2006-04-28 17:57:41 trey Exp $
+#!gmake 	# Tell emacs about this file: -*- Makefile -*-
 #
 # Copyright (c) 1996-2005, Carnegie Mellon University. All rights reserved.
 #
@@ -35,34 +34,3 @@ INSTALLHEADERS_TARGETS += $(INSTALLHEADERS_HEADERS:%=$(TARGET_INC_DIR)/%)
 
 # clear input variables
 INSTALLHEADERS_HEADERS :=
-
-######################################################################
-# $Log: not supported by cvs2svn $
-# Revision 1.3  2005/10/28 03:34:41  trey
-# switched to simpler license
-#
-# Revision 1.2  2005/10/28 02:24:42  trey
-# added copyright headers
-#
-# Revision 1.1.1.1  2004/11/09 16:18:57  trey
-# imported hsvi into new repository
-#
-# Revision 1.4  2004/07/06 15:11:27  trey
-# installheaders.mak no longer clobbers INSTALLHEADERS_TARGETS; instead it appends to it
-#
-# Revision 1.3  2004/05/13 20:25:50  trey
-# synced up with atacama makefile system again
-#
-# Revision 1.3  2004/03/19 18:26:33  trey
-# cleaned up some variables
-#
-# Revision 1.2  2004/03/19 14:50:40  trey
-# major changes to support "gmake all" and other features atacama folks want
-#
-# Revision 1.1  2003/10/05 16:51:41  trey
-# initial atacama check-in
-#
-# Revision 1.1  2003/10/05 02:59:35  trey
-# initial microraptor check-in
-#
-#

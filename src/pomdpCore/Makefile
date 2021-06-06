@@ -1,5 +1,4 @@
-#!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.9 2007-03-22 18:25:49 trey Exp $
+#!gmake 	# Tell emacs about this file: -*- Makefile -*-
 #
 # Copyright (c) 2002-2005, Trey Smith. All rights reserved.
 #
@@ -30,7 +29,7 @@ maininstall:
 	$(MAKE) $(MFLAGS) -C .. -fMakefile SUBDIRS='pomdpCore main' install
 
 # ADD ANY SUBDIRS THAT NEED TO BE VISITED DURING A BUILD TO THE SUBDIRS LIST
-SUBDIRS := 
+SUBDIRS :=
 
 INSTALLHEADERS_HEADERS := \
 	Pomdp.h
@@ -47,7 +46,7 @@ ifneq (,$(TEST))
 
 BUILDBIN_TARGET := testPomdpRead
 BUILDBIN_SRCS := testPomdpRead.cc
-BUILDBIN_INDEP_LIBS := 
+BUILDBIN_INDEP_LIBS :=
 BUILDBIN_DEP_LIBS := -lzmdpPomdpCore -lzmdpPomdpParser -lzmdpCommon
 include $(BUILD_DIR)/buildbin.mak
 
@@ -57,31 +56,3 @@ endif
 # DO NOT MODIFY BELOW THIS POINT
 
 include $(BUILD_DIR)/footer.mak
-
-######################################################################
-# $Log: not supported by cvs2svn $
-# Revision 1.8  2007/01/14 01:24:40  trey
-# removed obsolete reference to boost
-#
-# Revision 1.7  2006/11/05 03:25:25  trey
-# added maininstall target for convenience
-#
-# Revision 1.6  2006/05/27 19:01:43  trey
-# added testPomdpRead
-#
-# Revision 1.5  2006/04/28 21:14:33  trey
-# removed QMDP
-#
-# Revision 1.4  2006/04/28 17:57:41  trey
-# changed to use apache license
-#
-# Revision 1.3  2006/04/06 04:13:20  trey
-# removed several files now in other directories
-#
-# Revision 1.2  2006/01/31 19:18:12  trey
-# added Pomdp{Lower,Upper}Bound
-#
-# Revision 1.1  2006/01/31 18:31:50  trey
-# moved many files from common to pomdpCore
-#
-#

@@ -1,5 +1,4 @@
-#!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: fixvars.mak,v 1.4 2006-04-28 17:57:41 trey Exp $
+#!gmake 	# Tell emacs about this file: -*- Makefile -*-
 #
 # Copyright (c) 1996-2005, Carnegie Mellon University. All rights reserved.
 #
@@ -40,22 +39,3 @@ ifneq (,$(COMFLAGS))
   LDFLAGS += $(COMFLAGS)
   COM_FLAGS :=
 endif
-
-######################################################################
-# $Log: not supported by cvs2svn $
-# Revision 1.3  2005/10/28 03:34:41  trey
-# switched to simpler license
-#
-# Revision 1.2  2005/10/28 02:24:42  trey
-# added copyright headers
-#
-# Revision 1.1.1.1  2004/11/09 16:18:57  trey
-# imported hsvi into new repository
-#
-# Revision 1.1  2004/05/13 20:25:50  trey
-# synced up with atacama makefile system again
-#
-# Revision 1.1  2004/03/19 19:43:25  trey
-# initial check-in, are you happy, dom?
-#
-#

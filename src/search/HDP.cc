@@ -1,6 +1,4 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.16 $  $Author: trey $  $Date: 2007-04-03 06:04:28 $
-   
  @file    HDP.cc
  @brief   Implementation of Bonet and Geffner's HDP algorithm.
 
@@ -36,21 +34,21 @@
   -Trey Smith, Feb. 2006
  **********************************************************************/
 
-#include <stdlib.h>
-#include <unistd.h>
-#include <stdio.h>
 #include <assert.h>
 #include <limits.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
 
-#include <iostream>
 #include <fstream>
+#include <iostream>
 #include <stack>
 
-#include "zmdpCommonDefs.h"
-#include "zmdpCommonTime.h"
+#include "HDP.h"
 #include "MatrixUtils.h"
 #include "Pomdp.h"
-#include "HDP.h"
+#include "zmdpCommonDefs.h"
+#include "zmdpCommonTime.h"
 
 using namespace std;
 using namespace sla;
@@ -58,41 +56,34 @@ using namespace MatrixUtils;
 
 namespace zmdp {
 
-HDP::HDP(void)
-{}
+HDP::HDP(void) {}
 
-void HDP::getNodeHandler(MDPNode& cn)
-{
-  HDPExtraNodeData* searchData = new HDPExtraNodeData;
+void HDP::getNodeHandler(MDPNode &cn) {
+  HDPExtraNodeData *searchData = new HDPExtraNodeData;
   cn.searchData = searchData;
   searchData->isSolved = cn.isTerminal;
   searchData->idx = RT_IDX_PLUS_INFINITY;
   searchData->low = RT_IDX_PLUS_INFINITY;
 }
 
-void HDP::staticGetNodeHandler(MDPNode& s, void* handlerData)
-{
-  HDP* x = (HDP *) handlerData;
+void HDP::staticGetNodeHandler(MDPNode &s, void *handlerData) {
+  HDP *x = (HDP *)handlerData;
   x->getNodeHandler(s);
 }
 
-bool& HDP::getIsSolved(const MDPNode& cn)
-{
-  return ((HDPExtraNodeData *) cn.searchData)->isSolved;
+bool &HDP::getIsSolved(const MDPNode &cn) {
+  return ((HDPExtraNodeData *)cn.searchData)->isSolved;
 }
 
-int& HDP::getLow(const MDPNode& cn)
-{
-  return ((HDPExtraNodeData *) cn.searchData)->low;
+int &HDP::getLow(const MDPNode &cn) {
+  return ((HDPExtraNodeData *)cn.searchData)->low;
 }
 
-int& HDP::getIdx(const MDPNode& cn)
-{
-  return ((HDPExtraNodeData *) cn.searchData)->idx;
+int &HDP::getIdx(const MDPNode &cn) {
+  return ((HDPExtraNodeData *)cn.searchData)->idx;
 }
 
-void HDP::cacheQ(MDPNode& cn)
-{
+void HDP::cacheQ(MDPNode &cn) {
   double oldUBVal = cn.ubVal;
   // bounds->update() changes both Q values and cn.ubVal
   bounds->update(cn, NULL);
@@ -102,24 +93,20 @@ void HDP::cacheQ(MDPNode& cn)
 }
 
 // assumes correct Q values are already cached (using cacheQ)
-double HDP::residual(MDPNode& cn)
-{
+double HDP::residual(MDPNode &cn) {
   int maxUBAction = bounds->getMaxUBAction(cn);
   return fabs(cn.ubVal - cn.Q[maxUBAction].ubVal);
 }
 
-void HDP::updateInternal(MDPNode& cn)
-{
+void HDP::updateInternal(MDPNode &cn) {
   cacheQ(cn);
   int maxUBAction = bounds->getMaxUBAction(cn);
   cn.ubVal = cn.Q[maxUBAction].ubVal;
 }
 
-bool HDP::trialRecurse(MDPNode& cn, int depth)
-{
+bool HDP::trialRecurse(MDPNode &cn, int depth) {
   if (zmdpDebugLevelG >= 1) {
-    printf("  trialRecurse: depth=%d ubVal=%g\n",
-	   depth, cn.ubVal);
+    printf("  trialRecurse: depth=%d ubVal=%g\n", depth, cn.ubVal);
     printf("  trialRecurse: s=%s\n", sparseRep(cn.s).c_str());
   }
 
@@ -152,25 +139,26 @@ bool HDP::trialRecurse(MDPNode& cn, int depth)
 
   // recursive call
   bool flag = false;
-  MDPQEntry& Qa = cn.Q[maxUBAction];
-  //printf("    pre low=%d idx=%d\n", getLow(cn), getIdx(cn));
-  FOR (o, Qa.getNumOutcomes()) {
-    MDPEdge* e = Qa.outcomes[o];
+  MDPQEntry &Qa = cn.Q[maxUBAction];
+  // printf("    pre low=%d idx=%d\n", getLow(cn), getIdx(cn));
+  FOR(o, Qa.getNumOutcomes()) {
+    MDPEdge *e = Qa.outcomes[o];
     if (NULL != e) {
-      MDPNode& sn = *e->nextState;
-      //printf("      a=%d o=%d sn=[%s] sn.idx=%d\n", maxUBAction, o, denseRep(sn.s).c_str(), getIdx(sn));
+      MDPNode &sn = *e->nextState;
+      // printf("      a=%d o=%d sn=[%s] sn.idx=%d\n", maxUBAction, o,
+      // denseRep(sn.s).c_str(), getIdx(sn));
 
       if (RT_IDX_PLUS_INFINITY == getIdx(sn)) {
-	if (trialRecurse(sn, depth+1)) {
-	  flag = true;
-	}
-	getLow(cn) = std::min(getLow(cn), getLow(sn));
+        if (trialRecurse(sn, depth + 1)) {
+          flag = true;
+        }
+        getLow(cn) = std::min(getLow(cn), getLow(sn));
       } else if (nodeStack.contains(&sn)) {
-	getLow(cn) = std::min(getLow(cn), getIdx(sn));
+        getLow(cn) = std::min(getLow(cn), getIdx(sn));
       }
     }
   }
-  //printf("    post low=%d idx=%d\n", getLow(cn), getIdx(cn));
+  // printf("    post low=%d idx=%d\n", getLow(cn), getIdx(cn));
 
   // update if necessary
   if (flag) {
@@ -183,7 +171,7 @@ bool HDP::trialRecurse(MDPNode& cn, int depth)
   else if (getIdx(cn) == getLow(cn)) {
     printf("  marking %d nodes solved\n", (int)nodeStack.size());
     while (nodeStack.top() != &cn) {
-      MDPNode& sn = *nodeStack.pop();
+      MDPNode &sn = *nodeStack.pop();
       getIsSolved(sn) = true;
     }
     nodeStack.pop();
@@ -193,15 +181,14 @@ bool HDP::trialRecurse(MDPNode& cn, int depth)
   return flag;
 }
 
-bool HDP::doTrial(MDPNode& cn)
-{
+bool HDP::doTrial(MDPNode &cn) {
   if (getIsSolved(cn)) {
     printf("-*- doTrial: root node is solved, terminating\n");
     return true;
   }
 
   if (zmdpDebugLevelG >= 1) {
-    printf("-*- doTrial: trial %d\n", (numTrials+1));
+    printf("-*- doTrial: trial %d\n", (numTrials + 1));
   }
 
   index = 0;
@@ -219,60 +206,8 @@ bool HDP::doTrial(MDPNode& cn)
   return false;
 }
 
-void HDP::derivedClassInit(void)
-{
+void HDP::derivedClassInit(void) {
   bounds->addGetNodeHandler(&HDP::staticGetNodeHandler, this);
 }
 
 }; // namespace zmdp
-
-/***************************************************************************
- * REVISION HISTORY:
- * $Log: not supported by cvs2svn $
- * Revision 1.15  2006/10/30 20:00:15  trey
- * USE_DEBUG_PRINT replaced with a run-time config parameter "debugLevel"
- *
- * Revision 1.14  2006/10/24 02:37:05  trey
- * updated for modified bounds interfaces
- *
- * Revision 1.13  2006/10/20 04:56:35  trey
- * removed obsolete comment
- *
- * Revision 1.12  2006/10/19 19:31:16  trey
- * added support for backup logging
- *
- * Revision 1.11  2006/06/14 00:22:40  trey
- * fixed printf format warning
- *
- * Revision 1.10  2006/05/20 03:50:54  trey
- * fixed printf format to avoid warning
- *
- * Revision 1.9  2006/04/28 17:57:41  trey
- * changed to use apache license
- *
- * Revision 1.8  2006/04/07 19:41:30  trey
- * removed initLowerBound, initUpperBound arguments to constructor
- *
- * Revision 1.7  2006/04/06 04:14:50  trey
- * changed how bounds are initialized
- *
- * Revision 1.6  2006/04/04 17:23:58  trey
- * modified to use IncrementalBounds methods
- *
- * Revision 1.5  2006/03/17 20:06:13  trey
- * fixed compile warning
- *
- * Revision 1.4  2006/02/27 20:12:36  trey
- * cleaned up meta-information in header
- *
- * Revision 1.3  2006/02/20 00:04:49  trey
- * added optional lower bound use
- *
- * Revision 1.2  2006/02/19 18:33:36  trey
- * targetPrecision now stared as a field rather than passed around recursively
- *
- * Revision 1.1  2006/02/17 18:20:55  trey
- * initial check-in
- *
- *
- ***************************************************************************/

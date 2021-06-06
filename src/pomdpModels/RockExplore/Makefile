@@ -1,5 +1,4 @@
-#!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.5 2007-03-23 02:19:19 trey Exp $
+#!gmake 	# Tell emacs about this file: -*- Makefile -*-
 #
 # Copyright (c) 2008, Trey Smith.
 #
@@ -30,7 +29,7 @@ maininstall:
 	$(MAKE) $(MFLAGS) -C .. -fMakefile SUBDIRS='pomdpBounds main' install
 
 # ADD ANY SUBDIRS THAT NEED TO BE VISITED DURING A BUILD TO THE SUBDIRS LIST
-SUBDIRS := 
+SUBDIRS :=
 
 RE_LIBS := \
 	-lzmdpExec \
@@ -59,19 +58,3 @@ endif
 # DO NOT MODIFY BELOW THIS POINT
 
 include $(BUILD_DIR)/footer.mak
-
-######################################################################
-# $Log: not supported by cvs2svn $
-# Revision 1.4  2007/03/07 08:12:27  trey
-# refactored things
-#
-# Revision 1.3  2007/03/06 08:46:56  trey
-# many tweaks
-#
-# Revision 1.2  2007/03/06 04:32:47  trey
-# working towards heuristic policies
-#
-# Revision 1.1  2007/03/05 08:58:26  trey
-# initial check-in
-#
-#

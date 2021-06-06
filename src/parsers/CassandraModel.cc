@@ -1,9 +1,4 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.4 $  $Author: trey $  $Date: 2007-04-08 22:48:04 $
-  
- @file    CassandraModel.cc
- @brief   No brief
-
  Copyright (c) 2002-2005, Trey Smith. All rights reserved.
 
  Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -25,13 +20,13 @@
  ***************************************************************************/
 
 #include <assert.h>
-#include <stdlib.h>
-#include <unistd.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/time.h>
+#include <unistd.h>
 
-#include <iostream>
 #include <fstream>
+#include <iostream>
 
 #include "CassandraModel.h"
 
@@ -39,40 +34,37 @@ using namespace std;
 
 namespace zmdp {
 
-CassandraModel::CassandraModel(void) :
-  numStates(-1),
-  numObservations(-1)
-{}
+CassandraModel::CassandraModel(void) : numStates(-1), numObservations(-1) {}
 
-void CassandraModel::checkForTerminalStates(void)
-{
+void CassandraModel::checkForTerminalStates(void) {
   if (zmdpDebugLevelG >= 1) {
-    printf("model initialization -- marking zero-reward absorbing states as terminal\n");
+    printf("model initialization -- marking zero-reward absorbing states as "
+           "terminal\n");
   }
   isTerminalState.resize(numStates, /* initialValue = */ true);
-  FOR (s, numStates) {
-    FOR (a, numActions) {
-      if ((fabs(1.0 - T[a](s,s)) > OBS_IS_ZERO_EPS) || R(s,a) != 0.0) {
-	isTerminalState[s] = false;
-	break;
+  FOR(s, numStates) {
+    FOR(a, numActions) {
+      if ((fabs(1.0 - T[a](s, s)) > OBS_IS_ZERO_EPS) || R(s, a) != 0.0) {
+        isTerminalState[s] = false;
+        break;
       }
     }
   }
 }
 
-void CassandraModel::debugDensity(void)
-{
+void CassandraModel::debugDensity(void) {
   double T_size = -1, T_filled = -1;
   double O_size = -1, O_filled = -1;
 
-  // use doubles to avoid int overflow (e.g. T_size is sometimes larger than MAX_INT)
-  T_size = ((double) T[0].size1()) * T[0].size2() * numActions;
+  // use doubles to avoid int overflow (e.g. T_size is sometimes larger than
+  // MAX_INT)
+  T_size = ((double)T[0].size1()) * T[0].size2() * numActions;
   T_filled = 0;
   if (-1 != numObservations) {
-    O_size = ((double) O[0].size1()) * O[0].size2() * numActions;
+    O_size = ((double)O[0].size1()) * O[0].size2() * numActions;
     O_filled = 0;
   }
-  FOR (a, numActions) {
+  FOR(a, numActions) {
     T_filled += T[a].filled();
     if (-1 != numObservations) {
       O_filled += O[a].filled();
@@ -80,28 +72,11 @@ void CassandraModel::debugDensity(void)
   }
 
   if (-1 == numObservations) {
-    cout << "T density = " << (T_filled / T_size)
-	 << endl;
+    cout << "T density = " << (T_filled / T_size) << endl;
   } else {
     cout << "T density = " << (T_filled / T_size)
-	 << ", O density = " << (O_filled / O_size)
-	 << endl;
+         << ", O density = " << (O_filled / O_size) << endl;
   }
 }
 
 }; // namespace zmdp
-
-/***************************************************************************
- * REVISION HISTORY:
- * $Log: not supported by cvs2svn $
- * Revision 1.3  2006/11/09 21:01:33  trey
- * added bogus initialization code to avoid compilation warnings
- *
- * Revision 1.2  2006/11/09 20:47:46  trey
- * added initialState field for MDPs, fixed a potential problem with accessing undefined observation matrices with MDPs
- *
- * Revision 1.1  2006/11/08 16:40:50  trey
- * initial check-in
- *
- *
- ***************************************************************************/

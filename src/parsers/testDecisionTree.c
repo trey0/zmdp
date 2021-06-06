@@ -1,6 +1,4 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2006-09-21 16:32:28 $
-   
  @file    testDecisionTree.c
  @brief   No brief
 
@@ -20,13 +18,12 @@
 
  ***************************************************************************/
 
-#include <stdio.h>
 #include <assert.h>
+#include <stdio.h>
 
 #include "decision-tree.h"
 
-void testOnce(void)
-{
+void testOnce(void) {
   double result;
 
   /* set up table */
@@ -38,7 +35,7 @@ void testOnce(void)
   dtAdd(0, 1, 3, -1, -10.1);
   dtAdd(0, 1, 3, -1, -10.3);
 
-  dtAdd(1, 0, 0,  -1, 6.0);
+  dtAdd(1, 0, 0, -1, 6.0);
   dtAdd(1, 0, -1, -1, 7.0);
 
   dtAdd(-1, 2, -1, -1, 2.7);
@@ -64,22 +61,9 @@ void testOnce(void)
   dtDeallocate();
 }
 
-int main(int argc, char** argv)
-{
+int main(int argc, char **argv) {
   testOnce();
   testOnce();
 
   return 0;
 }
-
-/***************************************************************************
- * REVISION HISTORY:
- * $Log: not supported by cvs2svn $
- * Revision 1.2  2006/05/29 05:48:11  trey
- * added more tests
- *
- * Revision 1.1  2006/05/29 05:02:52  trey
- * initial check-in
- *
- *
- ***************************************************************************/

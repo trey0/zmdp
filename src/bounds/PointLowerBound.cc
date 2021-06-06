@@ -1,9 +1,4 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2007-01-14 00:53:30 $
-   
- @file    PointLowerBound.cc
- @brief   No brief
-
  Copyright (c) 2006, Trey Smith.
 
  Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -25,17 +20,17 @@
  ***************************************************************************/
 
 //#include <assert.h>
+#include <assert.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <stdio.h>
-#include <assert.h>
 
-#include <iostream>
 #include <fstream>
+#include <iostream>
 
-#include "zmdpCommonDefs.h"
 #include "MatrixUtils.h"
 #include "PointLowerBound.h"
+#include "zmdpCommonDefs.h"
 
 using namespace std;
 using namespace MatrixUtils;
@@ -43,27 +38,19 @@ using namespace sla;
 
 namespace zmdp {
 
-PointLowerBound::PointLowerBound(const MDP* _problem,
-				 const ZMDPConfig* _config,
-				 BoundPairCore* _core) :
-  problem(_problem),
-  config(_config),
-  core(_core),
-  initBound(NULL)
-{}
+PointLowerBound::PointLowerBound(const MDP *_problem, const ZMDPConfig *_config,
+                                 BoundPairCore *_core)
+    : problem(_problem), config(_config), core(_core), initBound(NULL) {}
 
-PointLowerBound::~PointLowerBound(void)
-{}
+PointLowerBound::~PointLowerBound(void) {}
 
-void PointLowerBound::initialize(double _targetPrecision)
-{
+void PointLowerBound::initialize(double _targetPrecision) {
   targetPrecision = _targetPrecision;
   initBound->initialize(targetPrecision);
 }
 
-double PointLowerBound::getValue(const state_vector& s,
-				 const MDPNode* cn) const
-{
+double PointLowerBound::getValue(const state_vector &s,
+                                 const MDPNode *cn) const {
   if (NULL == cn) {
     return initBound->getValue(s, NULL);
   } else {
@@ -71,8 +58,7 @@ double PointLowerBound::getValue(const state_vector& s,
   }
 }
 
-void PointLowerBound::initNodeBound(MDPNode& cn)
-{
+void PointLowerBound::initNodeBound(MDPNode &cn) {
   if (cn.isTerminal) {
     cn.lbVal = 0;
   } else {
@@ -80,20 +66,19 @@ void PointLowerBound::initNodeBound(MDPNode& cn)
   }
 }
 
-void PointLowerBound::update(MDPNode& cn)
-{
+void PointLowerBound::update(MDPNode &cn) {
   double lbVal;
   double maxLBVal = -99e+20;
 
-  FOR (a, cn.getNumActions()) {
-    MDPQEntry& Qa = cn.Q[a];
+  FOR(a, cn.getNumActions()) {
+    MDPQEntry &Qa = cn.Q[a];
     lbVal = 0;
-    FOR (o, Qa.getNumOutcomes()) {
-      MDPEdge* e = Qa.outcomes[o];
+    FOR(o, Qa.getNumOutcomes()) {
+      MDPEdge *e = Qa.outcomes[o];
       if (NULL != e) {
-	MDPNode& sn = *e->nextState;
-	double oprob = e->obsProb;
-	lbVal += oprob * sn.lbVal;
+        MDPNode &sn = *e->nextState;
+        double oprob = e->obsProb;
+        lbVal += oprob * sn.lbVal;
       }
     }
     lbVal = Qa.immediateReward + problem->getDiscount() * lbVal;
@@ -111,8 +96,7 @@ void PointLowerBound::update(MDPNode& cn)
 #endif
 }
 
-int PointLowerBound::getStorage(int whichMetric) const
-{
+int PointLowerBound::getStorage(int whichMetric) const {
   switch (whichMetric) {
   case ZMDP_S_NUM_ELTS:
   case ZMDP_S_NUM_ENTRIES:
@@ -128,12 +112,3 @@ int PointLowerBound::getStorage(int whichMetric) const
 }
 
 }; // namespace zmdp
-
-/***************************************************************************
- * REVISION HISTORY:
- * $Log: not supported by cvs2svn $
- * Revision 1.1  2006/10/24 02:06:16  trey
- * initial check-in
- *
- *
- ***************************************************************************/

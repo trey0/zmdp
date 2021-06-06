@@ -1,5 +1,4 @@
-#!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: buildlib.mak,v 1.4 2006-04-28 17:57:41 trey Exp $
+#!gmake 	# Tell emacs about this file: -*- Makefile -*-
 #
 # Copyright (c) 1996-2005, Carnegie Mellon University. All rights reserved.
 #
@@ -73,58 +72,3 @@ endif
 # clear input variables
 BUILDLIB_TARGET :=
 BUILDLIB_SRCS :=
-
-######################################################################
-# $Log: not supported by cvs2svn $
-# Revision 1.3  2005/10/28 03:34:41  trey
-# switched to simpler license
-#
-# Revision 1.2  2005/10/28 02:24:42  trey
-# added copyright headers
-#
-# Revision 1.1.1.1  2004/11/09 16:18:57  trey
-# imported hsvi into new repository
-#
-# Revision 1.3  2004/05/13 20:25:50  trey
-# synced up with atacama makefile system again
-#
-# Revision 1.5  2004/04/19 17:53:08  trey
-# fixed dependency problem
-#
-# Revision 1.4  2004/03/19 18:26:33  trey
-# cleaned up some variables
-#
-# Revision 1.3  2004/03/19 16:23:07  trey
-# fixed some bugs i found with dom
-#
-# Revision 1.2  2004/03/19 14:50:40  trey
-# major changes to support "gmake all" and other features atacama folks want
-#
-# Revision 1.1  2003/10/05 16:51:41  trey
-# initial atacama check-in
-#
-# Revision 1.1  2003/10/05 02:59:35  trey
-# initial microraptor check-in
-#
-# Revision 1.1.1.1  2001/08/27 15:46:51  trey
-# initial check-in
-#
-# Revision 1.6  2000/09/30 23:25:37  trey
-# modified makefile system to put generated source and header files in the gen/ directory
-#
-# Revision 1.5  2000/02/14 20:34:35  trey
-# fixed afs-related problems
-#
-# Revision 1.4  2000/02/02 18:35:28  trey
-# fixed unfortunate tendency to remake dependencies on gmake clean, some other minor fixes
-#
-# Revision 1.3  1999/11/03 20:51:43  trey
-# added support for flex/bison, tweaked other stuff
-#
-# Revision 1.2  1999/10/27 18:40:57  trey
-# Makefile system overhaul after talking to Reid
-#
-# Revision 1.1.1.1  1999/10/27 02:48:58  trey
-# Imported sources
-#
-#

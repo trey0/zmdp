@@ -1,5 +1,4 @@
-#!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: cygwin_nt-5.11.mak,v 1.1 2006-11-29 21:00:33 trey Exp $
+#!gmake 	# Tell emacs about this file: -*- Makefile -*-
 #
 # Copyright (c) 1996-2005, Carnegie Mellon University. All rights reserved.
 #
@@ -19,7 +18,3 @@
 # DESCRIPTION:  Variable values specific to Cygwin
 
 CFLAGS += -DCYGWIN
-
-######################################################################
-# $Log: not supported by cvs2svn $
-#

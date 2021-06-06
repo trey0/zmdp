@@ -1,9 +1,4 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2007-03-23 00:00:36 $
-   
- @file    MDPExec.h
- @brief   No brief
-
  Copyright (c) 2006, Trey Smith. All rights reserved.
 
  Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -46,7 +41,7 @@ struct MDPExecCore {
 // MDPExec adds some default class members to MDPExecCore,
 // makes inheritance easier in some cases.
 struct MDPExec : public MDPExecCore {
-  MDP* mdp;
+  MDP *mdp;
   bool currentStateInitialized;
   belief_vector currentState;
 
@@ -56,25 +51,10 @@ struct MDPExec : public MDPExecCore {
   bool getStateIsTerminal(void) const;
 
   // helpful for debugging
-  state_vector& getState(state_vector& s) const;
+  state_vector &getState(state_vector &s) const;
   int getRandomOutcome(int a) const;
 };
 
 }; // namespace zmdp
 
 #endif // INCMDPExec_h
-
-/***************************************************************************
- * REVISION HISTORY:
- * $Log: not supported by cvs2svn $
- * Revision 1.3  2007/03/06 06:57:08  trey
- * added even more abstract interface for execs to implement, turned out to be useful for the RockExplore lesson
- *
- * Revision 1.2  2006/06/27 18:20:18  trey
- * turned PomdpExec into an abstract class; most of the original implementation is now in the derived class MaxPlanesLowerBoundExec
- *
- * Revision 1.1  2006/06/24 16:25:28  trey
- * initial check-in
- *
- *
- ***************************************************************************/

@@ -1,6 +1,4 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2007-03-05 23:33:24 $
-   
  @file    RockSample.h
  @brief   This is a C++ implementation of the RockSample model.
 
@@ -34,7 +32,7 @@ struct Pos2D {
 struct RockSampleProblemParams {
   // the dimensions of the map in the x and y axes respectively
   int width, height;
-  
+
   // the starting position of the robot
   Pos2D initPos;
 
@@ -42,24 +40,24 @@ struct RockSampleProblemParams {
   int numRocks;
 
   // the position of each rock
-  Pos2D* rockPos;
+  Pos2D *rockPos;
 
   // the prior probability of each rock being good
-  double* rockGoodPrior;
+  double *rockGoodPrior;
 
   // the reward received for exiting the map
-  
 };
 
 struct RockSampleState {
-  // if true, we are in the unique 'terminal' state and the other fields are ignored
+  // if true, we are in the unique 'terminal' state and the other fields are
+  // ignored
   bool isTerminalState;
 
   // position of the robot
   int x, y;
 
   // a boolean value indicating whether each rock is good
-  bool* rockIsGood;
+  bool *rockIsGood;
 };
 
 struct RockSample : public MDP {
@@ -68,30 +66,22 @@ struct RockSample : public MDP {
 
   // You can declare any additional variables you need here.
 
-  RockSample(const ZMDPConfig& config);
+  RockSample(const ZMDPConfig &config);
   ~RockSample(void);
 
-  const state_vector& getInitialState(void) const;
-  bool getIsTerminalState(const state_vector& s) const;
-  outcome_prob_vector& getOutcomeProbVector(outcome_prob_vector& result,
-					    const state_vector& s, int a)
-       const;
-  state_vector& getNextState(state_vector& result, const state_vector& s, int a,
-			     int o) const;
-  double getReward(const state_vector& s, int a) const;
+  const state_vector &getInitialState(void) const;
+  bool getIsTerminalState(const state_vector &s) const;
+  outcome_prob_vector &getOutcomeProbVector(outcome_prob_vector &result,
+                                            const state_vector &s, int a) const;
+  state_vector &getNextState(state_vector &result, const state_vector &s, int a,
+                             int o) const;
+  double getReward(const state_vector &s, int a) const;
 
-  double getInitialLowerBoundValue(const state_vector& s) const;
-  double getInitialUpperBoundValue(const state_vector& s) const;
+  double getInitialLowerBoundValue(const state_vector &s) const;
+  double getInitialUpperBoundValue(const state_vector &s) const;
 
-  AbstractBound* newLowerBound(const ZMDPConfig* _config) const;
-  AbstractBound* newUpperBound(const ZMDPConfig* _config) const;
+  AbstractBound *newLowerBound(const ZMDPConfig *_config) const;
+  AbstractBound *newUpperBound(const ZMDPConfig *_config) const;
 };
 
 #endif // INCRockSample_h
-
-/***************************************************************************
- * REVISION HISTORY:
- * $Log: not supported by cvs2svn $
- *
- ***************************************************************************/
-

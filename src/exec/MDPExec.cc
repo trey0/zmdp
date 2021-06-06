@@ -1,9 +1,4 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2007-03-23 00:00:36 $
-   
- @file    MDPExec.cc
- @brief   No brief
-
  Copyright (c) 2002-2006, Trey Smith. All rights reserved.
 
  Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -25,18 +20,18 @@
  ***************************************************************************/
 
 //#include <assert.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <stdio.h>
 #include <assert.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <sys/time.h>
+#include <unistd.h>
 
-#include <iostream>
 #include <fstream>
+#include <iostream>
 
-#include "zmdpCommonDefs.h"
-#include "MatrixUtils.h"
 #include "MDPExec.h"
+#include "MatrixUtils.h"
+#include "zmdpCommonDefs.h"
 
 using namespace std;
 using namespace MatrixUtils;
@@ -44,38 +39,21 @@ using namespace sla;
 
 namespace zmdp {
 
-MDPExec::MDPExec(void) :
-  mdp(NULL),
-  currentStateInitialized(false)
-{}
+MDPExec::MDPExec(void) : mdp(NULL), currentStateInitialized(false) {}
 
-bool MDPExec::getStateIsTerminal(void) const
-{
+bool MDPExec::getStateIsTerminal(void) const {
   return mdp->getIsTerminalState(currentState);
 }
 
-state_vector& MDPExec::getState(state_vector& s) const
-{
+state_vector &MDPExec::getState(state_vector &s) const {
   s = currentState;
   return s;
 }
 
-int MDPExec::getRandomOutcome(int a) const
-{
+int MDPExec::getRandomOutcome(int a) const {
   obs_prob_vector opv;
-  return chooseFromDistribution(mdp->getOutcomeProbVector(opv, currentState, a));
+  return chooseFromDistribution(
+      mdp->getOutcomeProbVector(opv, currentState, a));
 }
 
 }; // namespace zmdp
-
-/***************************************************************************
- * REVISION HISTORY:
- * $Log: not supported by cvs2svn $
- * Revision 1.2  2006/06/27 18:20:18  trey
- * turned PomdpExec into an abstract class; most of the original implementation is now in the derived class MaxPlanesLowerBoundExec
- *
- * Revision 1.1  2006/06/24 16:25:27  trey
- * initial check-in
- *
- *
- ***************************************************************************/

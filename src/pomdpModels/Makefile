@@ -1,5 +1,4 @@
 #!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.1 2006-07-26 21:04:35 trey Exp $
 #
 # Copyright (c) 2002-2005, Trey Smith. All rights reserved.
 #
@@ -33,7 +32,3 @@ SUBDIRS := lifeSurvey
 # DO NOT MODIFY BELOW THIS POINT
 
 include $(BUILD_DIR)/footer.mak
-
-######################################################################
-# $Log: not supported by cvs2svn $
-#

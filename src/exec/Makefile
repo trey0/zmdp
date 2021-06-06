@@ -1,5 +1,4 @@
-#!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.7 2007-04-19 22:17:35 trey Exp $
+#!gmake 	# Tell emacs about this file: -*- Makefile -*-
 #
 # Copyright (c) 2006, Trey Smith. All rights reserved.
 #
@@ -30,7 +29,7 @@ maininstall:
 	$(MAKE) $(MFLAGS) -C .. -fMakefile SUBDIRS='exec main' install
 
 # ADD ANY SUBDIRS THAT NEED TO BE VISITED DURING A BUILD TO THE SUBDIRS LIST
-SUBDIRS := 
+SUBDIRS :=
 
 CFLAGS +=
 
@@ -53,7 +52,7 @@ ifneq (,$(TEST))
 
 BUILDBIN_TARGET := testExec
 BUILDBIN_SRCS := testExec.cc
-BUILDBIN_INDEP_LIBS := 
+BUILDBIN_INDEP_LIBS :=
 BUILDBIN_DEP_LIBS := \
 	-lzmdpExec \
 	-lzmdpPomdpCore \
@@ -70,25 +69,3 @@ endif
 # DO NOT MODIFY BELOW THIS POINT
 
 include $(BUILD_DIR)/footer.mak
-
-######################################################################
-# $Log: not supported by cvs2svn $
-# Revision 1.6  2007/03/23 02:12:39  trey
-# renamed libzmdpPomdpExec.a to libzmdpExec.a for consistency
-#
-# Revision 1.5  2007/03/23 01:05:06  trey
-# added PolicyEvaluator
-#
-# Revision 1.4  2007/03/23 00:25:55  trey
-# renamed testPomdpExec to testMDPExec
-#
-# Revision 1.3  2007/03/23 00:01:04  trey
-# fixed to reflect migration from PomdpExec to MDPExec base class
-#
-# Revision 1.2  2006/06/27 18:20:31  trey
-# added MaxPlanesLowerBoundExec
-#
-# Revision 1.1  2006/06/24 16:25:27  trey
-# initial check-in
-#
-#

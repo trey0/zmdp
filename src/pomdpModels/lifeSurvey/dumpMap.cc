@@ -1,9 +1,4 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-09-12 19:46:46 $
-  
- @file    dumpMap.cc
- @brief   No brief
-
  Copyright (c) 2006, Trey Smith. All rights reserved.
 
  Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -25,19 +20,19 @@
  ***************************************************************************/
 
 #include <assert.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <stdio.h>
-#include <sys/time.h>
-#include <getopt.h>
 #include <errno.h>
+#include <getopt.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <sys/time.h>
+#include <unistd.h>
 
-#include <iostream>
 #include <fstream>
+#include <iostream>
 #include <map>
-#include <vector>
 #include <queue>
+#include <vector>
 
 #include "LifeSurvey.h"
 
@@ -48,19 +43,19 @@ using namespace zmdp;
  * HELPER FUNCTIONS
  **********************************************************************/
 
-static bool endsWith(const std::string& s,
-		     const std::string& suffix)
-{
-  if (s.size() < suffix.size()) return false;
+static bool endsWith(const std::string &s, const std::string &suffix) {
+  if (s.size() < suffix.size())
+    return false;
   return (s.substr(s.size() - suffix.size()) == suffix);
 }
 
-static std::string replaceSuffix(const std::string& s,
-				 const std::string& suffix,
-				 const std::string& replacement)
-{
-  if (s.size() < suffix.size()) return s;
-  if (s.substr(s.size() - suffix.size()) != suffix) return s;
+static std::string replaceSuffix(const std::string &s,
+                                 const std::string &suffix,
+                                 const std::string &replacement) {
+  if (s.size() < suffix.size())
+    return s;
+  if (s.substr(s.size() - suffix.size()) != suffix)
+    return s;
 
   std::string ret = s;
   ret.replace(ret.size() - suffix.size(), suffix.size(), replacement);
@@ -71,23 +66,22 @@ static std::string replaceSuffix(const std::string& s,
  * MAIN
  **********************************************************************/
 
-void usage(const char* argv0) {
-  cerr <<
-    "usage: " << argv0 << " OPTIONS <my.lifeSurvey> [my.mapDump]\n"
-    "  -h or --help         Display this help\n";
+void usage(const char *argv0) {
+  cerr << "usage: " << argv0
+       << " OPTIONS <my.lifeSurvey> [my.mapDump]\n"
+          "  -h or --help         Display this help\n";
   exit(EXIT_FAILURE);
 }
 
 int main(int argc, char *argv[]) {
   static char shortOptions[] = "hft:";
-  static struct option longOptions[]={
-    {"help",          0,NULL,'h'},
-    {NULL,0,0,0}
-  };
+  static struct option longOptions[] = {{"help", 0, NULL, 'h'},
+                                        {NULL, 0, 0, 0}};
 
   while (1) {
-    char optchar = getopt_long(argc,argv,shortOptions,longOptions,NULL);
-    if (optchar == -1) break;
+    char optchar = getopt_long(argc, argv, shortOptions, longOptions, NULL);
+    if (optchar == -1)
+      break;
 
     switch (optchar) {
     case 'h': // help
@@ -104,22 +98,24 @@ int main(int argc, char *argv[]) {
       abort(); // never reach this point
     }
   }
-  if (! (1 <= argc-optind && argc-optind <= 2)) {
+  if (!(1 <= argc - optind && argc - optind <= 2)) {
     cerr << "ERROR: wrong number of arguments (should be 1-2)" << endl << endl;
     usage(argv[0]);
   }
 
-  const char* modelFileName = argv[optind++];
+  const char *modelFileName = argv[optind++];
   std::string mapDumpFileName;
-  if (1 == argc-optind) {
+  if (1 == argc - optind) {
     mapDumpFileName = argv[optind++];
   } else {
     // infer pomdp file name
     if (endsWith(modelFileName, ".lifeSurvey")) {
       mapDumpFileName = replaceSuffix(modelFileName, ".lifeSurvey", ".mapDump");
     } else {
-      fprintf(stderr, "ERROR: model filename %s does not end in '.lifeSurvey', can't infer the pomdp filename; you must specify it\n",
-	      modelFileName);
+      fprintf(stderr,
+              "ERROR: model filename %s does not end in '.lifeSurvey', can't "
+              "infer the pomdp filename; you must specify it\n",
+              modelFileName);
       exit(EXIT_FAILURE);
     }
   }
@@ -127,19 +123,19 @@ int main(int argc, char *argv[]) {
   LSModel m;
   m.init(modelFileName);
 
-  FILE* mapDumpFile = fopen(mapDumpFileName.c_str(), "w");
+  FILE *mapDumpFile = fopen(mapDumpFileName.c_str(), "w");
   if (NULL == mapDumpFile) {
     fprintf(stderr, "ERROR: couldn't open '%s' for writing: %s\n",
-	    mapDumpFileName.c_str(), strerror(errno));
+            mapDumpFileName.c_str(), strerror(errno));
     exit(EXIT_FAILURE);
   }
   // FIX fill me in
-  LSGrid& g = m.mfile.grid;
-  for (unsigned int y=0; y < g.height; y++) {
-    for (unsigned int x=0; x < g.width; x++) {
-      unsigned char c = g.getCell(LSPos(x,y));
+  LSGrid &g = m.mfile.grid;
+  for (unsigned int y = 0; y < g.height; y++) {
+    for (unsigned int x = 0; x < g.width; x++) {
+      unsigned char c = g.getCell(LSPos(x, y));
       if (LS_OBSTACLE != c) {
-	fprintf(mapDumpFile, "%d %d %d\n", x, y, c);
+        fprintf(mapDumpFile, "%d %d %d\n", x, y, c);
       }
     }
   }
@@ -147,9 +143,3 @@ int main(int argc, char *argv[]) {
 
   printf("done writing %s\n", mapDumpFileName.c_str());
 }
-
-/***************************************************************************
- * REVISION HISTORY:
- * $Log: not supported by cvs2svn $
- *
- ***************************************************************************/

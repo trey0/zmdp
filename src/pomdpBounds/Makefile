@@ -1,5 +1,4 @@
-#!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.7 2007-01-14 01:24:36 trey Exp $
+#!gmake 	# Tell emacs about this file: -*- Makefile -*-
 #
 # Copyright (c) 2006, Trey Smith. All rights reserved.
 #
@@ -30,7 +29,7 @@ maininstall:
 	$(MAKE) $(MFLAGS) -C .. -fMakefile SUBDIRS='pomdpBounds main' install
 
 # ADD ANY SUBDIRS THAT NEED TO BE VISITED DURING A BUILD TO THE SUBDIRS LIST
-SUBDIRS := 
+SUBDIRS :=
 
 INSTALLHEADERS_HEADERS := \
 	MaxPlanesLowerBound.h \
@@ -55,7 +54,7 @@ ifneq (,$(TEST))
 
 BUILDBIN_TARGET := testReadPolicy
 BUILDBIN_SRCS := testReadPolicy.cc
-BUILDBIN_INDEP_LIBS := 
+BUILDBIN_INDEP_LIBS :=
 BUILDBIN_DEP_LIBS := \
 	-lzmdpPomdpCore \
 	-lzmdpPomdpBounds \
@@ -71,28 +70,3 @@ endif
 # DO NOT MODIFY BELOW THIS POINT
 
 include $(BUILD_DIR)/footer.mak
-
-######################################################################
-# $Log: not supported by cvs2svn $
-# Revision 1.6  2006/10/24 02:13:19  trey
-# removed ConvexBounds
-#
-# Revision 1.5  2006/06/15 16:05:12  trey
-# fixed size() information for alpha vectors, had to reorder some libs
-#
-# Revision 1.4  2006/06/14 18:17:33  trey
-# added testReadPolicy.cc
-#
-# Revision 1.3  2006/04/28 17:57:41  trey
-# changed to use apache license
-#
-# Revision 1.2  2006/04/08 22:21:46  trey
-# fixed maininstall target to work as expected
-#
-# Revision 1.1  2006/04/05 21:43:20  trey
-# collected and renamed several classes into pomdpBounds
-#
-# Revision 1.1  2006/04/04 17:22:51  trey
-# initial check-in
-#
-#

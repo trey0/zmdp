@@ -1,9 +1,4 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.2 $  $Author: trey $  $Date: 2006-04-28 17:57:41 $
-   
- @file    ValueFunction.h
- @brief   No brief
-
  Copyright (c) 2002-2005, Trey Smith. All rights reserved.
 
  Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -31,9 +26,9 @@
 //  pre-emptively include it here.  not sure exactly what the problem is.
 #include <iostream>
 
+#include <ext/hash_map>
 #include <string>
 #include <vector>
-#include <ext/hash_map>
 
 #include "zmdpCommonDefs.h"
 #include "zmdpCommonTypes.h"
@@ -51,35 +46,11 @@ public:
   ValueFunction(void) : numStates(-1) {}
   virtual ~ValueFunction(void) {}
 
-  virtual ValueInterval getValueAt(const belief_vector& b) const = 0;
-  bool consistentWith(const ValueFunction& rhs, int numSamples,
-		      bool debug = false) const;
+  virtual ValueInterval getValueAt(const belief_vector &b) const = 0;
+  bool consistentWith(const ValueFunction &rhs, int numSamples,
+                      bool debug = false) const;
 };
 
 }; // namespace zmdp
 
 #endif // INCValueFunction_h
-
-/***************************************************************************
- * REVISION HISTORY:
- * $Log: not supported by cvs2svn $
- * Revision 1.1  2006/04/04 17:21:49  trey
- * moved ValueFunction from common to bounds
- *
- * Revision 1.5  2006/02/01 01:09:37  trey
- * renamed pomdp namespace -> zmdp
- *
- * Revision 1.4  2005/10/28 03:50:32  trey
- * simplified license
- *
- * Revision 1.3  2005/10/28 02:51:40  trey
- * added copyright headers
- *
- * Revision 1.2  2005/10/21 20:10:10  trey
- * added namespace zmdp
- *
- * Revision 1.1  2004/11/24 20:48:04  trey
- * moved to common from hsvi
- *
- *
- ***************************************************************************/

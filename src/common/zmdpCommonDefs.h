@@ -1,9 +1,4 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.4 $  $Author: trey $  $Date: 2006-07-24 17:06:10 $
-   
- @file    zmdpCommonDefs.h
- @brief   No brief
-
  Copyright (c) 2002-2005, Trey Smith. All rights reserved.
 
  Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -26,15 +21,13 @@
 namespace zmdp {
 
 #undef FOR_EACH
-#define FOR_EACH(elt,collection) \
-  for (typeof((collection).begin()) elt=(collection).begin(), \
-         __end=(collection).end(); \
-       elt != __end; \
-       elt++)
+#define FOR_EACH(elt, collection)                                              \
+  for (typeof((collection).begin()) elt = (collection).begin(),                \
+                                    __end = (collection).end();                \
+       elt != __end; elt++)
 
 #undef FOR
-#define FOR(i,n) \
-  for (unsigned int i=0, __n = (n); i<__n; i++)
+#define FOR(i, n) for (unsigned int i = 0, __n = (n); i < __n; i++)
 
 #define SPARSE_EPS (1e-10)
 #define OBS_IS_ZERO_EPS (1e-10)
@@ -44,14 +37,13 @@ namespace zmdp {
 //   that has the highest f(x) value.
 // example: v is a vector, norm is a function defined for vectors
 //          v_with_largest_norm = argmax(v.begin(), v.end(), norm);
-#define argmax(a,b,c) (argmax_tp<typeof(*(a))>(a,b,c))
+#define argmax(a, b, c) (argmax_tp<typeof(*(a))>(a, b, c))
 
 template <class _InType, class _ForwardIterator, class _ConvertType>
-const _InType& argmax_tp(_ForwardIterator start, _ForwardIterator end,
-			_ConvertType f)
-{
+const _InType &argmax_tp(_ForwardIterator start, _ForwardIterator end,
+                         _ConvertType f) {
   typeof(f(*start)) val, max_val;
-  const _InType* max_elt;
+  const _InType *max_elt;
 
   assert(start != end);
 
@@ -72,11 +64,10 @@ const _InType& argmax_tp(_ForwardIterator start, _ForwardIterator end,
 }
 
 template <class _CollectionType, class _ForwardIterator>
-_ForwardIterator eraseElement(_CollectionType& c, _ForwardIterator i)
-{
+_ForwardIterator eraseElement(_CollectionType &c, _ForwardIterator i) {
   _ForwardIterator ip1 = i;
   ip1++;
-  c.erase(i,ip1);
+  c.erase(i, ip1);
   return ip1;
 }
 

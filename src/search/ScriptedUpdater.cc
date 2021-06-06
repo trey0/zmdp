@@ -1,9 +1,4 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.5 $  $Author: trey $  $Date: 2006-10-30 20:00:15 $
-   
- @file    ScriptedUpdater.cc
- @brief   No brief
-
  Copyright (c) 2006, Trey Smith. All rights reserved.
 
  Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -20,20 +15,20 @@
 
  ***************************************************************************/
 
+#include <assert.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <stdio.h>
-#include <assert.h>
 
-#include <iostream>
 #include <fstream>
+#include <iostream>
 #include <queue>
 
-#include "zmdpCommonDefs.h"
-#include "zmdpCommonTime.h"
 #include "MatrixUtils.h"
 #include "Pomdp.h"
 #include "ScriptedUpdater.h"
+#include "zmdpCommonDefs.h"
+#include "zmdpCommonTime.h"
 
 using namespace std;
 using namespace sla;
@@ -41,23 +36,20 @@ using namespace MatrixUtils;
 
 namespace zmdp {
 
-ScriptedUpdater::ScriptedUpdater(void) :
-  filesRead(false),
-  stateIndex(NULL),
-  backupsLog(NULL)
-{}
+ScriptedUpdater::ScriptedUpdater(void)
+    : filesRead(false), stateIndex(NULL), backupsLog(NULL) {}
 
-void ScriptedUpdater::readFiles(void)
-{
+void ScriptedUpdater::readFiles(void) {
   std::string backupScriptInputDir = config->getString("backupScriptInputDir");
   if (backupScriptInputDir == "none") {
-    fprintf(stderr, "ERROR: when using searchStrategy='script' you must specify backupScriptInputDir (-h for help)\n");
+    fprintf(stderr, "ERROR: when using searchStrategy='script' you must "
+                    "specify backupScriptInputDir (-h for help)\n");
     exit(EXIT_FAILURE);
   }
   std::string stateIndexInputFile =
-    backupScriptInputDir + "/" + config->getString("stateIndexOutputFile");
+      backupScriptInputDir + "/" + config->getString("stateIndexOutputFile");
   std::string backupsInputFile =
-    backupScriptInputDir + "/" + config->getString("backupsOutputFile");
+      backupScriptInputDir + "/" + config->getString("backupsOutputFile");
 
   stateIndex = new StateIndex(problem->getNumStateDimensions());
   stateIndex->readFromFile(stateIndexInputFile);
@@ -70,10 +62,9 @@ void ScriptedUpdater::readFiles(void)
   boundValuesOutputFile = config->getString("boundValuesOutputFile");
 }
 
-bool ScriptedUpdater::doTrial(MDPNode& cn)
-{
+bool ScriptedUpdater::doTrial(MDPNode &cn) {
   if (zmdpDebugLevelG >= 1) {
-    printf("-*- doTrial: trial %d\n", (numTrials+1));
+    printf("-*- doTrial: trial %d\n", (numTrials + 1));
   }
 
   if (!filesRead) {
@@ -85,15 +76,16 @@ bool ScriptedUpdater::doTrial(MDPNode& cn)
   int dummy;
   while (currentLogEntry < (int)backupsLog->size()) {
     int id = backupsLog->getLogEntry(currentLogEntry++);
-    const state_vector& s = *stateIndex->entries[id];
+    const state_vector &s = *stateIndex->entries[id];
 
-    MDPNode& cn = *bounds->getNode(s);
+    MDPNode &cn = *bounds->getNode(s);
 
     bounds->update(cn, &dummy);
     trackBackup(cn);
 
     if (!firstInTrial && 0 == id) {
-      // returned to root node, marks end of trial, but not finished with script yet
+      // returned to root node, marks end of trial, but not finished with script
+      // yet
       numTrials++;
       return false;
     }
@@ -105,28 +97,9 @@ bool ScriptedUpdater::doTrial(MDPNode& cn)
   return true;
 }
 
-void ScriptedUpdater::finishLogging(void)
-{
+void ScriptedUpdater::finishLogging(void) {
   maybeLogBackups();
   stateIndex->writeBoundValuesToFile(boundValuesOutputFile, *bounds);
 }
 
 }; // namespace zmdp
-
-/***************************************************************************
- * REVISION HISTORY:
- * $Log: not supported by cvs2svn $
- * Revision 1.4  2006/10/27 18:25:15  trey
- * now call writeBoundValuesToFile() at the end of a run whether or not the run ended because the script ran out
- *
- * Revision 1.3  2006/10/20 20:04:19  trey
- * added boundValuesOutputFile support
- *
- * Revision 1.2  2006/10/20 17:10:32  trey
- * corrected some problems with initialization
- *
- * Revision 1.1  2006/10/20 04:58:08  trey
- * initial check-in
- *
- *
- ***************************************************************************/

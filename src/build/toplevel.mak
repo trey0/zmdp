@@ -1,5 +1,4 @@
-#!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: toplevel.mak,v 1.4 2006-04-28 17:57:41 trey Exp $
+#!gmake 	# Tell emacs about this file: -*- Makefile -*-
 #
 # Copyright (c) 1996-2005, Carnegie Mellon University. All rights reserved.
 #
@@ -35,37 +34,3 @@ toplevel-uninstall:
 .PHONY: doc
 doc:
 	$(BUILD_DIR)/doxygenRecurse.perl
-
-######################################################################
-# $Log: not supported by cvs2svn $
-# Revision 1.3  2005/10/28 03:34:41  trey
-# switched to simpler license
-#
-# Revision 1.2  2005/10/28 02:24:42  trey
-# added copyright headers
-#
-# Revision 1.1.1.1  2004/11/09 16:18:57  trey
-# imported hsvi into new repository
-#
-# Revision 1.2  2004/05/13 20:25:50  trey
-# synced up with atacama makefile system again
-#
-# Revision 1.1  2003/10/05 16:51:41  trey
-# initial atacama check-in
-#
-# Revision 1.1  2003/10/05 02:59:35  trey
-# initial microraptor check-in
-#
-# Revision 1.2  2001/11/19 16:01:03  trey
-# cosmetic changes
-#
-# Revision 1.1.1.1  2001/08/27 15:46:52  trey
-# initial check-in
-#
-# Revision 1.2  2001/03/06 17:48:22  trey
-# set up auto-generation of hierarchical directory of docs
-#
-# Revision 1.1  2001/02/13 16:45:07  trey
-# initial check-in
-#
-#

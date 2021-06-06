@@ -1,5 +1,4 @@
-#!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: darwin8.mak,v 1.2 2006-04-28 17:57:41 trey Exp $
+#!gmake 	# Tell emacs about this file: -*- Makefile -*-
 #
 # Copyright (c) 2006, Trey Smith. All rights reserved.
 #
@@ -17,10 +16,3 @@
 
 #######################################################################
 # DESCRIPTION:  Variable values specific to Darwin
-
-######################################################################
-# $Log: not supported by cvs2svn $
-# Revision 1.1  2005/11/28 20:55:43  trey
-# initial check-in
-#
-#

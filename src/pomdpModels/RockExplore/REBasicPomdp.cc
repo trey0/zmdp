@@ -1,9 +1,4 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2007-03-21 04:07:22 $
-  
- @file    REBasicPomdp.cc
- @brief   No brief
-
  Copyright (c) 2007, Trey Smith.
 
  Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -25,18 +20,18 @@
  ***************************************************************************/
 
 #include <assert.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <stdio.h>
-#include <sys/time.h>
-#include <getopt.h>
 #include <errno.h>
+#include <getopt.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/time.h>
+#include <unistd.h>
 
-#include <iostream>
 #include <fstream>
+#include <iostream>
 #include <map>
-#include <sstream>
 #include <queue>
+#include <sstream>
 
 #include "REBasicPomdp.h"
 #include "RockExplore.h"
@@ -48,12 +43,11 @@ namespace zmdp {
 // Sets result to be the distribution of possible observations when
 // action ai is applied and the system transitions to state sp.
 // Returns result.
-REObsProbs REBasicPomdp::getObsProbs(int ai, int sp)
-{
+REObsProbs REBasicPomdp::getObsProbs(int ai, int sp) {
   REObsProbs obsProbs;
   obsProbs.clear();
   obsProbs.resize(getNumObservations(), 0.0);
-  for (int o=0; o < getNumObservations(); o++) {
+  for (int o = 0; o < getNumObservations(); o++) {
     obsProbs[o] = getObsProb(ai, sp, o);
   }
   return obsProbs;
@@ -61,39 +55,39 @@ REObsProbs REBasicPomdp::getObsProbs(int ai, int sp)
 
 // Returns the expected reward and observation probabilities when from
 // belief b action ai is applied.
-REObsProbsResult REBasicPomdp::getBeliefResult(const REBelief& b, int ai)
-{
+REObsProbsResult REBasicPomdp::getBeliefResult(const REBelief &b, int ai) {
   REObsProbsResult result;
 
   result.obsProbs.clear();
   result.obsProbs.resize(getNumObservations(), 0.0);
   result.expectedReward = 0.0;
 
-  for (int i=0; i < (int)b.size(); i++) {
+  for (int i = 0; i < (int)b.size(); i++) {
     int si = b[i].index;
     REActionResult out = getActionResult(si, ai);
 
     // E[R | b, a] = sum_s [ P(s) * R(s,a) ]
     result.expectedReward += b[i].prob * out.reward;
 
-    for (int j=0; j < (int)out.outcomes.size(); j++) {
+    for (int j = 0; j < (int)out.outcomes.size(); j++) {
       // sp is the index for the outcome state.
       int sp = out.outcomes[j].index;
 
-      for (int o=0; o < getNumObservations(); o++) {
-	// P(o | b, a) = sum_{s,sp} [ P(s | b) * P(sp | s, a) * P(o | a, sp) ]
-	result.obsProbs[o] += b[i].prob * out.outcomes[j].prob * getObsProb(ai, sp, o);
+      for (int o = 0; o < getNumObservations(); o++) {
+        // P(o | b, a) = sum_{s,sp} [ P(s | b) * P(sp | s, a) * P(o | a, sp) ]
+        result.obsProbs[o] +=
+            b[i].prob * out.outcomes[j].prob * getObsProb(ai, sp, o);
       }
     }
   }
 
   // Normalize
   double sum = 0.0;
-  for (int o=0; o < getNumObservations(); o++) {
+  for (int o = 0; o < getNumObservations(); o++) {
     sum += result.obsProbs[o];
   }
   assert(sum > 0.0);
-  for (int o=0; o < getNumObservations(); o++) {
+  for (int o = 0; o < getNumObservations(); o++) {
     result.obsProbs[o] /= sum;
   }
 
@@ -102,8 +96,7 @@ REObsProbsResult REBasicPomdp::getBeliefResult(const REBelief& b, int ai)
 
 // Returns the updated belief when from belief b action ai is executed
 // and observation o is received.
-REBelief REBasicPomdp::getUpdatedBelief(const REBelief& b, int ai, int o)
-{
+REBelief REBasicPomdp::getUpdatedBelief(const REBelief &b, int ai, int o) {
   REBelief bp;
 
   // This (temporary) dense data structure will allow us to efficiently
@@ -111,11 +104,11 @@ REBelief REBasicPomdp::getUpdatedBelief(const REBelief& b, int ai, int o)
   // starting states.
   std::vector<double> bpDense(getNumStates());
 
-  for (int i=0; i < (int)b.size(); i++) {
+  for (int i = 0; i < (int)b.size(); i++) {
     int si = b[i].index;
     REActionResult out = getActionResult(si, ai);
 
-    for (int j=0; j < (int)out.outcomes.size(); j++) {
+    for (int j = 0; j < (int)out.outcomes.size(); j++) {
       // sp is the index for the outcome state.
       int sp = out.outcomes[j].index;
 
@@ -127,7 +120,7 @@ REBelief REBasicPomdp::getUpdatedBelief(const REBelief& b, int ai, int o)
   // Transform dense vector bpDense into standard sparse vector format bp.
   bp.clear();
   double sum = 0.0;
-  for (int sp=0; sp < getNumStates(); sp++) {
+  for (int sp = 0; sp < getNumStates(); sp++) {
     if (bpDense[sp] > 0.0) {
       bp.push_back(REBeliefEntry(bpDense[sp], sp));
       sum += bpDense[sp];
@@ -136,7 +129,7 @@ REBelief REBasicPomdp::getUpdatedBelief(const REBelief& b, int ai, int o)
 
   // Normalize bp.
   assert(sum > 0.0);
-  for (int i=0; i < (int)bp.size(); i++) {
+  for (int i = 0; i < (int)bp.size(); i++) {
     bp[i].prob /= sum;
   }
 
@@ -145,8 +138,7 @@ REBelief REBasicPomdp::getUpdatedBelief(const REBelief& b, int ai, int o)
 
 // Returns the index for state s.  This includes assigning an index to
 // state s if it doesn't already have one.
-int REBasicPomdp::getStateId(const REState& s)
-{
+int REBasicPomdp::getStateId(const REState &s) {
   // Convert from state struct to string representation.
   std::string ss = getStateString(s);
 
@@ -166,17 +158,16 @@ int REBasicPomdp::getStateId(const REState& s)
 // Uses the transition model to generate all reachable states and assign
 // them index values.  This is called during initialization; before it is
 // called getNumStates() is not valid.
-void REBasicPomdp::generateReachableStates(void)
-{
+void REBasicPomdp::generateReachableStates(void) {
   // Initialize the stateQueue to hold the possible initial states from b0.
   REBelief b0 = getInitialBelief();
   std::queue<int> stateQueue;
-  for (int i=0; i < (int)b0.size(); i++) {
+  for (int i = 0; i < (int)b0.size(); i++) {
     stateQueue.push(b0[i].index);
   }
 
   // Generate all the reachable states through breadth-first search.
-  std::map<int,bool> visited;
+  std::map<int, bool> visited;
   while (!stateQueue.empty()) {
     int si = stateQueue.front();
     stateQueue.pop();
@@ -185,28 +176,26 @@ void REBasicPomdp::generateReachableStates(void)
     if (visited.find(si) == visited.end()) {
       // Mark si as visited.
       visited[si] = true;
-      
+
       // Generate a list of outcomes from applying each action to si
       // and add the outcomes to the stateQueue.
-      for (int ai=0; ai < getNumActions(); ai++) {
-	REActionResult out = getActionResult(si, ai);
-	for (int i=0; i < (int)out.outcomes.size(); i++) {
-	  stateQueue.push(out.outcomes[i].index);
-	}
+      for (int ai = 0; ai < getNumActions(); ai++) {
+        REActionResult out = getActionResult(si, ai);
+        for (int i = 0; i < (int)out.outcomes.size(); i++) {
+          stateQueue.push(out.outcomes[i].index);
+        }
       }
     }
   }
 }
 
-
 // Outputs a Cassandra-format POMDP model to the given file.
-void REBasicPomdp::writeCassandraModel(const std::string& outFile)
-{
+void REBasicPomdp::writeCassandraModel(const std::string &outFile) {
   // Open the output file
-  FILE* out = fopen(outFile.c_str(), "w");
+  FILE *out = fopen(outFile.c_str(), "w");
   if (NULL == out) {
-    cerr << "ERROR: couldn't open " << outFile << " for writing: "
-	      << strerror(errno) << endl;
+    cerr << "ERROR: couldn't open " << outFile
+         << " for writing: " << strerror(errno) << endl;
     exit(EXIT_FAILURE);
   }
 
@@ -217,21 +206,21 @@ void REBasicPomdp::writeCassandraModel(const std::string& outFile)
 
   // Output "actions" line
   fprintf(out, "actions: ");
-  for (int ai=0; ai < getNumActions(); ai++) {
+  for (int ai = 0; ai < getNumActions(); ai++) {
     fprintf(out, "%s ", getActionString(ai).c_str());
   }
   fprintf(out, "\n");
 
   // Output "observations" line
   fprintf(out, "observations: ");
-  for (int o=0; o < getNumObservations(); o++) {
+  for (int o = 0; o < getNumObservations(); o++) {
     fprintf(out, "%s ", getObservationString(o).c_str());
   }
   fprintf(out, "\n");
 
   // Output "states" line
   fprintf(out, "states: ");
-  for (int si=0; si < getNumStates(); si++) {
+  for (int si = 0; si < getNumStates(); si++) {
     fprintf(out, "%s ", getStateString(si).c_str());
   }
   fprintf(out, "\n");
@@ -240,43 +229,42 @@ void REBasicPomdp::writeCassandraModel(const std::string& outFile)
   // dense representation.
   REBelief b0 = getInitialBelief();
   std::vector<double> denseB0(getNumStates(), 0.0);
-  for (int i=0; i < (int)b0.size(); i++) {
+  for (int i = 0; i < (int)b0.size(); i++) {
     denseB0[b0[i].index] = b0[i].prob;
   }
 
   // Output "start" line
   fprintf(out, "start: ");
-  for (int si=0; si < getNumStates(); si++) {
+  for (int si = 0; si < getNumStates(); si++) {
     fprintf(out, "%10.8lf ", denseB0[si]);
   }
   fprintf(out, "\n\n");
 
   //////////////////////////////////////////////////////////////////////
   // Write the main body.
-  for (int si=0; si < getNumStates(); si++) {
+  for (int si = 0; si < getNumStates(); si++) {
     std::string ss = getStateString(si);
 
-    for (int ai=0; ai < getNumActions(); ai++) {
+    for (int ai = 0; ai < getNumActions(); ai++) {
       REActionResult res = getActionResult(si, ai);
       std::string as = getActionString(ai);
 
       // Output R line for state=si, action=ai
-      fprintf(out, "R: %-3s : %-10s : * : * %lf\n",
-	      as.c_str(), ss.c_str(), res.reward);
+      fprintf(out, "R: %-3s : %-10s : * : * %lf\n", as.c_str(), ss.c_str(),
+              res.reward);
 
       // Output T lines for state=si, action=ai
-      for (int i=0; i < (int)res.outcomes.size(); i++) {
-	std::string sps = getStateString(res.outcomes[i].index);
-	fprintf(out, "T: %-3s : %-10s : %-10s %lf\n",
-		as.c_str(), ss.c_str(), sps.c_str(),
-		res.outcomes[i].prob);
+      for (int i = 0; i < (int)res.outcomes.size(); i++) {
+        std::string sps = getStateString(res.outcomes[i].index);
+        fprintf(out, "T: %-3s : %-10s : %-10s %lf\n", as.c_str(), ss.c_str(),
+                sps.c_str(), res.outcomes[i].prob);
       }
 
       // Output O lines for action=ai, outcome=si
-      for (int o=0; o < getNumObservations(); o++) {
-	double obsProb = getObsProb(ai, si, o);
-	fprintf(out, "O: %-3s : %-10s : o%d %lf\n",
-		as.c_str(), ss.c_str(), o, obsProb);
+      for (int o = 0; o < getNumObservations(); o++) {
+        double obsProb = getObsProb(ai, si, o);
+        fprintf(out, "O: %-3s : %-10s : o%d %lf\n", as.c_str(), ss.c_str(), o,
+                obsProb);
       }
       fprintf(out, "\n");
     }
@@ -286,13 +274,12 @@ void REBasicPomdp::writeCassandraModel(const std::string& outFile)
 }
 
 // Returns a stochastically selected state index from the distribution b.
-int REBasicPomdp::chooseStochasticOutcome(const REBelief& b)
-{
+int REBasicPomdp::chooseStochasticOutcome(const REBelief &b) {
   // Generate a random floating point value between 0 and 1.
-  double p = ((double) std::rand()) / RAND_MAX;
-  
+  double p = ((double)std::rand()) / RAND_MAX;
+
   // Select an outcome based on p.
-  for (int i=0; i < (int)b.size(); i++) {
+  for (int i = 0; i < (int)b.size(); i++) {
     p -= b[i].prob;
     if (p <= 0) {
       return b[i].index;
@@ -302,13 +289,12 @@ int REBasicPomdp::chooseStochasticOutcome(const REBelief& b)
 }
 
 // Returns a stochastically selected observation from the distribution obsProbs.
-int REBasicPomdp::chooseStochasticOutcome(const REObsProbs& obsProbs)
-{
+int REBasicPomdp::chooseStochasticOutcome(const REObsProbs &obsProbs) {
   // Generate a random floating point value between 0 and 1.
-  double p = ((double) std::rand()) / RAND_MAX;
+  double p = ((double)std::rand()) / RAND_MAX;
 
   // Select an outcome based on p.
-  for (int o=0; o < (int)obsProbs.size(); o++) {
+  for (int o = 0; o < (int)obsProbs.size(); o++) {
     p -= obsProbs[o];
     if (p <= 0) {
       return o;
@@ -318,12 +304,11 @@ int REBasicPomdp::chooseStochasticOutcome(const REObsProbs& obsProbs)
 }
 
 // Returns the most likely state according to the distribution b.
-int REBasicPomdp::getMostLikelyState(const REBelief& b)
-{
+int REBasicPomdp::getMostLikelyState(const REBelief &b) {
   double maxProb = 0.0;
   int maxProbState = -1;
-  
-  for (int i=0; i < (int)b.size(); i++) {
+
+  for (int i = 0; i < (int)b.size(); i++) {
     if (b[i].prob > maxProb) {
       maxProb = b[i].prob;
       maxProbState = b[i].index;
@@ -333,15 +318,3 @@ int REBasicPomdp::getMostLikelyState(const REBelief& b)
 }
 
 }; // namespace zmdp
-
-/***************************************************************************
- * REVISION HISTORY:
- * $Log: not supported by cvs2svn $
- * Revision 1.2  2007/03/07 08:50:35  trey
- * cleaned up for improved readability
- *
- * Revision 1.1  2007/03/07 08:12:27  trey
- * refactored things
- *
- *
- ***************************************************************************/

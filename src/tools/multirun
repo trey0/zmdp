@@ -336,13 +336,3 @@ sub clean_exit {
     close(LOG);
     exit($exit_status);
 }
-
-######################################################################
-# $Log: not supported by cvs2svn $
-# Revision 1.3  2005/10/28 03:56:13  trey
-# simplified license
-#
-# Revision 1.2  2005/10/28 03:05:14  trey
-# added copyright header
-#
-#

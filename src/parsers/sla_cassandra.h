@@ -1,6 +1,4 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.1 $  $Author: trey $  $Date: 2006-11-08 16:41:46 $
-   
  @file    sla_cassandra.h
  @brief   Code for converting from Tony Cassandra's sparse matrix format to sla.
 
@@ -23,14 +21,14 @@
 #ifndef INCsla_cassandra_h
 #define INCsla_cassandra_h
 
-#include <math.h>
 #include <errno.h>
-#include <vector>
-#include <iostream>
 #include <fstream>
+#include <iostream>
+#include <math.h>
+#include <vector>
 
-#include "sla.h"
 #include "mdp.h"
+#include "sla.h"
 
 namespace sla {
 
@@ -41,31 +39,29 @@ typedef Matrix CassandraMatrix;
  **********************************************************************/
 
 // result = A
-void copy(cmatrix& result, CassandraMatrix A, int numColumns);
+void copy(cmatrix &result, CassandraMatrix A, int numColumns);
 
 // result = A
-void copy(kmatrix& result, CassandraMatrix A, int numColumns);
+void copy(kmatrix &result, CassandraMatrix A, int numColumns);
 
 /**********************************************************************
  * FUNCTIONS
  **********************************************************************/
 
 // result = A
-inline void copy(cmatrix& result, CassandraMatrix A, int numColumns)
-{
+inline void copy(cmatrix &result, CassandraMatrix A, int numColumns) {
   kmatrix B;
   copy(B, A, numColumns);
   copy(result, B);
 }
 
 // result = A
-inline void copy(kmatrix& result, CassandraMatrix A, int numColumns)
-{
+inline void copy(kmatrix &result, CassandraMatrix A, int numColumns) {
   result.resize(A->num_rows, numColumns);
-  FOR (r, A->num_rows) {
+  FOR(r, A->num_rows) {
     int rowOffset = A->row_start[r];
     int rowSize = A->row_length[r];
-    FOR (i, rowSize) {
+    FOR(i, rowSize) {
       int j = rowOffset + i;
       int c = A->col[j];
       double val = A->mat_val[j];
@@ -78,12 +74,3 @@ inline void copy(kmatrix& result, CassandraMatrix A, int numColumns)
 } // namespace sla
 
 #endif // INCsla_cassandra_h
-
-/***************************************************************************
- * REVISION HISTORY:
- * $Log: not supported by cvs2svn $
- * Revision 1.1  2006/05/27 19:01:26  trey
- * initial check-in
- *
- *
- ***************************************************************************/

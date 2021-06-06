@@ -1,5 +1,4 @@
-#!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.8 2007-03-24 22:44:45 trey Exp $
+#!gmake 	# Tell emacs about this file: -*- Makefile -*-
 #
 # Copyright (c) 2002-2005, Trey Smith. All rights reserved.
 #
@@ -30,7 +29,7 @@ maininstall:
 	$(MAKE) $(MFLAGS) -C .. -fMakefile SUBDIRS='mdps main' install
 
 # ADD ANY SUBDIRS THAT NEED TO BE VISITED DURING A BUILD TO THE SUBDIRS LIST
-SUBDIRS := 
+SUBDIRS :=
 
 INSTALLHEADERS_HEADERS := \
 	GenericDiscreteMDP.h \
@@ -57,34 +56,3 @@ endif
 # DO NOT MODIFY BELOW THIS POINT
 
 include $(BUILD_DIR)/footer.mak
-
-######################################################################
-# $Log: not supported by cvs2svn $
-# Revision 1.7  2007/01/14 01:24:21  trey
-# removed obsolete reference to boost
-#
-# Revision 1.6  2006/11/09 20:46:41  trey
-# added GenericDiscreteMDP.cc
-#
-# Revision 1.5  2006/11/08 17:59:05  trey
-# added GenericDiscreteMDP.h
-#
-# Revision 1.4  2006/11/07 20:09:56  trey
-# added CustomMDP.{h,cc}
-#
-# Revision 1.3  2006/04/28 17:57:41  trey
-# changed to use apache license
-#
-# Revision 1.2  2006/02/06 19:27:59  trey
-# added maininstall target for convenience
-#
-# Revision 1.1  2006/02/01 18:02:07  trey
-# initial check-in
-#
-# Revision 1.2  2006/01/31 19:18:12  trey
-# added Pomdp{Lower,Upper}Bound
-#
-# Revision 1.1  2006/01/31 18:31:50  trey
-# moved many files from common to pomdpCore
-#
-#

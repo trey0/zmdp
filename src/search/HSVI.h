@@ -1,9 +1,4 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2006-10-20 04:55:49 $
-   
- @file    HSVI.h
- @brief   No brief
-
  Copyright (c) 2006, Trey Smith. All rights reserved.
 
  Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -48,27 +43,13 @@ struct HSVI : public RTDPCore {
 
   HSVI(void);
 
-  void getMaxExcessUncOutcome(MDPNode& cn, int depth, HSVIUpdateResult& r) const;
-  void update(MDPNode& cn, int depth, HSVIUpdateResult& result);
-  void trialRecurse(MDPNode& cn, double logOcc, int depth);
-  bool doTrial(MDPNode& cn);
+  void getMaxExcessUncOutcome(MDPNode &cn, int depth,
+                              HSVIUpdateResult &r) const;
+  void update(MDPNode &cn, int depth, HSVIUpdateResult &result);
+  void trialRecurse(MDPNode &cn, double logOcc, int depth);
+  bool doTrial(MDPNode &cn);
 };
 
 }; // namespace zmdp
 
 #endif /* INCHSVI_h */
-
-/***************************************************************************
- * REVISION HISTORY:
- * $Log: not supported by cvs2svn $
- * Revision 1.2  2006/04/28 17:57:41  trey
- * changed to use apache license
- *
- * Revision 1.1  2006/04/27 20:18:08  trey
- * renamed WRTDP to HSVI, maybe less confusing this way
- *
- * Revision 1.1  2006/04/12 19:22:41  trey
- * initial check-in
- *
- *
- ***************************************************************************/

@@ -1,9 +1,4 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2006-11-08 16:42:54 $
-   
- @file    testLSPathAndReact.cc
- @brief   No brief
-
  Copyright (c) 2006, Trey Smith. All rights reserved.
 
  Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -25,33 +20,31 @@
  ***************************************************************************/
 
 #include <assert.h>
+#include <getopt.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <stdio.h>
-#include <getopt.h>
 
 #include <iostream>
 
-#include "MatrixUtils.h"
 #include "LSPathAndReactExec.h"
+#include "MatrixUtils.h"
 
 using namespace std;
 using namespace zmdp;
 
-void doit(const char* modelFileName,
-	  bool useFastModelParser,
-	  const char* lifeSurveyFileName)
-{
+void doit(const char *modelFileName, bool useFastModelParser,
+          const char *lifeSurveyFileName) {
   // seeds random number generator
   MatrixUtils::init_matrix_utils();
 
-  LSPathAndReactExec* em = new LSPathAndReactExec();
+  LSPathAndReactExec *em = new LSPathAndReactExec();
   printf("initializing\n");
   em->init(modelFileName, useFastModelParser, lifeSurveyFileName);
 
-  PomdpExec* e = em;
+  PomdpExec *e = em;
 
-  for (int i=0; i < 3; i++) {
+  for (int i = 0; i < 3; i++) {
     printf("new simulation run\n");
     e->setToInitialBelief();
     printf("  reset to initial belief\n");
@@ -60,11 +53,11 @@ void doit(const char* modelFileName,
       printf("  chose action %d\n", a);
       int o = e->getRandomObservation(a);
       printf("  simulated seeing random observation %d\n", o);
-      e->advanceToNextBelief(a,o);
+      e->advanceToNextBelief(a, o);
       printf("  updated belief\n");
       if (e->getBeliefIsTerminal()) {
-	printf("  belief is terminal, ending run\n");
-	break;
+        printf("  belief is terminal, ending run\n");
+        break;
       }
     }
   }
@@ -72,28 +65,24 @@ void doit(const char* modelFileName,
   delete e;
 }
 
-void usage(const char* binaryName)
-{
-  cerr <<
-    "usage: " << binaryName << " OPTIONS <foo.pomdp> <foo.lifeSurvey>\n"
-    "  -h or --help   Display this help\n"
-    "  -f or --fast   Use fast (but very picky) alternate model parser\n";
+void usage(const char *binaryName) {
+  cerr << "usage: " << binaryName
+       << " OPTIONS <foo.pomdp> <foo.lifeSurvey>\n"
+          "  -h or --help   Display this help\n"
+          "  -f or --fast   Use fast (but very picky) alternate model parser\n";
   exit(EXIT_FAILURE);
 }
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
   static char shortOptions[] = "hf";
-  static struct option longOptions[]={
-    {"help",          0,NULL,'h'},
-    {"fast",          0,NULL,'f'},
-    {NULL,0,0,0}
-  };
+  static struct option longOptions[] = {
+      {"help", 0, NULL, 'h'}, {"fast", 0, NULL, 'f'}, {NULL, 0, 0, 0}};
 
   bool useFastModelParser = false;
   while (1) {
-    char optchar = getopt_long(argc,argv,shortOptions,longOptions,NULL);
-    if (optchar == -1) break;
+    char optchar = getopt_long(argc, argv, shortOptions, longOptions, NULL);
+    if (optchar == -1)
+      break;
 
     switch (optchar) {
     case 'h': // help
@@ -114,27 +103,13 @@ int main(int argc, char *argv[])
       abort(); // never reach this point
     }
   }
-  if (2 != argc-optind) {
+  if (2 != argc - optind) {
     cerr << "ERROR: wrong number of arguments (should be 2)" << endl << endl;
     usage(argv[0]);
   }
 
-  const char* modelFileName = argv[optind++];
-  const char* lifeSurveyFileName = argv[optind++];
+  const char *modelFileName = argv[optind++];
+  const char *lifeSurveyFileName = argv[optind++];
 
   doit(modelFileName, useFastModelParser, lifeSurveyFileName);
 }
-
-
-/***************************************************************************
- * REVISION HISTORY:
- * $Log: not supported by cvs2svn $
- * Revision 1.2  2006/06/30 17:51:08  trey
- * now delete exec at the end of the run
- *
- * Revision 1.1  2006/06/29 21:39:14  trey
- * initial check-in
- *
- * Revision 1.2  2006/06/27 18:20:18  trey
- *
- ***************************************************************************/

@@ -1,9 +1,4 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2007-03-24 22:44:33 $
-   
- @file    GenericDiscreteMDP.h
- @brief   No brief
-
  Copyright (c) 2006, Trey Smith.
 
  Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -27,9 +22,10 @@
 #include <string>
 #include <vector>
 
-#include "zmdpConfig.h"
-#include "MDPModel.h"
 #include "AbstractBound.h"
+#include "CassandraModel.h"
+#include "MDPModel.h"
+#include "zmdpConfig.h"
 
 using namespace sla;
 
@@ -40,41 +36,26 @@ struct GenericDiscreteMDP : public CassandraModel {
   double globalLowerBound;
   double globalUpperBound;
 
-  GenericDiscreteMDP(const std::string& fileName,
-		     const ZMDPConfig* _config);
+  GenericDiscreteMDP(const std::string &fileName, const ZMDPConfig *_config);
 
-  // returns the expected immediate reward when from belief b action a is selected
-  double getReward(const belief_vector& b, int a);
+  // returns the expected immediate reward when from belief b action a is
+  // selected
+  double getReward(const belief_vector &b, int a);
 
   // POMDP-as-belief-MDP implementations for virtual functions declared in MDP
-  const state_vector& getInitialState(void);
-  bool getIsTerminalState(const state_vector& s);
-  outcome_prob_vector& getOutcomeProbVector(outcome_prob_vector& result,
-					    const state_vector& b,
-					    int a);
-  state_vector& getNextState(state_vector& result,
-			     const state_vector& s,
-			     int a, int o);
+  const state_vector &getInitialState(void);
+  bool getIsTerminalState(const state_vector &s);
+  outcome_prob_vector &getOutcomeProbVector(outcome_prob_vector &result,
+                                            const state_vector &b, int a);
+  state_vector &getNextState(state_vector &result, const state_vector &s, int a,
+                             int o);
 
   double getLongTermFactor(void);
 
-  AbstractBound* newLowerBound(const ZMDPConfig* _config);
-  AbstractBound* newUpperBound(const ZMDPConfig* _config);
+  AbstractBound *newLowerBound(const ZMDPConfig *_config);
+  AbstractBound *newUpperBound(const ZMDPConfig *_config);
 };
 
 }; // namespace zmdp
 
 #endif // INCGenericDiscreteMDP_h
-
-/***************************************************************************
- * REVISION HISTORY:
- * $Log: not supported by cvs2svn $
- * Revision 1.2  2006/11/09 20:46:28  trey
- * first working version
- *
- * Revision 1.1  2006/11/08 16:47:04  trey
- * initial check-in
- *
- *
- ***************************************************************************/
-

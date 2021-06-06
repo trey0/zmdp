@@ -1,9 +1,4 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.4 $  $Author: trey $  $Date: 2006-10-27 18:25:15 $
-   
- @file    ScriptedUpdater.h
- @brief   No brief
-
  Copyright (c) 2006, Trey Smith.
 
  Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -30,32 +25,17 @@ namespace zmdp {
 
 struct ScriptedUpdater : public RTDPCore {
   bool filesRead;
-  StateIndex* stateIndex;
-  StateLog* backupsLog;
+  StateIndex *stateIndex;
+  StateLog *backupsLog;
   int currentLogEntry;
   std::string boundValuesOutputFile;
 
   ScriptedUpdater(void);
   void readFiles(void);
-  bool doTrial(MDPNode& cn);
+  bool doTrial(MDPNode &cn);
   void finishLogging(void);
 };
 
 }; // namespace zmdp
 
 #endif /* INCRTDP_h */
-
-/***************************************************************************
- * REVISION HISTORY:
- * $Log: not supported by cvs2svn $
- * Revision 1.3  2006/10/20 20:04:19  trey
- * added boundValuesOutputFile support
- *
- * Revision 1.2  2006/10/20 17:10:32  trey
- * corrected some problems with initialization
- *
- * Revision 1.1  2006/10/20 04:58:08  trey
- * initial check-in
- *
- *
- ***************************************************************************/

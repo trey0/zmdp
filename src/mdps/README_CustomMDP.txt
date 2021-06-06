@@ -67,5 +67,3 @@ src/main/zmdp.config using the 'customMDPNumStates' parameter.  You can
 override the default value from the command line with the option e.g.
 '--customMDPNumStates 10'.
 
-==========================================================
-$Id: README_CustomMDP.txt,v 1.1 2006-11-07 20:10:11 trey Exp $

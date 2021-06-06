@@ -1,9 +1,4 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.4 $  $Author: trey $  $Date: 2007-04-08 22:48:04 $
-  
- @file    CassandraParser.cc
- @brief   No brief
-
  Copyright (c) 2002-2005, Trey Smith. All rights reserved.
 
  Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -25,35 +20,34 @@
  ***************************************************************************/
 
 #include <assert.h>
-#include <stdlib.h>
-#include <unistd.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/time.h>
+#include <unistd.h>
 
-#include <iostream>
 #include <fstream>
+#include <iostream>
 
-#include "sparse-matrix.h"
-#include "zmdpCommonDefs.h"
+#include "CassandraParser.h"
 #include "MatrixUtils.h"
 #include "slaMatrixUtils.h"
 #include "sla_cassandra.h"
-#include "CassandraParser.h"
+#include "sparse-matrix.h"
+#include "zmdpCommonDefs.h"
 
 using namespace std;
 using namespace MatrixUtils;
 
 namespace zmdp {
 
-void CassandraParser::readGenericDiscreteMDPFromFile(CassandraModel& mdp,
-						     const std::string& _fileName)
-{
+void CassandraParser::readGenericDiscreteMDPFromFile(
+    CassandraModel &mdp, const std::string &_fileName) {
   mdp.fileName = _fileName;
   readModelFromFile(mdp, /* expectPomdp = */ false);
 }
 
-void CassandraParser::readPomdpFromFile(CassandraModel& pomdp, const std::string& _fileName)
-{
+void CassandraParser::readPomdpFromFile(CassandraModel &pomdp,
+                                        const std::string &_fileName) {
   pomdp.fileName = _fileName;
   readModelFromFile(pomdp, /* expectPomdp = */ true);
 }
@@ -63,17 +57,15 @@ void CassandraParser::readPomdpFromFile(CassandraModel& pomdp, const std::string
 // code base.
 #define CASSANDRA_GLOBAL(X) (X)
 
-void CassandraParser::readModelFromFile(CassandraModel& p,
-					bool expectPomdp)
-{
+void CassandraParser::readModelFromFile(CassandraModel &p, bool expectPomdp) {
   timeval startTime, endTime;
   if (zmdpDebugLevelG >= 1) {
     cout << "reading problem from " << p.fileName << endl;
-    gettimeofday(&startTime,0);
+    gettimeofday(&startTime, 0);
   }
 
   // this is the main call to Tony Cassandra's parsing code
-  if (! readMDP(const_cast<char *>(p.fileName.c_str())) ) {
+  if (!readMDP(const_cast<char *>(p.fileName.c_str()))) {
     // error messages should already have been printed
     exit(EXIT_FAILURE);
   }
@@ -102,7 +94,7 @@ void CassandraParser::readModelFromFile(CassandraModel& p,
   if (expectPomdp) {
     p.O.resize(p.numActions);
   }
-  FOR (a, p.numActions) {
+  FOR(a, p.numActions) {
     copy(Tk, CASSANDRA_GLOBAL(P[a]), p.numStates);
     copy(p.T[a], Tk);
     kmatrix_transpose_in_place(Tk);
@@ -116,7 +108,7 @@ void CassandraParser::readModelFromFile(CassandraModel& p,
     // convert initialBelief to sla format
     dvector initialBeliefD;
     initialBeliefD.resize(p.numStates);
-    FOR (s, p.numStates) {
+    FOR(s, p.numStates) {
       initialBeliefD(s) = CASSANDRA_GLOBAL(gInitialBelief[s]);
     }
     copy(p.initialBelief, initialBeliefD);
@@ -129,11 +121,11 @@ void CassandraParser::readModelFromFile(CassandraModel& p,
   p.checkForTerminalStates();
 
   if (zmdpDebugLevelG >= 1) {
-    gettimeofday(&endTime,0);
-    double numSeconds = (endTime.tv_sec - startTime.tv_sec)
-      + 1e-6 * (endTime.tv_usec - startTime.tv_usec);
+    gettimeofday(&endTime, 0);
+    double numSeconds = (endTime.tv_sec - startTime.tv_sec) +
+                        1e-6 * (endTime.tv_usec - startTime.tv_usec);
     cout << "[file reading took " << numSeconds << " seconds]" << endl;
-    
+
     p.debugDensity();
   }
 
@@ -142,18 +134,3 @@ void CassandraParser::readModelFromFile(CassandraModel& p,
 }
 
 }; // namespace zmdp
-
-/***************************************************************************
- * REVISION HISTORY:
- * $Log: not supported by cvs2svn $
- * Revision 1.3  2006/11/12 20:51:48  trey
- * added call to deallocateMDP() back in; it was accidentally left out when I migrated the translation code from pomdpCassandraWrapper to CassandraParser
- *
- * Revision 1.2  2006/11/09 20:48:40  trey
- * fixed some MDP vs. POMDP issues
- *
- * Revision 1.1  2006/11/08 16:40:50  trey
- * initial check-in
- *
- *
- ***************************************************************************/

@@ -1,5 +1,4 @@
-#!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: buildpython.mak,v 1.4 2006-04-28 17:57:41 trey Exp $
+#!gmake 	# Tell emacs about this file: -*- Makefile -*-
 #
 # Copyright (c) 1996-2005, Carnegie Mellon University. All rights reserved.
 #
@@ -104,28 +103,3 @@ BUILDPYTHON_HEADER :=
 BUILDPYTHON_SRCS :=
 BUILDPYTHON_DEP_LIBS :=
 BUILDPYTHON_INDEP_LIBS :=
-
-######################################################################
-# $Log: not supported by cvs2svn $
-# Revision 1.3  2005/10/28 03:34:41  trey
-# switched to simpler license
-#
-# Revision 1.2  2005/10/28 02:24:42  trey
-# added copyright headers
-#
-# Revision 1.1.1.1  2004/11/09 16:18:57  trey
-# imported hsvi into new repository
-#
-# Revision 1.2  2004/07/06 15:10:59  trey
-# fixed problem which required running "make install" twice
-#
-# Revision 1.1  2004/05/13 20:25:50  trey
-# synced up with atacama makefile system again
-#
-# Revision 1.2  2004/03/19 18:26:33  trey
-# cleaned up some variables
-#
-# Revision 1.1  2003/12/01 04:01:01  trey
-# initial check-in
-#
-#

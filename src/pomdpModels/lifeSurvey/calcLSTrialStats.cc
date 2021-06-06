@@ -1,9 +1,4 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.4 $  $Author: trey $  $Date: 2006-09-21 15:27:14 $
-   
- @file    calcLSTrialStats.cc
- @brief   No brief
-
  Copyright (c) 2006, Trey Smith. All rights reserved.
 
  Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -25,18 +20,18 @@
  ***************************************************************************/
 
 #include <assert.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <stdio.h>
-#include <getopt.h>
 #include <errno.h>
+#include <getopt.h>
 #include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include <iostream>
 
-#include "zmdpCommonDefs.h"
 #include "LifeSurvey.h"
+#include "zmdpCommonDefs.h"
 
 using namespace std;
 using namespace zmdp;
@@ -48,13 +43,11 @@ struct TraceEntry {
   int o;
 };
 
-void readTrace(std::vector<TraceEntry>& result,
-	       const char* fname)
-{
-  FILE* f = fopen(fname, "r");
+void readTrace(std::vector<TraceEntry> &result, const char *fname) {
+  FILE *f = fopen(fname, "r");
   if (NULL == f) {
-    fprintf(stderr, "ERROR: couldn't open %s for reading: %s\n",
-	    fname, strerror(errno));
+    fprintf(stderr, "ERROR: couldn't open %s for reading: %s\n", fname,
+            strerror(errno));
     exit(EXIT_FAILURE);
   }
 
@@ -62,12 +55,14 @@ void readTrace(std::vector<TraceEntry>& result,
   TraceEntry e;
   int lnum = 0;
   result.clear();
-  while (fgets(buf,sizeof(buf),f)) {
+  while (fgets(buf, sizeof(buf), f)) {
     lnum++;
-    if (0 == strlen(buf) || '#' == buf[0]) continue;
+    if (0 == strlen(buf) || '#' == buf[0])
+      continue;
     if (2 != sscanf(buf, "%d %d", &e.a, &e.o)) {
-      fprintf(stderr, "%s:%d: syntax error, expected integers '<a> <o>' on each line\n",
-	      fname, lnum);
+      fprintf(stderr,
+              "%s:%d: syntax error, expected integers '<a> <o>' on each line\n",
+              fname, lnum);
       exit(EXIT_FAILURE);
     }
     result.push_back(e);
@@ -75,16 +70,14 @@ void readTrace(std::vector<TraceEntry>& result,
   fclose(f);
 }
 
-void doit(const char* lifeSurveyFileName,
-	  const char* targetListFileName,
-	  const char* traceFileName)
-{
+void doit(const char *lifeSurveyFileName, const char *targetListFileName,
+          const char *traceFileName) {
   const double lookaheadCost = 5.0;
   printf("LOOKAHEAD COST=%lf\n", lookaheadCost);
 
   LSModel m;
   m.init(lifeSurveyFileName);
-  const LSModelFile& f = m.mfile;
+  const LSModelFile &f = m.mfile;
 
   std::vector<LSPos> targetList;
   LSModel::readTargetList(targetList, targetListFileName);
@@ -106,16 +99,14 @@ void doit(const char* lifeSurveyFileName,
   int numSamples = 0;
   double netSum = 0.0;
   LSGrid debugGrid = f.grid;
-  FOR_EACH (entryP, trace) {
+  FOR_EACH(entryP, trace) {
     if (verboseG) {
       printf("%d x%dy%dr", step, pos.x, pos.y);
-      FOR (r, regionRewards.size()) {
-	printf("%d", regionRewards[r]);
-      }
+      FOR(r, regionRewards.size()) { printf("%d", regionRewards[r]); }
       printf(" a=%d", entryP->a);
       int o = entryP->o;
       if (27 != o) {
-	printf(" o=%d (%d,%d,%d)", o, o/9, (o/3)%3, o%3);
+        printf(" o=%d (%d,%d,%d)", o, o / 9, (o / 3) % 3, o % 3);
       }
       printf("\n");
     }
@@ -131,47 +122,46 @@ void doit(const char* lifeSurveyFileName,
       cost = a.useSample ? 5 : 1;
 
       LSPos nextPos = m.getNeighbor(pos, a.moveDirection);
-      
+
       unsigned char cellType = f.grid.getCellBounded(nextPos);
       if (LS_OBSTACLE == cellType) {
-	penalty = 100;
-	if (verboseG) {
-	  printf("  ILLEGAL ACTION!\n");
-	}
-	numIllegalActions++;
+        penalty = 100;
+        if (verboseG) {
+          printf("  ILLEGAL ACTION!\n");
+        }
+        numIllegalActions++;
       } else {
-	bool isTarget = LSModel::getInTargetList(nextPos, targetList);
-	int oldRewardLevel = regionRewards[cellType];
-	int newRewardLevel = isTarget ? (a.useSample ? 3 : 2) : 1;
-	if (newRewardLevel > oldRewardLevel) {
-	  reward = m.getReward(oldRewardLevel, newRewardLevel);
-	  regionRewards[cellType] = newRewardLevel;
-	}
-	if (a.useSample) {
-	  if (isTarget) {
-	    if (verboseG) {
-	      printf("  good sample!\n");
-	    }
-	    numGoodSamples++;
-	    debugGrid.setCell(nextPos, debugGrid.getCell(nextPos)+13);
-	  } else {
-	    if (verboseG) {
-	      printf("  bad sample!\n");
-	    }
-	    debugGrid.setCell(nextPos, 23);
-	  }
-	  numSamples++;
-	} else {
-	  debugGrid.setCell(nextPos, 25);
-	}
+        bool isTarget = LSModel::getInTargetList(nextPos, targetList);
+        int oldRewardLevel = regionRewards[cellType];
+        int newRewardLevel = isTarget ? (a.useSample ? 3 : 2) : 1;
+        if (newRewardLevel > oldRewardLevel) {
+          reward = m.getReward(oldRewardLevel, newRewardLevel);
+          regionRewards[cellType] = newRewardLevel;
+        }
+        if (a.useSample) {
+          if (isTarget) {
+            if (verboseG) {
+              printf("  good sample!\n");
+            }
+            numGoodSamples++;
+            debugGrid.setCell(nextPos, debugGrid.getCell(nextPos) + 13);
+          } else {
+            if (verboseG) {
+              printf("  bad sample!\n");
+            }
+            debugGrid.setCell(nextPos, 23);
+          }
+          numSamples++;
+        } else {
+          debugGrid.setCell(nextPos, 25);
+        }
 
-
-	pos = nextPos;
+        pos = nextPos;
       }
     }
     double net = reward - cost - penalty;
     netSum += net * pow(0.999, step);
-		 
+
     if (verboseG) {
       printf("  reward=%lf cost=%lf penalty=%lf\n", reward, cost, penalty);
     }
@@ -187,33 +177,29 @@ void doit(const char* lifeSurveyFileName,
   printf("REWARD %.3lf\n", netSum);
 }
 
-void usage(const char* binaryName)
-{
-  cerr <<
-    "usage: " << binaryName << " OPTIONS <foo.lifeSurvey> <foo.targetList> <foo.actions>\n"
-    "  -h or --help    Display this help\n"
-    "  -v or --verbose Print debug information\n";
+void usage(const char *binaryName) {
+  cerr << "usage: " << binaryName
+       << " OPTIONS <foo.lifeSurvey> <foo.targetList> <foo.actions>\n"
+          "  -h or --help    Display this help\n"
+          "  -v or --verbose Print debug information\n";
   exit(EXIT_FAILURE);
 }
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
   static char shortOptions[] = "hv";
-  static struct option longOptions[]={
-    {"help",          0,NULL,'h'},
-    {"verbose",       0,NULL,'v'},
-    {NULL,0,0,0}
-  };
+  static struct option longOptions[] = {
+      {"help", 0, NULL, 'h'}, {"verbose", 0, NULL, 'v'}, {NULL, 0, 0, 0}};
 
   while (1) {
-    char optchar = getopt_long(argc,argv,shortOptions,longOptions,NULL);
-    if (optchar == -1) break;
+    char optchar = getopt_long(argc, argv, shortOptions, longOptions, NULL);
+    if (optchar == -1)
+      break;
 
     switch (optchar) {
     case 'h': // help
       usage(argv[0]);
       break;
-	
+
     case 'v': // verbose
       verboseG = true;
       break;
@@ -228,30 +214,14 @@ int main(int argc, char *argv[])
       abort(); // never reach this point
     }
   }
-  if (3 != argc-optind) {
+  if (3 != argc - optind) {
     cerr << "ERROR: wrong number of arguments (should be 2)" << endl << endl;
     usage(argv[0]);
   }
 
-  const char* lifeSurveyFileName = argv[optind++];
-  const char* targetListFileName = argv[optind++];
-  const char* traceFileName = argv[optind++];
+  const char *lifeSurveyFileName = argv[optind++];
+  const char *targetListFileName = argv[optind++];
+  const char *traceFileName = argv[optind++];
 
   doit(lifeSurveyFileName, targetListFileName, traceFileName);
 }
-
-
-/***************************************************************************
- * REVISION HISTORY:
- * $Log: not supported by cvs2svn $
- * Revision 1.3  2006/08/04 22:33:38  trey
- * changed lookaheadCost to match modified LifeSurvey models
- *
- * Revision 1.2  2006/07/10 19:33:35  trey
- * moved some functions to LifeSurvey.cc
- *
- * Revision 1.1  2006/07/10 02:21:35  trey
- * initial check-in
- *
- *
- ***************************************************************************/

@@ -1,5 +1,4 @@
-#!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile,v 1.6 2007-01-14 01:23:20 trey Exp $
+#!gmake 	# Tell emacs about this file: -*- Makefile -*-
 #
 # Copyright (c) 2006, Trey Smith. All rights reserved.
 #
@@ -30,7 +29,7 @@ maininstall:
 	$(MAKE) $(MFLAGS) -C .. -fMakefile SUBDIRS='bounds main' install
 
 # ADD ANY SUBDIRS THAT NEED TO BE VISITED DURING A BUILD TO THE SUBDIRS LIST
-SUBDIRS := 
+SUBDIRS :=
 
 INSTALLHEADERS_HEADERS := \
 	AbstractBound.h \
@@ -58,22 +57,3 @@ include $(BUILD_DIR)/buildlib.mak
 # DO NOT MODIFY BELOW THIS POINT
 
 include $(BUILD_DIR)/footer.mak
-
-######################################################################
-# $Log: not supported by cvs2svn $
-# Revision 1.5  2006/10/24 02:08:01  trey
-# much refactoring
-#
-# Revision 1.4  2006/10/17 19:16:25  trey
-# added MDPCache.cc
-#
-# Revision 1.3  2006/04/28 17:57:41  trey
-# changed to use apache license
-#
-# Revision 1.2  2006/04/05 21:35:43  trey
-# shuffled how source files fit into libraries
-#
-# Revision 1.1  2006/04/04 17:22:51  trey
-# initial check-in
-#
-#

@@ -1,9 +1,4 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.5 $  $Author: trey $  $Date: 2007-04-22 22:42:11 $
-   
- @file    LSPathAndReactExec.h
- @brief   No brief
-
  Copyright (c) 2006, Trey Smith. All rights reserved.
 
  Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -57,8 +52,7 @@ struct LSPathAndReactExec : public MDPExecCore {
 
   LSPathAndReactExec(void);
 
-  void init(const std::string& lifeSurveyFileName,
-	    const ZMDPConfig* config);
+  void init(const std::string &lifeSurveyFileName, const ZMDPConfig *config);
 
   // implement PomdpExec virtual methods
   void setToInitialState(void);
@@ -66,37 +60,14 @@ struct LSPathAndReactExec : public MDPExecCore {
   void advanceToNextState(int a, int o);
 
   // helpers
-  int getDistanceToNearestPathCell(const LSPos& pos) const;
+  int getDistanceToNearestPathCell(const LSPos &pos) const;
   void generatePath(void);
-  void getBestExtension(LSPath& bestPathMatchingPrefix,
-			double& bestPathValue,
-			LSPath& prefix,
-			const LSValueEntry& valueSoFar);
-  bool getValueIsDominated(const LSPathEntry& pe,
-			   const LSValueEntry& val);
-  bool dominates(const LSValueEntry& val1,
-		 const LSValueEntry& val2);
+  void getBestExtension(LSPath &bestPathMatchingPrefix, double &bestPathValue,
+                        LSPath &prefix, const LSValueEntry &valueSoFar);
+  bool getValueIsDominated(const LSPathEntry &pe, const LSValueEntry &val);
+  bool dominates(const LSValueEntry &val1, const LSValueEntry &val2);
 };
 
 } // namespace zmdp
 
 #endif // INCLSPathAndReactExec_h
-
-/***************************************************************************
- * REVISION HISTORY:
- * $Log: not supported by cvs2svn $
- * Revision 1.4  2007/03/23 00:01:20  trey
- * fixed to reflect migration from PomdpExec to MDPExec base class
- *
- * Revision 1.3  2006/11/08 16:42:38  trey
- * changed Pomdp constructor arguments
- *
- * Revision 1.2  2006/07/03 14:30:06  trey
- * code no longer makes subtly invalid assumptions about when one path dominates another, so the output path is guaranteed to be optimal (luckily, seems to output the same path as before)
- *
- * Revision 1.1  2006/06/29 21:37:56  trey
- * initial check-in
- *
- *
- ***************************************************************************/
-

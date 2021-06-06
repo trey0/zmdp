@@ -1,6 +1,4 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.3 $  $Author: trey $  $Date: 2006-06-01 16:48:36 $
-   
  @file    decision-tree.h
  @brief   Efficient decision tree data structure for MDP/POMDP immediate
           rewards.
@@ -51,7 +49,8 @@ extern void dtInit(int numActions, int numStates, int numObservations);
 /* Adds an entry to the decision tree.  Any of the first four arguments
    can be given the value -1 (== WILDCARD_SPEC), indicating a wildcard.
    Later calls to dtAdd() overwrite earlier calls. */
-extern void dtAdd(int action, int cur_state, int next_state, int obs, double val);
+extern void dtAdd(int action, int cur_state, int next_state, int obs,
+                  double val);
 
 /* Returns the immediate reward for a particular [a,s,s',o] tuple. */
 extern double dtGet(int action, int cur_state, int next_state, int obs);
@@ -61,18 +60,6 @@ extern void dtDeallocate(void);
 
 /* Print a textual representation of the decision tree data structure to
    stdout.  Intended for debugging. */
-extern void dtDebugPrint(const char* header);
+extern void dtDebugPrint(const char *header);
 
 #endif // INCdecision_tree_h
-
-/***************************************************************************
- * REVISION HISTORY:
- * $Log: not supported by cvs2svn $
- * Revision 1.2  2006/06/01 15:59:55  trey
- * no longer publish unnecessary typedefs in header
- *
- * Revision 1.1  2006/05/29 04:06:02  trey
- * initial check-in
- *
- *
- ***************************************************************************/

@@ -1,5 +1,4 @@
 #!/usr/bin/perl
-# $Id: embedFiles.perl,v 1.8 2007-03-05 08:56:18 trey Exp $
 #
 # Copyright (c) 1996-2005, Carnegie Mellon University. All rights reserved.
 #
@@ -188,44 +187,3 @@ sub main {
 }
 
 &main();
-
-######################################################################
-# $Log: not supported by cvs2svn $
-# Revision 1.7  2006/10/31 20:34:07  trey
-# fixed embedding problem when using cpp from gcc 4.0.1, XCode 2.4 under Mac OS X 10.4.8
-#
-# Revision 1.6  2006/10/20 04:58:44  trey
-# switched pre-processor command again to avoid warnings under linux
-#
-# Revision 1.5  2006/10/17 19:17:57  trey
-# switched pre-processor invocation to use "g++ -E" rather than "cpp" so that e.g. "#include <iostream>" is processed properly
-#
-# Revision 1.4  2006/04/28 17:57:41  trey
-# changed to use apache license
-#
-# Revision 1.3  2005/10/28 03:34:41  trey
-# switched to simpler license
-#
-# Revision 1.2  2005/10/28 02:24:42  trey
-# added copyright headers
-#
-# Revision 1.1.1.1  2004/11/09 16:18:57  trey
-# imported hsvi into new repository
-#
-# Revision 1.2  2004/08/02 02:58:07  trey
-# propagated change from atacama copy of build system
-#
-# Revision 1.4  2004/08/02 02:57:20  trey
-# stopped escaping colon, semicolon, @ characters
-#
-# Revision 1.3  2004/05/12 22:22:03  trey
-# made embedded rcl files more readable
-#
-# Revision 1.2  2004/04/21 20:53:53  trey
-# fixed encoding to not turn spaces into escape sequences
-#
-# Revision 1.1  2004/04/19 17:53:38  trey
-# initial check-in
-#
-#
-#

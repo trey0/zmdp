@@ -1,9 +1,4 @@
 /********** tell emacs we use -*- c++ -*- style comments *******************
- $Revision: 1.4 $  $Author: trey $  $Date: 2006-10-30 20:00:15 $
-   
- @file    HSVI.cc
- @brief   No brief
-
  Copyright (c) 2006, Trey Smith. All rights reserved.
 
  Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -20,20 +15,20 @@
 
  ***************************************************************************/
 
+#include <assert.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <stdio.h>
-#include <assert.h>
 
-#include <iostream>
 #include <fstream>
+#include <iostream>
 #include <queue>
 
-#include "zmdpCommonDefs.h"
-#include "zmdpCommonTime.h"
+#include "HSVI.h"
 #include "MatrixUtils.h"
 #include "Pomdp.h"
-#include "HSVI.h"
+#include "zmdpCommonDefs.h"
+#include "zmdpCommonTime.h"
 
 using namespace std;
 using namespace sla;
@@ -45,28 +40,28 @@ using namespace MatrixUtils;
 
 namespace zmdp {
 
-HSVI::HSVI(void)
-{
+HSVI::HSVI(void) {
 #if USE_HSVI_ADAPTIVE_DEPTH
   maxDepth = HSVI_INIT_MAX_DEPTH;
 #endif
 }
 
-void HSVI::getMaxExcessUncOutcome(MDPNode& cn, int depth, HSVIUpdateResult& r) const
-{
+void HSVI::getMaxExcessUncOutcome(MDPNode &cn, int depth,
+                                  HSVIUpdateResult &r) const {
   r.maxExcessUnc = -99e+20;
   r.maxExcessUncOutcome = -1;
   double width;
-  MDPQEntry& Qa = cn.Q[r.maxUBAction];
-  FOR (o, Qa.getNumOutcomes()) {
-    MDPEdge* e = Qa.outcomes[o];
+  MDPQEntry &Qa = cn.Q[r.maxUBAction];
+  FOR(o, Qa.getNumOutcomes()) {
+    MDPEdge *e = Qa.outcomes[o];
     if (NULL != e) {
-      MDPNode& sn = *e->nextState;
-      width = e->obsProb *
-	(sn.ubVal - sn.lbVal - trialTargetPrecision * pow(problem->getDiscount(), -(depth+1)));
+      MDPNode &sn = *e->nextState;
+      width = e->obsProb * (sn.ubVal - sn.lbVal -
+                            trialTargetPrecision *
+                                pow(problem->getDiscount(), -(depth + 1)));
       if (width > r.maxExcessUnc) {
-	r.maxExcessUnc = width;
-	r.maxExcessUncOutcome = o;
+        r.maxExcessUnc = width;
+        r.maxExcessUncOutcome = o;
       }
 #if 0
       printf("    a=%d o=%d obsProb=%g nslb=%g nsub=%g nsdiff=%g width=%g\n",
@@ -76,30 +71,28 @@ void HSVI::getMaxExcessUncOutcome(MDPNode& cn, int depth, HSVIUpdateResult& r) c
   }
 }
 
-void HSVI::update(MDPNode& cn, int depth, HSVIUpdateResult& r)
-{
+void HSVI::update(MDPNode &cn, int depth, HSVIUpdateResult &r) {
   double oldUBVal = cn.ubVal;
   bounds->update(cn, &r.maxUBAction);
   trackBackup(cn);
-  
+
   r.ubResidual = oldUBVal - r.maxUBVal;
 
   getMaxExcessUncOutcome(cn, depth, r);
 }
 
-void HSVI::trialRecurse(MDPNode& cn, double logOcc, int depth)
-{
-  double excessUnc = cn.ubVal - cn.lbVal - trialTargetPrecision
-    * pow(problem->getDiscount(), -depth);
+void HSVI::trialRecurse(MDPNode &cn, double logOcc, int depth) {
+  double excessUnc = cn.ubVal - cn.lbVal -
+                     trialTargetPrecision * pow(problem->getDiscount(), -depth);
 
   if (excessUnc <= 0
-#if USE_HSVI_ADAPTIVE_DEPTH      
+#if USE_HSVI_ADAPTIVE_DEPTH
       || depth > maxDepth
 #endif
-      ) {
+  ) {
     if (zmdpDebugLevelG >= 1) {
-      printf("  trialRecurse: depth=%d excessUnc=%g (terminating)\n",
-	     depth, excessUnc);
+      printf("  trialRecurse: depth=%d excessUnc=%g (terminating)\n", depth,
+             excessUnc);
       printf("  trialRecurse: s=%s\n", sparseRep(cn.s).c_str());
     }
 
@@ -122,8 +115,8 @@ void HSVI::trialRecurse(MDPNode& cn, double logOcc, int depth)
 #endif
 
   if (zmdpDebugLevelG >= 1) {
-    printf("  trialRecurse: depth=%d [%g .. %g] a=%d o=%d\n",
-	   depth, cn.lbVal, cn.ubVal, r.maxUBAction, r.maxExcessUncOutcome);
+    printf("  trialRecurse: depth=%d [%g .. %g] a=%d o=%d\n", depth, cn.lbVal,
+           cn.ubVal, r.maxUBAction, r.maxExcessUncOutcome);
     printf("  trialRecurse: s=%s\n", sparseRep(cn.s).c_str());
   }
 
@@ -133,15 +126,14 @@ void HSVI::trialRecurse(MDPNode& cn, double logOcc, int depth)
   double weight = problem->getDiscount() * obsProb;
   double nextLogOcc = logOcc + log(weight);
   trialRecurse(cn.getNextState(r.maxUBAction, r.maxExcessUncOutcome),
-	       nextLogOcc, depth+1);
+               nextLogOcc, depth + 1);
 
   update(cn, depth, r);
 }
 
-bool HSVI::doTrial(MDPNode& cn)
-{
+bool HSVI::doTrial(MDPNode &cn) {
   if (zmdpDebugLevelG >= 1) {
-    printf("-*- doTrial: trial %d\n", (numTrials+1));
+    printf("-*- doTrial: trial %d\n", (numTrials + 1));
   }
 
 #if USE_HSVI_ADAPTIVE_DEPTH
@@ -154,8 +146,8 @@ bool HSVI::doTrial(MDPNode& cn)
   trialTargetPrecision = (cn.ubVal - cn.lbVal) * HSVI_IMPROVEMENT_CONSTANT;
 
   trialRecurse(cn,
-	       /* logOcc = */ log(1.0),
-	       /* depth = */ 0);
+               /* logOcc = */ log(1.0),
+               /* depth = */ 0);
 
 #if USE_HSVI_ADAPTIVE_DEPTH
   double updateQualityRatio;
@@ -168,18 +160,18 @@ bool HSVI::doTrial(MDPNode& cn)
     double newMean = newQualitySum / newNumUpdates;
     updateQualityRatio = newMean / oldMean;
   }
-  
+
   if (updateQualityRatio >= 1.0) {
     oldMaxDepth = maxDepth;
     maxDepth *= HSVI_MAX_DEPTH_ADJUST_RATIO;
     if (zmdpDebugLevelG >= 1) {
       printf("endTrial: updateQualityRatio=%g oldMaxDepth=%g maxDepth=%g\n",
-	     updateQualityRatio, oldMaxDepth, maxDepth);
+             updateQualityRatio, oldMaxDepth, maxDepth);
     }
   } else {
     if (zmdpDebugLevelG >= 1) {
       printf("endTrial: updateQualityRatio=%g maxDepth=%g (no change)\n",
-	     updateQualityRatio, maxDepth);
+             updateQualityRatio, maxDepth);
     }
   }
 #endif // if USE_HSVI_ADAPTIVE_DEPTH
@@ -190,24 +182,3 @@ bool HSVI::doTrial(MDPNode& cn)
 }
 
 }; // namespace zmdp
-
-/***************************************************************************
- * REVISION HISTORY:
- * $Log: not supported by cvs2svn $
- * Revision 1.3  2006/10/19 19:31:16  trey
- * added support for backup logging
- *
- * Revision 1.2  2006/04/28 17:57:41  trey
- * changed to use apache license
- *
- * Revision 1.1  2006/04/27 20:18:08  trey
- * renamed WRTDP to HSVI, maybe less confusing this way
- *
- * Revision 1.2  2006/04/12 19:48:47  trey
- * fixed sign error in excess uncertainty calculation; fixed some code to properly be inside a #if USE_HSVI_ADAPTIVE_DEPTH block
- *
- * Revision 1.1  2006/04/12 19:22:41  trey
- * initial check-in
- *
- *
- ***************************************************************************/

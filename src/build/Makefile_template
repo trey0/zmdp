@@ -1,5 +1,4 @@
-#!gmake 	# Tell emacs about this file: -*- Makefile -*-  
-# $Id: Makefile_template,v 1.4 2006-04-28 17:57:41 trey Exp $
+#!gmake 	# Tell emacs about this file: -*- Makefile -*-
 #
 # Copyright (c) 1996-2005, Carnegie Mellon University. All rights reserved.
 #
@@ -16,7 +15,7 @@
 # permissions and limitations under the License.
 
 ######################################################################
-# DESCRIPTION:  
+# DESCRIPTION:
 
 ######################################################################
 # DO NOT MODIFY THIS HEADER SECTION
@@ -28,7 +27,7 @@ include $(CHECKOUT_DIR)/src/microraptor/Build/header.mak
 # PLACE MODIFICATIONS BELOW THIS LINE
 
 # ADD ANY SUBDIRS THAT NEED TO BE VISITED DURING A BUILD TO THE SUBDIRS LIST
-SUBDIRS := 
+SUBDIRS :=
 
 # add extra pre-processor flags here (e.g. -I, -D)
 CPPFLAGS +=
@@ -37,10 +36,10 @@ CPPFLAGS +=
 CFLAGS +=
 
 # add extra link flags here (e.g. -L, -l)
-LDFLAGS += 
+LDFLAGS +=
 
 # add extra files to clean up with 'gmake clean' here
-LOCAL_CLEAN_FILES := 
+LOCAL_CLEAN_FILES :=
 
 # install header files (you can use this only once)
 #INSTALLHEADERS_HEADERS := foo.h goo.h
@@ -84,28 +83,3 @@ endif
 # DO NOT MODIFY BELOW THIS POINT
 
 include $(BUILD_DIR)/footer.mak
-
-######################################################################
-# $Log: not supported by cvs2svn $
-# Revision 1.3  2005/10/28 03:34:40  trey
-# switched to simpler license
-#
-# Revision 1.2  2005/10/28 02:24:42  trey
-# added copyright headers
-#
-# Revision 1.1.1.1  2004/11/09 16:18:57  trey
-# imported hsvi into new repository
-#
-# Revision 1.3  2004/05/13 20:25:50  trey
-# synced up with atacama makefile system again
-#
-# Revision 1.2  2003/10/07 16:01:17  trey
-# changed directory names to reflect move
-#
-# Revision 1.1  2003/10/05 16:51:40  trey
-# initial atacama check-in
-#
-# Revision 1.1  2003/10/05 16:18:05  trey
-# improved CHECKOUT_DIR calculation
-#
-#
