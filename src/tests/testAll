@@ -18,7 +18,7 @@ sub runTest {
     my $n = sprintf("%02d", $num);
 
     print "  test$n ";
-    
+
     open(IN, "./test$n 2>&1 |") or die "ERROR: couldn't run ./test$n: $!\n";
     my $firstLine, $lastLine;
     $firstLine = <IN>;
@@ -56,7 +56,7 @@ if ($numErrors > 0) {
     print "There were $numErrors failed tests out of $numTestsToRun total.\n";
     print "\n";
     print "If test <n> failed, you can get the details by running the corresponding\n";
-    print "script 'src/tests/test<n>'.\n";
+    die "script 'src/tests/test<n>'.\n";
 } else {
     print "**********************************************************************\n";
     print "* OK: ALL REGRESSION TESTS PASSED                                    *\n";
