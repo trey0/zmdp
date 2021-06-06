@@ -16,4 +16,4 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: cpplint
-      run: docker build . -f ./docker/Dockerfile_cpplint -t cpplint
+      run: docker build . -f ./src/docker/Dockerfile_cpplint -t cpplint
