@@ -27,88 +27,54 @@ More information is in the file named COPYING.
 
 .. contents::
 
-Package contents
-~~~~~~~~~~~~~~~~
-
-================ ===========================================================
-README           This file
-COPYING          Copyright information
-src/build        Makefile system
-src/common       Utility code, including a sparse linear algebra library
-src/mdps         Racetrack domain and some example problems
-src/bounds       Value function bounds representations
-src/search       Search strategies FRTDP, HSVI, etc.
-src/exec         Interface you can use to execute policies output by zmdp
-src/parsers      Model parsing code (thanks to Tony Cassandra!)
-src/pomdpCore    Basic POMDP operations and simulation
-src/pomdpBounds  Value function bounds representations specific to POMDPs
-src/pomdpModels  Some example POMDP problems
-src/main         Glue code for invoking algorithms from the shell
-src/tools        Tools for scripting multiple runs and plotting performance
-src/tests        Regression testing suite
-================ ===========================================================
-
 Requirements
-~~~~~~~~~~~~
-
-Operating systems: Linux and Mac OS X
-
-Some tested compilers:
-
- * gcc/g++ 3.2.2 under Linux Fedora Core 2
- * gcc/g++ 4.0.1 under Linux Fedora Core 4
- * gcc/g++ 4.0.1 from XCode 2.4 under Mac OS X 10.4.8
- * gcc/g++ 4.2.1 from XCode 3.2 under Mac OS X 10.6.4
-
-Build system tested with:
-
- * GNU Make 3.80, 3.81
- * GNU Flex 2.5.4, 2.5.35
- * GNU Bison 2.0, 2.3
- * Perl 5.8.6, 5.10.0
-
-Performance plotting scripts in tools directory tested with:
-
- * gnuplot 4.0
- * GNU gprof 2.15.94.0.2.2
- * GNU Octave 2.1.73
-
-(Note: I don't frequently update this section, so the known-good version
-information for the tools may get out of date as I upgrade my testing
-machines.  Sorry.)
-
-Installation instructions
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
- * Unpack the tarball to generate the zmdp directory::
+ZMDP has a legacy build system that has run successfully on Linux and
+Mac OS X. The code is designed to be fairly portable. Installation was
+most recently tested under Ubuntu Linux 20.04
 
-    tar xvfz zmdp-VERSION.tgz
+Installation
+~~~~~~~~~~~~
+
+ * Install dependencies, example shown for Ubuntu OS::
+
+    sudo apt-get install bison build-essential flex git gnuplot perl
+
+ * Fetch the source::
+
+    git clone https://github.com/trey0/zmdp.git
 
  * Build::
 
-    cd zmdp-VERSION/src
+    cd zmdp/src
     make install
-    (generates binaries in zmdp-VERSION/bin/<os_name>/, <os_name> = e.g. linux2, darwin8)
+    # generates binaries in zmdp/bin/<os_name>/, <os_name> = e.g. linux5
 
  * Test (runs a suite of regression tests)::
 
-    cd zmdp-VERSION/src
+    cd zmdp/src
     make test
 
- * Try solving an example problem (look at results in 'out.policy')::
+Example usage
+~~~~~~~~~~~~~
 
-    mkdir zmdp-VERSION/results/
-    cd zmdp-VERSION/results
-    ../bin/<os_name>/zmdp solve ../src/pomdpModels/three_state.pomdp
+ * Try solving an example problem (look at results in ``out.policy``)::
+
+    mkdir zmdp/results/
+    cd zmdp/results
+    ../bin/linux5/zmdp solve ../src/pomdpModels/three_state.pomdp
+    ../bin/linux5/zmdp benchmark ../src/pomdpModels/three_state.pomdp
+    ../src/tools/makeplot .
 
  * If you want to solve one of the included RockSample problem
-   instances, generate it (generates RockSample_5_7.pomdp)::
+   instances, generate it (generates ``RockSample_5_7.pomdp``)::
 
-    cd zmdp-VERSION/src/pomdpModels
+    cd zmdp/src/pomdpModels
     ./gen_RockSample_5_7
 
-Usage instructions
-~~~~~~~~~~~~~~~~~~
+Usage reference
+~~~~~~~~~~~~~~~
 
 The installation process creates binaries in the ``bin/<os_name>/``
 directory:
@@ -197,6 +163,27 @@ x axis rather than wallclock time.  You may prefer this so that results
 are less dependent on the platform used.  A downside is that the amount
 of time required for each update varies widely depending on the search
 strategy and especially on the bounds representation.
+
+Package contents
+~~~~~~~~~~~~~~~~
+
+================ ===========================================================
+README           This file
+COPYING          Copyright information
+src/build        Makefile system
+src/common       Utility code, including a sparse linear algebra library
+src/mdps         Racetrack domain and some example problems
+src/bounds       Value function bounds representations
+src/search       Search strategies FRTDP, HSVI, etc.
+src/exec         Interface you can use to execute policies output by zmdp
+src/parsers      Model parsing code (thanks to Tony Cassandra!)
+src/pomdpCore    Basic POMDP operations and simulation
+src/pomdpBounds  Value function bounds representations specific to POMDPs
+src/pomdpModels  Some example POMDP problems
+src/main         Glue code for invoking algorithms from the shell
+src/tools        Tools for scripting multiple runs and plotting performance
+src/tests        Regression testing suite
+================ ===========================================================
 
 Acknowledgments
 ~~~~~~~~~~~~~~~
