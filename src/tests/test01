@@ -1,7 +1,11 @@
 #!/usr/bin/perl
 
 $TEST_DESCRIPTION = "default use of zmdp benchmark/evaluate on a pomdp";
+
+use FindBin;
+use lib $FindBin::Bin;
 require "testLibrary.perl";
+
 &testZmdpBenchmark(cmd => "$zmdpBenchmark -o out.policy $pomdpsDir/three_state.pomdp",
 		   expectedLB => 20.8260,
 		   expectedUB => 20.8269,

@@ -1,7 +1,11 @@
 #!/usr/bin/perl
 
 $TEST_DESCRIPTION = "lowerBoundRepresentation, upperBoundRepresentation='point'";
+
+use FindBin;
+use lib $FindBin::Bin;
 require "testLibrary.perl";
+
 &testZmdpBenchmark(cmd => "$zmdpBenchmark --lowerBoundRepresentation point $pomdpsDir/three_state.pomdp",
 		   expectedLB => 20.8260,
 		   expectedUB => 20.8269,

@@ -1,7 +1,11 @@
 #!/usr/bin/perl
 
 $TEST_DESCRIPTION = "searchStrategy='hsvi' for pomdp, mdp";
+
+use FindBin;
+use lib $FindBin::Bin;
 require "testLibrary.perl";
+
 &testZmdpBenchmark(cmd => "$zmdpBenchmark --searchStrategy hsvi $pomdpsDir/three_state.pomdp",
 		   expectedLB => 20.8261,
 		   expectedUB => 20.8271,

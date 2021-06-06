@@ -1,7 +1,11 @@
 #!/usr/bin/perl
 
 $TEST_DESCRIPTION = "solve 'custom' MDP";
+
+use FindBin;
+use lib $FindBin::Bin;
 require "testLibrary.perl";
+
 &testZmdpBenchmark(cmd => "$zmdpBenchmark custom",
 		   expectedLB => -4.4444,
 		   expectedUB => -4.4444,

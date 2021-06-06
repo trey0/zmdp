@@ -1,6 +1,9 @@
 #!/usr/bin/perl
 
 $TEST_DESCRIPTION = "default use of zmdp solve/evaluate on a pomdp";
+
+use FindBin;
+use lib $FindBin::Bin;
 require "testLibrary.perl";
 
 &testZmdpSolve(cmd => "$zmdpSolve $pomdpsDir/three_state.pomdp",

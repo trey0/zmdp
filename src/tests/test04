@@ -1,7 +1,11 @@
 #!/usr/bin/perl
 
 $TEST_DESCRIPTION = "test04.pomdp, crashed an earlier version of zmdp";
+
+use FindBin;
+use lib $FindBin::Bin;
 require "testLibrary.perl";
+
 &testZmdpBenchmark(cmd => "$zmdpBenchmark ../test04.pomdp",
 		   expectedLB => 51.6905,
 		   expectedUB => 51.6905,

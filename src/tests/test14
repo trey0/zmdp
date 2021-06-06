@@ -1,6 +1,9 @@
 #!/usr/bin/perl
 
 $TEST_DESCRIPTION = "zmdpEvaluate with cassandraAlpha policy";
+
+use FindBin;
+use lib $FindBin::Bin;
 require "testLibrary.perl";
 
 &testZmdpEvaluate(cmd => "$zmdpEvaluate --policyType cassandraAlpha --policyInputFile ../three_state.alpha $pomdpsDir/three_state.pomdp",

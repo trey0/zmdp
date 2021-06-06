@@ -1,6 +1,9 @@
 #!/usr/bin/perl
 
 $TEST_DESCRIPTION = "read mdp model in cassandra format";
+
+use FindBin;
+use lib $FindBin::Bin;
 require "testLibrary.perl";
 
 # (test both normal and fast parser)
