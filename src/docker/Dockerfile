@@ -13,7 +13,6 @@ RUN apt-get update \
     build-essential \
     flex \
     git \
-    gnuplot \
     perl \
   && rm -rf /var/lib/apt/lists/*
 

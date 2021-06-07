@@ -64,7 +64,9 @@ Example usage
     mkdir zmdp/results/
     cd zmdp/results
     ../bin/linux5/zmdp solve ../src/pomdpModels/three_state.pomdp
+
     ../bin/linux5/zmdp benchmark ../src/pomdpModels/three_state.pomdp
+    # plotting requires: sudo apt-get install gnuplot
     ../src/tools/makeplot .
 
  * If you want to solve one of the included RockSample problem
