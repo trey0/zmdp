@@ -27,19 +27,37 @@
   (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__)
 #endif
 
-// needed before we can use hash_map<string, type>
-#if GCC_VERSION >= 40300
+// This section tries to auto-detect the correct definition of
+// hash_map<string, type> to use with this compiler
+
+// Note we use the __APPLE__ macro to detect a Mac OS X compiler and
+// assume it supports C++11... otherwise the auto-detect based on GCC
+// version fails because modern Mac OS X compilers weirdly report a very
+// old GCC version.
+#if __APPLE__
+
+#include <unordered_map>
+#define EXT_NAMESPACE std
+#define hash_map unordered_map
+
+#elif (GCC_VERSION >= 40300)
+
 #include <tr1/unordered_map>
 #define EXT_NAMESPACE std::tr1
 #define hash_map unordered_map
-#else
+
+#else  // if not GCC_VERSION >= 40300
+
 #include <ext/hash_map>
+
 #if GCC_VERSION >= 30200
 #define EXT_NAMESPACE __gnu_cxx
 #else
 #define EXT_NAMESPACE std
 #endif
+
 namespace EXT_NAMESPACE {
+
 template <>
 struct hash<std::string> {
   size_t operator()(const std::string &s) const {
@@ -47,6 +65,7 @@ struct hash<std::string> {
     return h(s.c_str());
   }
 };
+
 template <class T>
 struct hash<T *> {
   size_t operator()(T *p) const {
@@ -54,8 +73,10 @@ struct hash<T *> {
     return h(static_cast<size_t>(p));
   }
 };
+
 };  // namespace EXT_NAMESPACE
-#endif
+
+#endif  // branching based on GCC version
 
 namespace zmdp {
 
